@@ -1,15 +1,35 @@
 import { SectionEntry, SectionId, CycleDate } from '../types';
 
 export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
-  // WnR366 - Day 1 (25 XII)
-  'wnr366-12-25': {
+  // info365 - Guide Day 1
+  'info365-12-25': {
+    title: 'Wprowadzenie: Narodzenie Pańskie i Początek Cyklu',
+    subtitle: 'info365 • Dzień 1 cyklu rocznego (25 grudnia)',
+    content: `Witaj w rocznym cyklu Drogowskazy 365. Dziś, 25 grudnia, w Boże Narodzenie, rozpoczynamy naszą wędrówkę przez 7 wielkich dzieł: Widoki na Raj (WnR365), Różaniec Historii Zbawienia (RHZ365), Biblię365 z Apokryfami oraz e-booki w formie flipbooka i biografię małżeńską Bio365.`,
+    quote: '"Początek Ewangelii Jezusa Chrystusa, Syna Bożego." (Mk 1, 1)',
+    prayer: 'Błogosław, Panie, wszystkim czytelnikom i pielgrzymom tej drogi.'
+  },
+
+  // WnR365 - Day 1 (25 XII)
+  'wnr365-12-25': {
     title: 'Tajemnica Wcielenia: Kiedy Raj schodzi na Ziemię',
-    subtitle: 'Widoki na Raj • Dzień 1 cyklu rocznego',
+    subtitle: 'Widoki na Raj (WnR365) • Dzień 1 cyklu rocznego',
     content: `Boże Narodzenie nie jest jedynie pamiątką historyczną. To kosmiczne pęknięcie zasłony czasu, przez którą wieczność wkracza w naszą doczesność. 
 
 W rajskim ogrodzie Eden człowiek ukrył się przed obliczem Boga pośród drzew. W stajence betlejemskiej to Bóg przychodzi i odsłania swoje Oblicze w bezbronnym Dziecięciu, owiniętym w pieluszki i złożonym w żłobie. Raj, który wydawał się bezpowrotnie utracony, staje się nagle dostępny na wyciągnięcie ręki – nie za murami niezdobytej twierdzy, lecz w cichej grocie, gdzie bije Serce Zbawiciela.
 
-Gdy patrzymy w niebo w tę świętą noc, widzimy nie tylko gwiazdy, lecz otwartą bramę. "Widoki na Raj" to spojrzenie człowieka, który w zwykłym chlebie powszednim potrafi dostrzec mannę z nieba, a w drugim człowieku – ikonę Stwórcy. Rozpoczynając ten roczny szlak 366 dni, prośmy o wzrok czysty, zdolny dostrzegać piękno Bożego zamysłu w każdym poranku i każdym zmierzchu.`,
+Gdy patrzymy w niebo w tę świętą noc, widzimy nie tylko gwiazdy, lecz otwartą bramę. "Widoki na Raj" to spojrzenie człowieka, który w zwykłym chlebie powszednim potrafi dostrzec mannę z nieba, a w drugim człowieku – ikonę Stwórcy. Rozpoczynając ten roczny szlak 365 dni, prośmy o wzrok czysty, zdolny dostrzegać piękno Bożego zamysłu w każdym poranku i każdym zmierzchu.`,
+    quote: '"I Słowo stało się ciałem i zamieszkało wśród nas. I oglądaliśmy Jego chwałę..." (J 1, 14)',
+    prayer: 'Panie Jezu Chryste, Dziecię z Betlejem, zamieszkaj dziś na nowo w moim sercu. Ulecz mój wzrok, bym pośród trosk tego świata dostrzegał przebłyski Twojego Raju. Amen.'
+  },
+  'wnr366-12-25': {
+    title: 'Tajemnica Wcielenia: Kiedy Raj schodzi na Ziemię',
+    subtitle: 'Widoki na Raj (WnR365) • Dzień 1 cyklu rocznego',
+    content: `Boże Narodzenie nie jest jedynie pamiątką historyczną. To kosmiczne pęknięcie zasłony czasu, przez którą wieczność wkracza w naszą doczesność. 
+
+W rajskim ogrodzie Eden człowiek ukrył się przed obliczem Boga pośród drzew. W stajence betlejemskiej to Bóg przychodzi i odsłania swoje Oblicze w bezbronnym Dziecięciu, owiniętym w pieluszki i złożonym w żłobie. Raj, który wydawał się bezpowrotnie utracony, staje się nagle dostępny na wyciągnięcie ręki – nie za murami niezdobytej twierdzy, lecz w cichej grocie, gdzie bije Serce Zbawiciela.
+
+Gdy patrzymy w niebo w tę świętą noc, widzimy nie tylko gwiazdy, lecz otwartą bramę. "Widoki na Raj" to spojrzenie człowieka, który w zwykłym chlebie powszednim potrafi dostrzec mannę z nieba, a w drugim człowieku – ikonę Stwórcy. Rozpoczynając ten roczny szlak 365 dni, prośmy o wzrok czysty, zdolny dostrzegać piękno Bożego zamysłu w każdym poranku i każdym zmierzchu.`,
     quote: '"I Słowo stało się ciałem i zamieszkało wśród nas. I oglądaliśmy Jego chwałę..." (J 1, 14)',
     prayer: 'Panie Jezu Chryste, Dziecię z Betlejem, zamieszkaj dziś na nowo w moim sercu. Ulecz mój wzrok, bym pośród trosk tego świata dostrzegał przebłyski Twojego Raju. Amen.'
   },
@@ -99,7 +119,12 @@ Ta biografia to nasz wspólny pamiętnik na każdy dzień roku – opowieść o 
  */
 export function getEntryForSectionAndDate(sectionId: SectionId, cycleDate: CycleDate): SectionEntry {
   const specificKey = `${sectionId}-${cycleDate.dateKey}`;
-  const base = BASE_ENTRIES[specificKey];
+  let base = BASE_ENTRIES[specificKey];
+  if (!base && sectionId === 'wnr365') {
+    base = BASE_ENTRIES[`wnr366-${cycleDate.dateKey}`];
+  } else if (!base && sectionId === 'wnr366') {
+    base = BASE_ENTRIES[`wnr365-${cycleDate.dateKey}`];
+  }
 
   if (base && base.title && base.content) {
     return {
@@ -131,13 +156,27 @@ function generateThematicEntry(sectionId: SectionId, cycleDate: CycleDate): Sect
   const { dayNumber, displayDate, season } = cycleDate;
 
   switch (sectionId) {
-    case 'wnr366':
+    case 'info365':
       return {
-        id: `wnr366-${cycleDate.dateKey}`,
+        id: `info365-${cycleDate.dateKey}`,
         sectionId,
         dateKey: cycleDate.dateKey,
         dayNumber,
-        title: `Widoki na Raj: Ścieżka Pokoju (Dzień ${dayNumber})`,
+        title: `Przewodnik Drogowskazy 365: Dzień ${dayNumber}`,
+        subtitle: `${displayDate} • ${season}`,
+        content: `Dziś jest dzień ${dayNumber} w rocznym cyklu czytelniczym Drogowskazy 365. Zachęcamy do zapoznania się z dzisiejszymi rozważaniami w blogu Widoki na Raj (WnR365), modlitwą różańcową (RHZ365), czytaniem Pisma Świętego (Biblia365) lub lekturą wybranego e-booka.`,
+        quote: `"Twoje słowo jest lampą dla moich stóp i światłem na mojej ścieżce." (Ps 119, 105)`,
+        prayer: `Panie, prowadź nas bezpiecznie przez każdy dzień tego roku.`
+      };
+
+    case 'wnr365':
+    case 'wnr366':
+      return {
+        id: `wnr365-${cycleDate.dateKey}`,
+        sectionId: 'wnr365',
+        dateKey: cycleDate.dateKey,
+        dayNumber,
+        title: `Widoki na Raj (WnR365): Ścieżka Pokoju (Dzień ${dayNumber})`,
         subtitle: `${displayDate} • ${season}`,
         content: `W codziennym zgiełku łatwo zapomnieć, że jesteśmy powołani do pokoju, który przewyższa wszelki ludzki umysł. Dzisiejszy dzień (${displayDate}) przynosi nowe zaproszenie: zatrzymaj się choćby na pięć minut i spójrz w głąb własnego serca.
 

@@ -1,6 +1,6 @@
 {
   "name": "Drogowskazy 365 - WnR, RHZ, Biblia & Bio",
-  "description": "Aplikacja czytelnicza z 7 sekcjami: blog WnR366, modlitwa RHZ365, czytanie Biblia365, e-booki flipbook oraz Bio365 z rocznym cyklem od 25 grudnia do 24 grudnia i panelem administratora PDF.",
+  "description": "Aplikacja czytelnicza z sekcjami: info365, blog WnR365, modlitwa RHZ365 z cyfrowym różańcem RGBA/CMYK, Biblia365, e-booki flipbook oraz Bio365 z edytorem WYSIWYG i bazą kodów QR.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

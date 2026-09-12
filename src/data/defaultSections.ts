@@ -2,13 +2,25 @@ import { SectionMeta, SectionId } from '../types';
 
 export const SECTIONS: SectionMeta[] = [
   {
-    id: 'wnr366',
-    name: 'WnR366',
+    id: 'info365',
+    name: 'info365',
+    shortTitle: 'Wprowadzenie & Przewodnik',
+    subtitle: 'Wstęp, opis sekcji i szybki dostęp do wszystkich tomów',
+    type: 'info',
+    description: 'Wprowadzenie do rocznego cyklu Drogowskazy 365, opisy każdego z 7 tomów z ilustracjami i bezpośrednimi odnośnikami.',
+    badge: 'Przewodnik 365',
+    icon: 'Compass',
+    accentColor: '#7c3aed', // violet-600
+    bgGradient: 'from-violet-900/20 via-purple-800/10 to-transparent'
+  },
+  {
+    id: 'wnr365',
+    name: 'WnR365',
     shortTitle: 'Widoki na Raj',
     subtitle: 'Blog duchowy i rozważania na każdy dzień',
     type: 'reader',
-    description: 'Codzienne spojrzenie na rzeczywistość oczami wiary, nadziei i perspektywy wieczności. 366 wpisów o spotkaniu Boga w codzienności.',
-    badge: 'Blog 366',
+    description: 'Codzienne spojrzenie na rzeczywistość oczami wiary, nadziei i perspektywy wieczności. 365 wpisów o spotkaniu Boga w codzienności.',
+    badge: 'Blog 365',
     icon: 'Feather',
     accentColor: '#b45309', // amber-700
     bgGradient: 'from-amber-900/20 via-amber-800/10 to-transparent'
@@ -87,6 +99,7 @@ export const SECTIONS: SectionMeta[] = [
   }
 ];
 
-export function getSectionById(id: SectionId): SectionMeta {
-  return SECTIONS.find(s => s.id === id) || SECTIONS[0];
+export function getSectionById(id: SectionId | string): SectionMeta {
+  const normalizedId = id === 'wnr366' ? 'wnr365' : id;
+  return SECTIONS.find(s => s.id === normalizedId) || SECTIONS[0];
 }

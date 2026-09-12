@@ -9,10 +9,15 @@ import {
   VolumeX, 
   Calendar,
   FileText,
-  Type
+  Type,
+  Download,
+  Globe,
+  Sparkles,
+  X
 } from 'lucide-react';
-import { SectionMeta, CycleDate, SectionEntry, UploadedPdf } from '../types';
+import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES } from '../types';
 import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
+import { DigitalRosary } from './DigitalRosary';
 
 interface Props {
   section: SectionMeta;
@@ -22,6 +27,8 @@ interface Props {
   onOpenCalendar: () => void;
   onOpenPdf: (pdf: UploadedPdf) => void;
   sectionPdfs: UploadedPdf[];
+  onOpenDownloadModal?: () => void;
+  currentLang?: string;
 }
 
 export const FlipbookReader: React.FC<Props> = ({
@@ -31,7 +38,9 @@ export const FlipbookReader: React.FC<Props> = ({
   onSelectDate,
   onOpenCalendar,
   onOpenPdf,
-  sectionPdfs
+  sectionPdfs,
+  onOpenDownloadModal,
+  currentLang = 'pl'
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(currentDate.dayNumber);
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
@@ -41,6 +50,7 @@ export const FlipbookReader: React.FC<Props> = ({
   const [fontSize, setFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [bookmarkedDays, setBookmarkedDays] = useState<number[]>([]);
+  const [isRosaryModalOpen, setIsRosaryModalOpen] = useState<boolean>(false);
 
   // Sync with currentDate prop
   useEffect(() => {
@@ -193,8 +203,21 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Action controls: TOC, Font size, Sound, Bookmarks, Theme */}
+        {/* Action controls: Download, TOC, Font size, Sound, Bookmarks, Theme */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Download & Publish E-book Button */}
+          {onOpenDownloadModal && (
+            <button
+              onClick={onOpenDownloadModal}
+              id="btn-flipbook-download"
+              className="px-2.5 py-1.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Pobierz E-book (PDF POD, Word DOCX, ePUB)"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span className="hidden lg:inline">Pobierz E-book / Druk</span>
+            </button>
+          )}
+
           {/* Table of contents toggle */}
           <button
             onClick={() => setShowToc(!showToc)}
@@ -356,6 +379,25 @@ export const FlipbookReader: React.FC<Props> = ({
                   </p>
                 )}
               </div>
+
+              {/* Rosary Trigger for RHZ eBook */}
+              {section.id === 'ebook_rhz' && (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-xs">
+                  <div className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5 mb-1">
+                    <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                    <span>Cyfrowy Różaniec RHZ (6 Modeli)</span>
+                  </div>
+                  <p className="text-amber-900/80 dark:text-amber-200/80 mb-2 leading-relaxed">
+                    Interaktywny różaniec "IN-LOVE": RGBA i CMYK, 50+6 paciorków, linia lub okrąg.
+                  </p>
+                  <button
+                    onClick={() => setIsRosaryModalOpen(true)}
+                    className="w-full py-1.5 px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors text-center cursor-pointer shadow-xs"
+                  >
+                    Otwórz Wizualizację Różańca
+                  </button>
+                </div>
+              )}
 
               {/* PDF Banner if uploaded */}
               {matchingPdfs.length > 0 && (
@@ -562,6 +604,25 @@ export const FlipbookReader: React.FC<Props> = ({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Digital Rosary Modal */}
+      {isRosaryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
+          <div className="relative w-full max-w-5xl bg-white dark:bg-[#070b14] rounded-3xl p-4 sm:p-6 shadow-2xl border border-amber-500/30 my-auto max-h-[95vh] overflow-y-auto">
+            <button
+              onClick={() => setIsRosaryModalOpen(false)}
+              className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+              aria-label="Zamknij"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <DigitalRosary
+              mysteryTitle={entry.mystery}
+              intention={entry.intention}
+              theme={theme === 'dark' ? 'dark' : 'light'}
+            />
           </div>
         </div>
       )}

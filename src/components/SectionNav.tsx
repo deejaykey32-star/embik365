@@ -65,6 +65,15 @@ export const SectionNav: React.FC<Props> = ({
                 <div className="text-left">
                   <div className="font-semibold leading-tight flex items-center gap-1.5">
                     <span>{sec.name}</span>
+                    {sec.type === 'info' && (
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-sans-ui ${
+                        isActive 
+                          ? 'bg-violet-500/30 text-violet-200' 
+                          : 'bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300'
+                      }`}>
+                        Start
+                      </span>
+                    )}
                     {sec.type === 'flipbook' && (
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-sans-ui ${
                         isActive 

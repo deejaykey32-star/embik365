@@ -19,12 +19,23 @@ import {
   Globe,
   Cloud,
   Check,
-  Key
+  Key,
+  QrCode,
+  Download,
+  Plus
 } from 'lucide-react';
-import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig } from '../types';
+import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig, QrCodeItem } from '../types';
 import { SECTIONS } from '../data/defaultSections';
 import { CYCLE_DAYS } from '../utils/dateCycle';
 import { testGitHubConnection, uploadPdfDirectlyToGitHub } from '../utils/githubSync';
+import { WysiwygEditor } from './WysiwygEditor';
+import { 
+  getSavedQrCodes, 
+  generateAndDownloadQrBadgePng, 
+  upsertQrCode, 
+  deleteQrCode, 
+  generateQrDataUrl 
+} from '../utils/qrCodeService';
 
 interface Props {
   isOpen: boolean;
@@ -67,8 +78,13 @@ export const AdminPanel: React.FC<Props> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor'
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor'>('upload');
+  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes'
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes'>('upload');
+
+  // QR Code Database state
+  const [adminQrCodes, setAdminQrCodes] = useState<QrCodeItem[]>(() => getSavedQrCodes());
+  const [qrPreviews, setQrPreviews] = useState<Record<string, string>>({});
+  const [downloadingQrId, setDownloadingQrId] = useState<string | null>(null);
 
   // Form state for PDF upload
   const [targetSection, setTargetSection] = useState<SectionId>(currentSectionId);
@@ -145,6 +161,10 @@ export const AdminPanel: React.FC<Props> = ({
     const dayNumberVal = !isGlobalBook && targetDateObj ? targetDateObj.dayNumber : undefined;
     const dateKeyVal = !isGlobalBook ? targetDateKey : '';
 
+    // Detect file format
+    const ext = selectedFile.name.split('.').pop()?.toLowerCase();
+    const fileFormat: 'pdf' | 'epub' | 'docx' = ext === 'epub' ? 'epub' : (ext === 'docx' || ext === 'doc') ? 'docx' : 'pdf';
+
     // 1. Try server upload with GitHub sync headers
     try {
       const formData = new FormData();
@@ -176,7 +196,7 @@ export const AdminPanel: React.FC<Props> = ({
             : '';
           setUploadStatus({
             type: 'success',
-            message: `Plik PDF został pomyślnie wgrany.${ghMsg}`,
+            message: `Plik ${fileFormat.toUpperCase()} został pomyślnie wgrany.${ghMsg}`,
             rawUrl: data.github?.rawUrl || data.file.url
           });
           setSelectedFile(null);
@@ -195,15 +215,16 @@ export const AdminPanel: React.FC<Props> = ({
     if (githubConfig.token) {
       try {
         const newFileRecord: UploadedPdf = {
-          id: 'pdf-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
+          id: `${fileFormat}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
           filename: `${Date.now()}-${selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
           originalName: selectedFile.name,
+          format: fileFormat,
           url: '',
           size: selectedFile.size,
           sectionId: targetSection,
           dayNumber: dayNumberVal,
           dateKey: dateKeyVal,
-          title: fileTitle || selectedFile.name.replace(/\.pdf$/i, ''),
+          title: fileTitle || selectedFile.name.replace(/\.[a-zA-Z0-9]+$/i, ''),
           description: fileDescription,
           uploadedAt: new Date().toISOString()
         };
@@ -220,7 +241,7 @@ export const AdminPanel: React.FC<Props> = ({
           onUploadSuccess(newFileRecord);
           setUploadStatus({
             type: 'success',
-            message: 'Plik PDF został pomyślnie dodany i wypchnięty do repozytorium GitHub!',
+            message: `Plik ${fileFormat.toUpperCase()} został pomyślnie dodany i wypchnięty do repozytorium GitHub!`,
             rawUrl: ghRes.rawUrl
           });
           setSelectedFile(null);
@@ -427,7 +448,7 @@ export const AdminPanel: React.FC<Props> = ({
             }`}
           >
             <Upload className="w-4 h-4" />
-            <span>Wgraj Plik PDF</span>
+            <span>Wgraj Plik (PDF, ePUB, DOCX)</span>
           </button>
 
           <button
@@ -469,7 +490,23 @@ export const AdminPanel: React.FC<Props> = ({
             }`}
           >
             <Edit3 className="w-4 h-4" />
-            <span>Edycja Treści Wpisów</span>
+            <span>Edycja Treści (WYSIWYG)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setAdminQrCodes(getSavedQrCodes());
+              setActiveTab('qrcodes');
+            }}
+            id="tab-admin-qrcodes"
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'qrcodes'
+                ? 'border-[#8c572b] dark:border-amber-400 text-[#8c572b] dark:text-amber-400 bg-white/60 dark:bg-[#161c28]'
+                : 'border-transparent text-[#6e5d4d] dark:text-[#94a3b8] hover:text-[#382b20] dark:hover:text-white'
+            }`}
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Baza Kodów QR & PNG</span>
           </button>
         </div>
 
@@ -596,10 +633,10 @@ export const AdminPanel: React.FC<Props> = ({
                   </div>
                 </div>
 
-                {/* PDF File Dropzone / Picker */}
+                {/* Multi-format File Dropzone / Picker */}
                 <div>
                   <label className="block text-xs font-bold text-[#443527] dark:text-[#cbd5e1] mb-1.5 uppercase tracking-wider">
-                    Plik PDF do przesłania
+                    Plik do przesłania (PDF, ePUB, Word DOCX)
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
@@ -608,7 +645,7 @@ export const AdminPanel: React.FC<Props> = ({
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept=".pdf,application/pdf"
+                      accept=".pdf,.epub,.docx,.doc,application/pdf,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
                       onChange={handleFileChange}
                       className="hidden"
                     />
@@ -617,16 +654,16 @@ export const AdminPanel: React.FC<Props> = ({
                       <div>
                         <div className="font-bold text-sm text-[#2e2318] dark:text-white">{selectedFile.name}</div>
                         <div className="text-xs text-[#7d6b5b] dark:text-[#94a3b8] mt-1">
-                          Rozmiar: {Math.round(selectedFile.size / 1024)} KB • Kliknij aby zmienić
+                          Rozmiar: {Math.round(selectedFile.size / 1024)} KB • Format: {selectedFile.name.split('.').pop()?.toUpperCase()} • Kliknij aby zmienić
                         </div>
                       </div>
                     ) : (
                       <div>
                         <div className="font-semibold text-sm text-[#382b1f] dark:text-[#e2e8f0]">
-                          Kliknij tutaj lub upuść plik PDF
+                          Kliknij tutaj lub upuść plik PDF, ePUB lub Word DOCX
                         </div>
                         <div className="text-xs text-[#877565] dark:text-[#94a3b8] mt-1">
-                          Maksymalny rozmiar: 50 MB
+                          Gotowe dla Amazon KDP, Empik i Legimi • Maksymalny rozmiar: 100 MB
                         </div>
                       </div>
                     )}
@@ -860,10 +897,10 @@ export const AdminPanel: React.FC<Props> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-[#2a2016] dark:text-[#f3e8d2]">
-                    Baza Wgranych Plików PDF
+                    Baza Wgranych Plików (PDF, ePUB, DOCX)
                   </h3>
                   <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
-                    Łącznie wgrano {uploads.length} dokumentów. Pliki są dostępne w czytnikach oraz w repozytorium GitHub.
+                    Łącznie wgrano {uploads.length} dokumentów. Pliki są dostępne w czytnikach, do pobrania oraz w repozytorium GitHub.
                   </p>
                 </div>
               </div>
@@ -872,10 +909,10 @@ export const AdminPanel: React.FC<Props> = ({
                 <div className="text-center py-12 bg-white/60 dark:bg-[#161c28]/60 rounded-3xl border border-[#e4d6c6] dark:border-[#232f42] p-6">
                   <FileText className="w-10 h-10 text-[#a3907e] dark:text-[#4b5563] mx-auto mb-2" />
                   <p className="text-sm font-semibold text-[#4e3d2e] dark:text-[#cbd5e1]">
-                    Brak wgranych plików PDF w bazie.
+                    Brak wgranych plików w bazie.
                   </p>
                   <p className="text-xs text-[#8c7866] dark:text-[#94a3b8] mt-1">
-                    Przejdź do zakładki "Wgraj Plik PDF", aby dodać pierwszy dokument.
+                    Przejdź do zakładki "Wgraj Plik", aby dodać pierwszy dokument PDF, ePUB lub DOCX.
                   </p>
                 </div>
               ) : (
@@ -883,6 +920,15 @@ export const AdminPanel: React.FC<Props> = ({
                   {uploads.map(file => {
                     const sec = SECTIONS.find(s => s.id === file.sectionId);
                     const isGitHubHosted = file.url.includes('github') || file.url.includes('raw.githubusercontent.com');
+                    const ext = (file.originalName.split('.').pop() || 'pdf').toLowerCase();
+                    const formatBadge = (file.format || (ext === 'docx' || ext === 'doc' ? 'docx' : ext === 'epub' ? 'epub' : 'pdf')).toUpperCase();
+                    const isEpub = formatBadge === 'EPUB';
+                    const isDocx = formatBadge === 'DOCX' || formatBadge === 'DOC';
+                    const badgeColor = isEpub
+                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                      : isDocx
+                      ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+                      : 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
 
                     return (
                       <div
@@ -890,8 +936,8 @@ export const AdminPanel: React.FC<Props> = ({
                         className="p-4 rounded-2xl bg-white dark:bg-[#141a26] border border-[#e2d4c3] dark:border-[#212b3c] shadow-xs flex flex-wrap items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 flex items-center justify-center border border-red-200 dark:border-red-900 shrink-0">
-                            <FileText className="w-5 h-5" />
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 font-bold text-xs ${badgeColor}`}>
+                            {formatBadge}
                           </div>
                           <div>
                             <div className="font-bold text-sm text-[#2d2217] dark:text-[#f3e8d2] flex items-center gap-2">
@@ -916,13 +962,26 @@ export const AdminPanel: React.FC<Props> = ({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => onOpenPdf(file)}
-                            className="px-3 py-1.5 rounded-xl bg-[#f0e4d4] dark:bg-[#1c2434] hover:bg-[#e4d6c4] dark:hover:bg-[#242f44] text-[#423223] dark:text-[#e2e8f0] text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                          <a
+                            href={file.url}
+                            download={file.originalName}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-800 dark:text-amber-300 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                            title="Pobierz plik"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
-                            <span>Podgląd</span>
-                          </button>
+                            <span>Pobierz</span>
+                          </a>
+
+                          {formatBadge === 'PDF' && (
+                            <button
+                              onClick={() => onOpenPdf(file)}
+                              className="px-3 py-1.5 rounded-xl bg-[#f0e4d4] dark:bg-[#1c2434] hover:bg-[#e4d6c4] dark:hover:bg-[#242f44] text-[#423223] dark:text-[#e2e8f0] text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>Podgląd</span>
+                            </button>
+                          )}
 
                           <button
                             onClick={() => onDeleteUpload(file.id)}
@@ -1007,14 +1066,15 @@ export const AdminPanel: React.FC<Props> = ({
 
               <div>
                 <label className="block text-xs font-bold text-[#443527] dark:text-[#cbd5e1] mb-1 uppercase tracking-wider">
-                  Główna Treść / Rozważanie / Rozdział
+                  Główna Treść / Rozważanie / Rozdział (Edytor WYSIWYG)
                 </label>
-                <textarea
-                  rows={8}
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="w-full px-3.5 py-3 rounded-2xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e] text-sm text-[#2f2318] dark:text-[#f1f5f9] font-serif-book leading-relaxed"
-                />
+                <div className="rounded-2xl border border-[#d6c7b5] dark:border-[#2b394e] overflow-hidden">
+                  <WysiwygEditor
+                    initialValue={editContent}
+                    onChange={(val) => setEditContent(val)}
+                    placeholder="Wprowadź treść rozważania, artykułu lub rozdziału. Użyj paska narzędzi do formatowania, wstawiania ilustracji lub kodów QR..."
+                  />
+                </div>
               </div>
 
               <div>
@@ -1040,6 +1100,187 @@ export const AdminPanel: React.FC<Props> = ({
                   {isSavingEntry ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   <span>Zapisz Zmiany we Wpisie</span>
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: QR CODES DATABASE */}
+          {activeTab === 'qrcodes' && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-[#2a2016] dark:text-[#f3e8d2] flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-amber-700 dark:text-amber-400" />
+                    <span>Baza Kodów QR Drogowskazy 365</span>
+                  </h3>
+                  <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
+                    Kody QR w formie grafiki z opcją pobrania jako wysokiej jakości plik PNG. Krótki adres Url jest przypisany na stałe, a pełny adres docelowy może być zmieniany dynamicznie w dowolnej chwili.
+                  </p>
+                </div>
+              </div>
+
+              {/* Grid of QR Codes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {adminQrCodes.map((item) => (
+                  <div 
+                    key={item.id}
+                    className="p-4 rounded-2xl bg-white dark:bg-[#141a26] border border-[#e2d4c3] dark:border-[#212b3c] shadow-xs flex flex-col justify-between gap-3"
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Visual QR Image Preview */}
+                      <div className="w-24 h-24 bg-white p-1.5 rounded-xl border border-gray-200 shadow-xs shrink-0 flex flex-col items-center justify-center">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(item.fullUrl || item.shortUrl)}`}
+                          alt={item.title}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+
+                      {/* Info & URL details */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-sm text-[#2d2217] dark:text-[#f3e8d2] truncate">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                          Podpis: &quot;{item.displayLabel}&quot;
+                        </p>
+
+                        <div className="mt-2 space-y-1 text-[11px]">
+                          <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">Krótki URL (stały):</span>
+                            <code className="bg-[#f2ece3] dark:bg-[#1c2434] px-1.5 py-0.5 rounded text-amber-800 dark:text-amber-300 font-mono truncate">
+                              {item.shortUrl}
+                            </code>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">Pełny URL (dynamiczny):</span>
+                            <input
+                              type="text"
+                              value={item.fullUrl}
+                              onChange={(e) => {
+                                const updated = adminQrCodes.map(q => q.id === item.id ? { ...q, fullUrl: e.target.value } : q);
+                                setAdminQrCodes(updated);
+                                upsertQrCode({ ...item, fullUrl: e.target.value });
+                              }}
+                              className="w-full mt-1 px-2 py-1 rounded bg-[#fbf8f4] dark:bg-[#182130] border border-[#d6c7b5] dark:border-[#2b394e] text-[11px] font-mono text-[#2f2318] dark:text-[#f1f5f9]"
+                              title="Zmień dynamicznie docelowy adres tego kodu QR"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Actions: Download PNG & Copy */}
+                    <div className="pt-2 border-t border-[#f0e4d6] dark:border-[#1e2738] flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setDownloadingQrId(item.id);
+                          await generateAndDownloadQrBadgePng(item);
+                          setDownloadingQrId(null);
+                        }}
+                        disabled={downloadingQrId === item.id}
+                        className="px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                      >
+                        {downloadingQrId === item.id ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Download className="w-3.5 h-3.5" />
+                        )}
+                        <span>Pobierz jako PNG (Druk 300 DPI)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`Czy na pewno usunąć kod QR "${item.title}"?`)) {
+                            deleteQrCode(item.id);
+                            setAdminQrCodes(getSavedQrCodes());
+                          }
+                        }}
+                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                        title="Usuń kod QR"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add New QR Code to Database */}
+              <div className="p-4 rounded-2xl bg-[#f4ebe1] dark:bg-[#141a26] border border-[#e5d8c8] dark:border-[#212b3c] space-y-3">
+                <h4 className="font-bold text-sm text-[#2d2217] dark:text-[#f3e8d2] flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                  <span>Dodaj Nowy Kod QR do Bazy</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1">Tytuł Kodu</label>
+                    <input 
+                      id="new-qr-title" 
+                      placeholder="np. Dodatkowy Tom Rozważań" 
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1">Nazwa pod kodem (Wyświetlana)</label>
+                    <input 
+                      id="new-qr-label" 
+                      placeholder="np. Skanuj: Drogowskazy365" 
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1">Krótki Adres URL (Przypisany na stałe)</label>
+                    <input 
+                      id="new-qr-short" 
+                      placeholder="drogowskazy365.pl/specjalny" 
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1">Pełny Adres URL (Dynamiczny)</label>
+                    <input 
+                      id="new-qr-full" 
+                      placeholder="https://drogowskazy365.pl/?section=wnr365" 
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e]"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const titleEl = document.getElementById('new-qr-title') as HTMLInputElement;
+                      const labelEl = document.getElementById('new-qr-label') as HTMLInputElement;
+                      const shortEl = document.getElementById('new-qr-short') as HTMLInputElement;
+                      const fullEl = document.getElementById('new-qr-full') as HTMLInputElement;
+                      if (!titleEl.value || !shortEl.value) {
+                        alert('Podaj przynajmniej tytuł i krótki adres URL');
+                        return;
+                      }
+                      const newItem: QrCodeItem = {
+                        id: `qr-${Date.now()}`,
+                        title: titleEl.value,
+                        displayLabel: labelEl.value || titleEl.value,
+                        shortUrl: shortEl.value,
+                        fullUrl: fullEl.value || `https://${shortEl.value}`,
+                        createdAt: new Date().toISOString()
+                      };
+                      upsertQrCode(newItem);
+                      setAdminQrCodes(getSavedQrCodes());
+                      titleEl.value = '';
+                      labelEl.value = '';
+                      shortEl.value = '';
+                      fullEl.value = '';
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#2e261f] dark:bg-amber-600 hover:bg-[#43372c] dark:hover:bg-amber-500 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Zapisz Kod QR w Bazie</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

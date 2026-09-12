@@ -7,10 +7,13 @@ import { NavigationHeader } from './components/NavigationHeader';
 import { SectionNav } from './components/SectionNav';
 import { FlipbookReader } from './components/FlipbookReader';
 import { StandardReader } from './components/StandardReader';
+import { Info365View } from './components/Info365View';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
+import { DownloadPublishModal } from './components/DownloadPublishModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub } from './utils/githubSync';
+import { translateEntry } from './utils/translationService';
 
 export default function App() {
   // 1. Theme state: 'light' | 'dark'
@@ -35,16 +38,33 @@ export default function App() {
     }
   }, [theme]);
 
-  // 2. Current Section & Date (defaulting to today's date in cycle starting Dec 25)
-  const [activeSectionId, setActiveSectionId] = useState<SectionId>('wnr366');
+  // 2. Language state (supports all 16 languages)
+  const [currentLang, setCurrentLang] = useState<string>(() => {
+    try {
+      return localStorage.getItem('drogowskazy_lang') || 'pl';
+    } catch {
+      return 'pl';
+    }
+  });
+
+  const handleLanguageChange = (lang: string) => {
+    setCurrentLang(lang);
+    try {
+      localStorage.setItem('drogowskazy_lang', lang);
+    } catch {}
+  };
+
+  // 3. Current Section & Date (defaulting to info365 as first section and today's date in cycle starting Dec 25)
+  const [activeSectionId, setActiveSectionId] = useState<SectionId>('info365');
   const [currentDate, setCurrentDate] = useState<CycleDate>(() => getTodayCycleDate());
 
-  // 3. Modals state
+  // 4. Modals state
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
-  // 4. Admin Authentication state (defaulting to saved session if present)
+  // 5. Admin Authentication state (defaulting to saved session if present)
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
     try {
       const saved = localStorage.getItem('drogowskazy_admin');
@@ -54,7 +74,7 @@ export default function App() {
     }
   });
 
-  // 5. GitHub Configuration State
+  // 6. GitHub Configuration State
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>(() => {
     try {
       const saved = localStorage.getItem('drogowskazy_github_config');
@@ -77,9 +97,13 @@ export default function App() {
     } catch {}
   };
 
-  // 6. Entries and Uploads state
+  // 7. Entries and Uploads state
   const [customEntries, setCustomEntries] = useState<Record<string, Partial<SectionEntry>>>({});
   const [uploads, setUploads] = useState<UploadedPdf[]>([]);
+
+  // 8. Translation cache and active translated entry
+  const [translatedEntry, setTranslatedEntry] = useState<SectionEntry | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   // Fetch initial data: GitHub > API > Static /data/entries.json
   useEffect(() => {
@@ -138,6 +162,38 @@ export default function App() {
       p => p.sectionId === activeSectionId && (!p.dateKey || p.dateKey === currentDate.dateKey)
     )
   };
+
+  // Handle translation when currentLang is not 'pl'
+  useEffect(() => {
+    if (currentLang === 'pl') {
+      setTranslatedEntry(null);
+      setIsTranslating(false);
+      return;
+    }
+
+    let isMounted = true;
+    setIsTranslating(true);
+
+    translateEntry(activeEntry, currentLang)
+      .then(result => {
+        if (isMounted) {
+          setTranslatedEntry(result);
+          setIsTranslating(false);
+        }
+      })
+      .catch(err => {
+        console.error('Translation error:', err);
+        if (isMounted) {
+          setIsTranslating(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeSectionId, currentDate.dateKey, currentLang, customOverride]);
+
+  const displayedEntry = (currentLang !== 'pl' && translatedEntry) ? translatedEntry : activeEntry;
 
   // Date Navigation Handlers
   const handlePrevDay = () => {
@@ -252,6 +308,10 @@ export default function App() {
         onOpenAdmin={() => setIsAdminOpen(true)}
         theme={theme}
         onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+        githubConnected={Boolean(githubConfig.token)}
+        currentLang={currentLang}
+        onLanguageChange={handleLanguageChange}
+        onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
       />
 
       {/* 2. Horizontal Section Tabs (7 sections) */}
@@ -261,29 +321,43 @@ export default function App() {
         pdfCounts={pdfCounts}
       />
 
-      {/* 3. Main Content: Flipbook vs Standard Reader */}
+      {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader */}
       <main className="flex-1">
-        {activeSection.type === 'flipbook' ? (
+        {activeSectionId === 'info365' ? (
+          <Info365View
+            key={`info365-${currentDate.dateKey}-${currentLang}`}
+            onNavigateToSection={(id) => setActiveSectionId(id)}
+            onOpenCalendar={() => setIsCalendarOpen(true)}
+            onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+            currentDate={currentDate}
+            theme={theme}
+          />
+        ) : activeSection.type === 'flipbook' ? (
           <FlipbookReader
-            key={`flipbook-${activeSectionId}-${currentDate.dateKey}`}
+            key={`flipbook-${activeSectionId}-${currentDate.dateKey}-${currentLang}`}
             section={activeSection}
             currentDate={currentDate}
-            entry={activeEntry}
+            entry={displayedEntry}
             onSelectDate={setCurrentDate}
             onOpenCalendar={() => setIsCalendarOpen(true)}
             onOpenPdf={setViewingPdf}
             sectionPdfs={uploads}
+            onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+            currentLang={currentLang}
           />
         ) : (
           <StandardReader
-            key={`reader-${activeSectionId}-${currentDate.dateKey}`}
+            key={`reader-${activeSectionId}-${currentDate.dateKey}-${currentLang}`}
             section={activeSection}
             currentDate={currentDate}
-            entry={activeEntry}
+            entry={displayedEntry}
             onSelectDate={setCurrentDate}
             onOpenCalendar={() => setIsCalendarOpen(true)}
             onOpenPdf={setViewingPdf}
             sectionPdfs={uploads}
+            onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+            currentLang={currentLang}
+            theme={theme}
           />
         )}
       </main>
@@ -292,7 +366,7 @@ export default function App() {
       <footer className="bg-[#f2ece3] dark:bg-[#0a0f18] border-t border-[#e2d5c7] dark:border-[#1d2636] py-6 px-4 text-center text-xs text-[#7b6b5c] dark:text-[#8b949e] transition-colors">
         <div className="max-w-4xl mx-auto space-y-1.5">
           <p className="font-heading-cinzel font-semibold text-[#423325] dark:text-[#f0f6fc]">
-            Drogowskazy 365 • WnR366 • RHZ365 • Biblia365 • Bio365
+            Drogowskazy 365 • info365 • WnR365 • RHZ365 • Biblia365 • Bio365
           </p>
           <p>
             Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span> • Administrator: Dominik Kuta
@@ -344,6 +418,17 @@ export default function App() {
       <PdfViewerModal
         pdf={viewingPdf}
         onClose={() => setViewingPdf(null)}
+      />
+
+      {/* 8. Download & POD Publishing Modal (PDF, ePUB, Word DOCX, 16 Languages) */}
+      <DownloadPublishModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
+        entry={displayedEntry}
+        meta={activeSection}
+        uploadedFiles={uploads}
+        currentLang={currentLang}
+        onLanguageChange={handleLanguageChange}
       />
     </div>
   );

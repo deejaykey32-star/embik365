@@ -12,10 +12,13 @@ import {
   Scroll, 
   Cross,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download,
+  Globe
 } from 'lucide-react';
-import { SectionMeta, CycleDate, SectionEntry, UploadedPdf } from '../types';
+import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
+import { DigitalRosary } from './DigitalRosary';
 
 interface Props {
   section: SectionMeta;
@@ -25,6 +28,9 @@ interface Props {
   onOpenCalendar: () => void;
   onOpenPdf: (pdf: UploadedPdf) => void;
   sectionPdfs: UploadedPdf[];
+  onOpenDownloadModal?: () => void;
+  currentLang?: string;
+  theme?: AppTheme;
 }
 
 export const StandardReader: React.FC<Props> = ({
@@ -34,14 +40,19 @@ export const StandardReader: React.FC<Props> = ({
   onSelectDate,
   onOpenCalendar,
   onOpenPdf,
-  sectionPdfs
+  sectionPdfs,
+  onOpenDownloadModal,
+  currentLang = 'pl',
+  theme = 'light'
 }) => {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
 
-  // Find PDFs for this section and day
+  const activeLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+
+  // Find PDFs/ebooks for this section and day
   const matchingPdfs = sectionPdfs.filter(
     p => p.sectionId === section.id && (!p.dateKey || p.dateKey === currentDate.dateKey)
   );
@@ -149,15 +160,33 @@ export const StandardReader: React.FC<Props> = ({
             >
               {copied ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
             </button>
+
+            {/* Download E-book / POD button */}
+            {onOpenDownloadModal && (
+              <button
+                onClick={onOpenDownloadModal}
+                className="p-2 sm:px-3 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Pobierz E-book (PDF POD, Word DOCX, ePUB) gotowe do druku i publikacji"
+              >
+                <Download className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <span className="hidden md:inline">Pobierz E-book / Druk</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Entry Title & Liturgical Date */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider font-sans-ui">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider font-sans-ui">
             <span>{currentDate.season}</span>
             <span>•</span>
             <span>{currentDate.displayDate}</span>
+            {currentLang !== 'pl' && (
+              <span className="px-2 py-0.5 rounded-md bg-amber-600/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 normal-case font-medium flex items-center gap-1">
+                <Globe className="w-3 h-3" />
+                <span>Tłumaczenie: {activeLangObj.flag} {activeLangObj.nativeName}</span>
+              </span>
+            )}
           </div>
           <h1 className="font-heading-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2a2016] dark:text-[#f3e8d2] leading-tight">
             {entry.title}
@@ -169,86 +198,79 @@ export const StandardReader: React.FC<Props> = ({
           )}
         </div>
 
-        {/* Attached PDF notification banner if available */}
+        {/* Attached files notification banner if available (PDF, ePUB, DOCX) */}
         {matchingPdfs.length > 0 && (
-          <div className="mt-6 p-4 rounded-2xl bg-[#fbf2e9] dark:bg-red-950/30 border border-[#e4ccb5] dark:border-red-900/50 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 flex items-center justify-center border border-red-200 dark:border-red-700">
-                <FileText className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-red-900 dark:text-red-200">
-                  Dostępny plik PDF wgrany przez Administratora
-                </div>
-                <div className="text-xs text-[#6e5d4d] dark:text-[#cbd5e1]">
-                  {matchingPdfs[0].title || matchingPdfs[0].originalName} ({Math.round(matchingPdfs[0].size / 1024)} KB)
-                </div>
-              </div>
+          <div className="mt-6 p-4 rounded-2xl bg-[#fbf2e9] dark:bg-amber-950/20 border border-[#e4ccb5] dark:border-amber-900/40 space-y-2">
+            <div className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+              Pliki źródłowe wgrane przez Autora ({matchingPdfs.length})
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {matchingPdfs.map(f => {
+                const ext = (f.originalName.split('.').pop() || 'pdf').toLowerCase();
+                const format = (f.format || (ext === 'docx' || ext === 'doc' ? 'docx' : ext === 'epub' ? 'epub' : 'pdf')).toUpperCase();
+                const isPdf = format === 'PDF';
+                const badgeColor = format === 'EPUB' 
+                  ? 'bg-emerald-600/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/30'
+                  : format === 'DOCX' || format === 'DOC'
+                  ? 'bg-blue-600/20 text-blue-800 dark:text-blue-300 border-blue-500/30'
+                  : 'bg-red-600/20 text-red-800 dark:text-red-300 border-red-500/30';
 
-            <button
-              onClick={() => onOpenPdf(matchingPdfs[0])}
-              className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <FileText className="w-4 h-4" />
-              <span>Otwórz plik PDF</span>
-            </button>
+                return (
+                  <div 
+                    key={f.id} 
+                    className="p-3 rounded-xl bg-white dark:bg-[#1a2333] border border-[#dacabb] dark:border-[#2d3a4f] flex items-center justify-between gap-2 shadow-xs"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 ${badgeColor}`}>
+                        {format}
+                      </span>
+                      <div className="overflow-hidden">
+                        <div className="text-xs font-bold text-[#2d2217] dark:text-[#f3e8d2] truncate">
+                          {f.title || f.originalName}
+                        </div>
+                        <div className="text-[10px] text-[#7d6c5c] dark:text-[#94a3b8]">
+                          {Math.round(f.size / 1024)} KB
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <a
+                        href={f.url}
+                        download={f.originalName}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 rounded-lg bg-amber-600/15 hover:bg-amber-600/25 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-1 transition-colors"
+                        title="Pobierz plik"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Pobierz</span>
+                      </a>
+                      {isPdf && (
+                        <button
+                          onClick={() => onOpenPdf(f)}
+                          className="px-2.5 py-1 rounded-lg bg-stone-200 dark:bg-[#283549] hover:bg-stone-300 dark:hover:bg-[#34445d] text-stone-800 dark:text-stone-200 text-xs font-medium transition-colors"
+                        >
+                          Podgląd
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
-      {/* RHZ365 Special: Rosary Mystery & Decade Bead Counter */}
+      {/* RHZ365 Special: Digital Rosary Visualizer with 6 User Variants */}
       {section.id === 'rhz365' && (
-        <div className="bg-[#eff6ff] dark:bg-[#0d1728] rounded-3xl p-6 border border-[#bfdbfe] dark:border-[#1e2d4a] mb-8 space-y-4 transition-colors">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sky-900 dark:text-sky-300 font-bold text-sm">
-              <Cross className="w-4 h-4 text-sky-700 dark:text-amber-400" />
-              <span>{entry.mystery || 'Tajemnica Różańcowa'}</span>
-            </div>
-            <span className="text-xs text-sky-700 dark:text-sky-400 font-medium">
-              Dziesiątek: {rosaryDecadeCount} / 10
-            </span>
-          </div>
-
-          {entry.intention && (
-            <p className="text-xs sm:text-sm text-sky-950 dark:text-sky-100 font-serif-book italic bg-white/70 dark:bg-[#131d31] p-3 rounded-xl border border-sky-200 dark:border-[#223352]">
-              <strong className="not-italic text-sky-900 dark:text-sky-300 font-sans-ui">Intencja: </strong>
-              {entry.intention}
-            </p>
-          )}
-
-          {/* Interactive Rosary Beads */}
-          <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-sky-800 dark:text-sky-400 uppercase tracking-wider">
-              Dotknij paciorka po zmówieniu "Zdrowaś Maryjo":
-            </span>
-            <div className="flex items-center justify-between gap-1 sm:gap-2">
-              {[...Array(10)].map((_, i) => {
-                const isPrayed = i < rosaryDecadeCount;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => setRosaryDecadeCount(i + 1)}
-                    className={`flex-1 h-9 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
-                      isPrayed
-                        ? 'bg-sky-700 dark:bg-amber-500 text-white dark:text-black shadow-xs scale-102 dark:shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                        : 'bg-white dark:bg-[#152033] hover:bg-sky-100 dark:hover:bg-[#1c2c47] text-sky-900 dark:text-sky-300 border border-sky-300 dark:border-[#233352]'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                );
-              })}
-            </div>
-            {rosaryDecadeCount > 0 && (
-              <button
-                onClick={() => setRosaryDecadeCount(0)}
-                className="text-[11px] text-sky-700 dark:text-amber-400 hover:text-sky-900 dark:hover:text-amber-300 underline mt-1 cursor-pointer"
-              >
-                Wyzeruj dziesiątek
-              </button>
-            )}
-          </div>
+        <div className="mb-8">
+          <DigitalRosary
+            mysteryTitle={entry.mystery}
+            intention={entry.intention}
+            theme={theme}
+          />
         </div>
       )}
 

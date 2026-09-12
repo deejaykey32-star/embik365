@@ -30,19 +30,34 @@ const publicDataDir = path.join(process.cwd(), 'public', 'data');
   }
 });
 
+import { GoogleGenAI } from '@google/genai';
+
+// Initialize Gemini client lazily
+let aiClient: GoogleGenAI | null = null;
+function getAI(): GoogleGenAI | null {
+  if (!aiClient && process.env.GEMINI_API_KEY) {
+    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return aiClient;
+}
+
 // Serve uploaded files statically
-const servePdfHeaders = (res: express.Response, filePath: string) => {
+const serveFileHeaders = (res: express.Response, filePath: string) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
   if (filePath.endsWith('.pdf')) {
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else if (filePath.endsWith('.epub')) {
+    res.setHeader('Content-Type', 'application/epub+zip');
+  } else if (filePath.endsWith('.docx')) {
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
   }
 };
 
-app.use('/uploads', express.static(publicUploadsDir, { setHeaders: servePdfHeaders }));
-app.use('/uploads', express.static(uploadsDir, { setHeaders: servePdfHeaders }));
+app.use('/uploads', express.static(publicUploadsDir, { setHeaders: serveFileHeaders }));
+app.use('/uploads', express.static(uploadsDir, { setHeaders: serveFileHeaders }));
 app.use('/data', express.static(publicDataDir));
 
-// Multer configuration for PDF uploads
+// Multer configuration for PDF, ePUB and DOCX uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, publicUploadsDir);
@@ -56,12 +71,18 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf')) {
+    const ext = file.originalname.toLowerCase();
+    if (
+      file.mimetype === 'application/pdf' || ext.endsWith('.pdf') ||
+      file.mimetype === 'application/epub+zip' || ext.endsWith('.epub') ||
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.mimetype === 'application/msword' || ext.endsWith('.docx') || ext.endsWith('.doc')
+    ) {
       cb(null, true);
     } else {
-      cb(new Error('Akceptowane są wyłącznie pliki PDF.'));
+      cb(new Error('Akceptowane są pliki PDF, ePUB oraz DOCX.'));
     }
   }
 });
@@ -240,11 +261,11 @@ app.post('/api/entries', async (req, res) => {
   res.json({ success: true, entry: data.entries[key] });
 });
 
-// Upload PDF endpoint
-app.post('/api/upload-pdf', upload.single('pdfFile'), async (req, res) => {
+// Upload file endpoint (supports PDF, ePUB, DOCX)
+const handleFileUpload = async (req: express.Request, res: express.Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'Nie przesłano pliku PDF.' });
+      return res.status(400).json({ error: 'Nie przesłano pliku (wymagany PDF, ePUB lub DOCX).' });
     }
 
     const { sectionId, dayNumber, dateKey, title, description, githubToken, githubOwner, githubRepo, githubBranch } = req.body;
@@ -257,16 +278,22 @@ app.post('/api/upload-pdf', upload.single('pdfFile'), async (req, res) => {
       console.warn('Could not copy to root uploads:', e);
     }
 
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    let format: 'pdf' | 'epub' | 'docx' = 'pdf';
+    if (ext === '.epub') format = 'epub';
+    else if (ext === '.docx' || ext === '.doc') format = 'docx';
+
     const fileRecord = {
-      id: 'pdf-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
+      id: `${format}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
       filename: req.file.filename,
       originalName: req.file.originalname,
+      format,
       url: `/uploads/${req.file.filename}`,
       size: req.file.size,
       sectionId: sectionId || 'general',
       dayNumber: dayNumber ? parseInt(dayNumber, 10) : undefined,
       dateKey: dateKey || '',
-      title: title || req.file.originalname.replace(/\.pdf$/i, ''),
+      title: title || req.file.originalname.replace(/\.[a-zA-Z0-9]+$/i, ''),
       description: description || '',
       uploadedAt: new Date().toISOString()
     };
@@ -307,11 +334,11 @@ app.post('/api/upload-pdf', upload.single('pdfFile'), async (req, res) => {
         const fileContent = fs.readFileSync(req.file.path);
         const base64Content = fileContent.toString('base64');
 
-        // 1. Commit PDF to GitHub repo at public/uploads/{filename}
+        // 1. Commit file to GitHub repo at public/uploads/{filename}
         await syncFileToGitHub(
           `public/uploads/${req.file.filename}`,
           base64Content,
-          `feat(pdf): dodano plik ${req.file.originalname} dla sekcji ${sectionId}`,
+          `feat(${format}): dodano plik ${req.file.originalname} (${format.toUpperCase()}) dla sekcji ${sectionId}`,
           owner,
           repo,
           branch,
@@ -342,6 +369,63 @@ app.post('/api/upload-pdf', upload.single('pdfFile'), async (req, res) => {
   } catch (err: any) {
     console.error('Upload error:', err);
     res.status(500).json({ error: err.message || 'Błąd podczas wgrywania pliku.' });
+  }
+};
+
+app.post('/api/upload-pdf', upload.single('pdfFile'), handleFileUpload);
+app.post('/api/upload-file', upload.single('pdfFile'), handleFileUpload);
+
+// Translation endpoint using Gemini API
+app.post('/api/translate', async (req, res) => {
+  const { text, targetLang, targetLangName, title, prayer, mystery, intention } = req.body;
+  if (!text && !title) {
+    return res.status(400).json({ error: 'Brak tekstu do przetłumaczenia.' });
+  }
+
+  const ai = getAI();
+  if (!ai) {
+    return res.status(503).json({
+      error: 'Brak klucza GEMINI_API_KEY na serwerze.',
+      useFallback: true
+    });
+  }
+
+  try {
+    const prompt = `Jesteś wybitnym tłumaczem literatury duchowej, biblijnej i teologicznej Kościoła Katolickiego.
+Przetłumacz poniższe elementy z języka polskiego na język: ${targetLangName || targetLang} (kod ISO: ${targetLang}).
+Zachowaj pełen szacunku, kontemplacyjny, podniosły i czytelny styl odpowiedni do publikacji książkowych (Print-on-Demand) oraz e-booków.
+
+Oryginalne dane:
+Tytuł: ${title || ''}
+Tajemnica/Intencja: ${[mystery, intention].filter(Boolean).join(' | ')}
+Treść / Rozważanie:
+${text || ''}
+Modlitwa serca:
+${prayer || ''}
+
+Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) o następującej strukturze:
+{
+  "title": "przetłumaczony tytuł",
+  "mystery": "przetłumaczona tajemnica lub puste",
+  "intention": "przetłumaczona intencja lub puste",
+  "content": "przetłumaczona treść z zachowaniem podziału na akapity",
+  "prayer": "przetłumaczona modlitwa serca lub puste"
+}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json'
+      }
+    });
+
+    const responseText = response.text || '{}';
+    const parsed = JSON.parse(responseText);
+    res.json({ success: true, translation: parsed, targetLang });
+  } catch (err: any) {
+    console.error('Translation error:', err);
+    res.status(500).json({ error: err.message || 'Błąd podczas tłumaczenia.' });
   }
 });
 

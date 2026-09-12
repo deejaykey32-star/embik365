@@ -1,5 +1,7 @@
 export type SectionId = 
-  | 'wnr366'        // blog "Widoki na Raj"
+  | 'info365'       // Wstęp i przewodnik po sekcjach
+  | 'wnr365'        // blog "Widoki na Raj"
+  | 'wnr366'        // backward-compat alias
   | 'rhz365'        // modlitwa "Różaniec Historii Zbawienia"
   | 'biblia365'     // czytanie Pisma Świętego i Apokryfów
   | 'ebook_wnr'     // ebook WnR365 w formie przewracanych kartek
@@ -7,7 +9,19 @@ export type SectionId =
   | 'ebook_biblia'  // Biblia365 w formie przewracanych kartek
   | 'bio365';       // biografia mnie i żony w formie przewracanych kartek
 
-export type SectionType = 'reader' | 'flipbook';
+export type SectionType = 'reader' | 'flipbook' | 'info';
+
+export interface QrCodeItem {
+  id: string;
+  title: string;                 // Tytuł kodu QR (np. "Wpis WnR365 na dziś")
+  displayLabel: string;          // Nazwa wyświetlana pod kodem QR
+  shortUrl: string;              // Skrócony adres URL (przypisany na stałe)
+  fullUrl: string;               // Pełny adres URL (dynamicznie zmieniany)
+  sectionId?: SectionId | string;
+  category?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export interface SectionMeta {
   id: SectionId;
@@ -34,10 +48,13 @@ export interface CycleDate {
   season?: string;
 }
 
+export type BookFormat = 'pdf' | 'epub' | 'docx';
+
 export interface UploadedPdf {
   id: string;
   filename: string;
   originalName: string;
+  format?: BookFormat;
   url: string;
   size: number;
   sectionId: SectionId | string;
@@ -47,6 +64,34 @@ export interface UploadedPdf {
   description?: string;
   uploadedAt: string;
 }
+
+export type UploadedFile = UploadedPdf;
+
+export interface SupportedLanguage {
+  code: string;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+export const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
+  { code: 'pl', name: 'Polski', nativeName: 'Polski', flag: '🇵🇱' },
+  { code: 'en', name: 'Angielski', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'es', name: 'Hiszpański', nativeName: 'Español', flag: '🇪🇸' },
+  { code: 'it', name: 'Włoski', nativeName: 'Italiano', flag: '🇮🇹' },
+  { code: 'de', name: 'Niemiecki', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', name: 'Francuski', nativeName: 'Français', flag: '🇫🇷' },
+  { code: 'pt', name: 'Portugalski', nativeName: 'Português', flag: '🇵🇹' },
+  { code: 'uk', name: 'Ukraiński', nativeName: 'Українська', flag: '🇺🇦' },
+  { code: 'la', name: 'Łacina', nativeName: 'Lingua Latina', flag: '🇻🇦' },
+  { code: 'cs', name: 'Czeski', nativeName: 'Čeština', flag: '🇨🇿' },
+  { code: 'sk', name: 'Słowacki', nativeName: 'Slovenčina', flag: '🇸🇰' },
+  { code: 'hu', name: 'Węgierski', nativeName: 'Magyar', flag: '🇭🇺' },
+  { code: 'ro', name: 'Rumuński', nativeName: 'Română', flag: '🇷🇴' },
+  { code: 'lt', name: 'Litewski', nativeName: 'Lietuvių', flag: '🇱🇹' },
+  { code: 'el', name: 'Grecki', nativeName: 'Ελληνικά', flag: '🇬🇷' },
+  { code: 'ru', name: 'Rosyjski', nativeName: 'Русский', flag: '🌐' }
+];
 
 export interface SectionEntry {
   id: string;
@@ -67,6 +112,15 @@ export interface SectionEntry {
   image?: string;
   pdfs?: UploadedPdf[];
   updatedAt?: string;
+  translations?: Record<string, {
+    title: string;
+    subtitle?: string;
+    content: string;
+    prayer?: string;
+    mystery?: string;
+    intention?: string;
+    quote?: string;
+  }>;
 }
 
 export interface AdminUser {
@@ -77,6 +131,14 @@ export interface AdminUser {
 }
 
 export type AppTheme = 'light' | 'dark';
+
+export type RosaryVariant = 
+  | 'full_50_rgba'    // 1. 6 dużych przezroczystych paciorków i 50 małych w modelu RGBA
+  | 'full_50_cmyk'    // 2. 6 dużych przezroczystych paciorków i 50 małych w modelu CMYK
+  | 'line_13_rgba'    // 3. 2 duże paciorki i 13 małych w jednej linii w modelu RGBA
+  | 'line_13_cmyk'    // 4. 2 duże paciorki przezroczyste i 13 małych w jednej linii w modelu CMYK
+  | 'circle_13_rgba'  // 5. 2 duże paciorki przezroczyste i 13 małych w okręgu w modelu RGBA
+  | 'circle_13_cmyk'; // 6. 2 duże paciorki przezroczyste i 13 małych w okręgu w modelu CMYK
 
 export interface GitHubConfig {
   owner: string;
