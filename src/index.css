@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-serif: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-heading: 'Cinzel', serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+.font-serif-book {
+  font-family: var(--font-serif);
+}
+
+.font-heading-cinzel {
+  font-family: var(--font-heading);
+}
+
+.font-sans-ui {
+  font-family: var(--font-sans);
+}
+
+/* 3D Flipbook effects */
+.perspective-1500 {
+  perspective: 1500px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Paper texture & book shadow for light mode */
+.book-shadow {
+  box-shadow: 0 20px 40px -15px rgba(44, 38, 33, 0.25), 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.book-spine {
+  background: linear-gradient(to right, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.08) 35%, rgba(255,255,255,0.2) 50%, rgba(0,0,0,0.08) 65%, rgba(0,0,0,0.22) 100%);
+}
+
+/* Dark mode book shadow & leather spine */
+.dark .book-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(245, 158, 11, 0.08);
+}
+
+.dark .book-spine {
+  background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 35%, rgba(245,158,11,0.18) 50%, rgba(0,0,0,0.25) 65%, rgba(0,0,0,0.65) 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 87, 43, 0.2);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.25);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 87, 43, 0.4);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.45);
+}
