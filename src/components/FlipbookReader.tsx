@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES } from '../types';
 import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
+import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 
@@ -36,6 +37,78 @@ interface Props {
   currentLang?: string;
 }
 
+/**
+ * Splits text into two balanced parts for 1:1 PDF page rendering
+ */
+function splitContentIntoTwoParts(content: string): { part1: string; part2: string } {
+  if (!content) return { part1: '', part2: '' };
+  
+  const paragraphs = content
+    .split(/\n\n+|<p[^>]*>|<\/p>/i)
+    .map(p => p.replace(/<[^>]*>/g, '').trim())
+    .filter(Boolean);
+
+  if (paragraphs.length >= 2) {
+    const mid = Math.ceil(paragraphs.length / 2);
+    const part1 = paragraphs.slice(0, mid).join('\n\n');
+    const part2 = paragraphs.slice(mid).join('\n\n');
+    return { part1, part2 };
+  }
+
+  const text = content.replace(/<[^>]*>/g, '').trim();
+  if (text.length < 300) {
+    return { part1: text, part2: '' };
+  }
+
+  const halfLen = Math.floor(text.length / 2);
+  let splitIdx = text.indexOf('. ', halfLen);
+  if (splitIdx === -1) splitIdx = text.indexOf('! ', halfLen);
+  if (splitIdx === -1) splitIdx = text.indexOf('? ', halfLen);
+  if (splitIdx === -1) splitIdx = halfLen;
+
+  const part1 = text.slice(0, splitIdx + 1).trim();
+  const part2 = text.slice(splitIdx + 1).trim();
+  return { part1, part2 };
+}
+
+/**
+ * Calculates 1:1 PDF page data for any page P (1 to 1095)
+ */
+function getPdfPageData(
+  P: number,
+  sectionId: string,
+  currentDate: CycleDate,
+  currentEntry: SectionEntry
+) {
+  const safeP = Math.max(1, Math.min(1095, P));
+  const dayNum = Math.floor((safeP - 1) / 3) + 1;
+  const subPage = ((safeP - 1) % 3) + 1; // 1, 2, or 3
+
+  const dateObj = getCycleDateByDayNumber(dayNum);
+  const entryObj = (dayNum === currentDate.dayNumber)
+    ? currentEntry
+    : getEntryForSectionAndDate(sectionId, dateObj);
+
+  const { part1, part2 } = splitContentIntoTwoParts(entryObj.content || '');
+
+  return {
+    pdfPageNumber: safeP,
+    dayNumber: dayNum,
+    subPage,
+    dateKey: dateObj.dateKey,
+    displayDate: dateObj.displayDate,
+    season: dateObj.season,
+    title: entryObj.title || `Dzień ${dayNum} – ${dateObj.displayDate}`,
+    subtitle: entryObj.subtitle,
+    part1,
+    part2,
+    prayer: entryObj.prayer,
+    mystery: entryObj.mystery,
+    intention: entryObj.intention,
+    fullContent: entryObj.content
+  };
+}
+
 export const FlipbookReader: React.FC<Props> = ({
   section,
   currentDate,
@@ -48,7 +121,11 @@ export const FlipbookReader: React.FC<Props> = ({
   onOpenLectorModal,
   currentLang = 'pl'
 }) => {
-  const [currentPage, setCurrentPage] = useState<number>(currentDate.dayNumber);
+  // Total 1095 PDF pages (3 pages per day * 365 days) = 548 2-page spreads
+  const [currentSpread, setCurrentSpread] = useState<number>(() => {
+    return Math.floor(((currentDate.dayNumber - 1) * 3) / 2) + 1;
+  });
+
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
   const [flipDirection, setFlipDirection] = useState<'next' | 'prev'>('next');
   const [showToc, setShowToc] = useState<boolean>(false);
@@ -60,8 +137,17 @@ export const FlipbookReader: React.FC<Props> = ({
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isFullscreenZoom, setIsFullscreenZoom] = useState<boolean>(false);
 
-  // Determine if this section is an E-book / Flipbook
-  const isEbook = section.id.startsWith('ebook_') || section.type === 'flipbook' || section.name.toLowerCase().includes('ebook') || section.id === 'bio365';
+  // Sync currentSpread when currentDate prop changes externally
+  useEffect(() => {
+    const targetSpread = Math.floor(((currentDate.dayNumber - 1) * 3) / 2) + 1;
+    setCurrentSpread(targetSpread);
+  }, [currentDate.dayNumber]);
+
+  const leftPdfPageNum = (currentSpread * 2) - 1;
+  const rightPdfPageNum = currentSpread * 2;
+
+  const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry);
+  const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry);
 
   const toggleSpeech = async (e?: React.SyntheticEvent) => {
     if (e) {
@@ -88,11 +174,6 @@ export const FlipbookReader: React.FC<Props> = ({
     });
   };
 
-  // Sync with currentDate prop
-  useEffect(() => {
-    setCurrentPage(currentDate.dayNumber);
-  }, [currentDate.dayNumber]);
-
   // Load bookmarks from localStorage
   useEffect(() => {
     try {
@@ -101,7 +182,7 @@ export const FlipbookReader: React.FC<Props> = ({
     } catch {}
   }, []);
 
-  const isBookmarked = bookmarkedDays.includes(currentPage);
+  const isBookmarked = bookmarkedDays.includes(leftPageData.dayNumber);
 
   // Play page flip sound via Web Audio API
   const playPageFlipSound = () => {
@@ -111,7 +192,6 @@ export const FlipbookReader: React.FC<Props> = ({
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      // Soft paper rustle sound
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(150, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.12);
@@ -124,35 +204,37 @@ export const FlipbookReader: React.FC<Props> = ({
 
       osc.start();
       osc.stop(ctx.currentTime + 0.13);
-    } catch {
-      // Audio context might be restricted
-    }
+    } catch {}
   };
 
   const handleTurnNext = () => {
-    if (currentPage >= 365 || isFlipping) return;
+    if (currentSpread >= 548 || isFlipping) return;
     setIsFlipping(true);
     setFlipDirection('next');
     playPageFlipSound();
 
     setTimeout(() => {
-      const nextDay = currentPage + 1;
-      const targetDate = getCycleDateByDayNumber(nextDay);
-      onSelectDate(targetDate);
+      const nextSpread = currentSpread + 1;
+      setCurrentSpread(nextSpread);
+      const newLeftPage = (nextSpread * 2) - 1;
+      const newDayNum = Math.floor((newLeftPage - 1) / 3) + 1;
+      onSelectDate(getCycleDateByDayNumber(newDayNum));
       setIsFlipping(false);
     }, 280);
   };
 
   const handleTurnPrev = () => {
-    if (currentPage <= 1 || isFlipping) return;
+    if (currentSpread <= 1 || isFlipping) return;
     setIsFlipping(true);
     setFlipDirection('prev');
     playPageFlipSound();
 
     setTimeout(() => {
-      const prevDay = currentPage - 1;
-      const targetDate = getCycleDateByDayNumber(prevDay);
-      onSelectDate(targetDate);
+      const prevSpread = currentSpread - 1;
+      setCurrentSpread(prevSpread);
+      const newLeftPage = (prevSpread * 2) - 1;
+      const newDayNum = Math.floor((newLeftPage - 1) / 3) + 1;
+      onSelectDate(getCycleDateByDayNumber(newDayNum));
       setIsFlipping(false);
     }, 280);
   };
@@ -169,12 +251,12 @@ export const FlipbookReader: React.FC<Props> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, isFlipping, isFullscreenZoom]);
+  }, [currentSpread, isFlipping, isFullscreenZoom]);
 
   const toggleBookmark = () => {
     const updated = isBookmarked
-      ? bookmarkedDays.filter(d => d !== currentPage)
-      : [...bookmarkedDays, currentPage];
+      ? bookmarkedDays.filter(d => d !== leftPageData.dayNumber)
+      : [...bookmarkedDays, leftPageData.dayNumber];
     setBookmarkedDays(updated);
     try {
       localStorage.setItem('drogowskazy_bookmarks', JSON.stringify(updated));
@@ -219,9 +301,131 @@ export const FlipbookReader: React.FC<Props> = ({
     p => p.sectionId === section.id && (!p.dateKey || p.dateKey === currentDate.dateKey)
   );
 
-  // PDF Page Numbering corresponding to 1000+ total pages PDF document
-  const pdfLeftPageNum = (currentPage - 1) * 3 + 1;
-  const pdfRightPageNum = (currentPage - 1) * 3 + 2;
+  /**
+   * Helper component to render 1:1 PDF Page content
+   */
+  const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>) => {
+    if (data.subPage === 1) {
+      // PDF Page 1: Title, Subtitle, and Reading Part 1
+      return (
+        <div className="flex flex-col h-full justify-between space-y-4">
+          <div className="space-y-3">
+            <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest block font-sans-ui">
+              {data.season || 'Cykl Roczny'} • Dzień {data.dayNumber} z 365
+            </span>
+
+            <h2 className="font-heading-cinzel font-bold text-xl sm:text-2xl text-[#2c2016] dark:text-[#f3e8d2] leading-tight">
+              {data.title}
+            </h2>
+
+            {data.subtitle && (
+              <p className="font-serif-book italic text-xs text-[#7d6b5b] dark:text-[#94a3b8]">
+                {data.subtitle}
+              </p>
+            )}
+          </div>
+
+          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 ${
+            fontSize === 'sm' ? 'text-xs leading-5' :
+            fontSize === 'base' ? 'text-sm leading-6' :
+            fontSize === 'lg' ? 'text-base leading-7' :
+            'text-lg leading-8'
+          }`}>
+            <div className="whitespace-pre-line">{data.part1}</div>
+          </div>
+
+          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
+            <span>Część I Czytania</span>
+            <span>Ciąg dalszy na nast. stronie →</span>
+          </div>
+        </div>
+      );
+    } else if (data.subPage === 2) {
+      // PDF Page 2: Reading Part 2 (Continuation)
+      return (
+        <div className="flex flex-col h-full justify-between space-y-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-1">
+            <span className="font-heading-cinzel text-xs font-bold text-[#685544] dark:text-amber-400">
+              {data.title} • (Dalszy ciąg rozważania)
+            </span>
+          </div>
+
+          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 ${
+            fontSize === 'sm' ? 'text-xs leading-5' :
+            fontSize === 'base' ? 'text-sm leading-6' :
+            fontSize === 'lg' ? 'text-base leading-7' :
+            'text-lg leading-8'
+          }`}>
+            {data.part2 ? (
+              <div className="whitespace-pre-line">{data.part2}</div>
+            ) : (
+              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center">
+                "W ciszy serca niech trwa dziękczynienie za odnowioną łaskę dnia. Każdy krok wiarą uczyniony prostuje ścieżki wieczności."
+              </div>
+            )}
+          </div>
+
+          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
+            <span>Część II Czytania</span>
+            <span>Modlitwa na kolejnej karcie →</span>
+          </div>
+        </div>
+      );
+    } else {
+      // PDF Page 3: Prayer of the heart & Meditation
+      return (
+        <div className="flex flex-col h-full justify-between space-y-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-1">
+            <span className="font-heading-cinzel text-xs font-bold text-amber-800 dark:text-amber-400">
+              Dzień {data.dayNumber} • Modlitwa Serca & Kontemplacja
+            </span>
+          </div>
+
+          <div className="flex-1 space-y-3">
+            {data.prayer ? (
+              <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-l-4 border-amber-600 dark:border-amber-500 font-serif-book italic text-sm text-[#46372a] dark:text-amber-100">
+                <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-amber-800 dark:text-amber-400 mb-1">
+                  Modlitwa Serca:
+                </span>
+                <div className="whitespace-pre-line">{data.prayer}</div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-l-4 border-amber-600 font-serif-book italic text-sm text-[#46372a] dark:text-amber-100">
+                <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-amber-800 dark:text-amber-400 mb-1">
+                  Modlitwa Wieczorna:
+                </span>
+                Panie mój i Boże, oddaję Ci cały ten dzień, Twojej miłości zawierza moje serce i bliskich. Amen.
+              </div>
+            )}
+
+            {data.mystery && (
+              <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 text-xs font-serif-book">
+                <span className="font-bold text-amber-900 dark:text-amber-300">Tajemnica: </span>
+                {data.mystery}
+              </div>
+            )}
+
+            {section.id === 'ebook_rhz' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsRosaryModalOpen(true);
+                }}
+                className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Otwórz Cyfrowy Różaniec RHZ
+              </button>
+            )}
+          </div>
+
+          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
+            <span>Zwieńczenie Dnia {data.dayNumber}</span>
+            <span>PDF Strona {data.pdfPageNumber} / 1095</span>
+          </div>
+        </div>
+      );
+    }
+  };
 
   return (
     <div className={`min-h-[calc(100vh-140px)] ${currentTheme.wrapper} transition-colors duration-300 py-6 px-3 sm:px-6 flex flex-col justify-between`}>
@@ -238,11 +442,11 @@ export const FlipbookReader: React.FC<Props> = ({
                 {section.name}
               </span>
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-medium border border-amber-200 dark:border-amber-800/60">
-                {isEbook ? 'E-Book PDF (1000+ Stron)' : 'Księga 3D'}
+                E-Book PDF (1095 Stron 1:1)
               </span>
             </div>
             <p className="text-xs text-[#716152] dark:text-[#94a3b8] font-serif-book">
-              {section.shortTitle} • Dzień {currentPage} z 365 (Strony PDF {pdfLeftPageNum}-{pdfRightPageNum} z 1095)
+              {section.shortTitle} • Dzień {leftPageData.dayNumber} z 365 (Strony PDF {leftPdfPageNum}-{rightPdfPageNum} / 1095)
             </p>
           </div>
         </div>
@@ -392,10 +596,10 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Previous page arrow button (left) */}
         <button
           onClick={handleTurnPrev}
-          disabled={currentPage <= 1 || isFlipping}
+          disabled={currentSpread <= 1 || isFlipping}
           id="btn-flip-left"
           className="absolute left-0 sm:-left-4 z-30 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-          title="Przewróć kartkę w lewo (Poprzedni dzień)"
+          title="Przewróć kartkę w lewo (Poprzednia strona PDF)"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -403,10 +607,10 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Next page arrow button (right) */}
         <button
           onClick={handleTurnNext}
-          disabled={currentPage >= 365 || isFlipping}
+          disabled={currentSpread >= 548 || isFlipping}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-30 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-          title="Przewróć kartkę w prawo (Następny dzień)"
+          title="Przewróć kartkę w prawo (Następna strona PDF)"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
@@ -417,143 +621,54 @@ export const FlipbookReader: React.FC<Props> = ({
             isFlipping ? (flipDirection === 'next' ? 'scale-[0.99] rotate-y-2' : 'scale-[0.99] -rotate-y-2') : ''
           }`}
         >
-          {/* Left Page (Desktop: Ebook Title-Only Mode or Metadata) */}
+          {/* Left Page (Desktop: PDF Page 1:1) */}
           <div 
             onClick={() => setIsFullscreenZoom(true)}
-            className={`hidden md:flex flex-col justify-between p-8 sm:p-10 border-r ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors`}
-            title="Kliknij, aby otworzyć e-book w trybie pełnoekranowym"
+            className={`hidden md:flex flex-col justify-between p-8 sm:p-10 border-r ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
+            title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
           >
             {/* Click hover overlay badge */}
             <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/5 transition-all flex items-center justify-center pointer-events-none z-10">
               <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć na cały ekran
+                <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć (Strona PDF {leftPdfPageNum})
               </span>
             </div>
 
-            {/* Page top header */}
+            {/* Left page top header */}
             <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between">
               <span className="font-heading-cinzel text-xs font-bold uppercase tracking-widest text-[#7a6755] dark:text-[#94a3b8]">
                 {section.shortTitle}
               </span>
-              <span className="font-serif-book text-xs italic text-[#8a7867] dark:text-[#94a3b8]">
-                Strona PDF {pdfLeftPageNum} z 1095
+              <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-400">
+                Strona PDF {leftPdfPageNum} z 1095
               </span>
             </div>
 
-            {/* Left page content: For EBOOK sections, LEFT PAGE HAS ONLY TITLE! */}
-            <div className="my-auto py-6 space-y-6 text-center">
-              <div className="w-16 h-1 bg-[#8c5a2b] dark:bg-amber-500 rounded-full mx-auto" />
-              
-              <div className="space-y-3">
-                <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest block font-sans-ui">
-                  {currentDate.season || 'Cykl Roczny'} • Dzień {currentDate.dayNumber} z 365
-                </span>
-                
-                <h2 className="font-heading-cinzel text-2xl sm:text-3xl font-bold text-[#2d2217] dark:text-[#f1f5f9] leading-tight px-2">
-                  {entry.title}
-                </h2>
-
-                {entry.subtitle && (
-                  <p className="font-serif-book italic text-sm text-[#786655] dark:text-[#94a3b8] max-w-sm mx-auto">
-                    {entry.subtitle}
-                  </p>
-                )}
-              </div>
-
-              {/* Ebook Dedication / Subtitle Quote Banner */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 font-serif-book italic text-xs sm:text-sm leading-relaxed text-[#514234] dark:text-[#cbd5e1]">
-                {section.id === 'bio365' ? (
-                  <p>
-                    "Dwa serca złączone przed ołtarzem, jedna droga ku wieczności. W każdym wspólnym dniu odkrywamy na nowo piękno powołania do miłości."
-                  </p>
-                ) : section.id === 'ebook_rhz' ? (
-                  <p>
-                    "Przesuwając paciorki różańca, dotykamy tajemnic, które przemieniły losy świata i wciąż przemieniają nasze serca."
-                  </p>
-                ) : section.id === 'ebook_biblia' ? (
-                  <p>
-                    "Nie samym chlebem żyje człowiek, lecz każdym słowem, które pochodzi z ust Bożych." (Mt 4, 4)
-                  </p>
-                ) : (
-                  <p>
-                    "Widoki na Raj odsłaniają się przed tymi, którzy mają odwagę zaufać Bogu w sprawach najmniejszych."
-                  </p>
-                )}
-              </div>
-
-              {/* Fullscreen Expand CTA Button */}
-              <div className="pt-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsFullscreenZoom(true);
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 font-semibold border border-amber-500/30 text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
-                >
-                  <ZoomIn className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <span>Rozwiń E-book na cały ekran</span>
-                </button>
-              </div>
-
-              {/* Rosary Trigger for RHZ eBook */}
-              {section.id === 'ebook_rhz' && (
-                <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-xs text-left">
-                  <div className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5 mb-1">
-                    <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                    <span>Cyfrowy Różaniec RHZ</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsRosaryModalOpen(true);
-                    }}
-                    className="w-full py-1.5 px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors text-center cursor-pointer text-xs"
-                  >
-                    Otwórz Wizualizację Różańca
-                  </button>
-                </div>
-              )}
-
-              {/* PDF Banner if uploaded */}
-              {matchingPdfs.length > 0 && (
-                <div className="p-3 rounded-xl bg-red-500/10 dark:bg-red-950/40 border border-red-500/30 text-xs text-left">
-                  <div className="font-bold text-red-900 dark:text-red-200 flex items-center gap-1.5 mb-1">
-                    <FileText className="w-4 h-4 text-red-700 dark:text-red-400" />
-                    <span>Oryginalny Plik PDF</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenPdf(matchingPdfs[0]);
-                    }}
-                    className="w-full py-1.5 px-3 rounded-lg bg-red-700 hover:bg-red-800 text-white font-medium transition-colors text-center cursor-pointer text-xs"
-                  >
-                    Otwórz Plik PDF
-                  </button>
-                </div>
-              )}
+            {/* Left page 1:1 content */}
+            <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+              {renderPdfPageBody(leftPageData)}
             </div>
 
             {/* Left page footer */}
             <div className="border-t border-black/10 dark:border-white/10 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-[#94a3b8]">
               <span>Tom 365 PDF</span>
-              <span className="font-serif-book font-bold">Strona {pdfLeftPageNum}</span>
+              <span className="font-serif-book font-bold">Strona {leftPdfPageNum}</span>
             </div>
           </div>
 
           {/* Book Spine Shadow in the center (Desktop) */}
           <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-12 -translate-x-1/2 pointer-events-none book-spine z-20" />
 
-          {/* Right Page (Primary Reading Text & Meditation) */}
+          {/* Right Page (Desktop/Mobile: PDF Page 1:1) */}
           <div 
             onClick={() => setIsFullscreenZoom(true)}
-            className={`flex flex-col justify-between p-6 sm:p-10 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors`}
-            title="Kliknij, aby otworzyć e-book w trybie pełnoekranowym"
+            className={`flex flex-col justify-between p-6 sm:p-10 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
+            title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
           >
             {/* Click hover overlay badge */}
             <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/5 transition-all flex items-center justify-center pointer-events-none z-10">
               <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć na cały ekran
+                <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć (Strona PDF {rightPdfPageNum})
               </span>
             </div>
 
@@ -566,81 +681,45 @@ export const FlipbookReader: React.FC<Props> = ({
 
             {/* Right page header */}
             <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between">
-              <span className="font-serif-book text-xs italic text-[#8a7867] dark:text-[#94a3b8]">
-                Strona PDF {pdfRightPageNum} z 1095
+              <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-400">
+                Strona PDF {rightPdfPageNum} z 1095
               </span>
               <div className="flex items-center gap-2">
                 <span className="font-heading-cinzel text-xs font-bold text-[#7a6755] dark:text-amber-400">
-                  {currentDate.displayDate}
+                  {rightPageData.displayDate}
                 </span>
               </div>
             </div>
 
-            {/* Right page main body */}
-            <div className="my-auto py-4 overflow-y-auto max-h-[480px] pr-2 space-y-4">
-              <div>
-                <h2 className="font-heading-cinzel font-bold text-lg sm:text-xl text-[#2c2016] dark:text-[#f3e8d2] leading-snug">
-                  {entry.title}
-                </h2>
-                {entry.subtitle && (
-                  <p className="font-serif-book italic text-xs text-[#7d6b5b] dark:text-[#94a3b8] mt-1">
-                    {entry.subtitle}
-                  </p>
-                )}
-              </div>
-
-              {/* Main reading content with selected font size */}
-              <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify ${
-                fontSize === 'sm' ? 'text-sm leading-6' :
-                fontSize === 'base' ? 'text-base leading-7' :
-                fontSize === 'lg' ? 'text-lg leading-8' :
-                'text-xl leading-9'
-              }`}>
-                {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
-                  <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
-                ) : (
-                  <div className="whitespace-pre-line">{entry.content}</div>
-                )}
-              </div>
-
-              {entry.prayer && (
-                <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 border-l-3 border-[#8c572b] dark:border-amber-500 font-serif-book italic text-sm text-[#46372a] dark:text-amber-100">
-                  <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-[#8c572b] dark:text-amber-400 mb-1">
-                    Modlitwa serca:
-                  </span>
-                  {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
-                    <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
-                  ) : (
-                    <div className="whitespace-pre-line">{entry.prayer}</div>
-                  )}
-                </div>
-              )}
+            {/* Right page 1:1 content */}
+            <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+              {renderPdfPageBody(rightPageData)}
             </div>
 
             {/* Right page footer */}
             <div className="border-t border-black/10 dark:border-white/10 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-[#94a3b8]">
-              <span className="font-serif-book font-bold">Strona {pdfRightPageNum}</span>
+              <span className="font-serif-book font-bold">Strona {rightPdfPageNum}</span>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTurnPrev();
                   }}
-                  disabled={currentPage <= 1}
+                  disabled={currentSpread <= 1}
                   className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
-                  title="Poprzedni dzień"
+                  title="Poprzednia karta"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="font-mono text-[11px]">Dzień {currentPage} / 365</span>
+                <span className="font-mono text-[11px]">Dzień {leftPageData.dayNumber} / 365</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleTurnNext();
                   }}
-                  disabled={currentPage >= 365}
+                  disabled={currentSpread >= 548}
                   className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
-                  title="Następny dzień"
+                  title="Następna karta"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -650,7 +729,7 @@ export const FlipbookReader: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Bottom Page Turner Bar & Quick Jump */}
+      {/* Bottom Page Turner Bar & PDF Page Slider (1 to 1095) */}
       <div className="max-w-5xl mx-auto w-full mt-4 bg-white/80 dark:bg-[#121722]/90 backdrop-blur-md p-3 rounded-2xl border border-[#dbcabb] dark:border-[#212b3c] shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
@@ -663,26 +742,32 @@ export const FlipbookReader: React.FC<Props> = ({
           </button>
 
           <span className="text-xs text-[#716152] dark:text-[#94a3b8] hidden sm:inline font-serif-book">
-            Przewracaj klikając strzałki lub używaj klawiszy ← i →
+            Przewracaj klikając strzałki lub klawisze ← i →
           </span>
         </div>
 
-        {/* Page Slider */}
+        {/* 1095 PDF Pages Slider */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono">Dzień 1</span>
+          <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono">Strona 1</span>
           <input
             type="range"
             min="1"
-            max="365"
-            value={currentPage}
+            max="1095"
+            step="2"
+            value={leftPdfPageNum}
             onChange={(e) => {
-              const dayNum = parseInt(e.target.value, 10);
-              const targetDate = getCycleDateByDayNumber(dayNum);
-              onSelectDate(targetDate);
+              const pNum = parseInt(e.target.value, 10);
+              const targetSpread = Math.floor((pNum - 1) / 2) + 1;
+              setCurrentSpread(targetSpread);
+              const newLeftPage = (targetSpread * 2) - 1;
+              const newDayNum = Math.floor((newLeftPage - 1) / 3) + 1;
+              onSelectDate(getCycleDateByDayNumber(newDayNum));
             }}
-            className="w-32 sm:w-48 accent-[#8c572b] dark:accent-amber-500 cursor-pointer"
+            className="w-36 sm:w-56 accent-[#8c572b] dark:accent-amber-500 cursor-pointer"
           />
-          <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono">365 (1095 Stron PDF)</span>
+          <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono font-bold text-amber-800 dark:text-amber-400">
+            {leftPdfPageNum} / 1095 Stron PDF
+          </span>
         </div>
       </div>
 
@@ -707,7 +792,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
             <div className="flex-1 overflow-y-auto py-4 space-y-1">
               {CYCLE_DAYS.map((d) => {
-                const isCurrent = d.dayNumber === currentPage;
+                const isCurrent = d.dayNumber === leftPageData.dayNumber;
                 const isMarked = bookmarkedDays.includes(d.dayNumber);
                 const dPdfNum = (d.dayNumber - 1) * 3 + 1;
 
@@ -716,6 +801,8 @@ export const FlipbookReader: React.FC<Props> = ({
                     key={d.dateKey}
                     onClick={() => {
                       onSelectDate(d);
+                      const targetSpread = Math.floor(((d.dayNumber - 1) * 3) / 2) + 1;
+                      setCurrentSpread(targetSpread);
                       setShowToc(false);
                     }}
                     className={`w-full text-left px-3 py-2.5 rounded-xl text-sm flex items-center justify-between transition-all cursor-pointer ${
@@ -726,7 +813,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs text-[#8c7968] dark:text-[#94a3b8]">
-                        Strona {dPdfNum}
+                        PDF Str. {dPdfNum}
                       </span>
                       <span>{d.displayDate}</span>
                     </div>
@@ -751,7 +838,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
       {/* FULLSCREEN ZOOM MODE MODAL */}
       {isFullscreenZoom && (
-        <div className="fixed inset-0 z-50 bg-[#070b14]/95 backdrop-blur-2xl flex flex-col p-3 sm:p-6 overflow-hidden animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-[#070b14]/96 backdrop-blur-2xl flex flex-col p-3 sm:p-6 overflow-hidden animate-fade-in">
           {/* Top Fullscreen Controls Bar */}
           <div className="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 bg-[#131a29]/90 border border-amber-500/30 p-3 sm:p-4 rounded-2xl shadow-2xl mb-4">
             <div className="flex items-center gap-3">
@@ -760,10 +847,10 @@ export const FlipbookReader: React.FC<Props> = ({
               </div>
               <div>
                 <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-white">
-                  {section.name} • Tryb Pełnoekranowy (E-Book)
+                  {section.name} • Tryb Pełnoekranowy (1:1 Strony PDF)
                 </h3>
                 <p className="text-xs text-amber-300 font-serif-book">
-                  {currentDate.displayDate} • Dzień {currentPage} z 365 (Strony PDF {pdfLeftPageNum}-{pdfRightPageNum} / 1095)
+                  {leftPageData.displayDate} • Dzień {leftPageData.dayNumber} z 365 (Strony PDF {leftPdfPageNum} i {rightPdfPageNum} z 1095)
                 </p>
               </div>
             </div>
@@ -772,18 +859,18 @@ export const FlipbookReader: React.FC<Props> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleTurnPrev}
-                disabled={currentPage <= 1}
+                disabled={currentSpread <= 1}
                 className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-30 cursor-pointer"
               >
-                <ChevronLeft className="w-4 h-4" /> Poprzedni dzień
+                <ChevronLeft className="w-4 h-4" /> Poprzednia strona
               </button>
 
               <button
                 onClick={handleTurnNext}
-                disabled={currentPage >= 365}
+                disabled={currentSpread >= 548}
                 className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-30 cursor-pointer"
               >
-                Następny dzień <ChevronRight className="w-4 h-4" />
+                Następna strona <ChevronRight className="w-4 h-4" />
               </button>
 
               {/* CLOSE FULLSCREEN BUTTON */}
@@ -802,85 +889,37 @@ export const FlipbookReader: React.FC<Props> = ({
           {/* Fullscreen Reading Stage */}
           <div className="w-full max-w-7xl mx-auto flex-1 overflow-y-auto rounded-3xl border-2 border-amber-500/30 shadow-2xl p-4 sm:p-10 bg-[#FAF7F2] dark:bg-[#0f1420] text-[#2c2219] dark:text-[#e2e8f0]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 min-h-full">
-              {/* Left Zoomed Page: TITLE ONLY */}
-              <div className="flex flex-col justify-between p-6 sm:p-10 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-center">
+              {/* Left Zoomed Page 1:1 */}
+              <div className="flex flex-col justify-between p-6 sm:p-10 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-400 font-bold uppercase tracking-widest">
                   <span>{section.shortTitle}</span>
-                  <span>Strona PDF {pdfLeftPageNum} / 1095</span>
+                  <span>Strona PDF {leftPdfPageNum} z 1095</span>
                 </div>
 
-                <div className="my-auto py-8 space-y-6">
-                  <div className="w-20 h-1.5 bg-amber-600 rounded-full mx-auto" />
-                  
-                  <span className="text-sm font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest block font-sans-ui">
-                    {currentDate.season || 'Cykl Roczny'} • Dzień {currentDate.dayNumber} z 365
-                  </span>
-
-                  <h1 className="font-heading-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2d2217] dark:text-[#f1f5f9] leading-tight">
-                    {entry.title}
-                  </h1>
-
-                  {entry.subtitle && (
-                    <p className="font-serif-book italic text-base sm:text-lg text-[#786655] dark:text-[#94a3b8] max-w-md mx-auto">
-                      {entry.subtitle}
-                    </p>
-                  )}
-
-                  <div className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 font-serif-book italic text-sm sm:text-base leading-relaxed text-[#514234] dark:text-[#cbd5e1] max-w-lg mx-auto">
-                    "Niech Słowo Boże i medytacja każdego dnia rozświetlają ścieżki Twojego życia w drodze ku wieczności."
-                  </div>
+                <div className="my-auto py-6 space-y-4">
+                  {renderPdfPageBody(leftPageData)}
                 </div>
 
                 <div className="border-t border-black/10 dark:border-white/10 pt-3 text-xs text-[#8a7867] dark:text-[#94a3b8] flex justify-between">
                   <span>Wydanie E-Book 365 Dni</span>
-                  <span className="font-bold">Strona {pdfLeftPageNum}</span>
+                  <span className="font-bold">Strona {leftPdfPageNum}</span>
                 </div>
               </div>
 
-              {/* Right Zoomed Page: FULL READING TEXT */}
+              {/* Right Zoomed Page 1:1 */}
               <div className="flex flex-col justify-between p-6 sm:p-10 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-400 font-bold">
-                  <span>Rozważanie i Tekst Czytania</span>
-                  <span>Strona PDF {pdfRightPageNum} / 1095</span>
+                  <span>Dzień {rightPageData.dayNumber} z 365</span>
+                  <span>Strona PDF {rightPdfPageNum} z 1095</span>
                 </div>
 
-                <div className="my-auto py-6 space-y-6">
-                  <div>
-                    <h2 className="font-heading-cinzel font-bold text-2xl sm:text-3xl text-[#2c2016] dark:text-[#f3e8d2]">
-                      {entry.title}
-                    </h2>
-                    {entry.subtitle && (
-                      <p className="font-serif-book italic text-sm text-[#7d6b5b] dark:text-[#94a3b8] mt-1">
-                        {entry.subtitle}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="font-serif-book text-base sm:text-lg leading-relaxed sm:leading-8 text-[#2f251d] dark:text-[#e2e8f0] text-justify space-y-4">
-                    {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
-                      <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
-                    ) : (
-                      <div className="whitespace-pre-line">{entry.content}</div>
-                    )}
-                  </div>
-
-                  {entry.prayer && (
-                    <div className="p-6 rounded-2xl bg-amber-600/10 border-l-4 border-amber-600 font-serif-book italic text-base text-[#46372a] dark:text-amber-100">
-                      <span className="block font-sans-ui not-italic font-bold text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-2">
-                        Modlitwa serca:
-                      </span>
-                      {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
-                        <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
-                      ) : (
-                        <div className="whitespace-pre-line">{entry.prayer}</div>
-                      )}
-                    </div>
-                  )}
+                <div className="my-auto py-6 space-y-4">
+                  {renderPdfPageBody(rightPageData)}
                 </div>
 
                 <div className="border-t border-black/10 dark:border-white/10 pt-3 text-xs text-[#8a7867] dark:text-[#94a3b8] flex justify-between">
-                  <span className="font-bold">Strona {pdfRightPageNum}</span>
-                  <span>{currentDate.displayDate}</span>
+                  <span className="font-bold">Strona {rightPdfPageNum}</span>
+                  <span>{rightPageData.displayDate}</span>
                 </div>
               </div>
             </div>
@@ -910,4 +949,5 @@ export const FlipbookReader: React.FC<Props> = ({
     </div>
   );
 };
+
 
