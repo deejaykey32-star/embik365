@@ -156,15 +156,15 @@ app.get("/api/health", (req, res) => {
 app.get("/api/github/config", (req, res) => {
   res.json({
     hasToken: Boolean(process.env.GITHUB_TOKEN),
-    owner: process.env.GITHUB_OWNER || "dominikkuta",
-    repo: process.env.GITHUB_REPO || "drogowskazy365",
+    owner: process.env.GITHUB_OWNER || "deejaykey32-star",
+    repo: process.env.GITHUB_REPO || "embik365",
     branch: process.env.GITHUB_BRANCH || "main"
   });
 });
 app.post("/api/github/push-local", async (req, res) => {
   const { owner, repo, branch, token } = req.body;
-  const targetOwner = owner || process.env.GITHUB_OWNER || "dominikkuta";
-  const targetRepo = repo || process.env.GITHUB_REPO || "drogowskazy365";
+  const targetOwner = owner || process.env.GITHUB_OWNER || "deejaykey32-star";
+  const targetRepo = repo || process.env.GITHUB_REPO || "embik365";
   const targetBranch = branch || process.env.GITHUB_BRANCH || "main";
   const targetToken = token || process.env.GITHUB_TOKEN;
   if (!targetToken) {
@@ -211,8 +211,8 @@ app.post("/api/entries", async (req, res) => {
   };
   saveStoredData(data);
   const token = githubConfig?.token || process.env.GITHUB_TOKEN;
-  const owner = githubConfig?.owner || process.env.GITHUB_OWNER || "dominikkuta";
-  const repo = githubConfig?.repo || process.env.GITHUB_REPO || "drogowskazy365";
+  const owner = githubConfig?.owner || process.env.GITHUB_OWNER || "deejaykey32-star";
+  const repo = githubConfig?.repo || process.env.GITHUB_REPO || "embik365";
   const branch = githubConfig?.branch || process.env.GITHUB_BRANCH || "main";
   if (token && githubConfig?.autoSync !== false) {
     try {
@@ -283,8 +283,8 @@ var handleFileUpload = async (req, res) => {
     }
     saveStoredData(data);
     const token = githubToken || process.env.GITHUB_TOKEN;
-    const owner = githubOwner || process.env.GITHUB_OWNER || "dominikkuta";
-    const repo = githubRepo || process.env.GITHUB_REPO || "drogowskazy365";
+    const owner = githubOwner || process.env.GITHUB_OWNER || "deejaykey32-star";
+    const repo = githubRepo || process.env.GITHUB_REPO || "embik365";
     const branch = githubBranch || process.env.GITHUB_BRANCH || "main";
     let githubSyncResult = null;
     if (token) {

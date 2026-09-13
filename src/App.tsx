@@ -81,8 +81,8 @@ export default function App() {
       if (saved) return JSON.parse(saved);
     } catch {}
     return {
-      owner: 'dominikkuta',
-      repo: 'drogowskazy365',
+      owner: 'deejaykey32-star',
+      repo: 'embik365',
       branch: 'main',
       token: '',
       autoSync: true,

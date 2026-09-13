@@ -763,7 +763,7 @@ export const AdminPanel: React.FC<Props> = ({
                       type="text"
                       value={ghRepo}
                       onChange={(e) => setGhRepo(e.target.value)}
-                      placeholder="drogowskazy365"
+                      placeholder="embik365"
                       className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e] text-sm text-[#2f2318] dark:text-[#f1f5f9]"
                     />
                   </div>

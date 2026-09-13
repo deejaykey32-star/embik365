@@ -3,8 +3,8 @@ import { GitHubConfig, UploadedPdf, SectionEntry } from '../types';
 const STORAGE_KEY = 'drogowskazy_github_config';
 
 export const DEFAULT_GITHUB_CONFIG: GitHubConfig = {
-  owner: 'dominikkuta',
-  repo: 'drogowskazy365',
+  owner: 'deejaykey32-star',
+  repo: 'embik365',
   branch: 'main',
   token: '',
   autoSync: true,
