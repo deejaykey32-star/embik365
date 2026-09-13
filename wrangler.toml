@@ -1,17 +1,9 @@
-name = "embik365"
-main = "worker.ts"
+name = "rozaniec-app"
 compatibility_date = "2026-09-12"
 pages_build_output_dir = "dist"
-
-[build]
-command = "npm run build"
 
 [vars]
 GITHUB_OWNER = "deejaykey32-star"
 GITHUB_REPO = "embik365"
 GITHUB_BRANCH = "main"
-
-[assets]
-directory = "./dist"
-not_found_handling = "single-page-application"
 
