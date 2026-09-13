@@ -588,15 +588,25 @@ function getCacheKey(entryKey: string, lang: string): string {
   return `trans_${entryKey}_${lang}`;
 }
 
-// Load cached translation from localStorage
+// Load cached translation from localStorage (with auto-purging for legacy limit errors)
 export function getStoredTranslation(entryKey: string, lang: string) {
   const cacheKey = getCacheKey(entryKey, lang);
   if (translationCache[cacheKey]) {
-    return translationCache[cacheKey];
+    const cached = translationCache[cacheKey];
+    if (cached && typeof JSON.stringify(cached) === 'string' && JSON.stringify(cached).includes('QUERY LENGTH LIMIT')) {
+      delete translationCache[cacheKey];
+      try { localStorage.removeItem(cacheKey); } catch {}
+      return null;
+    }
+    return cached;
   }
   try {
     const item = localStorage.getItem(cacheKey);
     if (item) {
+      if (item.includes('QUERY LENGTH LIMIT') || item.includes('MYMEMORY WARNING')) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
       const parsed = JSON.parse(item);
       translationCache[cacheKey] = parsed;
       return parsed;
@@ -609,6 +619,7 @@ export function getStoredTranslation(entryKey: string, lang: string) {
 
 // Save translation to localStorage
 export function saveTranslationToStorage(entryKey: string, lang: string, data: any) {
+  if (!data || JSON.stringify(data).includes('QUERY LENGTH LIMIT')) return;
   const cacheKey = getCacheKey(entryKey, lang);
   translationCache[cacheKey] = data;
   try {
@@ -618,7 +629,7 @@ export function saveTranslationToStorage(entryKey: string, lang: string, data: a
   }
 }
 
-export function splitTextIntoChunks(text: string, maxChunkLen: number = 400): string[] {
+export function splitTextIntoSmartChunks(text: string, maxChunkLen: number = 1000): string[] {
   if (!text || text.length <= maxChunkLen) return [text];
 
   const hasParagraphs = /<p[^>]*>[\s\S]*?<\/p>/i.test(text);
@@ -680,39 +691,39 @@ async function translateSingleChunk(chunk: string, targetLang: string): Promise<
   const cleanText = chunk.trim();
   if (cleanText.length === 0) return chunk;
 
-  // 1. Try MyMemory API with max 400 chars per query
+  // 1. Google Translate GTX API (Supports up to 4500 chars natively, no 500 limit!)
   try {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json() as any;
-      const trans = data.responseData?.translatedText;
-      if (
-        trans && 
-        typeof trans === 'string' &&
-        !trans.includes('QUERY LENGTH LIMIT EXCEEDED') &&
-        !trans.includes('MYMEMORY WARNING') &&
-        data.responseStatus === 200
-      ) {
-        return trans;
-      }
-    }
-  } catch {}
-
-  // 2. Try Google GTX API
-  try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
-    const res = await fetch(url);
+    const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`;
+    const res = await fetch(gtxUrl);
     if (res.ok) {
       const json = await res.json() as any;
       if (Array.isArray(json) && Array.isArray(json[0])) {
-        const joined = json[0].map((item: any) => item[0] || '').join('');
-        if (joined && !joined.includes('QUERY LENGTH LIMIT EXCEEDED')) {
-          return joined;
+        const translated = json[0].map((item: any) => item[0] || '').join('');
+        if (translated && !translated.includes('QUERY LENGTH LIMIT')) {
+          return translated;
         }
       }
     }
-  } catch {}
+  } catch (e) {
+    console.warn('Google GTX chunk translate failed:', e);
+  }
+
+  // 2. Google Dict Chrome API
+  try {
+    const dictUrl = `https://translate.googleapis.com/translate_a/t?client=dict-chrome-ex&sl=pl&tl=${encodeURIComponent(targetLang)}&q=${encodeURIComponent(cleanText)}`;
+    const res = await fetch(dictUrl);
+    if (res.ok) {
+      const json = await res.json() as any;
+      if (Array.isArray(json) && json[0]) {
+        const translated = Array.isArray(json[0]) ? json[0].join('') : String(json[0]);
+        if (translated && !translated.includes('QUERY LENGTH LIMIT')) {
+          return translated;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Google Dict Chrome translate failed:', e);
+  }
 
   return chunk;
 }
@@ -722,14 +733,14 @@ export async function translateTextWithFreeApi(text: string, targetLang: string)
 
   try {
     const hasHtml = /<[a-z][\s\S]*>/i.test(text);
-    const chunks = splitTextIntoChunks(text, 400);
+    const chunks = splitTextIntoSmartChunks(text, 1000);
 
     const translatedChunks = await Promise.all(
       chunks.map(chunk => translateSingleChunk(chunk, targetLang))
     );
 
     if (hasHtml) {
-      return translatedChunks.map(c => `<p>${c}</p>`).join('');
+      return translatedChunks.map(c => c.startsWith('<p>') ? c : `<p>${c}</p>`).join('');
     } else {
       return translatedChunks.join('\n\n');
     }

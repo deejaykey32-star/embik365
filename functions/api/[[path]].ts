@@ -12,7 +12,7 @@ declare type PagesFunction<Env = unknown> = (context: {
   env: Env;
 }) => Promise<Response> | Response;
 
-function splitTextIntoChunks(text: string, maxChunkLen: number = 400): string[] {
+function splitTextIntoSmartChunks(text: string, maxChunkLen: number = 1000): string[] {
   if (!text || text.length <= maxChunkLen) return [text];
 
   const hasParagraphs = /<p[^>]*>[\s\S]*?<\/p>/i.test(text);
@@ -71,42 +71,22 @@ function splitTextIntoChunks(text: string, maxChunkLen: number = 400): string[] 
 async function serverTranslateText(text: string, targetLang: string): Promise<string> {
   if (!text || !text.trim() || targetLang === 'pl') return text;
 
-  const chunks = splitTextIntoChunks(text, 400);
+  const chunks = splitTextIntoSmartChunks(text, 1000);
 
   const translatedChunks = await Promise.all(
     chunks.map(async (chunk) => {
       const cleanText = chunk.trim();
       if (!cleanText) return chunk;
 
-      // 1. Try MyMemory Free API
+      // 1. Google Translate GTX API (Supports multi-thousand chars, no 500 limit!)
       try {
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`);
-        if (res.ok) {
-          const data = await res.json() as any;
-          const trans = data?.responseData?.translatedText;
-          if (
-            trans &&
-            typeof trans === 'string' &&
-            !trans.includes('QUERY LENGTH LIMIT EXCEEDED') &&
-            !trans.includes('MYMEMORY WARNING') &&
-            data?.responseStatus === 200
-          ) {
-            return trans;
-          }
-        }
-      } catch (e) {
-        console.warn('MyMemory server translate failed:', e);
-      }
-
-      // 2. Fallback Google GTX API
-      try {
-        const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
+        const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`;
         const res = await fetch(gtxUrl);
         if (res.ok) {
           const json = await res.json() as any;
           if (Array.isArray(json) && Array.isArray(json[0])) {
             const joined = json[0].map((item: any) => item[0] || '').join('');
-            if (joined && !joined.includes('QUERY LENGTH LIMIT EXCEEDED')) {
+            if (joined && !joined.includes('QUERY LENGTH LIMIT')) {
               return joined;
             }
           }
@@ -115,13 +95,30 @@ async function serverTranslateText(text: string, targetLang: string): Promise<st
         console.warn('Google GTX server translate failed:', e);
       }
 
+      // 2. Google Dict Chrome API
+      try {
+        const dictUrl = `https://translate.googleapis.com/translate_a/t?client=dict-chrome-ex&sl=pl&tl=${encodeURIComponent(targetLang)}&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(dictUrl);
+        if (res.ok) {
+          const json = await res.json() as any;
+          if (Array.isArray(json) && json[0]) {
+            const translated = Array.isArray(json[0]) ? json[0].join('') : String(json[0]);
+            if (translated && !translated.includes('QUERY LENGTH LIMIT')) {
+              return translated;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Google Dict Chrome server translate failed:', e);
+      }
+
       return chunk;
     })
   );
 
   const hasHtml = /<[a-z][\s\S]*>/i.test(text);
   if (hasHtml) {
-    return translatedChunks.map(c => `<p>${c}</p>`).join('');
+    return translatedChunks.map(c => c.startsWith('<p>') ? c : `<p>${c}</p>`).join('');
   }
   return translatedChunks.join('\n\n');
 }
