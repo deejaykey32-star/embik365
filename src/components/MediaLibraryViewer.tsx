@@ -28,6 +28,8 @@ import {
   Link2,
   QrCode
 } from 'lucide-react';
+import { SectionId } from '../types';
+import { SECTIONS } from '../data/defaultSections';
 import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
 
 // Automatically import all files from src/pliki using Vite's import.meta.glob
@@ -37,16 +39,143 @@ export interface PlikItem {
   id: string;
   name: string;
   url: string;
-  type: 'image' | 'video' | 'gif' | 'other';
+  type: 'image' | 'video' | 'gif' | 'html' | '3d' | 'pdf' | 'other';
   ext: string;
   filename: string;
+  sectionId?: SectionId | string;
+  dateKey?: string;
+  dayNumber?: number;
+  description?: string;
+  category?: string;
+  shortUrl?: string;
+  isPublishedPublic?: boolean;
+  uploadedAt?: string;
 }
 
 export const MediaLibraryViewer: React.FC = () => {
-  // 1. Prepare items list from src/pliki
+  // 1. Prepare items list from src/pliki & user uploaded materials
   const [items, setItems] = useState<PlikItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'image' | 'gif' | 'video'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'image' | 'gif' | 'video' | 'html' | '3d' | 'pdf'>('all');
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadForm, setUploadForm] = useState({
+    file: null as File | null,
+    name: '',
+    description: '',
+    category: 'Grafika 2D',
+    sectionId: 'wnr365',
+    dateKey: '',
+    dayNumber: '',
+    isPublishedPublic: true,
+    createExternal: true,
+  });
+
+  const handleSaveNewMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadForm.file && !uploadForm.name) {
+      alert('Wybierz plik z dysku lub podaj nazwę materiału!');
+      return;
+    }
+    setIsUploading(true);
+    try {
+      let finalUrl = '';
+      let filename = uploadForm.name || 'material';
+
+      if (uploadForm.file) {
+        filename = uploadForm.file.name;
+        const formData = new FormData();
+        formData.append('file', uploadForm.file);
+
+        try {
+          const res = await fetch('/api/upload-file', {
+            method: 'POST',
+            body: formData,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            finalUrl = data.url;
+          } else {
+            finalUrl = URL.createObjectURL(uploadForm.file);
+          }
+        } catch {
+          finalUrl = URL.createObjectURL(uploadForm.file);
+        }
+      } else {
+        finalUrl = `/pliki/${filename}`;
+      }
+
+      const ext = filename.split('.').pop()?.toLowerCase() || 'png';
+      let type: 'image' | 'video' | 'gif' | 'html' | '3d' | 'pdf' | 'other' = 'image';
+      if (ext === 'gif') type = 'gif';
+      else if (['mp4', 'webm', 'ogg', 'mov'].includes(ext)) type = 'video';
+      else if (['html', 'htm'].includes(ext)) type = 'html';
+      else if (['glb', 'gltf', 'obj'].includes(ext)) type = '3d';
+      else if (ext === 'pdf') type = 'pdf';
+
+      let shortUrl = '';
+      if (uploadForm.createExternal) {
+        try {
+          const absoluteUrl = finalUrl.startsWith('/')
+            ? `${window.location.origin}${finalUrl}`
+            : finalUrl;
+          shortUrl = await shortenUrlViaApi(absoluteUrl);
+          upsertQrCode({
+            id: `qr_mat_${Date.now()}`,
+            title: uploadForm.name || filename,
+            displayLabel: `Materiały: ${uploadForm.name || filename}`,
+            shortUrl,
+            fullUrl: absoluteUrl,
+            category: `Zasoby - ${uploadForm.sectionId}`,
+            createdAt: new Date().toISOString()
+          });
+        } catch (err) {
+          console.warn('Could not create short URL or QR code:', err);
+        }
+      }
+
+      const newItem: PlikItem = {
+        id: `custom_${Date.now()}`,
+        name: uploadForm.name || filename,
+        filename,
+        url: finalUrl,
+        type,
+        ext,
+        sectionId: uploadForm.sectionId,
+        dateKey: uploadForm.dateKey || undefined,
+        dayNumber: uploadForm.dayNumber ? parseInt(uploadForm.dayNumber, 10) : undefined,
+        description: uploadForm.description || undefined,
+        category: uploadForm.category,
+        shortUrl: shortUrl || undefined,
+        isPublishedPublic: uploadForm.isPublishedPublic,
+        uploadedAt: new Date().toISOString()
+      };
+
+      const updatedItems = [newItem, ...items];
+      setItems(updatedItems);
+
+      const storedCustom = updatedItems.filter(i => i.id.startsWith('custom_'));
+      localStorage.setItem('drogowskazy_custom_pliki', JSON.stringify(storedCustom));
+
+      setIsUploadModalOpen(false);
+      setUploadForm({
+        file: null,
+        name: '',
+        description: '',
+        category: 'Grafika 2D',
+        sectionId: 'wnr365',
+        dateKey: '',
+        dayNumber: '',
+        isPublishedPublic: true,
+        createExternal: true,
+      });
+      alert(`Pomyślnie opublikowano i dodano materiał "${newItem.name}"!`);
+    } catch (err: any) {
+      alert(`Błąd tworzenia materiału: ${err.message || err}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
   
   // Active main tab in Media Viewer: 'grid' | 'images' | 'video' | 'html' | '3d'
   const [activeMediaTab, setActiveMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d'>('grid');
@@ -173,18 +302,24 @@ export const MediaLibraryViewer: React.FC = () => {
   const rotation3d = useRef({ x: 0.5, y: 0.8 });
   const zoom3d = useRef(1);
 
-  // Populate items from import.meta.glob on mount
+  // Populate items from import.meta.glob on mount + load stored custom materials from localStorage
   useEffect(() => {
     const list: PlikItem[] = [];
     Object.entries(plikiModules).forEach(([path, url]) => {
       const filename = path.split('/').pop() || '';
       const ext = filename.split('.').pop()?.toLowerCase() || '';
       
-      let type: 'image' | 'video' | 'gif' | 'other' = 'image';
+      let type: 'image' | 'video' | 'gif' | 'html' | '3d' | 'pdf' | 'other' = 'image';
       if (ext === 'gif') {
         type = 'gif';
       } else if (['mp4', 'webm', 'ogg', 'mov'].includes(ext)) {
         type = 'video';
+      } else if (['html', 'htm'].includes(ext)) {
+        type = 'html';
+      } else if (['glb', 'gltf', 'obj'].includes(ext)) {
+        type = '3d';
+      } else if (ext === 'pdf') {
+        type = 'pdf';
       } else if (['jpg', 'jpeg', 'png', 'webp', 'svg', 'bmp'].includes(ext)) {
         type = 'image';
       } else {
@@ -197,9 +332,30 @@ export const MediaLibraryViewer: React.FC = () => {
         filename,
         url: url as string,
         type,
-        ext
+        ext,
+        sectionId: 'general',
+        category: type === 'video' ? 'Film Wideo MP4' : type === 'gif' ? 'Animacja GIF' : type === '3d' ? 'Model 3D / Tekstura' : type === 'html' ? 'Skrypt HTML' : 'Grafika 2D',
+        isPublishedPublic: true,
+        uploadedAt: new Date().toISOString()
       });
     });
+
+    // Load user uploaded materials from localStorage
+    try {
+      const saved = localStorage.getItem('drogowskazy_custom_pliki');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((customItem: PlikItem) => {
+            if (!list.some(i => i.id === customItem.id)) {
+              list.unshift(customItem);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load custom pliki from localStorage:', e);
+    }
 
     setItems(list);
 
@@ -565,6 +721,13 @@ export const MediaLibraryViewer: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs flex items-center gap-2 shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Dodaj Nowy Materiał</span>
+            </button>
             <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
               Kolekcja: {items.length} Plików
             </span>
@@ -756,12 +919,27 @@ export const MediaLibraryViewer: React.FC = () => {
                 {/* File Details Footer */}
                 <div className="p-3 bg-white dark:bg-[#151c28] flex-1 flex flex-col justify-between border-t border-[#f0e6da] dark:border-[#222d3e]">
                   <div>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                        {SECTIONS.find(s => s.id === item.sectionId)?.shortTitle || item.sectionId || 'Zasoby'}
+                      </span>
+                      {item.dateKey && (
+                        <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 font-semibold">
+                          {item.dateKey}
+                        </span>
+                      )}
+                    </div>
                     <h4 className="font-bold text-xs text-[#2e2318] dark:text-white truncate" title={item.name}>
                       {item.name}
                     </h4>
-                    <p className="text-[11px] text-[#786756] dark:text-[#94a3b8] mt-0.5 font-mono">
-                      src/pliki/{item.name}
+                    <p className="text-[11px] text-[#786756] dark:text-[#94a3b8] mt-0.5 font-mono truncate">
+                      {item.filename || item.name}
                     </p>
+                    {item.description && (
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 italic">
+                        {item.description}
+                      </p>
+                    )}
                   </div>
 
                   <div className="mt-3 flex flex-col gap-2 pt-2 border-t border-gray-100 dark:border-[#1e293b]">
@@ -1215,6 +1393,215 @@ export const MediaLibraryViewer: React.FC = () => {
                 <span>Pobierz Pełny Plik</span>
               </a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* UPLOAD NEW MATERIAL MODAL                                    */}
+      {/* ------------------------------------------------------------- */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-[#151c28] border border-[#e2d5c7] dark:border-[#2b394e] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-[#f0e6da] dark:border-[#222d3e] flex items-center justify-between bg-[#faf6f0] dark:bg-[#101725]">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading-cinzel font-bold text-base text-[#2e2318] dark:text-white">
+                    Dodaj Nowy Materiał (Zasoby / 2D/3D / HTML)
+                  </h3>
+                  <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
+                    Wgraj plik i nadaj parametry zgodne ze schematem elementów serwisu
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsUploadModalOpen(false)}
+                className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form Body */}
+            <form onSubmit={handleSaveNewMaterial} className="p-6 overflow-y-auto space-y-4 flex-1">
+              {/* File Selector */}
+              <div>
+                <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                  Wybierz Plik z Dysku
+                </label>
+                <input
+                  type="file"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    if (f) {
+                      setUploadForm(prev => ({
+                        ...prev,
+                        file: f,
+                        name: prev.name || f.name
+                      }));
+                    }
+                  }}
+                  className="w-full text-xs text-[#2e2318] dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-500 cursor-pointer bg-[#f8f5f0] dark:bg-[#1a2333] p-2 rounded-2xl border border-[#d6c7b5] dark:border-[#2b394e]"
+                />
+              </div>
+
+              {/* Name & Category */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                    Nazwa / Tytuł Materiału *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="np. Ikona Chrystusa Króla"
+                    value={uploadForm.name}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#f8f5f0] dark:bg-[#1a2333] border border-[#d6c7b5] dark:border-[#2b394e] text-xs text-[#2e2318] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                    Kategoria Zasobu
+                  </label>
+                  <select
+                    value={uploadForm.category}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#f8f5f0] dark:bg-[#1a2333] border border-[#d6c7b5] dark:border-[#2b394e] text-xs text-[#2e2318] dark:text-white"
+                  >
+                    <option value="Grafika 2D">Grafika 2D (JPG, PNG, WEBP)</option>
+                    <option value="Animacja GIF">Animacja GIF</option>
+                    <option value="Film Wideo MP4">Film Wideo (MP4, WEBM)</option>
+                    <option value="Skrypt HTML">Skrypt / Kod HTML Live</option>
+                    <option value="Model 3D / Tekstura">Model 3D / Tekstura (GLB, OBJ)</option>
+                    <option value="Dokument PDF">Dokument PDF / Księga</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Section Assignment & Date Key */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-1">
+                  <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                    Przypisanie do Sekcji
+                  </label>
+                  <select
+                    value={uploadForm.sectionId}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, sectionId: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#f8f5f0] dark:bg-[#1a2333] border border-[#d6c7b5] dark:border-[#2b394e] text-xs text-[#2e2318] dark:text-white"
+                  >
+                    {SECTIONS.map((sec) => (
+                      <option key={sec.id} value={sec.id}>
+                        {sec.shortTitle || sec.name}
+                      </option>
+                    ))}
+                    <option value="general">Materiały Ogólne</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                    Klucz Dnia (np. 12-25)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="MM-DD np. 12-25"
+                    value={uploadForm.dateKey}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, dateKey: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#f8f5f0] dark:bg-[#1a2333] border border-[#d6c7b5] dark:border-[#2b394e] text-xs text-[#2e2318] dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                    Numer Dnia (1-365)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="np. 25"
+                    value={uploadForm.dayNumber}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, dayNumber: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#f8f5f0] dark:bg-[#1a2333] border border-[#d6c7b5] dark:border-[#2b394e] text-xs text-[#2e2318] dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-xs font-bold text-[#2e2318] dark:text-gray-200 mb-1.5">
+                  Opis Materiału / Wykorzystanie
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Dodatkowy opis, kontekst publikacji lub uwagi dotyczące materiału..."
+                  value={uploadForm.description}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#f8f5f0] dark:bg-[#1a2333] border border-[#d6c7b5] dark:border-[#2b394e] text-xs text-[#2e2318] dark:text-white"
+                />
+              </div>
+
+              {/* Publication Switches */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+                <h4 className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>Parametry Publikacji (Na Stronie & Na Zewnątrz)</span>
+                </h4>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={uploadForm.isPublishedPublic}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, isPublishedPublic: e.target.checked }))}
+                    className="w-4 h-4 accent-amber-600"
+                  />
+                  <span className="text-xs text-[#2e2318] dark:text-gray-200 font-medium">
+                    Publikacja na stronie (widoczny w galerii zasobów & bibliotece)
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={uploadForm.createExternal}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, createExternal: e.target.checked }))}
+                    className="w-4 h-4 accent-amber-600"
+                  />
+                  <span className="text-xs text-[#2e2318] dark:text-gray-200 font-medium">
+                    Publikacja na zewnątrz (Generuj skrócony URL <code className="font-mono text-amber-600">clck.ru</code> + Zarejestruj w Bazie Kodów QR)
+                  </span>
+                </label>
+              </div>
+
+              {/* Submit Controls */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#f0e6da] dark:border-[#222d3e]">
+                <button
+                  type="button"
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                >
+                  Anuluj
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isUploading ? (
+                    <span>Publikowanie...</span>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      <span>Zapisz i Opublikuj Materiał</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -74,15 +74,19 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   fileFilter: (req, file, cb) => {
     const ext = file.originalname.toLowerCase();
-    if (
-      file.mimetype === 'application/pdf' || ext.endsWith('.pdf') ||
-      file.mimetype === 'application/epub+zip' || ext.endsWith('.epub') ||
+    const isAllowed = 
+      file.mimetype.startsWith('image/') ||
+      file.mimetype.startsWith('video/') ||
+      file.mimetype.startsWith('text/html') ||
+      file.mimetype === 'application/pdf' ||
+      file.mimetype === 'application/epub+zip' ||
       file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      file.mimetype === 'application/msword' || ext.endsWith('.docx') || ext.endsWith('.doc')
-    ) {
+      /\.(pdf|epub|docx|doc|png|jpg|jpeg|gif|webp|svg|bmp|mp4|webm|mov|ogg|html|htm|glb|gltf|obj)$/i.test(ext);
+
+    if (isAllowed) {
       cb(null, true);
     } else {
-      cb(new Error('Akceptowane są pliki PDF, ePUB oraz DOCX.'));
+      cb(new Error('Akceptowane są pliki graficzne, wideo, HTML, obiekty 3D oraz dokumenty PDF/ePUB/DOCX.'));
     }
   }
 });
