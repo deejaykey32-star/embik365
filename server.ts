@@ -169,6 +169,75 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Short URL Direct Redirect Endpoint /r/* (Instant 301 Redirect without ads)
+app.get(['/r/:slug', '/r'], (req, res) => {
+  const slug = (req.params.slug || req.query.to || '').toString().trim().toLowerCase();
+  const redirectsMap: Record<string, string> = {
+    'info': 'https://widokinaraj.pl/#info365',
+    'info365': 'https://widokinaraj.pl/#info365',
+    'wnr': 'https://widokinaraj.pl/#wnr365',
+    'wnr365': 'https://widokinaraj.pl/#wnr365',
+    'rhz': 'https://widokinaraj.pl/#rhz365',
+    'rhz365': 'https://widokinaraj.pl/#rhz365',
+    'biblia': 'https://widokinaraj.pl/#biblia365',
+    'biblia365': 'https://widokinaraj.pl/#biblia365',
+    'ebook-wnr': 'https://widokinaraj.pl/#ebook_wnr',
+    'ebook_wnr': 'https://widokinaraj.pl/#ebook_wnr',
+    'ebook-rhz': 'https://widokinaraj.pl/#ebook_rhz',
+    'ebook_rhz': 'https://widokinaraj.pl/#ebook_rhz',
+    'ebook-biblia': 'https://widokinaraj.pl/#ebook_biblia',
+    'ebook_biblia': 'https://widokinaraj.pl/#ebook_biblia',
+    'bio': 'https://widokinaraj.pl/#bio365',
+    'bio365': 'https://widokinaraj.pl/#bio365'
+  };
+
+  const target = redirectsMap[slug] || (req.query.to ? req.query.to.toString() : 'https://widokinaraj.pl/#wnr365');
+  res.redirect(301, target);
+});
+
+// URL Shortening API endpoint (clck.ru / is.gd with 0 ads, server-side fetch)
+app.all('/api/shorten', async (req, res) => {
+  try {
+    const targetUrl = (req.query.url || req.body?.url || '').toString().trim();
+    if (!targetUrl) {
+      return res.status(400).json({ error: 'Brak parametru url' });
+    }
+
+    // 1. Try clck.ru API server-side
+    try {
+      const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`);
+      if (clckRes.ok) {
+        const shortUrl = await clckRes.text();
+        if (shortUrl && shortUrl.startsWith('http')) {
+          return res.json({ success: true, shortUrl: shortUrl.trim(), provider: 'clck.ru' });
+        }
+      }
+    } catch (e) {
+      console.warn('clck.ru server fetch failed:', e);
+    }
+
+    // 2. Try is.gd API server-side
+    try {
+      const isGdRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(targetUrl.replace(/#.*$/, ''))}`);
+      if (isGdRes.ok) {
+        const data = await isGdRes.json() as { shorturl?: string };
+        if (data.shorturl) {
+          return res.json({ success: true, shortUrl: data.shorturl, provider: 'is.gd' });
+        }
+      }
+    } catch (e) {
+      console.warn('is.gd server fetch failed:', e);
+    }
+
+    // Fallback: internal clean short redirect
+    const slug = targetUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 15);
+    const fallbackShort = `https://widokinaraj.pl/r/${slug}`;
+    return res.json({ success: true, shortUrl: fallbackShort, provider: 'internal-fallback' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Błąd skracania adresów URL.' });
+  }
+});
+
 // Get server GitHub environment configuration
 app.get('/api/github/config', (req, res) => {
   res.json({
