@@ -15,7 +15,8 @@ import {
   Copy,
   Wand2,
   RefreshCw,
-  Zap
+  Zap,
+  Upload
 } from 'lucide-react';
 import { QrCodeItem } from '../types';
 import { 
@@ -26,7 +27,11 @@ import {
   generateAndDownloadQrBadgePng,
   generateQrDataUrl,
   shortenUrlViaApi,
-  batchShortenAllQrCodes
+  batchShortenAllQrCodes,
+  exportQrCodesToJson,
+  exportQrCodesToCsv,
+  parseQrCodesFile,
+  importQrCodes
 } from '../utils/qrCodeService';
 
 interface QrCodeModalProps {
@@ -220,23 +225,70 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <input
+              type="file"
+              id="import-qr-file-modal"
+              accept=".json,.csv"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  const items = await parseQrCodesFile(file);
+                  const mode = confirm(`Odczytano ${items.length} kodów QR z pliku "${file.name}".\n\nKliknij [OK], aby połączyć (scal) z obecną bazą.\nKliknij [Anuluj], aby zastąpić całą obecną bazę nowymi kodami.`) ? 'merge' : 'replace';
+                  const updated = importQrCodes(items, mode);
+                  setQrCodes(updated);
+                  alert(`Pomyślnie zaimportowano ${items.length} kodów QR!`);
+                } catch (err: any) {
+                  alert(err.message || 'Błąd importu pliku');
+                }
+                e.target.value = '';
+              }}
+            />
+            <button
+              onClick={() => document.getElementById('import-qr-file-modal')?.click()}
+              className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-[#182335] dark:hover:bg-[#22334c] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-[#2b3d5c] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              title="Importuj kody QR z pliku JSON lub CSV"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Importuj</span>
+            </button>
+
+            <button
+              onClick={() => exportQrCodesToJson(qrCodes)}
+              className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-[#182335] dark:hover:bg-[#22334c] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-[#2b3d5c] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              title="Eksportuj całą bazę do JSON"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-500" />
+              <span>JSON</span>
+            </button>
+
+            <button
+              onClick={() => exportQrCodesToCsv(qrCodes)}
+              className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-[#182335] dark:hover:bg-[#22334c] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-[#2b3d5c] text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              title="Eksportuj całą bazę do CSV (Excel)"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-500" />
+              <span>CSV</span>
+            </button>
+
             <button
               onClick={handleBatchShortenAll}
               disabled={isShortening}
-              className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               title="Skróć wszystkie linki przez bezreklamowe API (clck.ru / direct)"
             >
               {isShortening ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
-              <span>Skróć Wszystkie przez API</span>
+              <span>Skróć Wszystkie</span>
             </button>
 
             <button
               onClick={() => { setIsCreating(true); setEditingItem(null); setShortenError(null); }}
-              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <Plus className="w-4 h-4" />
-              <span>Dodaj Nowy Kod QR</span>
+              <span>Dodaj Nowy</span>
             </button>
           </div>
         </div>

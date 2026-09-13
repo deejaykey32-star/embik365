@@ -39,7 +39,11 @@ import {
   deleteQrCode, 
   generateQrDataUrl,
   shortenUrlViaApi,
-  batchShortenAllQrCodes
+  batchShortenAllQrCodes,
+  exportQrCodesToJson,
+  exportQrCodesToCsv,
+  parseQrCodesFile,
+  importQrCodes
 } from '../utils/qrCodeService';
 
 interface Props {
@@ -1273,8 +1277,61 @@ export const AdminPanel: React.FC<Props> = ({
                     <span>Baza Kodów QR Droga365</span>
                   </h3>
                   <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
-                    Kody QR w formie grafiki z opcją pobrania jako wysokiej jakości plik PNG. Krótki adres Url jest przypisany na stałe, a pełny adres docelowy może być zmieniany dynamicznie w dowolnej chwili.
+                    Kody QR w formie grafiki z opcją pobrania jako plik PNG. Krótki adres Url jest przypisany na stałe, a pełny adres docelowy może być zmieniany dynamicznie.
                   </p>
+                </div>
+
+                {/* Import / Export Tool Buttons */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="file"
+                    id="import-qr-file-admin"
+                    accept=".json,.csv"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const items = await parseQrCodesFile(file);
+                        const mode = confirm(`Odczytano ${items.length} kodów QR z pliku "${file.name}".\n\nKliknij [OK], aby połączyć (scal) z obecną bazą.\nKliknij [Anuluj], aby zastąpić całą obecną bazę nowymi kodami.`) ? 'merge' : 'replace';
+                        const updated = importQrCodes(items, mode);
+                        setAdminQrCodes(updated);
+                        alert(`Pomyślnie zaimportowano ${items.length} kodów QR!`);
+                      } catch (err: any) {
+                        alert(err.message || 'Błąd importu pliku');
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('import-qr-file-admin')?.click()}
+                    className="px-3 py-1.5 rounded-xl bg-amber-700 dark:bg-amber-600 hover:bg-amber-800 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Importuj bazę kodów QR z pliku JSON lub CSV"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Importuj (JSON/CSV)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => exportQrCodesToJson(adminQrCodes)}
+                    className="px-3 py-1.5 rounded-xl bg-[#3f3125] dark:bg-[#1a2333] hover:bg-[#524132] text-white font-bold text-xs border border-[#524132] dark:border-[#2b394e] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Pobierz całą bazę kodów QR jako plik JSON"
+                  >
+                    <Download className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Eksport JSON</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => exportQrCodesToCsv(adminQrCodes)}
+                    className="px-3 py-1.5 rounded-xl bg-[#3f3125] dark:bg-[#1a2333] hover:bg-[#524132] text-white font-bold text-xs border border-[#524132] dark:border-[#2b394e] shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Pobierz całą bazę kodów QR jako plik CSV (Excel)"
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Eksport CSV</span>
+                  </button>
                 </div>
               </div>
 

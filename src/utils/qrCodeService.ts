@@ -249,6 +249,142 @@ export function deleteQrCode(id: string): QrCodeItem[] {
   return filtered;
 }
 
+/**
+ * Export QR codes database to JSON file
+ */
+export function exportQrCodesToJson(codes?: QrCodeItem[]): void {
+  const list = codes || getSavedQrCodes();
+  const jsonStr = JSON.stringify(list, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `droga365_kody_qr_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Export QR codes database to CSV file (UTF-8 with BOM for Excel compatibility)
+ */
+export function exportQrCodesToCsv(codes?: QrCodeItem[]): void {
+  const list = codes || getSavedQrCodes();
+  const headers = ['ID', 'Tytuł / Opis', 'Etykieta pod kodem', 'Docelowy URL (Full)', 'Skrócony URL (Short)', 'Sekcja', 'Kategoria', 'Data Utworzenia'];
+  
+  const rows = list.map(item => [
+    `"${(item.id || '').replace(/"/g, '""')}"`,
+    `"${(item.title || '').replace(/"/g, '""')}"`,
+    `"${(item.displayLabel || '').replace(/"/g, '""')}"`,
+    `"${(item.fullUrl || '').replace(/"/g, '""')}"`,
+    `"${(item.shortUrl || '').replace(/"/g, '""')}"`,
+    `"${(item.sectionId || '').replace(/"/g, '""')}"`,
+    `"${(item.category || '').replace(/"/g, '""')}"`,
+    `"${(item.createdAt || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `droga365_kody_qr_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Parse an imported JSON or CSV file into QrCodeItem array
+ */
+export async function parseQrCodesFile(file: File): Promise<QrCodeItem[]> {
+  const text = await file.text();
+  const ext = file.name.split('.').pop()?.toLowerCase();
+
+  if (ext === 'json' || text.trim().startsWith('[') || text.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(text);
+      const arr = Array.isArray(parsed) ? parsed : (parsed.qrCodes || parsed.items || [parsed]);
+      return arr.map((item: any, idx: number) => ({
+        id: item.id || `qr-imported-${Date.now()}-${idx}`,
+        title: item.title || item.name || 'Kod QR',
+        displayLabel: item.displayLabel || item.label || item.title || 'Skanuj kod',
+        fullUrl: item.fullUrl || item.url || item.targetUrl || 'https://widokinaraj.pl',
+        shortUrl: item.shortUrl || item.fullUrl || 'https://widokinaraj.pl',
+        sectionId: item.sectionId || 'general',
+        category: item.category || 'Ogólne',
+        createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: item.updatedAt
+      }));
+    } catch (err) {
+      throw new Error('Nieprawidłowy plik JSON. Upewnij się, że plik zawiera poprawną strukturę danych.');
+    }
+  }
+
+  // Parse CSV
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  if (lines.length === 0) throw new Error('Plik CSV jest pusty.');
+
+  const items: QrCodeItem[] = [];
+  const startIdx = (lines[0].toLowerCase().includes('tytuł') || lines[0].toLowerCase().includes('title') || lines[0].toLowerCase().includes('id')) ? 1 : 0;
+
+  for (let i = startIdx; i < lines.length; i++) {
+    const rawLine = lines[i].trim();
+    if (!rawLine) continue;
+
+    // Matches CSV fields respecting quotes
+    const matches = rawLine.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || rawLine.split(',');
+    const cleanFields = matches.map(m => m.replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+
+    if (cleanFields.length >= 2) {
+      const id = cleanFields[0] || `qr-csv-${Date.now()}-${i}`;
+      const title = cleanFields[1] || 'Kod QR';
+      const displayLabel = cleanFields[2] || title;
+      const fullUrl = cleanFields[3] || 'https://widokinaraj.pl';
+      const shortUrl = cleanFields[4] || fullUrl;
+      const sectionId = cleanFields[5] || 'general';
+      const category = cleanFields[6] || 'Ogólne';
+
+      items.push({
+        id,
+        title,
+        displayLabel,
+        fullUrl,
+        shortUrl,
+        sectionId,
+        category,
+        createdAt: new Date().toISOString()
+      });
+    }
+  }
+
+  if (items.length === 0) {
+    throw new Error('Nie udało się odczytać żadnych wpisów z pliku CSV.');
+  }
+
+  return items;
+}
+
+/**
+ * Import QR items into storage
+ */
+export function importQrCodes(importedItems: QrCodeItem[], mode: 'merge' | 'replace' = 'merge'): QrCodeItem[] {
+  let finalItems: QrCodeItem[];
+  if (mode === 'replace') {
+    finalItems = importedItems;
+  } else {
+    const current = getSavedQrCodes();
+    const map = new Map<string, QrCodeItem>();
+    current.forEach(item => map.set(item.id, item));
+    importedItems.forEach(item => map.set(item.id, { ...map.get(item.id), ...item }));
+    finalItems = Array.from(map.values());
+  }
+  saveAllQrCodes(finalItems);
+  return finalItems;
+}
+
 // Generate raw QR code DataURL (PNG) from text
 export async function generateQrDataUrl(text: string, size = 300): Promise<string> {
   return await QRCode.toDataURL(text, {
