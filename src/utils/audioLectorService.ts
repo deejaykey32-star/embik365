@@ -23,37 +23,52 @@ export interface LectorConfig {
 
 export const ONLINE_VOICES: OnlineVoiceOption[] = [
   // Polski
-  { id: 'pl-AI-Jan', name: 'Jan (Lektor Naturalny Męski)', lang: 'pl', gender: 'male', description: 'Głęboki, ciepły głos lektorski do rozważań i medytacji', provider: 'AI Cloud Neural' },
-  { id: 'pl-AI-Ewa', name: 'Ewa (Lektorka Naturalna Żeńska)', lang: 'pl', gender: 'female', description: 'Jasny, spokojny głos czytelniczy', provider: 'AI Cloud Neural' },
-  
+  { id: 'pl-AI-Jan', name: 'Jan ♂ (Lektor Męski - Głęboki i Podniosły)', lang: 'pl', gender: 'male', description: 'Głęboki, ciepły głos lektorski do rozważań i czytań duchowych', provider: 'AI Cloud Male' },
+  { id: 'pl-AI-Piotr', name: 'Piotr ♂ (Lektor Męski - Klasztorny i Uroczysty)', lang: 'pl', gender: 'male', description: 'Uroczysty, spokojny głos do kontemplacji i modlitwy', provider: 'AI Cloud Deep Male' },
+  { id: 'pl-AI-Ewa', name: 'Ewa ♀ (Lektorka Żeńska - Spokojna i Ciepła)', lang: 'pl', gender: 'female', description: 'Jasny, ciepły głos czytelniczy i medytacyjny', provider: 'AI Cloud Female' },
+  { id: 'pl-AI-Maria', name: 'Maria ♀ (Lektorka Żeńska - Wyrazista i Delikatna)', lang: 'pl', gender: 'female', description: 'Wyrazisty, krystaliczny głos do lektury Pisma Świętego', provider: 'AI Cloud Gentle Female' },
+
   // English
-  { id: 'en-AI-David', name: 'David (AI Studio Natural Male)', lang: 'en', gender: 'male', description: 'Warm, articulate narrator voice', provider: 'AI Cloud Neural' },
-  { id: 'en-AI-[#Emma]', name: 'Emma (AI Neural Female)', lang: 'en', gender: 'female', description: 'Clear, gentle reading voice', provider: 'AI Cloud Neural' },
-  
+  { id: 'en-AI-David', name: 'David ♂ (AI Male Narrator)', lang: 'en', gender: 'male', description: 'Warm, articulate male narrator voice', provider: 'AI Cloud Male' },
+  { id: 'en-AI-James', name: 'James ♂ (AI Deep Reverent Male)', lang: 'en', gender: 'male', description: 'Reverent, deep male voice for meditation', provider: 'AI Cloud Deep Male' },
+  { id: 'en-AI-Emma', name: 'Emma ♀ (AI Female Reader)', lang: 'en', gender: 'female', description: 'Clear, gentle female reading voice', provider: 'AI Cloud Female' },
+  { id: 'en-AI-Sarah', name: 'Sarah ♀ (AI Meditative Female)', lang: 'en', gender: 'female', description: 'Soft, inspirational female voice', provider: 'AI Cloud Gentle Female' },
+
   // Español
-  { id: 'es-AI-Mateo', name: 'Mateo (Lector Espiritual)', lang: 'es', gender: 'male', description: 'Voz cálida y pausada para meditaciones', provider: 'AI Cloud Neural' },
-  { id: 'es-AI-Sofia', name: 'Sofía (Lectora Serena)', lang: 'es', gender: 'female', description: 'Voz clara e inspiradora', provider: 'AI Cloud Neural' },
-  
+  { id: 'es-AI-Mateo', name: 'Mateo ♂ (Lector Masculino Cálido)', lang: 'es', gender: 'male', description: 'Voz cálida y pausada para reflexiones', provider: 'AI Cloud Male' },
+  { id: 'es-AI-Carlos', name: 'Carlos ♂ (Lector Masculino Solemne)', lang: 'es', gender: 'male', description: 'Voz grave y solemne', provider: 'AI Cloud Deep Male' },
+  { id: 'es-AI-Sofia', name: 'Sofía ♀ (Lectora Femenina Serena)', lang: 'es', gender: 'female', description: 'Voz clara e inspiradora para la oración', provider: 'AI Cloud Female' },
+  { id: 'es-AI-Lucia', name: 'Lucía ♀ (Lectora Femenina Dulce)', lang: 'es', gender: 'female', description: 'Voz dulce y suave', provider: 'AI Cloud Gentle Female' },
+
   // Italiano
-  { id: 'it-AI-Marco', name: 'Marco (Lettore Naturale)', lang: 'it', gender: 'male', description: 'Voce solenne e calda', provider: 'AI Cloud Neural' },
-  { id: 'it-AI-Giulia', name: 'Giulia (Lettrice Chiara)', lang: 'it', gender: 'female', description: 'Voce serena per la preghiera', provider: 'AI Cloud Neural' },
+  { id: 'it-AI-Marco', name: 'Marco ♂ (Lettore Maschile Solenne)', lang: 'it', gender: 'male', description: 'Voce solenne e calda per la meditazione', provider: 'AI Cloud Male' },
+  { id: 'it-AI-Giovanni', name: 'Giovanni ♂ (Lettore Maschile Profondo)', lang: 'it', gender: 'male', description: 'Voce profonda da cattedrale', provider: 'AI Cloud Deep Male' },
+  { id: 'it-AI-Giulia', name: 'Giulia ♀ (Lettrice Femminile Chiara)', lang: 'it', gender: 'female', description: 'Voce serena e chiara per la preghiera', provider: 'AI Cloud Female' },
+  { id: 'it-AI-Chiara', name: 'Chiara ♀ (Lettrice Femminile Dolce)', lang: 'it', gender: 'female', description: 'Voce dolce per le letture spirituali', provider: 'AI Cloud Gentle Female' },
 
   // Deutsch
-  { id: 'de-AI-Hans', name: 'Hans (Sprecher AI)', lang: 'de', gender: 'male', description: 'Ruhige, getragene Stimme', provider: 'AI Cloud Neural' },
-  { id: 'de-AI-Greta', name: 'Greta (Sprecherin AI)', lang: 'de', gender: 'female', description: 'Klare, sanfte Vorlesestimme', provider: 'AI Cloud Neural' },
+  { id: 'de-AI-Hans', name: 'Hans ♂ (Sprecher Männlich Ruhig)', lang: 'de', gender: 'male', description: 'Ruhige, getragene Stimme für Betrachtungen', provider: 'AI Cloud Male' },
+  { id: 'de-AI-Michael', name: 'Michael ♂ (Sprecher Männlich Tief)', lang: 'de', gender: 'male', description: 'Tiefe Besinnungsstimme', provider: 'AI Cloud Deep Male' },
+  { id: 'de-AI-Greta', name: 'Greta ♀ (Sprecherin Weiblich Klar)', lang: 'de', gender: 'female', description: 'Klare, angenehme Vorlesestimme', provider: 'AI Cloud Female' },
+  { id: 'de-AI-Hannah', name: 'Hannah ♀ (Sprecherin Weiblich Sanft)', lang: 'de', gender: 'female', description: 'Sanfte geistliche Stimme', provider: 'AI Cloud Gentle Female' },
 
   // Français
-  { id: 'fr-AI-Louis', name: 'Louis (Lecteur AI)', lang: 'fr', gender: 'male', description: 'Voix chaleureuse et méditative', provider: 'AI Cloud Neural' },
-  { id: 'fr-AI-Claire', name: 'Claire (Lectrice AI)', lang: 'fr', gender: 'female', description: 'Voix douce et claire', provider: 'AI Cloud Neural' },
+  { id: 'fr-AI-Louis', name: 'Louis ♂ (Lecteur Masculin Chaleureux)', lang: 'fr', gender: 'male', description: 'Voix chaleureuse et solennelle', provider: 'AI Cloud Male' },
+  { id: 'fr-AI-Antoine', name: 'Antoine ♂ (Lecteur Masculin Méditatif)', lang: 'fr', gender: 'male', description: 'Voix grave et posée', provider: 'AI Cloud Deep Male' },
+  { id: 'fr-AI-Claire', name: 'Claire ♀ (Lectrice Féminine Douce)', lang: 'fr', gender: 'female', description: 'Voix douce et claire pour les prières', provider: 'AI Cloud Female' },
+  { id: 'fr-AI-Marie', name: 'Marie ♀ (Lectrice Féminine Sereine)', lang: 'fr', gender: 'female', description: 'Voix sereine et inspirante', provider: 'AI Cloud Gentle Female' },
 
   // Português
-  { id: 'pt-AI-Joao', name: 'João (Lector AI)', lang: 'pt', gender: 'male', description: 'Voz calma e inspiradora', provider: 'AI Cloud Neural' },
+  { id: 'pt-AI-Joao', name: 'João ♂ (Lector Masculino Calmo)', lang: 'pt', gender: 'male', description: 'Voz calma e inspiradora para orações', provider: 'AI Cloud Male' },
+  { id: 'pt-AI-Mariana', name: 'Mariana ♀ (Lectora Feminina Clara)', lang: 'pt', gender: 'female', description: 'Voz serena e clara para leitura', provider: 'AI Cloud Female' },
 
   // Українська
-  { id: 'uk-AI-Oleksandr', name: 'Олександр (Декламатор AI)', lang: 'uk', gender: 'male', description: 'Глибокий, спокійний голос для молитов', provider: 'AI Cloud Neural' },
+  { id: 'uk-AI-Oleksandr', name: 'Олександр ♂ (Декламатор Чоловічий Глибокий)', lang: 'uk', gender: 'male', description: 'Глибокий, спокійний голос для молитов', provider: 'AI Cloud Male' },
+  { id: 'uk-AI-Olena', name: 'Олена ♀ (Декламатор Жіночий Ніжний)', lang: 'uk', gender: 'female', description: 'Ніжний виразний голос для читань', provider: 'AI Cloud Female' },
 
   // Lingua Latina
-  { id: 'la-AI-Marcus', name: 'Marcus (Lector Ecclesiasticus)', lang: 'la', gender: 'male', description: 'Vox eclesiastica solemnis pro orationibus', provider: 'AI Cloud Neural' }
+  { id: 'la-AI-Marcus', name: 'Marcus ♂ (Lector Ecclesiasticus Masculinus)', lang: 'la', gender: 'male', description: 'Vox eclesiastica solemnis pro orationibus', provider: 'AI Cloud Male' },
+  { id: 'la-AI-Benedicta', name: 'Benedicta ♀ (Lectora Ecclesiastica Feminina)', lang: 'la', gender: 'female', description: 'Vox sancta et serena pro recitatione', provider: 'AI Cloud Female' }
 ];
 
 const STORAGE_KEY = 'drogowskazy_lector_config';
@@ -139,12 +154,15 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
 
   if (!text || !text.trim()) return;
 
+  const voiceProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
+  const targetGender = voiceProfile?.gender || 'male';
+  const effectivePitch = config.pitch * (targetGender === 'female' ? 1.2 : targetGender === 'male' ? 0.85 : 1.0);
+
   if (config.mode === 'online') {
     // ONLINE AI TTS MODE
     try {
       if (onStart) onStart();
 
-      // Request synthesized audio from /api/tts
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,7 +171,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
           voiceId: config.onlineVoiceId,
           lang: config.lang,
           rate: config.rate,
-          pitch: config.pitch
+          pitch: effectivePitch
         })
       });
 
@@ -170,19 +188,18 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
         };
 
         audio.onerror = (e) => {
-          console.warn('Online Audio playback failed, falling back to local TTS:', e);
-          playLocalSpeechFallback(options);
+          console.warn('Online Audio playback failed, falling back to local speech:', e);
+          playLocalSpeechFallback({ ...options, config: { ...config, pitch: effectivePitch } });
         };
 
         currentAudioElement = audio;
         await audio.play();
       } else {
-        // Fallback to local speech if server online endpoint fails
-        playLocalSpeechFallback(options);
+        playLocalSpeechFallback({ ...options, config: { ...config, pitch: effectivePitch } });
       }
     } catch (err) {
       console.warn('Online TTS error, falling back to local speech:', err);
-      playLocalSpeechFallback(options);
+      playLocalSpeechFallback({ ...options, config: { ...config, pitch: effectivePitch } });
     }
   } else {
     // LOCAL WEB SPEECH API MODE
@@ -197,26 +214,35 @@ function playLocalSpeechFallback(options: PlayLectorOptions): void {
     return;
   }
 
+  const voiceProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
+  const targetGender = voiceProfile?.gender || 'male';
+
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = config.rate;
-  utterance.pitch = config.pitch;
+  utterance.pitch = config.pitch * (targetGender === 'female' ? 1.2 : targetGender === 'male' ? 0.85 : 1.0);
   utterance.volume = config.volume;
 
   // Try to attach chosen local voice
   const allVoices = getLocalVoices();
+  let chosenVoice: SpeechSynthesisVoice | undefined;
+
   if (config.localVoiceURI) {
-    const found = allVoices.find(v => v.voiceURI === config.localVoiceURI);
-    if (found) utterance.voice = found;
+    chosenVoice = allVoices.find(v => v.voiceURI === config.localVoiceURI);
   }
 
-  if (!utterance.voice) {
-    // Match by language code
+  if (!chosenVoice) {
     const langVoices = getLocalVoicesForLang(config.lang);
     if (langVoices.length > 0) {
-      utterance.voice = langVoices[0];
+      if (targetGender === 'female') {
+        chosenVoice = langVoices.find(v => /female|ewa|maria|zora|zira|hazel|samantha|victoria|karen|catherine/i.test(v.name));
+      } else {
+        chosenVoice = langVoices.find(v => /male|jan|piotr|adam|david|george|paul|stefan|pablo/i.test(v.name));
+      }
+      if (!chosenVoice) chosenVoice = langVoices[0];
     }
   }
 
+  if (chosenVoice) utterance.voice = chosenVoice;
   utterance.lang = utterance.voice?.lang || `${config.lang}-${config.lang.toUpperCase()}`;
 
   utterance.onstart = () => {

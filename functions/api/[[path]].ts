@@ -271,6 +271,58 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     }
   }
 
+  // Text-To-Speech (TTS) Online AI Endpoint
+  if (pathname === '/api/tts' && request.method === 'POST') {
+    try {
+      const body = await request.json() as {
+        text?: string;
+        voiceId?: string;
+        lang?: string;
+        rate?: number;
+        pitch?: number;
+      };
+
+      const rawText = (body.text || '').trim();
+      if (!rawText) {
+        return new Response(
+          JSON.stringify({ error: 'Brak tekstu do odczytania.' }),
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      const cleanText = rawText.substring(0, 1000);
+      const targetLang = (body.lang || 'pl').toLowerCase();
+
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${targetLang}&client=tw-ob`;
+      const ttsRes = await fetch(ttsUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
+
+      if (ttsRes.ok) {
+        const audioBuffer = await ttsRes.arrayBuffer();
+        return new Response(audioBuffer, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'audio/mpeg',
+            'Cache-Control': 'public, max-age=86400'
+          }
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ error: 'Błąd generowania głosu TTS przez serwer.' }),
+        { status: 500, headers: corsHeaders }
+      );
+    } catch (err: any) {
+      return new Response(
+        JSON.stringify({ error: err.message || 'Błąd serwera TTS' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+  }
+
   return new Response(
     JSON.stringify({ error: 'Endpoint nie został znaleziony w Cloudflare Pages Functions.' }),
     { status: 404, headers: corsHeaders }

@@ -448,6 +448,35 @@ const handleFileUpload = async (req: express.Request, res: express.Response) => 
 app.post('/api/upload-pdf', upload.single('pdfFile'), handleFileUpload);
 app.post('/api/upload-file', upload.single('pdfFile'), handleFileUpload);
 
+// Text-To-Speech (TTS) Online AI Endpoint
+app.post('/api/tts', async (req, res) => {
+  try {
+    const { text, lang } = req.body;
+    const rawText = (text || '').toString().trim();
+    if (!rawText) {
+      return res.status(400).json({ error: 'Brak tekstu do odczytania.' });
+    }
+    const cleanText = rawText.substring(0, 1000);
+    const targetLang = (lang || 'pl').toLowerCase();
+
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${targetLang}&client=tw-ob`;
+    const ttsRes = await fetch(ttsUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+
+    if (ttsRes.ok) {
+      const arrayBuffer = await ttsRes.arrayBuffer();
+      res.setHeader('Content-Type', 'audio/mpeg');
+      return res.send(Buffer.from(arrayBuffer));
+    }
+    res.status(500).json({ error: 'Błąd generowania mowy przez serwer TTS.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Błąd serwera TTS.' });
+  }
+});
+
 // Translation endpoint using Gemini API
 app.post('/api/translate', async (req, res) => {
   const { text, targetLang, targetLangName, title, prayer, mystery, intention } = req.body;
