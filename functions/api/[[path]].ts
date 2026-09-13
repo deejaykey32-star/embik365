@@ -78,27 +78,58 @@ async function serverTranslateText(text: string, targetLang: string): Promise<st
       const cleanText = chunk.trim();
       if (!cleanText) return chunk;
 
-      // 1. Google Translate GTX API (Supports multi-thousand chars, no 500 limit!)
+      // Engine 1: Google Translate Mobile App API (client=at) - Official Android backend, ZERO limits!
       try {
-        const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`;
-        const res = await fetch(gtxUrl);
+        const url = `https://translate.google.com/translate_a/single?client=at&sl=pl&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(url);
         if (res.ok) {
           const json = await res.json() as any;
           if (Array.isArray(json) && Array.isArray(json[0])) {
-            const joined = json[0].map((item: any) => item[0] || '').join('');
-            if (joined && !joined.includes('QUERY LENGTH LIMIT')) {
-              return joined;
+            const translated = json[0].map((item: any) => item[0] || '').join('');
+            if (translated && !translated.includes('QUERY LENGTH LIMIT')) {
+              return translated;
             }
           }
         }
       } catch (e) {
-        console.warn('Google GTX server translate failed:', e);
+        console.warn('Google Mobile API server translate failed:', e);
       }
 
-      // 2. Google Dict Chrome API
+      // Engine 2: Google Translate Structured Neural JSON API (client=gtx, dj=1)
       try {
-        const dictUrl = `https://translate.googleapis.com/translate_a/t?client=dict-chrome-ex&sl=pl&tl=${encodeURIComponent(targetLang)}&q=${encodeURIComponent(cleanText)}`;
-        const res = await fetch(dictUrl);
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${encodeURIComponent(targetLang)}&dt=t&dj=1&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const json = await res.json() as any;
+          if (json && Array.isArray(json.sentences)) {
+            const translated = json.sentences.map((s: any) => s.trans || '').join('');
+            if (translated && !translated.includes('QUERY LENGTH LIMIT')) {
+              return translated;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Google GTX dj=1 server translate failed:', e);
+      }
+
+      // Engine 3: Lingva Open-Source Neural Translation API (Zero limits!)
+      try {
+        const url = `https://lingva.ml/api/v1/pl/${encodeURIComponent(targetLang)}/${encodeURIComponent(cleanText)}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json() as any;
+          if (data && data.translation && !data.translation.includes('QUERY LENGTH LIMIT')) {
+            return data.translation;
+          }
+        }
+      } catch (e) {
+        console.warn('Lingva Neural API server translate failed:', e);
+      }
+
+      // Engine 4: Google Dict Chrome API
+      try {
+        const url = `https://translate.googleapis.com/translate_a/t?client=dict-chrome-ex&sl=pl&tl=${encodeURIComponent(targetLang)}&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(url);
         if (res.ok) {
           const json = await res.json() as any;
           if (Array.isArray(json) && json[0]) {
