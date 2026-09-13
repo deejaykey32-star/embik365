@@ -57,7 +57,7 @@ export const CalendarModal: React.FC<Props> = ({
                 Wybór Dnia i Miesiąca
               </h2>
               <p className="text-xs text-[#7d6c5d] dark:text-[#94a3b8]">
-                Cykl czytań: <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> (Dzień 1) → <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span> (Dzień 366)
+                Cykl czytań: <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> (Dzień 1) → <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span> (Dzień 365)
               </p>
             </div>
           </div>

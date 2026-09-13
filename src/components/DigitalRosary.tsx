@@ -271,7 +271,7 @@ export const DigitalRosary: React.FC<DigitalRosaryProps> = ({
             <span>Krok: {activeStep + 1} / {model.beads.length}</span>
           </div>
 
-          <div className="w-full relative flex items-center justify-center overflow-x-auto select-none py-2">
+          <div className="w-full max-w-full relative flex items-center justify-center overflow-hidden select-none py-2">
             <svg
               viewBox={model.viewBox}
               className="max-h-[640px] w-auto drop-shadow-md transition-all duration-300"

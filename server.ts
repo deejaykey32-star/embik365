@@ -533,6 +533,38 @@ app.delete('/api/uploads/:id', (req, res) => {
   res.status(404).json({ error: 'Plik nie został znaleziony.' });
 });
 
+// Online TTS synthesis endpoint (serves high quality neural speech for all languages)
+app.post('/api/tts', async (req, res) => {
+  const { text, lang, voiceId, rate } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: 'Brak tekstu do syntezy mowy.' });
+  }
+
+  const targetLang = lang || 'pl';
+  const cleanText = text.substring(0, 500).replace(/<[^>]*>/g, '').trim();
+
+  try {
+    // 1. Try Google Translate TTS API for natural online voices
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${encodeURIComponent(targetLang)}&client=tw-ob`;
+    const ttsRes = await fetch(ttsUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (ttsRes.ok) {
+      const arrayBuffer = await ttsRes.arrayBuffer();
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.send(Buffer.from(arrayBuffer));
+    }
+  } catch (e) {
+    console.warn('Google Translate TTS fetch failed:', e);
+  }
+
+  res.status(500).json({ error: 'Nie udało się wygenerować mowy online.' });
+});
+
 // Admin verify / simulated session endpoint
 app.post('/api/auth/verify', (req, res) => {
   const { email } = req.body;
@@ -552,6 +584,7 @@ app.post('/api/auth/verify', (req, res) => {
 
   res.status(401).json({ error: 'Brak uprawnień administratora dla tego konta.' });
 });
+
 
 // Start server with Vite middleware in dev or static files in prod
 async function startServer() {

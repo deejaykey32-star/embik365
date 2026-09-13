@@ -22,9 +22,12 @@ import {
   Key,
   QrCode,
   Download,
-  Plus
+  Plus,
+  Sparkles,
+  RotateCcw,
+  Image as ImageIcon
 } from 'lucide-react';
-import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig, QrCodeItem } from '../types';
+import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig, QrCodeItem, HomePageConfig, SectionShowcaseConfig } from '../types';
 import { SECTIONS } from '../data/defaultSections';
 import { CYCLE_DAYS } from '../utils/dateCycle';
 import { testGitHubConnection, uploadPdfDirectlyToGitHub } from '../utils/githubSync';
@@ -32,6 +35,7 @@ import { parseDocumentIntoDayEntries } from '../utils/documentParser';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { WysiwygEditor } from './WysiwygEditor';
 import { MediaLibraryViewer } from './MediaLibraryViewer';
+import { getHomePageConfig, saveHomePageConfig, resetHomePageConfig } from '../utils/homePageConfig';
 import { 
   getSavedQrCodes, 
   generateAndDownloadQrBadgePng, 
@@ -43,6 +47,7 @@ import {
   exportQrCodesToJson,
   exportQrCodesToCsv,
   parseQrCodesFile,
+
   importQrCodes
 } from '../utils/qrCodeService';
 
@@ -91,8 +96,13 @@ export const AdminPanel: React.FC<Props> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library'
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library'>('upload');
+  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'>('upload');
+
+  // Home Page (Info365) Configuration state
+  const [homeConfig, setHomeConfig] = useState<HomePageConfig>(() => getHomePageConfig());
+  const [homeSaveStatus, setHomeSaveStatus] = useState<string | null>(null);
+
 
   // QR Code Database state
   const [adminQrCodes, setAdminQrCodes] = useState<QrCodeItem[]>(() => getSavedQrCodes());
@@ -549,7 +559,7 @@ export const AdminPanel: React.FC<Props> = ({
         </div>
 
         {/* Subtabs Selector */}
-        <div className="flex items-center border-b border-[#e7ded2] dark:border-[#212b3c] bg-[#f8f3ea] dark:bg-[#0f1420] px-4 sm:px-6 overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-[#e7ded2] dark:border-[#212b3c] bg-[#f8f3ea] dark:bg-[#0f1420] p-2 sm:px-6">
           <button
             onClick={() => setActiveTab('upload')}
             id="tab-admin-upload"
@@ -633,6 +643,23 @@ export const AdminPanel: React.FC<Props> = ({
             <Layers className="w-4 h-4" />
             <span>Zasoby (src/pliki) & 2D/3D / HTML</span>
           </button>
+
+          <button
+            onClick={() => {
+              setHomeConfig(getHomePageConfig());
+              setActiveTab('homepage');
+            }}
+            id="tab-admin-homepage"
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'homepage'
+                ? 'border-[#8c572b] dark:border-amber-400 text-[#8c572b] dark:text-amber-400 bg-white/60 dark:bg-[#161c28]'
+                : 'border-transparent text-[#6e5d4d] dark:text-[#94a3b8] hover:text-[#382b20] dark:hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>Strona Startowa & Ilustracje</span>
+          </button>
+
         </div>
 
         {/* Tab Content Body */}
@@ -1533,8 +1560,275 @@ export const AdminPanel: React.FC<Props> = ({
 
           {/* TAB 6: MEDIA LIBRARY (src/pliki), VIDEO, HTML LIVE & 2D/3D */}
           {activeTab === 'media_library' && <MediaLibraryViewer />}
+
+          {/* TAB 7: STRONA STARTOWA (INFO365) & ILUSTRACJE */}
+          {activeTab === 'homepage' && (
+            <div className="max-w-4xl mx-auto space-y-6 animate-fade-in text-[#2c2219] dark:text-[#f1f5f9]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#e5d8c8] dark:border-[#212b3c]">
+                <div>
+                  <h3 className="font-heading-cinzel font-bold text-lg text-[#2a2016] dark:text-[#f3e8d2] flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    <span>Zarządzanie Stroną Startową (Info365) & Ilustracjami</span>
+                  </h3>
+                  <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
+                    Dostosuj tytuł główny, podtytuł, opis oraz własne ilustracje graficzne dla wszystkich 7 sekcji.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (confirm('Czy na pewno chcesz przywrócić domyślne nagłówki i ilustracje?')) {
+                        const def = resetHomePageConfig();
+                        setHomeConfig(def);
+                        setHomeSaveStatus('Przywrócono domyślne ustawienia fabryczne.');
+                        setTimeout(() => setHomeSaveStatus(null), 3000);
+                      }
+                    }}
+                    className="px-3 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 text-stone-800 dark:text-stone-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Reset Do Domyślnych</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      saveHomePageConfig(homeConfig);
+                      setHomeSaveStatus('Zapisano pomyślnie zmiany strony startowej!');
+                      setTimeout(() => setHomeSaveStatus(null), 3000);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer transition-colors"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Zapisz Zmiany Strony Startowej</span>
+                  </button>
+                </div>
+              </div>
+
+              {homeSaveStatus && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  <span>{homeSaveStatus}</span>
+                </div>
+              )}
+
+              {/* SECTION 1: HERO HEADER */}
+              <div className="p-5 rounded-3xl bg-white dark:bg-[#111723] border border-[#e5d8c8] dark:border-[#212b3c] shadow-sm space-y-4">
+                <h4 className="font-heading-cinzel font-bold text-sm text-amber-900 dark:text-amber-300 uppercase tracking-wide">
+                  1. Nagłówek Główny (Hero Banner)
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                      Tytuł Główny (Hero Title)
+                    </label>
+                    <input
+                      type="text"
+                      value={homeConfig.heroTitle}
+                      onChange={(e) => setHomeConfig({ ...homeConfig, heroTitle: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                      Podtytuł (Hero Subtitle)
+                    </label>
+                    <input
+                      type="text"
+                      value={homeConfig.heroSubtitle}
+                      onChange={(e) => setHomeConfig({ ...homeConfig, heroSubtitle: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs">
+                  <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                    Wstęp do Aplikacji (Kod HTML / WYSIWYG)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={homeConfig.introHtml}
+                    onChange={(e) => setHomeConfig({ ...homeConfig, introHtml: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-mono text-[11px] leading-relaxed focus:outline-hidden focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              {/* SECTION 2: SHOWCASE CARDS (7 SECTIONS) */}
+              <div className="space-y-4">
+                <h4 className="font-heading-cinzel font-bold text-sm text-amber-900 dark:text-amber-300 uppercase tracking-wide">
+                  2. Karty 7 Sekcji i Ilustracje Nagłówkowe
+                </h4>
+
+                <div className="grid grid-cols-1 gap-6">
+                  {homeConfig.showcases.map((sc, idx) => (
+                    <div
+                      key={sc.id}
+                      className="p-5 rounded-3xl bg-white dark:bg-[#111723] border border-[#e5d8c8] dark:border-[#212b3c] shadow-sm space-y-4"
+                    >
+                      <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+                        <span className="font-heading-cinzel font-bold text-sm text-amber-800 dark:text-amber-400">
+                          #{idx + 1} Sekcja: {sc.name} ({sc.id})
+                        </span>
+                        <span className="text-[11px] font-mono text-stone-400">ID: {sc.id}</span>
+                      </div>
+
+                      {/* Image Preview & Upload / Input */}
+                      <div className="p-3 bg-stone-100 dark:bg-[#182030] rounded-2xl border border-stone-200 dark:border-stone-700 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="w-full sm:w-48 h-28 rounded-xl overflow-hidden bg-stone-800 shrink-0 border border-amber-500/30">
+                          <img
+                            src={sc.imageUrl}
+                            alt={sc.imageAlt || sc.name}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              (e.target as HTMLElement).setAttribute('src', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80');
+                            }}
+                          />
+                        </div>
+                        <div className="flex-1 w-full space-y-2 text-xs">
+                          <label className="block font-bold text-stone-700 dark:text-stone-300">
+                            URL Ilustracji Nagłówkowej (zdjęcie na karcie sekcji)
+                          </label>
+                          <input
+                            type="text"
+                            value={sc.imageUrl}
+                            onChange={(e) => {
+                              const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, imageUrl: e.target.value } : s);
+                              setHomeConfig({ ...homeConfig, showcases: updated });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-mono text-[11px] focus:outline-hidden focus:border-amber-500"
+                            placeholder="https://images.unsplash.com/..."
+                          />
+                          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/30 font-bold text-[11px] cursor-pointer">
+                            <ImageIcon className="w-3.5 h-3.5" />
+                            <span>Wgraj z pliku graficznego</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = () => {
+                                    if (typeof reader.result === 'string') {
+                                      const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, imageUrl: reader.result as string } : s);
+                                      setHomeConfig({ ...homeConfig, showcases: updated });
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                            Nazwa Wyświetlana
+                          </label>
+                          <input
+                            type="text"
+                            value={sc.name}
+                            onChange={(e) => {
+                              const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, name: e.target.value } : s);
+                              setHomeConfig({ ...homeConfig, showcases: updated });
+                            }}
+                            className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                            Etykieta / Badge
+                          </label>
+                          <input
+                            type="text"
+                            value={sc.badge}
+                            onChange={(e) => {
+                              const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, badge: e.target.value } : s);
+                              setHomeConfig({ ...homeConfig, showcases: updated });
+                            }}
+                            className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="text-xs">
+                        <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                          Krótki Wyróżnik (Short Description)
+                        </label>
+                        <input
+                          type="text"
+                          value={sc.shortDesc}
+                          onChange={(e) => {
+                            const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, shortDesc: e.target.value } : s);
+                            setHomeConfig({ ...homeConfig, showcases: updated });
+                          }}
+                          className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden"
+                        />
+                      </div>
+
+                      <div className="text-xs">
+                        <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                          Pełny Opis Sekcji (Full Description)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={sc.fullDesc}
+                          onChange={(e) => {
+                            const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, fullDesc: e.target.value } : s);
+                            setHomeConfig({ ...homeConfig, showcases: updated });
+                          }}
+                          className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-serif-book leading-relaxed focus:outline-hidden"
+                        />
+                      </div>
+
+                      <div className="text-xs">
+                        <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                          Opis Alternatywny Grafiki (Alt)
+                        </label>
+                        <input
+                          type="text"
+                          value={sc.imageAlt}
+                          onChange={(e) => {
+                            const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, imageAlt: e.target.value } : s);
+                            setHomeConfig({ ...homeConfig, showcases: updated });
+                          }}
+                          className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#182030] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-hidden"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom save bar */}
+              <div className="pt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    saveHomePageConfig(homeConfig);
+                    setHomeSaveStatus('Zapisano pomyślnie wszystkie zmiany strony startowej!');
+                    setTimeout(() => setHomeSaveStatus(null), 3000);
+                  }}
+                  className="px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm flex items-center gap-2 shadow-lg cursor-pointer transition-colors"
+                >
+                  <Save className="w-5 h-5" />
+                  <span>Zapisz Wszystkie Zmiany Strony Startowej</span>
+                </button>
+              </div>
+
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
+

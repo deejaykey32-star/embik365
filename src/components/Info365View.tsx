@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  SectionMeta, 
   SectionId, 
-  AdminUser, 
-  QrCodeItem 
+  AdminUser,
+  SectionShowcaseConfig,
+  HomePageConfig
 } from '../types';
 import { 
   Compass, 
@@ -15,180 +15,133 @@ import {
   Library, 
   HeartHandshake, 
   QrCode, 
-  Download, 
   Edit3, 
   Sparkles, 
-  Calendar,
-  CheckCircle2,
-  Share2
+  Image as ImageIcon,
+  RotateCcw,
+  X,
+  Save,
+  Check,
+  ShieldCheck,
+  Globe,
+  Lock,
+  Unlock
 } from 'lucide-react';
-import { SECTIONS } from '../data/defaultSections';
 import { generateAndDownloadQrBadgePng, getSavedQrCodes } from '../utils/qrCodeService';
 import { ElementEditorModal } from './ElementEditorModal';
+import { 
+  getHomePageConfig, 
+  saveHomePageConfig, 
+  resetHomePageConfig, 
+  SECTION_ICONS_MAP 
+} from '../utils/homePageConfig';
+import { getUIText } from '../utils/translationService';
 
 interface Info365ViewProps {
   onSelectSection: (id: SectionId) => void;
   adminUser: AdminUser | null;
+  onLogin?: (user: AdminUser) => void;
+  onOpenAdmin?: () => void;
   onOpenQrModal?: () => void;
+  currentLang?: string;
 }
-
-// Section illustrations and metadata
-export const SECTION_SHOWCASES: Array<{
-  id: SectionId;
-  name: string;
-  badge: string;
-  shortDesc: string;
-  fullDesc: string;
-  imageUrl: string;
-  imageAlt: string;
-  icon: any;
-  color: string;
-  bgGradient: string;
-  qrId: string;
-}> = [
-  {
-    id: 'wnr365',
-    name: 'WnR365',
-    badge: 'Blog Codzienny',
-    shortDesc: 'Widoki na Raj – codzienne spojrzenie na świat oczami wiary, nadziei i perspektywy wieczności.',
-    fullDesc: 'Codzienny zbiór głębokich rozważań, aforyzmów i medytacji. Każdego dnia nowy wpis pomagający odnaleźć Boga w codziennych sytuacjach i dostrzec horyzont Wieczności.',
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Horyzont nieba i morza – Widoki na Raj',
-    icon: Feather,
-    color: '#b45309',
-    bgGradient: 'from-amber-900/20 via-amber-800/10 to-transparent',
-    qrId: 'qr_wnr365'
-  },
-  {
-    id: 'rhz365',
-    name: 'RHZ365',
-    badge: 'Modlitwa & Różaniec',
-    shortDesc: 'Różaniec Historii Zbawienia – cyfrowa medytacja różańcowa w koncepcji "IN-LOVE".',
-    fullDesc: 'Unikalna modlitwa różańcowa prowadząca przez całą Historię Zbawienia. Zawiera interaktywny różaniec w 6 modelach do wyboru (RGBA i CMYK, 50+6 oraz w linii i okręgu).',
-    imageUrl: 'https://images.unsplash.com/photo-1543807535-eceef0bc6599?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Różaniec i światło wiary',
-    icon: Cross,
-    color: '#0369a1',
-    bgGradient: 'from-sky-900/20 via-sky-800/10 to-transparent',
-    qrId: 'qr_rhz365'
-  },
-  {
-    id: 'biblia365',
-    name: 'Biblia365',
-    badge: 'Słowo Boże i Apokryfy',
-    shortDesc: 'Roczny plan lektury Pisma Świętego wzbogacony o bezcenne wczesnochrześcijańskie apokryfy.',
-    fullDesc: 'Codzienna porcja natchnionego Słowa Bożego wraz z komentarzami i tekstami wczesnej tradycji chrześcijańskiej, pozwalająca przeczytać Biblię w rocznym cyklu.',
-    imageUrl: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Pismo Święte – otwarta księga',
-    icon: BookOpen,
-    color: '#15803d',
-    bgGradient: 'from-emerald-900/20 via-emerald-800/10 to-transparent',
-    qrId: 'qr_biblia365'
-  },
-  {
-    id: 'ebook_wnr',
-    name: 'ebook WnR365',
-    badge: 'Wydanie Książkowe Flipbook',
-    shortDesc: 'Księga Widoki na Raj w formie bibliofilskiego e-booka z realistycznym przewracaniem stron.',
-    fullDesc: 'Zbiór wpisów bloga WnR365 zebrany w elegancki tom z pergaminową fakturą kartek, spisem treści, zakładkami oraz opcją pobrania PDF/ePUB/docx do Amazon KDP i Empik.',
-    imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Otwarty e-book Widoki na Raj',
-    icon: Book,
-    color: '#92400e',
-    bgGradient: 'from-amber-950/20 via-amber-900/10 to-transparent',
-    qrId: 'qr_ebook_wnr'
-  },
-  {
-    id: 'ebook_rhz',
-    name: 'ebook RHZ365',
-    badge: 'Modlitewnik Flipbook',
-    shortDesc: 'Różaniec Historii Zbawienia w formie oprawnego modlitewnika z kartkami.',
-    fullDesc: 'Kompletny modlitewnik różańcowy w interfejsie książkowym. Umożliwia kontemplację tajemnic, czytanie rozważań i odmawianie różańca w skupieniu.',
-    imageUrl: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Modlitewnik różańcowy',
-    icon: Compass,
-    color: '#1e40af',
-    bgGradient: 'from-blue-950/20 via-blue-900/10 to-transparent',
-    qrId: 'qr_ebook_rhz'
-  },
-  {
-    id: 'ebook_biblia',
-    name: 'ebook Biblia365',
-    badge: 'Księga Słowa Flipbook',
-    shortDesc: 'Pismo Święte i Apokryfy w bibliofilskim wydaniu z przewracanymi kartami.',
-    fullDesc: 'Monumentalna edycja czytań biblijnych w pergaminowym flipbooku. Czytaj Słowo Boże jak w wielkiej księdze klasztornej z zakładkami i notatkami.',
-    imageUrl: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Złote karty Biblii',
-    icon: Library,
-    color: '#166534',
-    bgGradient: 'from-green-950/20 via-green-900/10 to-transparent',
-    qrId: 'qr_ebook_biblia'
-  },
-  {
-    id: 'bio365',
-    name: 'Bio365',
-    badge: 'Autobiografia Flipbook',
-    shortDesc: 'Biografia: Ja i Moja Żona – 365 dni wspomnień, miłości i świadectwa drogi małżeńskiej.',
-    fullDesc: 'Osobiste świadectwo życia Dominika i jego ukochanej żony rozpisane na każdy dzień roku: wspólne chwile, przezwyciężane trudności, wdzięczność i Boże prowadzenie.',
-    imageUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&auto=format&fit=crop&q=80',
-    imageAlt: 'Dłonie z obrączkami – Biografia małżeńska',
-    icon: HeartHandshake,
-    color: '#9f1239',
-    bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent',
-    qrId: 'qr_bio365'
-  }
-];
 
 export const Info365View: React.FC<Info365ViewProps> = ({
   onSelectSection,
   adminUser,
-  onOpenQrModal
+  onLogin,
+  onOpenAdmin,
+  onOpenQrModal,
+  currentLang = 'pl'
 }) => {
-  // Saved custom texts for intro and sections
-  const [introHtml, setIntroHtml] = useState<string>(() => {
-    return localStorage.getItem('drogowskazy_info365_intro') || `
-      <p style="font-size: 18px; line-height: 1.7; margin-bottom: 16px;">
-        Witaj w <strong>Droga365</strong> – kompleksowej przestrzeni duchowej i czytelniczej, w której wiara łączy się z literaturą, modlitwą różańcową, Pismem Świętym oraz osobistym świadectwem życia.
-      </p>
-      <p style="font-size: 16px; line-height: 1.7; margin-bottom: 16px;">
-        Roczny cykl aplikacji rozpoczyna się <strong>25 grudnia</strong> (w Uroczystość Narodzenia Pańskiego) i biegnie nieprzerwanie do <strong>24 grudnia</strong> (Wigilii). Każdego dnia otrzymujesz nową porcję strawy duchowej, rozważań, modlitw i świadectwa.
-      </p>
-      <p style="font-size: 15px; line-height: 1.7; color: #78350f; background: rgba(180,83,9,0.08); padding: 12px 18px; border-left: 4px solid #b45309; border-radius: 0 12px 12px 0;">
-        Wybierz interesującą Cię sekcję poniżej lub kliknij w ilustrację bądź opis, aby przejść bezpośrednio do wybranego tomu.
-      </p>
-    `;
-  });
+  const [config, setConfig] = useState<HomePageConfig>(() => getHomePageConfig());
 
-  // Editing state for WYSIWYG modal
-  const [editingField, setEditingField] = useState<{
-    key: string;
-    label: string;
-    content: string;
-  } | null>(null);
+  useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail) {
+        setConfig(e.detail);
+      } else {
+        setConfig(getHomePageConfig());
+      }
+    };
+    window.addEventListener('drogowskazy_home_config_updated', handleUpdate);
+    return () => window.removeEventListener('drogowskazy_home_config_updated', handleUpdate);
+  }, []);
+
+  // Modal editing state for Intro WYSIWYG
+  const [editingIntro, setEditingIntro] = useState<boolean>(false);
+
+  // Modal editing state for Hero Title/Subtitle
+  const [editingHero, setEditingHero] = useState<boolean>(false);
+  const [heroTitleInput, setHeroTitleInput] = useState<string>('');
+  const [heroSubtitleInput, setHeroSubtitleInput] = useState<string>('');
+
+  // Modal editing state for a Section Showcase Card
+  const [editingShowcase, setEditingShowcase] = useState<SectionShowcaseConfig | null>(null);
 
   const [downloadingQrId, setDownloadingQrId] = useState<string | null>(null);
 
   const handleSaveIntro = (newContent: string) => {
-    setIntroHtml(newContent);
-    try {
-      localStorage.setItem('drogowskazy_info365_intro', newContent);
-    } catch {}
+    const updated = { ...config, introHtml: newContent };
+    setConfig(updated);
+    saveHomePageConfig(updated);
   };
 
-  const handleDownloadQr = async (qrId: string, title: string) => {
-    setDownloadingQrId(qrId);
+  const handleSaveHeroHeader = () => {
+    const updated = {
+      ...config,
+      heroTitle: heroTitleInput,
+      heroSubtitle: heroSubtitleInput
+    };
+    setConfig(updated);
+    saveHomePageConfig(updated);
+    setEditingHero(false);
+  };
+
+  const handleSaveShowcase = (updatedItem: SectionShowcaseConfig) => {
+    const updatedShowcases = config.showcases.map(item => 
+      item.id === updatedItem.id ? updatedItem : item
+    );
+    const updated = { ...config, showcases: updatedShowcases };
+    setConfig(updated);
+    saveHomePageConfig(updated);
+    setEditingShowcase(null);
+  };
+
+  const handleResetToDefaults = () => {
+    if (confirm('Czy na pewno chcesz przywrócić domyślne nagłówki, opisy i ilustracje strony startowej?')) {
+      const def = resetHomePageConfig();
+      setConfig(def);
+    }
+  };
+
+  const handleQuickLoginAuthor = () => {
+    const user: AdminUser = {
+      email: 'kuta.dominik@gmail.com',
+      name: 'Dominik Kuta',
+      role: 'ADMIN',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+    };
+    if (onLogin) {
+      onLogin(user);
+    }
+  };
+
+  const handleDownloadQr = async (qrId: string | undefined, title: string) => {
+    const targetQrId = qrId || `qr_${title.toLowerCase()}`;
+    setDownloadingQrId(targetQrId);
     try {
       const allQrs = getSavedQrCodes();
-      const match = allQrs.find(q => q.id === qrId || q.sectionId === qrId.replace('qr_', ''));
+      const match = allQrs.find(q => q.id === targetQrId || q.sectionId === targetQrId.replace('qr_', ''));
       if (match) {
         await generateAndDownloadQrBadgePng(match);
       } else {
         await generateAndDownloadQrBadgePng({
-          id: qrId,
+          id: targetQrId,
           title,
           displayLabel: `Zeskanuj, aby przejść do ${title}`,
-          shortUrl: `https://widokinaraj.pl/r/${qrId.replace('qr_', '')}`,
-          fullUrl: `https://widokinaraj.pl/#${qrId.replace('qr_', '')}`,
+          shortUrl: `https://widokinaraj.pl/r/${targetQrId.replace('qr_', '')}`,
+          fullUrl: `https://widokinaraj.pl/#${targetQrId.replace('qr_', '')}`,
           createdAt: new Date().toISOString()
         });
       }
@@ -202,6 +155,73 @@ export const Info365View: React.FC<Info365ViewProps> = ({
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8 animate-fade-in text-[#2c2219] dark:text-[#f1f5f9]">
       
+      {/* AUTHOR / ADMIN PROMINENT CONTROL TOOLBAR */}
+      {!adminUser ? (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xs">
+          <div className="flex items-center gap-2 text-amber-950 dark:text-amber-200">
+            <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
+            <span className="font-medium">
+              Chcesz edytować tytuły, opisy lub zdjęcia na stronie domowej? Aktywuj tryb edycji autora jednym kliknięciem:
+            </span>
+          </div>
+          <button
+            onClick={handleQuickLoginAuthor}
+            className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-2 cursor-pointer shadow-md transition-all active:scale-95 shrink-0"
+          >
+            <Unlock className="w-4 h-4" />
+            <span>Włącz Tryb Edycji Autora (Dominik Kuta)</span>
+          </button>
+        </div>
+      ) : (
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-600/15 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+          <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-200 font-bold">
+            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>TRYB EDYCJI STRONY DOMOWEJ AKTYWNY (Autor: {adminUser.name})</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                setHeroTitleInput(config.heroTitle);
+                setHeroSubtitleInput(config.heroSubtitle);
+                setEditingHero(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edytuj Tytuł i Podtytuł</span>
+            </button>
+
+            <button
+              onClick={() => setEditingIntro(true)}
+              className="px-3.5 py-2 rounded-xl bg-amber-700 hover:bg-amber-600 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edytuj Wstęp (WYSIWYG)</span>
+            </button>
+
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="px-3.5 py-2 rounded-xl bg-stone-800 dark:bg-stone-700 hover:bg-stone-700 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+              >
+                <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Panel Wszystkich Ilustracji</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleResetToDefaults}
+              className="px-3 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 text-stone-800 dark:text-stone-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              title="Przywróć domyślne nagłówki i ilustracje"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner / Hero */}
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-amber-500/15 via-orange-500/10 to-violet-500/10 dark:from-amber-950/40 dark:via-[#131b2e] dark:to-purple-950/30 p-6 sm:p-10 border border-amber-500/30 shadow-xl mb-10">
         
@@ -213,39 +233,48 @@ export const Info365View: React.FC<Info365ViewProps> = ({
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 dark:bg-amber-400/20 text-amber-900 dark:text-amber-200 text-xs font-bold mb-4">
             <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            <span>info365 • Przewodnik & Wprowadzenie do Aplikacji</span>
+            <span>info365 • Przewodnik & Strona Startowa Aplikacji</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-heading-cinzel font-bold text-[#3a2717] dark:text-[#f8fafc] mb-3 leading-tight">
-            Droga365
+            {config.heroTitle}
           </h1>
           <h2 className="text-base sm:text-lg font-serif-book italic text-[#785b3a] dark:text-[#cbd5e1] mb-6">
-            Roczny cykl od 25 grudnia do 24 grudnia • 7 Dzieł w Jednym Miejscu
+            {config.heroSubtitle}
           </h2>
 
           {/* Rendered Intro HTML */}
           <div 
             className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200"
-            dangerouslySetInnerHTML={{ __html: introHtml }}
+            dangerouslySetInnerHTML={{ __html: config.introHtml }}
           />
 
-          {/* Admin WYSIWYG button for Intro */}
+          {/* Admin toolbar inside Hero Banner */}
           {adminUser && (
-            <div className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between">
+            <div className="mt-6 pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-3">
               <span className="text-xs font-semibold text-amber-800 dark:text-amber-300">
-                Administrator: Możesz edytować ten wstęp za pomocą edytora WYSIWYG
+                Szybkie modyfikacje nagłówka banera:
               </span>
-              <button
-                onClick={() => setEditingField({
-                  key: 'intro',
-                  label: 'Wstęp do info365',
-                  content: introHtml
-                })}
-                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>Edytuj Wstęp (WYSIWYG)</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setHeroTitleInput(config.heroTitle);
+                    setHeroSubtitleInput(config.heroSubtitle);
+                    setEditingHero(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edytuj Tytuł</span>
+                </button>
+                <button
+                  onClick={() => setEditingIntro(true)}
+                  className="px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-600 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edytuj Wstęp (WYSIWYG)</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -275,13 +304,28 @@ export const Info365View: React.FC<Info365ViewProps> = ({
 
       {/* Grid of 7 Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {SECTION_SHOWCASES.map((section) => {
-          const IconComponent = section.icon;
+        {config.showcases.map((section) => {
+          const IconComponent = SECTION_ICONS_MAP[section.id] || Compass;
           return (
             <div
               key={section.id}
-              className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#0c121e] border border-stone-200 dark:border-[#1e2a40] shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 overflow-hidden"
+              className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#0c121e] border border-stone-200 dark:border-[#1e2a40] shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 overflow-hidden relative"
             >
+              {/* Admin direct edit button for this showcase card */}
+              {adminUser && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingShowcase(section);
+                  }}
+                  className="absolute top-3 right-3 z-30 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                  title="Edytuj treść i opisy oraz podmień ilustrację tej sekcji"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edytuj Kartę</span>
+                </button>
+              )}
+
               {/* Top illustration - Clickable to open section */}
               <div 
                 onClick={() => onSelectSection(section.id)}
@@ -328,7 +372,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 </div>
 
                 <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 group-hover:translate-x-1 transition-transform">
-                  <span>Otwórz sekcję</span>
+                  <span>{getUIText('readToday', currentLang) || 'Otwórz sekcję'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
@@ -342,12 +386,12 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                     e.stopPropagation();
                     handleDownloadQr(section.qrId, section.name);
                   }}
-                  disabled={downloadingQrId === section.qrId}
+                  disabled={downloadingQrId === (section.qrId || `qr_${section.name}`)}
                   className="px-2.5 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-[11px]"
                   title="Pobierz kod QR sekcji jako grafikę PNG (300 DPI do druku)"
                 >
                   <QrCode className="w-3.5 h-3.5" />
-                  <span>{downloadingQrId === section.qrId ? 'Pobieranie...' : 'Kod QR (PNG)'}</span>
+                  <span>{downloadingQrId === (section.qrId || `qr_${section.name}`) ? 'Pobieranie...' : 'Kod QR (PNG)'}</span>
                 </button>
 
                 {/* Primary Button to Jump */}
@@ -366,17 +410,271 @@ export const Info365View: React.FC<Info365ViewProps> = ({
       </div>
 
       {/* WYSIWYG Editor Modal for Intro */}
-      {editingField && (
+      {editingIntro && (
         <ElementEditorModal
           isOpen={true}
-          onClose={() => setEditingField(null)}
-          title="Edycja Treści info365"
-          elementLabel={editingField.label}
-          initialContent={editingField.content}
+          onClose={() => setEditingIntro(false)}
+          title="Edycja Treści Wstępu info365"
+          elementLabel="Wstęp Strony Startowej (HTML / WYSIWYG)"
+          initialContent={config.introHtml}
           onSave={handleSaveIntro}
         />
       )}
 
+      {/* Modal for editing Hero Title and Subtitle */}
+      {editingHero && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+          <div className="w-full max-w-lg bg-white dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 relative">
+            <button
+              onClick={() => setEditingHero(false)}
+              className="absolute top-4 right-4 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-heading-cinzel font-bold text-amber-900 dark:text-amber-300 mb-4 flex items-center gap-2">
+              <Edit3 className="w-5 h-5 text-amber-600" />
+              <span>Edycja Tytułu i Podtytułu Strony Startowej</span>
+            </h3>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                  Tytuł Główny (Hero Title)
+                </label>
+                <input
+                  type="text"
+                  value={heroTitleInput}
+                  onChange={(e) => setHeroTitleInput(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+                  placeholder="np. Droga365"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                  Podtytuł (Hero Subtitle)
+                </label>
+                <input
+                  type="text"
+                  value={heroSubtitleInput}
+                  onChange={(e) => setHeroSubtitleInput(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+                  placeholder="np. Roczny cykl od 25 grudnia..."
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setEditingHero(false)}
+                className="px-4 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold text-xs cursor-pointer"
+              >
+                Anuluj
+              </button>
+              <button
+                onClick={handleSaveHeroHeader}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+              >
+                <Save className="w-4 h-4" />
+                <span>Zapisz Nagłówek</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for editing a Section Showcase Card & Illustration */}
+      {editingShowcase && (
+        <ShowcaseEditModal
+          item={editingShowcase}
+          onClose={() => setEditingShowcase(null)}
+          onSave={handleSaveShowcase}
+        />
+      )}
+
+    </div>
+  );
+};
+
+// Component Modal for editing a single section showcase card (Name, Badge, Descriptions, Image URL, Alt)
+const ShowcaseEditModal: React.FC<{
+  item: SectionShowcaseConfig;
+  onClose: () => void;
+  onSave: (updated: SectionShowcaseConfig) => void;
+}> = ({ item, onClose, onSave }) => {
+  const [name, setName] = useState(item.name);
+  const [badge, setBadge] = useState(item.badge);
+  const [shortDesc, setShortDesc] = useState(item.shortDesc);
+  const [fullDesc, setFullDesc] = useState(item.fullDesc);
+  const [imageUrl, setImageUrl] = useState(item.imageUrl);
+  const [imageAlt, setImageAlt] = useState(item.imageAlt);
+
+  const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setImageUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      ...item,
+      name,
+      badge,
+      shortDesc,
+      fullDesc,
+      imageUrl,
+      imageAlt
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in overflow-y-auto">
+      <div className="w-full max-w-2xl bg-white dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 my-8 relative max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <h3 className="text-xl font-heading-cinzel font-bold text-amber-900 dark:text-amber-300 mb-1 flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-amber-600" />
+          <span>Edycja Karty & Ilustracji: {item.name}</span>
+        </h3>
+        <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">
+          Zmień treść opisu oraz własną ilustrację nagłówkową dla sekcji na stronie startowej.
+        </p>
+
+        <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
+          
+          {/* Image Preview Box */}
+          <div className="p-3 bg-stone-100 dark:bg-[#131c2e] rounded-2xl border border-stone-200 dark:border-stone-700 flex flex-col sm:flex-row items-center gap-4">
+            <div className="w-full sm:w-48 h-28 rounded-xl overflow-hidden bg-stone-800 shrink-0 border border-amber-500/30">
+              <img
+                src={imageUrl}
+                alt={imageAlt || 'Podgląd ilustracji'}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLElement).setAttribute('src', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80');
+                }}
+              />
+            </div>
+            <div className="flex-1 w-full space-y-2">
+              <label className="block font-bold text-stone-700 dark:text-stone-300">
+                URL Ilustracji / Zdjęcia (lub przesłanie pliku)
+              </label>
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-mono text-[11px] focus:outline-hidden focus:border-amber-500"
+                placeholder="https://images.unsplash.com/..."
+              />
+              <div className="flex items-center gap-2">
+                <label className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/30 font-bold text-[11px] cursor-pointer flex items-center gap-1">
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>Wybierz plik ze swojego komputera</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLocalImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                Nazwa Sekcji
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+                Etykieta / Badge
+              </label>
+              <input
+                type="text"
+                value={badge}
+                onChange={(e) => setBadge(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              Krótki Opis (Wyróżnik)
+            </label>
+            <input
+              type="text"
+              value={shortDesc}
+              onChange={(e) => setShortDesc(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              Pełny Opis Karty
+            </label>
+            <textarea
+              rows={3}
+              value={fullDesc}
+              onChange={(e) => setFullDesc(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-serif-book leading-relaxed focus:outline-hidden focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              Tekst Alternatywny Grafiki (Alt)
+            </label>
+            <input
+              type="text"
+              value={imageAlt}
+              onChange={(e) => setImageAlt(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-amber-500"
+            />
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold cursor-pointer"
+            >
+              Anuluj
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              <span>Zapisz Zmiany Karty</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
   );
 };

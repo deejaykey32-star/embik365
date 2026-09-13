@@ -19,6 +19,7 @@ import {
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
+import { playLectorSpeech, stopLectorSpeech, getLectorConfig } from '../utils/audioLectorService';
 
 interface Props {
   section: SectionMeta;
@@ -29,9 +30,11 @@ interface Props {
   onOpenPdf: (pdf: UploadedPdf) => void;
   sectionPdfs: UploadedPdf[];
   onOpenDownloadModal?: () => void;
+  onOpenLectorModal?: () => void;
   currentLang?: string;
   theme?: AppTheme;
 }
+
 
 export const StandardReader: React.FC<Props> = ({
   section,
@@ -42,6 +45,7 @@ export const StandardReader: React.FC<Props> = ({
   onOpenPdf,
   sectionPdfs,
   onOpenDownloadModal,
+  onOpenLectorModal,
   currentLang = 'pl',
   theme = 'light'
 }) => {
@@ -64,30 +68,26 @@ export const StandardReader: React.FC<Props> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const toggleSpeech = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Twoja przeglądarka nie obsługuje syntezy mowy.');
-      return;
-    }
-
+  const toggleSpeech = async () => {
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopLectorSpeech();
       setIsSpeaking(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const text = `${entry.title}. ${entry.content}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer : ''}`;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pl-PL';
-    utterance.rate = 0.95;
+    const textToSpeak = `${entry.title}. ${entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
+    const lectorCfg = getLectorConfig();
+    if (!lectorCfg.lang) lectorCfg.lang = currentLang;
 
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    window.speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
+    await playLectorSpeech({
+      text: textToSpeak,
+      config: lectorCfg,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false)
+    });
   };
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 transition-colors duration-300">
@@ -151,6 +151,19 @@ export const StandardReader: React.FC<Props> = ({
               {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#8a572c] dark:text-amber-400" />}
               <span className="hidden sm:inline">{isSpeaking ? 'Głos gra' : 'Lektor'}</span>
             </button>
+
+            {/* Lector Settings Modal Button */}
+            {onOpenLectorModal && (
+              <button
+                onClick={onOpenLectorModal}
+                className="p-2 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-colors cursor-pointer text-xs font-semibold flex items-center gap-1"
+                title="Ustawienia Lektora (Wersja Lokalna / Online AI, Język, Wybór głosu)"
+              >
+                <span>🎧</span>
+                <span className="hidden lg:inline">Głos Lektora</span>
+              </button>
+            )}
+
 
             {/* Copy button */}
             <button

@@ -36,6 +36,27 @@ export interface SectionMeta {
   bgGradient: string;
 }
 
+export interface SectionShowcaseConfig {
+  id: SectionId;
+  name: string;
+  badge: string;
+  shortDesc: string;
+  fullDesc: string;
+  imageUrl: string;
+  imageAlt: string;
+  color?: string;
+  bgGradient?: string;
+  qrId?: string;
+}
+
+export interface HomePageConfig {
+  heroTitle: string;
+  heroSubtitle: string;
+  introHtml: string;
+  showcases: SectionShowcaseConfig[];
+}
+
+
 export interface CycleDate {
   dayNumber: number; // 1 to 365 (or 366)
   day: number;       // 1 to 31

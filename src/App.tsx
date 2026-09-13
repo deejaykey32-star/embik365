@@ -12,6 +12,7 @@ import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { DownloadPublishModal } from './components/DownloadPublishModal';
+import { LectorSettingsModal } from './components/LectorSettingsModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub } from './utils/githubSync';
 import { translateEntry } from './utils/translationService';
 
@@ -63,6 +64,7 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [isLectorModalOpen, setIsLectorModalOpen] = useState(false);
 
   // 5. Admin Authentication state (defaulting to saved session if present)
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
@@ -314,6 +316,7 @@ export default function App() {
         currentLang={currentLang}
         onLanguageChange={handleLanguageChange}
         onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+        onOpenLectorModal={() => setIsLectorModalOpen(true)}
       />
 
       {/* 2. Horizontal Section Tabs (7 sections) */}
@@ -327,14 +330,19 @@ export default function App() {
       <main className="flex-1">
         {activeSectionId === 'info365' ? (
           <Info365View
-            key={`info365-${currentDate.dateKey}-${currentLang}`}
-            onNavigateToSection={(id) => setActiveSectionId(id)}
-            onOpenCalendar={() => setIsCalendarOpen(true)}
-            onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
-            currentDate={currentDate}
-            theme={theme}
+            key={`info365-${currentLang}`}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            adminUser={adminUser}
+            onLogin={(user) => {
+              setAdminUser(user);
+              try { localStorage.setItem('drogowskazy_admin', JSON.stringify(user)); } catch {}
+            }}
+            onOpenAdmin={() => setIsAdminOpen(true)}
+            onOpenQrModal={() => setIsAdminOpen(true)}
+            currentLang={currentLang}
           />
         ) : activeSection.type === 'flipbook' ? (
+
           <FlipbookReader
             key={`flipbook-${activeSectionId}-${currentDate.dateKey}-${currentLang}`}
             section={activeSection}
@@ -345,6 +353,7 @@ export default function App() {
             onOpenPdf={setViewingPdf}
             sectionPdfs={uploads}
             onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+            onOpenLectorModal={() => setIsLectorModalOpen(true)}
             currentLang={currentLang}
           />
         ) : (
@@ -358,6 +367,7 @@ export default function App() {
             onOpenPdf={setViewingPdf}
             sectionPdfs={uploads}
             onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
+            onOpenLectorModal={() => setIsLectorModalOpen(true)}
             currentLang={currentLang}
             theme={theme}
           />
@@ -433,6 +443,13 @@ export default function App() {
         uploadedFiles={uploads}
         currentLang={currentLang}
         onLanguageChange={handleLanguageChange}
+      />
+
+      {/* 9. Audio Lector Settings Modal (Local Web Speech API & Online AI Cloud Voices) */}
+      <LectorSettingsModal
+        isOpen={isLectorModalOpen}
+        onClose={() => setIsLectorModalOpen(false)}
+        currentLang={currentLang}
       />
     </div>
   );

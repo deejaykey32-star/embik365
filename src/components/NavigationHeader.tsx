@@ -30,6 +30,7 @@ interface Props {
   currentLang: string;
   onLanguageChange: (lang: string) => void;
   onOpenDownloadModal: () => void;
+  onOpenLectorModal?: () => void;
 }
 
 export const NavigationHeader: React.FC<Props> = ({
@@ -45,14 +46,16 @@ export const NavigationHeader: React.FC<Props> = ({
   githubConnected = false,
   currentLang,
   onLanguageChange,
-  onOpenDownloadModal
+  onOpenDownloadModal,
+  onOpenLectorModal
 }) => {
+
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   return (
     <header className="sticky top-0 z-40 bg-[#fdfbf7]/95 dark:bg-[#0b0f17]/95 backdrop-blur-md border-b border-[#e7ded4] dark:border-[#1e2638] shadow-xs transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
+        <div className="flex flex-wrap items-center justify-between py-2.5 min-h-[4.5rem] gap-2 sm:gap-4">
           {/* Logo & App Title */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-linear-to-br from-[#8a5327] to-[#452714] dark:from-amber-600 dark:to-amber-800 text-white flex items-center justify-center shadow-md shadow-[#8a5327]/20 dark:shadow-amber-950/40 border border-[#b47a46]/30 dark:border-amber-500/30 shrink-0">
@@ -101,7 +104,7 @@ export const NavigationHeader: React.FC<Props> = ({
                   {currentDate.displayDate}
                 </div>
                 <div className="text-[10px] text-[#7a6a5b] dark:text-[#94a3b8] font-medium leading-none">
-                  Dzień {currentDate.dayNumber} z 366
+                  Dzień {currentDate.dayNumber} z 365
                 </div>
               </div>
             </button>
@@ -160,6 +163,19 @@ export const NavigationHeader: React.FC<Props> = ({
                 </select>
               </div>
             </div>
+
+            {/* Audio Lector Settings Button (Local / Online Voices) */}
+            {onOpenLectorModal && (
+              <button
+                onClick={onOpenLectorModal}
+                id="btn-lector-settings"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-[#d6c7b5] dark:border-[#2a374f] bg-white dark:bg-[#161f2e] text-[#4d3d2e] dark:text-amber-300 hover:bg-[#f4ece1] dark:hover:bg-[#212d42] transition-all shadow-xs cursor-pointer text-xs font-semibold"
+                title="Wybór lektora mowy (Wersja Lokalna & Online AI)"
+              >
+                <span className="text-sm">🎧</span>
+                <span className="hidden sm:inline">Lektor</span>
+              </button>
+            )}
 
             {/* Theme Toggle Button (Light / Dark) */}
             <button

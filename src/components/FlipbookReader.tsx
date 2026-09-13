@@ -18,6 +18,7 @@ import {
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES } from '../types';
 import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
+import { playLectorSpeech, stopLectorSpeech, getLectorConfig } from '../utils/audioLectorService';
 
 interface Props {
   section: SectionMeta;
@@ -28,8 +29,10 @@ interface Props {
   onOpenPdf: (pdf: UploadedPdf) => void;
   sectionPdfs: UploadedPdf[];
   onOpenDownloadModal?: () => void;
+  onOpenLectorModal?: () => void;
   currentLang?: string;
 }
+
 
 export const FlipbookReader: React.FC<Props> = ({
   section,
@@ -40,6 +43,7 @@ export const FlipbookReader: React.FC<Props> = ({
   onOpenPdf,
   sectionPdfs,
   onOpenDownloadModal,
+  onOpenLectorModal,
   currentLang = 'pl'
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(currentDate.dayNumber);
@@ -51,6 +55,27 @@ export const FlipbookReader: React.FC<Props> = ({
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [bookmarkedDays, setBookmarkedDays] = useState<number[]>([]);
   const [isRosaryModalOpen, setIsRosaryModalOpen] = useState<boolean>(false);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+
+  const toggleSpeech = async () => {
+    if (isSpeaking) {
+      stopLectorSpeech();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const textToSpeak = `${entry.title}. ${entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
+    const lectorCfg = getLectorConfig();
+    if (!lectorCfg.lang) lectorCfg.lang = currentLang;
+
+    await playLectorSpeech({
+      text: textToSpeak,
+      config: lectorCfg,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false)
+    });
+  };
 
   // Sync with currentDate prop
   useEffect(() => {
@@ -94,7 +119,7 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   const handleTurnNext = () => {
-    if (currentPage >= 366 || isFlipping) return;
+    if (currentPage >= 365 || isFlipping) return;
     setIsFlipping(true);
     setFlipDirection('next');
     playPageFlipSound();
@@ -198,7 +223,7 @@ export const FlipbookReader: React.FC<Props> = ({
               </span>
             </div>
             <p className="text-xs text-[#716152] dark:text-[#94a3b8] font-serif-book">
-              {section.shortTitle} • Karta {currentPage} z 366 ({currentDate.displayDate})
+              {section.shortTitle} • Karta {currentPage} z 365 ({currentDate.displayDate})
             </p>
           </div>
         </div>
@@ -261,6 +286,33 @@ export const FlipbookReader: React.FC<Props> = ({
             <Type className="w-4 h-4" />
           </button>
 
+          {/* Audio Lector Speech Play / Pause button */}
+          <button
+            onClick={toggleSpeech}
+            id="btn-flipbook-lector-play"
+            className={`p-2 rounded-xl transition-colors border text-xs font-semibold flex items-center gap-1 cursor-pointer ${
+              isSpeaking
+                ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
+                : 'hover:bg-[#ebe0d3] dark:hover:bg-[#1b2333] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#d8c8b6] dark:border-[#28354a]'
+            }`}
+            title={isSpeaking ? 'Zatrzymaj lektora' : 'Włącz odczytanie kartki na głos (Lektor)'}
+          >
+            {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-amber-700 dark:text-amber-400" />}
+            <span className="hidden lg:inline">{isSpeaking ? 'Głos gra' : 'Lektor'}</span>
+          </button>
+
+          {/* Audio Lector Settings Button */}
+          {onOpenLectorModal && (
+            <button
+              onClick={onOpenLectorModal}
+              id="btn-flipbook-lector-modal"
+              className="p-2 rounded-xl hover:bg-[#ebe0d3] dark:hover:bg-[#1b2333] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#d8c8b6] dark:border-[#28354a] transition-colors cursor-pointer text-xs font-semibold flex items-center gap-1"
+              title="Ustawienia lektora mowy (Lokalny / Online AI Cloud, Język, Głos)"
+            >
+              <span>🎧</span>
+            </button>
+          )}
+
           {/* Sound toggle */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
@@ -317,7 +369,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Next page arrow button (right) */}
         <button
           onClick={handleTurnNext}
-          disabled={currentPage >= 366 || isFlipping}
+          disabled={currentPage >= 365 || isFlipping}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-30 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
           title="Przewróć kartkę w prawo (Następny dzień)"

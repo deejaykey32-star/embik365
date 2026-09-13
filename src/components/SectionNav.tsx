@@ -33,9 +33,10 @@ export const SectionNav: React.FC<Props> = ({
   pdfCounts = {}
 }) => {
   return (
-    <div className="bg-[#f7f2ea] dark:bg-[#0e131d] border-b border-[#e5d9cc] dark:border-[#1e2638] py-2.5 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="bg-[#f7f2ea] dark:bg-[#0e131d] border-b border-[#e5d9cc] dark:border-[#1e2638] py-2.5 px-3 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 py-0.5">
+
           {SECTIONS.map((sec) => {
             const IconComponent = ICONS[sec.icon] || BookOpen;
             const isActive = activeSection === sec.id;

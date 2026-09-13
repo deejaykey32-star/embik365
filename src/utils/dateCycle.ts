@@ -2,7 +2,7 @@ import { CycleDate } from '../types';
 
 export const POLISH_MONTHS = [
   { id: 1, nameNominative: 'Styczeń', nameGenitive: 'stycznia', days: 31 },
-  { id: 2, nameNominative: 'Luty', nameGenitive: 'lutego', days: 29 }, // supports leap
+  { id: 2, nameNominative: 'Luty', nameGenitive: 'lutego', days: 28 }, // strictly 28 days for 365-day cycle
   { id: 3, nameNominative: 'Marzec', nameGenitive: 'marca', days: 31 },
   { id: 4, nameNominative: 'Kwiecień', nameGenitive: 'kwietnia', days: 30 },
   { id: 5, nameNominative: 'Maj', nameGenitive: 'maja', days: 31 },
@@ -16,9 +16,10 @@ export const POLISH_MONTHS = [
 ];
 
 /**
- * Builds the 366-day cycle starting on December 25th (Day 1) and ending on December 24th (Day 366).
+ * Builds the 365-day cycle starting on December 25th (Day 1) and ending on December 24th (Day 365).
+ * Feb 29th is omitted to maintain a constant 365-day spiritual cycle.
  */
-export function generateCycleCalendar(isLeapYear: boolean = true): CycleDate[] {
+export function generateCycleCalendar(): CycleDate[] {
   const days: CycleDate[] = [];
   let currentDayNumber = 1;
 
@@ -40,7 +41,7 @@ export function generateCycleCalendar(isLeapYear: boolean = true): CycleDate[] {
   // 2. January 1 to December 24
   for (let m = 1; m <= 12; m++) {
     const monthObj = POLISH_MONTHS.find(item => item.id === m)!;
-    const maxDays = (m === 2 && !isLeapYear) ? 28 : (m === 12 ? 24 : monthObj.days);
+    const maxDays = m === 12 ? 24 : monthObj.days;
 
     for (let d = 1; d <= maxDays; d++) {
       const key = `${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
@@ -69,19 +70,25 @@ export function generateCycleCalendar(isLeapYear: boolean = true): CycleDate[] {
   return days;
 }
 
-export const CYCLE_DAYS = generateCycleCalendar(true);
+export const CYCLE_DAYS = generateCycleCalendar();
 
 /**
  * Finds the CycleDate for a given month and day.
  */
 export function getCycleDate(month: number, day: number): CycleDate {
-  const key = `${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  // If 02-29 is requested, map to 02-28
+  let m = month;
+  let d = day;
+  if (m === 2 && d === 29) {
+    d = 28;
+  }
+  const key = `${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
   const found = CYCLE_DAYS.find(cd => cd.dateKey === key);
   return found || CYCLE_DAYS[0];
 }
 
 /**
- * Finds the CycleDate for a given dayNumber (1 to 366).
+ * Finds the CycleDate for a given dayNumber (1 to 365).
  */
 export function getCycleDateByDayNumber(dayNumber: number): CycleDate {
   const bounded = Math.max(1, Math.min(CYCLE_DAYS.length, dayNumber));
