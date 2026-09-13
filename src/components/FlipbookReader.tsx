@@ -38,41 +38,52 @@ interface Props {
 }
 
 /**
- * Splits text into two balanced parts for 1:1 PDF page rendering
+ * Splits text into three balanced reading chunks for 1:1 PDF page rendering
  */
-function splitContentIntoTwoParts(content: string): { part1: string; part2: string } {
-  if (!content) return { part1: '', part2: '' };
-  
+function splitContentIntoThreeChunks(content: string): { chunk1: string; chunk2: string; chunk3: string } {
+  if (!content) return { chunk1: '', chunk2: '', chunk3: '' };
+
   const paragraphs = content
     .split(/\n\n+|<p[^>]*>|<\/p>/i)
     .map(p => p.replace(/<[^>]*>/g, '').trim())
     .filter(Boolean);
 
-  if (paragraphs.length >= 2) {
-    const mid = Math.ceil(paragraphs.length / 2);
-    const part1 = paragraphs.slice(0, mid).join('\n\n');
-    const part2 = paragraphs.slice(mid).join('\n\n');
-    return { part1, part2 };
+  if (paragraphs.length >= 3) {
+    const p1 = paragraphs[0];
+    const p3 = paragraphs[paragraphs.length - 1];
+    const p2 = paragraphs.slice(1, paragraphs.length - 1).join('\n\n');
+    return { chunk1: p1, chunk2: p2 || p1, chunk3: p3 || p2 || p1 };
+  }
+
+  if (paragraphs.length === 2) {
+    return { chunk1: paragraphs[0], chunk2: paragraphs[1], chunk3: '' };
   }
 
   const text = content.replace(/<[^>]*>/g, '').trim();
   if (text.length < 300) {
-    return { part1: text, part2: '' };
+    return { chunk1: text, chunk2: '', chunk3: '' };
   }
 
-  const halfLen = Math.floor(text.length / 2);
-  let splitIdx = text.indexOf('. ', halfLen);
-  if (splitIdx === -1) splitIdx = text.indexOf('! ', halfLen);
-  if (splitIdx === -1) splitIdx = text.indexOf('? ', halfLen);
-  if (splitIdx === -1) splitIdx = halfLen;
+  const len = text.length;
+  const target1 = Math.floor(len / 3);
+  const target2 = Math.floor((len * 2) / 3);
 
-  const part1 = text.slice(0, splitIdx + 1).trim();
-  const part2 = text.slice(splitIdx + 1).trim();
-  return { part1, part2 };
+  let split1 = text.indexOf('. ', target1);
+  if (split1 === -1) split1 = target1;
+
+  let split2 = text.indexOf('. ', target2);
+  if (split2 === -1) split2 = target2;
+
+  const chunk1 = text.slice(0, split1 + 1).trim();
+  const chunk2 = text.slice(split1 + 1, split2 + 1).trim();
+  const chunk3 = text.slice(split2 + 1).trim();
+
+  return { chunk1, chunk2, chunk3 };
 }
 
 /**
- * Calculates 1:1 PDF page data for any page P (1 to 1095)
+ * Calculates 1:1 PDF page data for any page P (1 to 1460 across 365 days)
+ * Each day occupies 4 PDF pages = 1460 total PDF pages.
  */
 function getPdfPageData(
   P: number,
@@ -80,16 +91,16 @@ function getPdfPageData(
   currentDate: CycleDate,
   currentEntry: SectionEntry
 ) {
-  const safeP = Math.max(1, Math.min(1095, P));
-  const dayNum = Math.floor((safeP - 1) / 3) + 1;
-  const subPage = ((safeP - 1) % 3) + 1; // 1, 2, or 3
+  const safeP = Math.max(1, Math.min(1460, P));
+  const dayNum = Math.floor((safeP - 1) / 4) + 1; // 1 to 365
+  const subPage = ((safeP - 1) % 4) + 1; // 1, 2, 3, or 4
 
   const dateObj = getCycleDateByDayNumber(dayNum);
   const entryObj = (dayNum === currentDate.dayNumber)
     ? currentEntry
     : getEntryForSectionAndDate(sectionId, dateObj);
 
-  const { part1, part2 } = splitContentIntoTwoParts(entryObj.content || '');
+  const { chunk1, chunk2, chunk3 } = splitContentIntoThreeChunks(entryObj.content || '');
 
   return {
     pdfPageNumber: safeP,
@@ -100,8 +111,9 @@ function getPdfPageData(
     season: dateObj.season,
     title: entryObj.title || `Dzień ${dayNum} – ${dateObj.displayDate}`,
     subtitle: entryObj.subtitle,
-    part1,
-    part2,
+    chunk1,
+    chunk2,
+    chunk3,
     prayer: entryObj.prayer,
     mystery: entryObj.mystery,
     intention: entryObj.intention,
@@ -121,9 +133,9 @@ export const FlipbookReader: React.FC<Props> = ({
   onOpenLectorModal,
   currentLang = 'pl'
 }) => {
-  // Total 1095 PDF pages (3 pages per day * 365 days) = 548 2-page spreads
+  // Total 1460 PDF pages (4 pages per day * 365 days) = 730 2-page spreads
   const [currentSpread, setCurrentSpread] = useState<number>(() => {
-    return Math.floor(((currentDate.dayNumber - 1) * 3) / 2) + 1;
+    return (currentDate.dayNumber - 1) * 2 + 1;
   });
 
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
@@ -139,7 +151,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
   // Sync currentSpread when currentDate prop changes externally
   useEffect(() => {
-    const targetSpread = Math.floor(((currentDate.dayNumber - 1) * 3) / 2) + 1;
+    const targetSpread = (currentDate.dayNumber - 1) * 2 + 1;
     setCurrentSpread(targetSpread);
   }, [currentDate.dayNumber]);
 
@@ -208,7 +220,7 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   const handleTurnNext = () => {
-    if (currentSpread >= 548 || isFlipping) return;
+    if (currentSpread >= 730 || isFlipping) return;
     setIsFlipping(true);
     setFlipDirection('next');
     playPageFlipSound();
@@ -217,7 +229,7 @@ export const FlipbookReader: React.FC<Props> = ({
       const nextSpread = currentSpread + 1;
       setCurrentSpread(nextSpread);
       const newLeftPage = (nextSpread * 2) - 1;
-      const newDayNum = Math.floor((newLeftPage - 1) / 3) + 1;
+      const newDayNum = Math.floor((newLeftPage - 1) / 4) + 1;
       onSelectDate(getCycleDateByDayNumber(newDayNum));
       setIsFlipping(false);
     }, 280);
@@ -233,7 +245,7 @@ export const FlipbookReader: React.FC<Props> = ({
       const prevSpread = currentSpread - 1;
       setCurrentSpread(prevSpread);
       const newLeftPage = (prevSpread * 2) - 1;
-      const newDayNum = Math.floor((newLeftPage - 1) / 3) + 1;
+      const newDayNum = Math.floor((newLeftPage - 1) / 4) + 1;
       onSelectDate(getCycleDateByDayNumber(newDayNum));
       setIsFlipping(false);
     }, 280);
@@ -302,14 +314,14 @@ export const FlipbookReader: React.FC<Props> = ({
   );
 
   /**
-   * Helper component to render 1:1 PDF Page content
+   * Helper component to render 1:1 PDF Page content (4 pages per day)
    */
   const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>) => {
     if (data.subPage === 1) {
-      // PDF Page 1: Title, Subtitle, and Reading Part 1
+      // PDF Page 1: Title, Subtitle, Season & Opening Reading Chunk 1
       return (
-        <div className="flex flex-col h-full justify-between space-y-4">
-          <div className="space-y-3">
+        <div className="flex flex-col h-full justify-between space-y-3">
+          <div className="space-y-2">
             <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest block font-sans-ui">
               {data.season || 'Cykl Roczny'} • Dzień {data.dayNumber} z 365
             </span>
@@ -325,63 +337,94 @@ export const FlipbookReader: React.FC<Props> = ({
             )}
           </div>
 
-          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 ${
+          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
             fontSize === 'sm' ? 'text-xs leading-5' :
             fontSize === 'base' ? 'text-sm leading-6' :
             fontSize === 'lg' ? 'text-base leading-7' :
             'text-lg leading-8'
           }`}>
-            <div className="whitespace-pre-line">{data.part1}</div>
+            <div className="whitespace-pre-line">{data.chunk1}</div>
           </div>
 
           <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Część I Czytania</span>
-            <span>Ciąg dalszy na nast. stronie →</span>
+            <span>Strona 1 / 4 (Otwarcie)</span>
+            <span>Rozważanie cz. I na nast. stronie →</span>
           </div>
         </div>
       );
     } else if (data.subPage === 2) {
-      // PDF Page 2: Reading Part 2 (Continuation)
+      // PDF Page 2: Core Reading Chunk 2
       return (
-        <div className="flex flex-col h-full justify-between space-y-4">
+        <div className="flex flex-col h-full justify-between space-y-3">
           <div className="border-b border-black/5 dark:border-white/5 pb-1">
             <span className="font-heading-cinzel text-xs font-bold text-[#685544] dark:text-amber-400">
-              {data.title} • (Dalszy ciąg rozważania)
+              Dzień {data.dayNumber} • Rozważanie (Część I)
             </span>
           </div>
 
-          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 ${
+          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
             fontSize === 'sm' ? 'text-xs leading-5' :
             fontSize === 'base' ? 'text-sm leading-6' :
             fontSize === 'lg' ? 'text-base leading-7' :
             'text-lg leading-8'
           }`}>
-            {data.part2 ? (
-              <div className="whitespace-pre-line">{data.part2}</div>
+            {data.chunk2 ? (
+              <div className="whitespace-pre-line">{data.chunk2}</div>
             ) : (
-              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center">
-                "W ciszy serca niech trwa dziękczynienie za odnowioną łaskę dnia. Każdy krok wiarą uczyniony prostuje ścieżki wieczności."
+              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center my-auto">
+                "Niech słowo Chrystusa przebywa w was z całym swym bogactwem. Z wdzięcznością śpiewajcie w sercach waszych Bogu." (Kol 3, 16)
               </div>
             )}
           </div>
 
           <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Część II Czytania</span>
-            <span>Modlitwa na kolejnej karcie →</span>
+            <span>Strona 2 / 4 (Głębia)</span>
+            <span>Rozważanie cz. II na nast. stronie →</span>
+          </div>
+        </div>
+      );
+    } else if (data.subPage === 3) {
+      // PDF Page 3: Core Reading Chunk 3
+      return (
+        <div className="flex flex-col h-full justify-between space-y-3">
+          <div className="border-b border-black/5 dark:border-white/5 pb-1">
+            <span className="font-heading-cinzel text-xs font-bold text-[#685544] dark:text-amber-400">
+              Dzień {data.dayNumber} • Rozważanie (Część II)
+            </span>
+          </div>
+
+          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
+            fontSize === 'sm' ? 'text-xs leading-5' :
+            fontSize === 'base' ? 'text-sm leading-6' :
+            fontSize === 'lg' ? 'text-base leading-7' :
+            'text-lg leading-8'
+          }`}>
+            {data.chunk3 ? (
+              <div className="whitespace-pre-line">{data.chunk3}</div>
+            ) : (
+              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center my-auto">
+                "W ciszy modlitwy odnajdujemy siłę na każdy dzień. Boże obietnice są niewzruszone jak fundamenty niebios."
+              </div>
+            )}
+          </div>
+
+          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
+            <span>Strona 3 / 4 (Synteza)</span>
+            <span>Modlitwa Serca na nast. stronie →</span>
           </div>
         </div>
       );
     } else {
-      // PDF Page 3: Prayer of the heart & Meditation
+      // PDF Page 4: Prayer of the heart & Meditation
       return (
-        <div className="flex flex-col h-full justify-between space-y-4">
+        <div className="flex flex-col h-full justify-between space-y-3">
           <div className="border-b border-black/5 dark:border-white/5 pb-1">
             <span className="font-heading-cinzel text-xs font-bold text-amber-800 dark:text-amber-400">
               Dzień {data.dayNumber} • Modlitwa Serca & Kontemplacja
             </span>
           </div>
 
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-3 overflow-hidden">
             {data.prayer ? (
               <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-l-4 border-amber-600 dark:border-amber-500 font-serif-book italic text-sm text-[#46372a] dark:text-amber-100">
                 <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-amber-800 dark:text-amber-400 mb-1">
@@ -399,7 +442,7 @@ export const FlipbookReader: React.FC<Props> = ({
             )}
 
             {data.mystery && (
-              <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 text-xs font-serif-book">
+              <div className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-xs font-serif-book">
                 <span className="font-bold text-amber-900 dark:text-amber-300">Tajemnica: </span>
                 {data.mystery}
               </div>
@@ -419,8 +462,8 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
 
           <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Zwieńczenie Dnia {data.dayNumber}</span>
-            <span>PDF Strona {data.pdfPageNumber} / 1095</span>
+            <span>Strona 4 / 4 (Zwieńczenie)</span>
+            <span>PDF Strona {data.pdfPageNumber} / 1460</span>
           </div>
         </div>
       );
@@ -442,11 +485,11 @@ export const FlipbookReader: React.FC<Props> = ({
                 {section.name}
               </span>
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-medium border border-amber-200 dark:border-amber-800/60">
-                E-Book PDF (1095 Stron 1:1)
+                E-Book PDF (1460 Stron 1:1)
               </span>
             </div>
             <p className="text-xs text-[#716152] dark:text-[#94a3b8] font-serif-book">
-              {section.shortTitle} • Dzień {leftPageData.dayNumber} z 365 (Strony PDF {leftPdfPageNum}-{rightPdfPageNum} / 1095)
+              {section.shortTitle} • Dzień {leftPageData.dayNumber} z 365 (Strony PDF {leftPdfPageNum}-{rightPdfPageNum} / 1460)
             </p>
           </div>
         </div>
@@ -607,7 +650,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Next page arrow button (right) */}
         <button
           onClick={handleTurnNext}
-          disabled={currentSpread >= 548 || isFlipping}
+          disabled={currentSpread >= 730 || isFlipping}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-30 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
           title="Przewróć kartkę w prawo (Następna strona PDF)"
@@ -640,7 +683,7 @@ export const FlipbookReader: React.FC<Props> = ({
                 {section.shortTitle}
               </span>
               <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-400">
-                Strona PDF {leftPdfPageNum} z 1095
+                Strona PDF {leftPdfPageNum} z 1460
               </span>
             </div>
 
@@ -682,7 +725,7 @@ export const FlipbookReader: React.FC<Props> = ({
             {/* Right page header */}
             <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between">
               <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-400">
-                Strona PDF {rightPdfPageNum} z 1095
+                Strona PDF {rightPdfPageNum} z 1460
               </span>
               <div className="flex items-center gap-2">
                 <span className="font-heading-cinzel text-xs font-bold text-[#7a6755] dark:text-amber-400">
@@ -717,7 +760,7 @@ export const FlipbookReader: React.FC<Props> = ({
                     e.stopPropagation();
                     handleTurnNext();
                   }}
-                  disabled={currentSpread >= 548}
+                  disabled={currentSpread >= 730}
                   className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
                   title="Następna karta"
                 >
@@ -729,7 +772,7 @@ export const FlipbookReader: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Bottom Page Turner Bar & PDF Page Slider (1 to 1095) */}
+      {/* Bottom Page Turner Bar & PDF Page Slider (1 to 1460) */}
       <div className="max-w-5xl mx-auto w-full mt-4 bg-white/80 dark:bg-[#121722]/90 backdrop-blur-md p-3 rounded-2xl border border-[#dbcabb] dark:border-[#212b3c] shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button
@@ -746,13 +789,13 @@ export const FlipbookReader: React.FC<Props> = ({
           </span>
         </div>
 
-        {/* 1095 PDF Pages Slider */}
+        {/* 1460 PDF Pages Slider */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono">Strona 1</span>
           <input
             type="range"
             min="1"
-            max="1095"
+            max="1460"
             step="2"
             value={leftPdfPageNum}
             onChange={(e) => {
@@ -760,13 +803,13 @@ export const FlipbookReader: React.FC<Props> = ({
               const targetSpread = Math.floor((pNum - 1) / 2) + 1;
               setCurrentSpread(targetSpread);
               const newLeftPage = (targetSpread * 2) - 1;
-              const newDayNum = Math.floor((newLeftPage - 1) / 3) + 1;
+              const newDayNum = Math.floor((newLeftPage - 1) / 4) + 1;
               onSelectDate(getCycleDateByDayNumber(newDayNum));
             }}
             className="w-36 sm:w-56 accent-[#8c572b] dark:accent-amber-500 cursor-pointer"
           />
           <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono font-bold text-amber-800 dark:text-amber-400">
-            {leftPdfPageNum} / 1095 Stron PDF
+            {leftPdfPageNum} / 1460 Stron PDF
           </span>
         </div>
       </div>
@@ -794,14 +837,14 @@ export const FlipbookReader: React.FC<Props> = ({
               {CYCLE_DAYS.map((d) => {
                 const isCurrent = d.dayNumber === leftPageData.dayNumber;
                 const isMarked = bookmarkedDays.includes(d.dayNumber);
-                const dPdfNum = (d.dayNumber - 1) * 3 + 1;
+                const dPdfNum = (d.dayNumber - 1) * 4 + 1;
 
                 return (
                   <button
                     key={d.dateKey}
                     onClick={() => {
                       onSelectDate(d);
-                      const targetSpread = Math.floor(((d.dayNumber - 1) * 3) / 2) + 1;
+                      const targetSpread = (d.dayNumber - 1) * 2 + 1;
                       setCurrentSpread(targetSpread);
                       setShowToc(false);
                     }}
@@ -850,7 +893,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   {section.name} • Tryb Pełnoekranowy (1:1 Strony PDF)
                 </h3>
                 <p className="text-xs text-amber-300 font-serif-book">
-                  {leftPageData.displayDate} • Dzień {leftPageData.dayNumber} z 365 (Strony PDF {leftPdfPageNum} i {rightPdfPageNum} z 1095)
+                  {leftPageData.displayDate} • Dzień {leftPageData.dayNumber} z 365 (Strony PDF {leftPdfPageNum} i {rightPdfPageNum} z 1460)
                 </p>
               </div>
             </div>
@@ -867,7 +910,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
               <button
                 onClick={handleTurnNext}
-                disabled={currentSpread >= 548}
+                disabled={currentSpread >= 730}
                 className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-30 cursor-pointer"
               >
                 Następna strona <ChevronRight className="w-4 h-4" />
@@ -893,7 +936,7 @@ export const FlipbookReader: React.FC<Props> = ({
               <div className="flex flex-col justify-between p-6 sm:p-10 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-400 font-bold uppercase tracking-widest">
                   <span>{section.shortTitle}</span>
-                  <span>Strona PDF {leftPdfPageNum} z 1095</span>
+                  <span>Strona PDF {leftPdfPageNum} z 1460</span>
                 </div>
 
                 <div className="my-auto py-6 space-y-4">
@@ -910,7 +953,7 @@ export const FlipbookReader: React.FC<Props> = ({
               <div className="flex flex-col justify-between p-6 sm:p-10 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <div className="border-b border-black/10 dark:border-white/10 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-400 font-bold">
                   <span>Dzień {rightPageData.dayNumber} z 365</span>
-                  <span>Strona PDF {rightPdfPageNum} z 1095</span>
+                  <span>Strona PDF {rightPdfPageNum} z 1460</span>
                 </div>
 
                 <div className="my-auto py-6 space-y-4">
@@ -949,5 +992,3 @@ export const FlipbookReader: React.FC<Props> = ({
     </div>
   );
 };
-
-
