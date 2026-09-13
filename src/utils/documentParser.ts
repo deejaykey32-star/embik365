@@ -5,6 +5,7 @@ import { getCycleDateByDayNumber, POLISH_MONTHS } from './dateCycle';
 export interface ParsedDayEntry {
   dayNumber: number;
   dateKey: string;
+  sectionId: SectionId;
   title: string;
   subtitle?: string;
   mystery?: string;
@@ -21,24 +22,23 @@ export interface ParseDocumentResult {
 }
 
 /**
- * Extracts plain text from a DOCX file buffer using JSZip
+ * Extracts plain text lines from a DOCX file using JSZip
  */
 async function extractTextFromDocx(file: File): Promise<string> {
   const zip = await JSZip.loadAsync(file);
   const docXmlStr = await zip.file('word/document.xml')?.async('text');
   if (!docXmlStr) return '';
 
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(docXmlStr, 'application/xml');
-  const paragraphNodes = Array.from(xmlDoc.getElementsByTagName('w:p'));
-
+  const paragraphs = docXmlStr.match(/<w:p [^>]*>.*?<\/w:p>|<w:p>.*?<\/w:p>/g) || [];
   const lines: string[] = [];
 
-  for (const p of paragraphNodes) {
-    const textNodes = Array.from(p.getElementsByTagName('w:t'));
-    const lineText = textNodes.map(t => t.textContent || '').join('').trim();
-    if (lineText) {
-      lines.push(lineText);
+  for (const p of paragraphs) {
+    const textMatches = p.match(/<w:t[^>]*>(.*?)<\/w:t>/g);
+    if (textMatches) {
+      const lineText = textMatches.map(m => m.replace(/<[^>]+>/g, '')).join('').trim();
+      if (lineText) {
+        lines.push(lineText);
+      }
     }
   }
 
@@ -46,7 +46,7 @@ async function extractTextFromDocx(file: File): Promise<string> {
 }
 
 /**
- * Extracts text from an ePUB file buffer using JSZip
+ * Extracts text lines from an ePUB file using JSZip
  */
 async function extractTextFromEpub(file: File): Promise<string> {
   const zip = await JSZip.loadAsync(file);
@@ -59,7 +59,6 @@ async function extractTextFromEpub(file: File): Promise<string> {
     }
   }
 
-  // Sort files by name to maintain order
   htmlFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 
   const parser = new DOMParser();
@@ -67,7 +66,6 @@ async function extractTextFromEpub(file: File): Promise<string> {
 
   for (const item of htmlFiles) {
     const doc = parser.parseFromString(item.content, 'text/html');
-    // Extract block elements & text
     const elements = Array.from(doc.body.querySelectorAll('h1, h2, h3, h4, h5, h6, p, div, li'));
     if (elements.length > 0) {
       for (const el of elements) {
@@ -93,39 +91,6 @@ async function extractTextFromTextFile(file: File): Promise<string> {
     reader.onerror = reject;
     reader.readAsText(file);
   });
-}
-
-/**
- * Helper to match date string (e.g. "25 grudnia", "1 stycznia") to dayNumber
- */
-function findDayNumberFromDateString(dateStr: string): number | null {
-  const match = dateStr.match(/(\d{1,2})\s+([a-zA-ząćęłńóśźżA-ZĄĆĘŁŃÓŚŹŻ]+)/i);
-  if (!match) return null;
-
-  const day = parseInt(match[1], 10);
-  const monthName = match[2].toLowerCase();
-
-  const monthObj = POLISH_MONTHS.find(m =>
-    m.nameGenitive.toLowerCase() === monthName ||
-    m.nameNominative.toLowerCase() === monthName
-  );
-
-  if (!monthObj) return null;
-
-  const m = monthObj.id;
-  // Calculate dayNumber in 366-day cycle starting Dec 25 (Day 1)
-  if (m === 12 && day >= 25) {
-    return day - 24; // Dec 25 -> 1, Dec 31 -> 7
-  }
-
-  // Jan 1 is Day 8
-  let days = 7;
-  for (let month = 1; month < m; month++) {
-    const mo = POLISH_MONTHS.find(item => item.id === month)!;
-    days += mo.days;
-  }
-  days += day;
-  return days <= 366 ? days : null;
 }
 
 /**
@@ -172,33 +137,29 @@ export async function parseDocumentIntoDayEntries(
   const rawLines = fullText.split('\n').map(l => l.trim()).filter(Boolean);
   const parsedEntries: Record<string, ParsedDayEntry> = {};
 
-  // Regex patterns for day headings
-  const dayPatterns = [
-    // Dzień 1, Dzień 01, Dzień 1: Tytuł, Dzień 1 - Tytuł, Day 1
-    /^(?:#+\s*)?(?:Dzień|Day|Dzien|Rozdział|Rozdzial|Wpis)\s*(\d{1,3})(?:\s*[:\-–—]\s*|\s+)(.*)/i,
-    /^(?:#+\s*)?(?:Dzień|Day|Dzien|Rozdział|Rozdzial|Wpis)\s*(\d{1,3})$/i,
-    // [Dzień 1] or [1]
-    /^\[(?:Dzień|Day)?\s*(\d{1,3})\](?:\s*[:\-–—]\s*|\s+)(.*)/i,
-    // 1. Dzień / 1. Rozdział
-    /^(\d{1,3})\.\s+(?:Dzień|Day|Rozdział)(?:\s*[:\-–—]\s*|\s+)(.*)/i
-  ];
+  // Strict regex pattern for day headings (e.g. "DZIEŃ 1 — 25 GRUDNIA" or "DZIEŃ 2 — 26 GRUDNIA")
+  const dayHeaderRegex = /^(?:#+\s*)?(?:DZIEŃ|DAY|DZIEN|ROZDZIAŁ|ROZDZIAL|WPIS)\s*(\d{1,3})/i;
 
-  let currentDayNumber: number | null = null;
-  let currentTitle = '';
-  let currentContentLines: string[] = [];
+  let currentDayNum: number | null = null;
+  let currentHeaderExtra = '';
+  let currentLines: string[] = [];
 
   const finalizeDay = () => {
-    if (currentDayNumber !== null && currentDayNumber >= 1 && currentDayNumber <= 366) {
-      const cycleDate = getCycleDateByDayNumber(currentDayNumber);
+    if (currentDayNum !== null && currentDayNum >= 1 && currentDayNum <= 366) {
+      const cycleDate = getCycleDateByDayNumber(currentDayNum);
       const dateKey = cycleDate.dateKey;
       const entryKey = `${sectionId}-${dateKey}`;
 
       let mystery: string | undefined;
       let intention: string | undefined;
       let prayer: string | undefined;
-      const cleanContentLines: string[] = [];
+      const bodyLines: string[] = [];
 
-      for (const line of currentContentLines) {
+      for (const line of currentLines) {
+        if (line.startsWith('Widoki na Raj') || line.startsWith('WnR365 — Widoki na Raj')) {
+          continue; // ignore repetitive header lines
+        }
+
         if (line.toLowerCase().startsWith('tajemnica:') || line.toLowerCase().startsWith('tajemnica ')) {
           mystery = line.replace(/^tajemnica:?\s*/i, '').trim();
         } else if (line.toLowerCase().startsWith('intencja:') || line.toLowerCase().startsWith('intencja ')) {
@@ -206,20 +167,38 @@ export async function parseDocumentIntoDayEntries(
         } else if (line.toLowerCase().startsWith('modlitwa:') || line.toLowerCase().startsWith('modlitwa serca:')) {
           prayer = line.replace(/^modlitwa\s*(serca)?:?\s*/i, '').trim();
         } else {
-          cleanContentLines.push(line);
+          bodyLines.push(line);
         }
       }
 
-      const contentText = cleanContentLines.join('\n\n');
-      const fallbackTitle = `Dzień ${currentDayNumber} – ${cycleDate.displayDate}`;
+      // Extract clear title if available
+      let extractedTitle = '';
+      if (bodyLines.length > 0) {
+        const firstLine = bodyLines[0];
+        // e.g. "[28.05.2012] Powtórne Narodziny"
+        if (/^\[\d{2}\.\d{2}\.\d{4}\]/i.test(firstLine)) {
+          extractedTitle = firstLine.replace(/^\[\d{2}\.\d{2}\.\d{4}\]\s*/i, '').trim();
+        } else if (firstLine.length < 80 && !firstLine.endsWith('.')) {
+          extractedTitle = firstLine;
+        }
+      }
+
+      if (!extractedTitle && currentHeaderExtra && !/^\d{1,2}\s+[a-z]+/i.test(currentHeaderExtra)) {
+        extractedTitle = currentHeaderExtra;
+      }
+
+      const displayTitle = extractedTitle 
+        ? `Dzień ${currentDayNum} (${cycleDate.displayDate}): ${extractedTitle}`
+        : `Dzień ${currentDayNum} – ${cycleDate.displayDate}`;
 
       parsedEntries[entryKey] = {
-        dayNumber: currentDayNumber,
+        dayNumber: currentDayNum,
         dateKey,
-        title: currentTitle ? `Dzień ${currentDayNumber}: ${currentTitle}` : fallbackTitle,
+        sectionId,
+        title: displayTitle,
         mystery,
         intention,
-        content: contentText || (currentTitle ? currentTitle : `Rozważanie na dzień ${currentDayNumber}`),
+        content: bodyLines.join('\n\n') || extractedTitle || `Rozważanie na dzień ${currentDayNum}`,
         prayer
       };
     }
@@ -227,39 +206,18 @@ export async function parseDocumentIntoDayEntries(
 
   for (let i = 0; i < rawLines.length; i++) {
     const line = rawLines[i];
-    let matchedDay: number | null = null;
-    let extractedTitle = '';
+    const match = line.match(dayHeaderRegex);
 
-    for (const pattern of dayPatterns) {
-      const match = line.match(pattern);
-      if (match) {
-        matchedDay = parseInt(match[1], 10);
-        extractedTitle = match[2] ? match[2].trim() : '';
-        break;
-      }
-    }
-
-    // Check if line contains a Polish date like "25 grudnia"
-    if (matchedDay === null) {
-      const dayFromDate = findDayNumberFromDateString(line);
-      if (dayFromDate !== null) {
-        matchedDay = dayFromDate;
-        extractedTitle = line;
-      }
-    }
-
-    if (matchedDay !== null) {
-      // Finalize previous day
+    if (match) {
       finalizeDay();
-      currentDayNumber = matchedDay;
-      currentTitle = extractedTitle;
-      currentContentLines = [];
-    } else if (currentDayNumber !== null) {
-      currentContentLines.push(line);
+      currentDayNum = parseInt(match[1], 10);
+      currentHeaderExtra = line.replace(dayHeaderRegex, '').replace(/^[\s\-—–:]+/, '').trim();
+      currentLines = [];
+    } else if (currentDayNum !== null) {
+      currentLines.push(line);
     }
   }
 
-  // Finalize last day
   finalizeDay();
 
   const totalDays = Object.keys(parsedEntries).length;
@@ -271,7 +229,7 @@ export async function parseDocumentIntoDayEntries(
       success: false,
       totalDaysFound: 0,
       entries: {},
-      logMessage: `Nie odnaleziono nagłówków dni (np. "Dzień 1", "Dzień 2", "Rozdział 1") w pliku ${file.name}.`
+      logMessage: `Nie odnaleziono nagłówków dni (np. "Dzień 1", "Dzień 2") w pliku ${file.name}.`
     };
   }
 
