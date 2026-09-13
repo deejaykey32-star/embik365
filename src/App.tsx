@@ -8,6 +8,7 @@ import { SectionNav } from './components/SectionNav';
 import { FlipbookReader } from './components/FlipbookReader';
 import { StandardReader } from './components/StandardReader';
 import { Info365View } from './components/Info365View';
+import { saveHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
@@ -136,7 +137,12 @@ export default function App() {
         const res = await fetch('/api/data');
         if (res.ok) {
           const json = await res.json();
-          if (json.entries) setCustomEntries(json.entries);
+          if (json.entries) {
+            setCustomEntries(json.entries);
+            if (json.entries['drogowskazy_home_config']?.homeConfig) {
+              saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig);
+            }
+          }
           if (json.uploads) setUploads(json.uploads);
           return;
         }
@@ -147,7 +153,12 @@ export default function App() {
         const staticRes = await fetch('/data/entries.json');
         if (staticRes.ok) {
           const json = await staticRes.json();
-          if (json.entries) setCustomEntries(json.entries);
+          if (json.entries) {
+            setCustomEntries(json.entries);
+            if (json.entries['drogowskazy_home_config']?.homeConfig) {
+              saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig);
+            }
+          }
           if (json.uploads) setUploads(json.uploads);
         }
       } catch (err) {

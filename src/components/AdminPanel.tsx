@@ -35,7 +35,7 @@ import { parseDocumentIntoDayEntries } from '../utils/documentParser';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { WysiwygEditor } from './WysiwygEditor';
 import { MediaLibraryViewer } from './MediaLibraryViewer';
-import { getHomePageConfig, saveHomePageConfig, resetHomePageConfig } from '../utils/homePageConfig';
+import { getHomePageConfig, saveHomePageConfig, resetHomePageConfig, uploadImageFileToServer } from '../utils/homePageConfig';
 import { 
   getSavedQrCodes, 
   generateAndDownloadQrBadgePng, 
@@ -1592,10 +1592,14 @@ export const AdminPanel: React.FC<Props> = ({
                   </button>
 
                   <button
-                    onClick={() => {
-                      saveHomePageConfig(homeConfig);
-                      setHomeSaveStatus('Zapisano pomyślnie zmiany strony startowej!');
-                      setTimeout(() => setHomeSaveStatus(null), 3000);
+                    onClick={async () => {
+                      const success = await saveHomePageConfig(homeConfig);
+                      if (success) {
+                        setHomeSaveStatus('Zapisano pomyślnie zmiany strony startowej i zsynchronizowano!');
+                      } else {
+                        setHomeSaveStatus('Wystąpił błąd podczas zapisywania strony startowej.');
+                      }
+                      setTimeout(() => setHomeSaveStatus(null), 4000);
                     }}
                     className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer transition-colors"
                   >
@@ -1710,17 +1714,16 @@ export const AdminPanel: React.FC<Props> = ({
                               type="file"
                               accept="image/*"
                               className="hidden"
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = () => {
-                                    if (typeof reader.result === 'string') {
-                                      const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, imageUrl: reader.result as string } : s);
-                                      setHomeConfig({ ...homeConfig, showcases: updated });
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
+                                  try {
+                                    const uploadedUrl = await uploadImageFileToServer(file);
+                                    const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, imageUrl: uploadedUrl } : s);
+                                    setHomeConfig({ ...homeConfig, showcases: updated });
+                                  } catch (err: any) {
+                                    alert(`Błąd wgrywania grafiki: ${err.message || err}`);
+                                  }
                                 }
                               }}
                             />

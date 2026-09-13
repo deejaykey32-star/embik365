@@ -115,6 +115,66 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
   ]
 };
 
+export function compressImageFile(file: File, maxWidth = 1200, quality = 0.8): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Nie można odczytać pliku graficznego.'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Nieprawidłowy format obrazu.'));
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/webp', quality);
+        resolve(compressed);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function uploadImageFileToServer(file: File): Promise<string> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', file.name);
+    formData.append('sectionId', 'info365');
+    
+    const res = await fetch('/api/upload-file', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) {
+        return data.url;
+      }
+    }
+  } catch (err) {
+    console.warn('Server upload endpoint not available, falling back to local compression:', err);
+  }
+
+  return compressImageFile(file);
+}
+
 const STORAGE_KEY = 'drogowskazy_home_config';
 
 export function getHomePageConfig(): HomePageConfig {
@@ -151,15 +211,33 @@ export function getHomePageConfig(): HomePageConfig {
   return DEFAULT_HOME_PAGE_CONFIG;
 }
 
-export function saveHomePageConfig(config: HomePageConfig): void {
+export async function saveHomePageConfig(config: HomePageConfig): Promise<boolean> {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    const jsonStr = JSON.stringify(config);
+    localStorage.setItem(STORAGE_KEY, jsonStr);
     if (config.introHtml) {
       localStorage.setItem('drogowskazy_info365_intro', config.introHtml);
     }
     window.dispatchEvent(new CustomEvent('drogowskazy_home_config_updated', { detail: config }));
-  } catch (err) {
+
+    // Send to dev server / Cloudflare API for persistence & GitHub auto-sync
+    try {
+      await fetch('/api/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'drogowskazy_home_config',
+          entry: { homeConfig: config, title: 'Konfiguracja Strony Startowej Info365' }
+        })
+      });
+    } catch (apiErr) {
+      console.warn('API sync for homeConfig failed, saved locally:', apiErr);
+    }
+    return true;
+  } catch (err: any) {
     console.error('Error saving home page config:', err);
+    alert('Błąd zapisu strony startowej w przeglądarce. Zdjęcie jest zbyt duże. Prosimy wgrać je ponownie.');
+    return false;
   }
 }
 

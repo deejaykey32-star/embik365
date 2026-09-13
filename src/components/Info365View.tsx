@@ -33,6 +33,7 @@ import {
   getHomePageConfig, 
   saveHomePageConfig, 
   resetHomePageConfig, 
+  uploadImageFileToServer,
   SECTION_ICONS_MAP 
 } from '../utils/homePageConfig';
 import { getUIText } from '../utils/translationService';
@@ -98,13 +99,13 @@ export const Info365View: React.FC<Info365ViewProps> = ({
     setEditingHero(false);
   };
 
-  const handleSaveShowcase = (updatedItem: SectionShowcaseConfig) => {
+  const handleSaveShowcase = async (updatedItem: SectionShowcaseConfig) => {
     const updatedShowcases = config.showcases.map(item => 
       item.id === updatedItem.id ? updatedItem : item
     );
     const updated = { ...config, showcases: updatedShowcases };
     setConfig(updated);
-    saveHomePageConfig(updated);
+    await saveHomePageConfig(updated);
     setEditingShowcase(null);
   };
 
@@ -509,17 +510,20 @@ const ShowcaseEditModal: React.FC<{
   const [fullDesc, setFullDesc] = useState(item.fullDesc);
   const [imageUrl, setImageUrl] = useState(item.imageUrl);
   const [imageAlt, setImageAlt] = useState(item.imageAlt);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLocalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setImageUrl(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    setIsUploadingImage(true);
+    try {
+      const uploadedUrl = await uploadImageFileToServer(file);
+      setImageUrl(uploadedUrl);
+    } catch (err: any) {
+      alert(`Błąd wgrywania pliku graficznego: ${err.message || err}`);
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
