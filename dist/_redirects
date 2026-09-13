@@ -1,2 +1,1 @@
-# Cloudflare Pages SPA Routing Fallback (200! prevents infinite loop check)
-/*    /index.html   200!
+# Cloudflare Pages Redirects
