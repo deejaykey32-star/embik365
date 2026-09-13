@@ -1,12 +1,13 @@
 import { SUPPORTED_LANGUAGES } from '../types';
 
 export type LectorMode = 'local' | 'online';
+export type LectorGender = 'male' | 'female';
 
 export interface OnlineVoiceOption {
   id: string;
   name: string;
   lang: string;
-  gender: 'male' | 'female';
+  gender: LectorGender;
   description: string;
   provider: string;
 }
@@ -14,6 +15,7 @@ export interface OnlineVoiceOption {
 export interface LectorConfig {
   mode: LectorMode;
   lang: string;
+  gender: LectorGender;
   localVoiceURI: string;
   onlineVoiceId: string;
   rate: number;   // 0.5 to 2.0 (default 1.0)
@@ -76,6 +78,7 @@ const STORAGE_KEY = 'drogowskazy_lector_config';
 export const DEFAULT_LECTOR_CONFIG: LectorConfig = {
   mode: 'local',
   lang: 'pl',
+  gender: 'male',
   localVoiceURI: '',
   onlineVoiceId: 'pl-AI-Jan',
   rate: 1.0,
@@ -87,7 +90,8 @@ export function getLectorConfig(): LectorConfig {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return { ...DEFAULT_LECTOR_CONFIG, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      return { ...DEFAULT_LECTOR_CONFIG, ...parsed };
     }
   } catch {}
   return DEFAULT_LECTOR_CONFIG;
@@ -100,9 +104,6 @@ export function saveLectorConfig(cfg: LectorConfig): void {
   } catch {}
 }
 
-/**
- * Gets all locally installed Web Speech API voices from the browser.
- */
 export function getLocalVoices(): SpeechSynthesisVoice[] {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     return [];
@@ -110,20 +111,63 @@ export function getLocalVoices(): SpeechSynthesisVoice[] {
   return window.speechSynthesis.getVoices();
 }
 
-/**
- * Filter local voices matching a language code (e.g. 'pl', 'en', 'es').
- */
 export function getLocalVoicesForLang(langCode: string): SpeechSynthesisVoice[] {
   const voices = getLocalVoices();
-  const lowerLang = langCode.toLowerCase();
+  const lowerLang = (langCode || 'pl').toLowerCase();
   return voices.filter(v => {
     const vLang = v.lang.toLowerCase().replace('_', '-');
     return vLang.startsWith(lowerLang) || vLang.includes(lowerLang);
   });
 }
 
-// Active speech utterance state for pause/resume/stop control
-let currentUtterance: SpeechSynthesisUtterance | null = null;
+// Regex patterns for local browser voice gender identification
+const FEMALE_VOICE_PATTERN = /female|ewa|maria|paulina|zosia|ania|agata|zuzanna|monika|zora|zira|hazel|samantha|victoria|karen|catherine|helena|laura|monica|elsa|alice|lucia|hortense|julie|hedda|katja|marlene|vicki|olena|benedicta|soft|woman|girl|lady/i;
+const MALE_VOICE_PATTERN = /male|jan|piotr|adam|krzysztof|marek|leszek|david|george|paul|stefan|pablo|raul|jorge|diego|cosimo|paolo|thomas|bernard|hans|michael|oleksandr|marcus|guy|boy|man|deep/i;
+
+export function findBestLocalVoice(
+  langCode: string,
+  desiredGender: LectorGender,
+  preferredURI?: string
+): SpeechSynthesisVoice | undefined {
+  const voices = getLocalVoices();
+  if (voices.length === 0) return undefined;
+
+  const targetLang = (langCode || 'pl').toLowerCase();
+
+  // 1. If preferredURI is provided and matches targetLang, verify its availability
+  if (preferredURI) {
+    const match = voices.find(v => v.voiceURI === preferredURI);
+    if (match) {
+      const vLang = match.lang.toLowerCase().replace('_', '-');
+      if (vLang.startsWith(targetLang) || vLang.includes(targetLang)) {
+        return match;
+      }
+    }
+  }
+
+  // 2. Filter voices matching target language
+  const langVoices = voices.filter(v => {
+    const vLang = v.lang.toLowerCase().replace('_', '-');
+    return vLang.startsWith(targetLang) || vLang.includes(targetLang);
+  });
+
+  if (langVoices.length === 0) {
+    // Global fallback
+    return voices.find(v => v.lang.toLowerCase().startsWith(targetLang)) || voices[0];
+  }
+
+  // 3. Match gender strictly
+  if (desiredGender === 'female') {
+    const femaleMatch = langVoices.find(v => FEMALE_VOICE_PATTERN.test(v.name) && !MALE_VOICE_PATTERN.test(v.name));
+    if (femaleMatch) return femaleMatch;
+  } else {
+    const maleMatch = langVoices.find(v => MALE_VOICE_PATTERN.test(v.name) && !FEMALE_VOICE_PATTERN.test(v.name));
+    if (maleMatch) return maleMatch;
+  }
+
+  return langVoices[0];
+}
+
 let currentAudioElement: HTMLAudioElement | null = null;
 
 export function stopLectorSpeech(): void {
@@ -134,32 +178,35 @@ export function stopLectorSpeech(): void {
     currentAudioElement.pause();
     currentAudioElement = null;
   }
-  currentUtterance = null;
 }
 
 export interface PlayLectorOptions {
   text: string;
   config: LectorConfig;
+  overrideLang?: string;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (err: any) => void;
 }
 
-/**
- * Primary function to speak text using either Local (Web Speech API) or Online AI TTS engine.
- */
 export async function playLectorSpeech(options: PlayLectorOptions): Promise<void> {
-  const { text, config, onStart, onEnd, onError } = options;
+  const { text, config, overrideLang, onStart, onEnd, onError } = options;
   stopLectorSpeech();
 
   if (!text || !text.trim()) return;
 
-  const voiceProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
-  const targetGender = voiceProfile?.gender || 'male';
-  const effectivePitch = config.pitch * (targetGender === 'female' ? 1.2 : targetGender === 'male' ? 0.85 : 1.0);
+  const targetLang = (overrideLang || config.lang || 'pl').toLowerCase();
+  const targetGender: LectorGender = config.gender || 'male';
+
+  // Ensure onlineVoiceId matches targetLang and targetGender
+  let onlineProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId && v.lang === targetLang);
+  if (!onlineProfile) {
+    onlineProfile = ONLINE_VOICES.find(v => v.lang === targetLang && v.gender === targetGender)
+      || ONLINE_VOICES.find(v => v.lang === targetLang)
+      || ONLINE_VOICES[0];
+  }
 
   if (config.mode === 'online') {
-    // ONLINE AI TTS MODE
     try {
       if (onStart) onStart();
 
@@ -168,10 +215,10 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          voiceId: config.onlineVoiceId,
-          lang: config.lang,
+          voiceId: onlineProfile.id,
+          lang: targetLang,
           rate: config.rate,
-          pitch: effectivePitch
+          pitch: config.pitch
         })
       });
 
@@ -189,61 +236,45 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
 
         audio.onerror = (e) => {
           console.warn('Online Audio playback failed, falling back to local speech:', e);
-          playLocalSpeechFallback({ ...options, config: { ...config, pitch: effectivePitch } });
+          playLocalSpeechFallback({ ...options, overrideLang: targetLang });
         };
 
         currentAudioElement = audio;
         await audio.play();
       } else {
-        playLocalSpeechFallback({ ...options, config: { ...config, pitch: effectivePitch } });
+        playLocalSpeechFallback({ ...options, overrideLang: targetLang });
       }
     } catch (err) {
       console.warn('Online TTS error, falling back to local speech:', err);
-      playLocalSpeechFallback({ ...options, config: { ...config, pitch: effectivePitch } });
+      playLocalSpeechFallback({ ...options, overrideLang: targetLang });
     }
   } else {
-    // LOCAL WEB SPEECH API MODE
-    playLocalSpeechFallback(options);
+    playLocalSpeechFallback({ ...options, overrideLang: targetLang });
   }
 }
 
 function playLocalSpeechFallback(options: PlayLectorOptions): void {
-  const { text, config, onStart, onEnd, onError } = options;
+  const { text, config, overrideLang, onStart, onEnd, onError } = options;
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onError) onError('Speech Synthesis API unsupported in this browser.');
     return;
   }
 
-  const voiceProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
-  const targetGender = voiceProfile?.gender || 'male';
+  const targetLang = (overrideLang || config.lang || 'pl').toLowerCase();
+  const targetGender: LectorGender = config.gender || 'male';
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = config.rate;
-  utterance.pitch = config.pitch * (targetGender === 'female' ? 1.2 : targetGender === 'male' ? 0.85 : 1.0);
+  utterance.pitch = config.pitch * (targetGender === 'female' ? 1.12 : targetGender === 'male' ? 0.90 : 1.0);
   utterance.volume = config.volume;
 
-  // Try to attach chosen local voice
-  const allVoices = getLocalVoices();
-  let chosenVoice: SpeechSynthesisVoice | undefined;
-
-  if (config.localVoiceURI) {
-    chosenVoice = allVoices.find(v => v.voiceURI === config.localVoiceURI);
+  const chosenVoice = findBestLocalVoice(targetLang, targetGender, config.localVoiceURI);
+  if (chosenVoice) {
+    utterance.voice = chosenVoice;
+    utterance.lang = chosenVoice.lang;
+  } else {
+    utterance.lang = `${targetLang}-${targetLang.toUpperCase()}`;
   }
-
-  if (!chosenVoice) {
-    const langVoices = getLocalVoicesForLang(config.lang);
-    if (langVoices.length > 0) {
-      if (targetGender === 'female') {
-        chosenVoice = langVoices.find(v => /female|ewa|maria|zora|zira|hazel|samantha|victoria|karen|catherine/i.test(v.name));
-      } else {
-        chosenVoice = langVoices.find(v => /male|jan|piotr|adam|david|george|paul|stefan|pablo/i.test(v.name));
-      }
-      if (!chosenVoice) chosenVoice = langVoices[0];
-    }
-  }
-
-  if (chosenVoice) utterance.voice = chosenVoice;
-  utterance.lang = utterance.voice?.lang || `${config.lang}-${config.lang.toUpperCase()}`;
 
   utterance.onstart = () => {
     if (onStart) onStart();
@@ -251,14 +282,11 @@ function playLocalSpeechFallback(options: PlayLectorOptions): void {
 
   utterance.onend = () => {
     if (onEnd) onEnd();
-    currentUtterance = null;
   };
 
   utterance.onerror = (err) => {
     if (onError) onError(err);
-    currentUtterance = null;
   };
 
-  currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
 }

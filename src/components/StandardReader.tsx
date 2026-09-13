@@ -77,11 +77,11 @@ export const StandardReader: React.FC<Props> = ({
 
     const textToSpeak = `${entry.title}. ${entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
     const lectorCfg = getLectorConfig();
-    if (!lectorCfg.lang) lectorCfg.lang = currentLang;
 
     await playLectorSpeech({
       text: textToSpeak,
       config: lectorCfg,
+      overrideLang: currentLang,
       onStart: () => setIsSpeaking(true),
       onEnd: () => setIsSpeaking(false),
       onError: () => setIsSpeaking(false)

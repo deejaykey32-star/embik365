@@ -70,6 +70,21 @@ export const LectorSettingsModal: React.FC<Props> = ({
   const matchingLocalVoices = getLocalVoicesForLang(config.lang);
   const matchingOnlineVoices = ONLINE_VOICES.filter(v => v.lang === config.lang);
 
+  const handleGenderFilterChange = (g: 'all' | 'male' | 'female') => {
+    setGenderFilter(g);
+    if (g === 'male' || g === 'female') {
+      const langOnlines = ONLINE_VOICES.filter(v => v.lang === config.lang);
+      const matchOnline = langOnlines.find(v => v.gender === g);
+      const updated: LectorConfig = {
+        ...config,
+        gender: g,
+        onlineVoiceId: matchOnline?.id || config.onlineVoiceId
+      };
+      setConfig(updated);
+      saveLectorConfig(updated);
+    }
+  };
+
   const handleModeChange = (mode: LectorMode) => {
     const updated = { ...config, mode };
     setConfig(updated);
@@ -79,12 +94,13 @@ export const LectorSettingsModal: React.FC<Props> = ({
   const handleLangChange = (lang: string) => {
     const langLocals = getLocalVoicesForLang(lang);
     const langOnlines = ONLINE_VOICES.filter(v => v.lang === lang);
+    const matchOnline = langOnlines.find(v => v.gender === config.gender) || langOnlines[0];
 
     const updated: LectorConfig = {
       ...config,
       lang,
       localVoiceURI: langLocals[0]?.voiceURI || '',
-      onlineVoiceId: langOnlines[0]?.id || 'pl-AI-Jan'
+      onlineVoiceId: matchOnline?.id || 'pl-AI-Jan'
     };
     setConfig(updated);
     saveLectorConfig(updated);
@@ -107,7 +123,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
     setTestStatus('Odtwarzanie próbne lektora...');
 
     const sampleTexts: Record<string, string> = {
-      pl: 'Witaj w aplikacji Droga 365. Pokój i Dobro. Odo odczyt próby głosu lektora.',
+      pl: 'Witaj w aplikacji Droga 365. Pokój i Dobro. Oto odczyt próby głosu lektora.',
       en: 'Welcome to Signposts 365. Peace and goodness. This is a voice lector test.',
       es: 'Bienvenido a Pistas 365. Paz y bien. Esta es una prueba de voz del lector.',
       it: 'Benvenuto a Segnavia 365. Pace e bene. Questa è una prova di voce del lettore.',
@@ -123,12 +139,13 @@ export const LectorSettingsModal: React.FC<Props> = ({
     await playLectorSpeech({
       text: textToSpeak,
       config,
+      overrideLang: config.lang,
       onStart: () => setIsPlayingTest(true),
       onEnd: () => {
         setIsPlayingTest(false);
         setTestStatus(null);
       },
-      onError: (err) => {
+      onError: () => {
         setIsPlayingTest(false);
         setTestStatus('Błąd odtwarzania próby mowy.');
       }
@@ -269,8 +286,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 <div className="flex items-center gap-1.5 bg-stone-200 dark:bg-[#0c121e] p-1 rounded-xl">
                   <button
                     type="button"
-                    onClick={() => setGenderFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    onClick={() => handleGenderFilterChange('all')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       genderFilter === 'all' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
                     }`}
                   >
@@ -278,8 +295,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setGenderFilter('male')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    onClick={() => handleGenderFilterChange('male')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       genderFilter === 'male' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
                     }`}
                   >
@@ -287,8 +304,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setGenderFilter('female')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    onClick={() => handleGenderFilterChange('female')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                       genderFilter === 'female' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
                     }`}
                   >
@@ -327,7 +344,12 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 <select
                   value={config.onlineVoiceId}
                   onChange={(e) => {
-                    const updated = { ...config, onlineVoiceId: e.target.value };
+                    const selectedVoice = ONLINE_VOICES.find(v => v.id === e.target.value);
+                    const updated = {
+                      ...config,
+                      onlineVoiceId: e.target.value,
+                      gender: selectedVoice?.gender || config.gender
+                    };
                     setConfig(updated);
                     saveLectorConfig(updated);
                   }}
