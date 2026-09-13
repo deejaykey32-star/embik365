@@ -380,11 +380,44 @@ export const AdminPanel: React.FC<Props> = ({
       }
     }
 
-    setUploadStatus({
-      type: 'error',
-      message: 'Nie udało się wgrać pliku. Skonfiguruj token GitHub w zakładce GitHub.'
-    });
-    setIsUploading(false);
+    // 3. Fallback for Static / Local Mode (when backend API and GitHub token are not configured yet)
+    try {
+      const blobUrl = URL.createObjectURL(selectedFile);
+      const newFileRecord: UploadedPdf = {
+        id: `${fileFormat}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+        filename: `${Date.now()}-${selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+        originalName: selectedFile.name,
+        format: fileFormat,
+        url: blobUrl,
+        size: selectedFile.size,
+        sectionId: targetSection,
+        dayNumber: dayNumberVal,
+        dateKey: dateKeyVal,
+        title: fileTitle || selectedFile.name.replace(/\.[a-zA-Z0-9]+$/i, ''),
+        description: fileDescription,
+        uploadedAt: new Date().toISOString()
+      };
+
+      onUploadSuccess(newFileRecord);
+      const parsedMsg = parsedDaysCount > 0 ? ` Automatycznie rozpoznano i zaktualizowano ${parsedDaysCount} wpisów dziennych w aplikacji.` : '';
+      setUploadProgress({ percent: 100, stageMessage: 'Zapisano pomyślnie!' });
+      setUploadStatus({
+        type: 'success',
+        message: `Plik ${fileFormat.toUpperCase()} oraz wpisy zostały pomyślnie zczytane!${parsedMsg} Aby zsynchronizować plik i zmiany trwale z repozytorium GitHub i Cloudflare Pages, wprowadź token w zakładce "GitHub & Cloudflare Pages".`
+      });
+      setSelectedFile(null);
+      setFileTitle('');
+      setFileDescription('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setIsUploading(false);
+      return;
+    } catch (fallbackErr: any) {
+      setUploadStatus({
+        type: 'error',
+        message: `Błąd wgrywania pliku: ${fallbackErr.message}`
+      });
+      setIsUploading(false);
+    }
   };
 
   const handleTestGitHub = async () => {
@@ -672,9 +705,27 @@ export const AdminPanel: React.FC<Props> = ({
                   Wgrywanie Dokumentu PDF
                 </h3>
                 <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
-                  Wgrany plik PDF zostanie przypisany do wybranej sekcji i dnia cyklu, a także automatycznie zsynchronizowany z repozytorium GitHub i Cloudflare Pages.
+                  Wgrany plik PDF (lub ePUB/DOCX) zostanie przypisany do sekcji i automatycznie sparsowany do wpisów 365 dni.
                 </p>
               </div>
+
+              {!githubConfig.token && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <Key className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>
+                      <strong>Status GitHub:</strong> Token nie jest jeszcze ustawiony. Pliki wgrywają się lokalnie. Wklej token w zakładce GitHub, aby synchronizować z serwerem.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('github')}
+                    className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-colors"
+                  >
+                    Otwórz Konfigurację GitHub 🔑
+                  </button>
+                </div>
+              )}
 
               {uploadStatus && (
                 <div className={`p-4 rounded-2xl flex items-start gap-3 text-xs ${
