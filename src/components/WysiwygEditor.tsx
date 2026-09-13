@@ -69,11 +69,29 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
 
   // Sync initial content once or on external change
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== initialValue) {
-      editorRef.current.innerHTML = initialValue;
-      setHtmlCode(initialValue);
+    setHtmlCode(initialValue || '');
+    if (editorRef.current && mode !== 'html') {
+      editorRef.current.innerHTML = initialValue || '';
     }
   }, [initialValue]);
+
+  // Keep editorRef innerHTML in sync with htmlCode whenever mode or htmlCode changes
+  useEffect(() => {
+    if (mode !== 'html' && editorRef.current) {
+      if (editorRef.current.innerHTML !== htmlCode) {
+        editorRef.current.innerHTML = htmlCode || '';
+      }
+    }
+  }, [mode, htmlCode]);
+
+  const switchMode = (newMode: 'simple' | 'advanced' | 'html') => {
+    if (mode !== 'html' && editorRef.current) {
+      const currentContent = editorRef.current.innerHTML;
+      setHtmlCode(currentContent);
+      onChange(currentContent);
+    }
+    setMode(newMode);
+  };
 
   const handleInput = () => {
     if (!editorRef.current) return;
@@ -244,7 +262,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           <div className="flex items-center bg-stone-200/80 dark:bg-[#1f293d] p-1 rounded-xl text-xs">
             <button
               type="button"
-              onClick={() => setMode('simple')}
+              onClick={() => switchMode('simple')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer ${
                 mode === 'simple'
                   ? 'bg-white dark:bg-[#0c121e] text-amber-700 dark:text-amber-400 shadow-xs'
@@ -255,7 +273,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setMode('advanced')}
+              onClick={() => switchMode('advanced')}
               className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer flex items-center gap-1 ${
                 mode === 'advanced'
                   ? 'bg-white dark:bg-[#0c121e] text-amber-700 dark:text-amber-400 shadow-xs'
@@ -267,7 +285,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setMode('html')}
+              onClick={() => switchMode('html')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-colors cursor-pointer flex items-center gap-1 ${
                 mode === 'html'
                   ? 'bg-white dark:bg-[#0c121e] text-sky-600 dark:text-sky-400 shadow-xs'
