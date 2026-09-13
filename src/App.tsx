@@ -404,6 +404,8 @@ export default function App() {
         }}
         currentDate={currentDate}
         currentSectionId={activeSectionId}
+        onSelectDate={setCurrentDate}
+        onSelectSection={setActiveSectionId}
         uploads={uploads}
         onUploadSuccess={handleUploadSuccess}
         onDeleteUpload={handleDeleteUpload}

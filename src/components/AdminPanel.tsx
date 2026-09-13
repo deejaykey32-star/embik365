@@ -29,6 +29,7 @@ import { SECTIONS } from '../data/defaultSections';
 import { CYCLE_DAYS } from '../utils/dateCycle';
 import { testGitHubConnection, uploadPdfDirectlyToGitHub } from '../utils/githubSync';
 import { parseDocumentIntoDayEntries } from '../utils/documentParser';
+import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { WysiwygEditor } from './WysiwygEditor';
 import { 
   getSavedQrCodes, 
@@ -48,6 +49,8 @@ interface Props {
   onLogout: () => void;
   currentDate: CycleDate;
   currentSectionId: SectionId;
+  onSelectDate?: (date: CycleDate) => void;
+  onSelectSection?: (sectionId: SectionId) => void;
   uploads: UploadedPdf[];
   onUploadSuccess: (newPdf: UploadedPdf) => void;
   onDeleteUpload: (id: string) => void;
@@ -68,6 +71,8 @@ export const AdminPanel: React.FC<Props> = ({
   onLogout,
   currentDate,
   currentSectionId,
+  onSelectDate,
+  onSelectSection,
   uploads,
   onUploadSuccess,
   onDeleteUpload,
@@ -122,6 +127,26 @@ export const AdminPanel: React.FC<Props> = ({
   const [editPrayer, setEditPrayer] = useState(currentEntry.prayer || '');
   const [isSavingEntry, setIsSavingEntry] = useState(false);
   const [saveEntryStatus, setSaveEntryStatus] = useState<string | null>(null);
+
+  // Sync editor fields whenever selected section or dateKey changes
+  React.useEffect(() => {
+    const cycleDate = CYCLE_DAYS.find(d => d.dateKey === editDateKey) || currentDate;
+    const key = `${editSectionId}-${editDateKey}`;
+    const custom = allEntriesData.entries[key] || 
+      (editSectionId === 'ebook_wnr' ? allEntriesData.entries[`wnr365-${editDateKey}`] : undefined) ||
+      (editSectionId === 'wnr365' ? allEntriesData.entries[`ebook_wnr-${editDateKey}`] : undefined);
+    
+    const base = getEntryForSectionAndDate(editSectionId, cycleDate);
+    const entryToEdit = {
+      ...base,
+      ...(custom || {})
+    };
+    
+    setEditTitle(entryToEdit.title || '');
+    setEditContent(entryToEdit.content || '');
+    setEditPrayer(entryToEdit.prayer || '');
+    setSaveEntryStatus(null);
+  }, [editSectionId, editDateKey, allEntriesData]);
 
   // Google Login for Dominik Kuta
   const handleGoogleLogin = (emailChoice: string = 'kuta.dominik@gmail.com') => {
@@ -425,7 +450,17 @@ export const AdminPanel: React.FC<Props> = ({
         sectionId: editSectionId,
         dateKey: editDateKey
       });
-      setSaveEntryStatus('Wpis został pomyślnie zaktualizowany (lokalnie i w GitHub)!');
+
+      // Synchronize active date and section so the reader view stays on this exact date/section
+      const matchingCycleDate = CYCLE_DAYS.find(d => d.dateKey === editDateKey);
+      if (matchingCycleDate && onSelectDate) {
+        onSelectDate(matchingCycleDate);
+      }
+      if (onSelectSection) {
+        onSelectSection(editSectionId);
+      }
+
+      setSaveEntryStatus(`Wpis dla dnia ${editDateKey} (${editSectionId}) został pomyślnie zaktualizowany i ustawiony w czytniku!`);
     } catch (err: any) {
       setSaveEntryStatus(`Błąd podczas zapisu: ${err.message}`);
     } finally {

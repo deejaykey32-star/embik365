@@ -464,13 +464,17 @@ export const FlipbookReader: React.FC<Props> = ({
               </div>
 
               {/* Main reading content with selected font size */}
-              <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] whitespace-pre-line text-justify ${
+              <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify ${
                 fontSize === 'sm' ? 'text-sm leading-6' :
                 fontSize === 'base' ? 'text-base leading-7' :
                 fontSize === 'lg' ? 'text-lg leading-8' :
                 'text-xl leading-9'
               }`}>
-                {entry.content}
+                {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
+                  <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
+                ) : (
+                  <div className="whitespace-pre-line">{entry.content}</div>
+                )}
               </div>
 
               {entry.prayer && (
@@ -478,7 +482,11 @@ export const FlipbookReader: React.FC<Props> = ({
                   <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-[#8c572b] dark:text-amber-400 mb-1">
                     Modlitwa serca:
                   </span>
-                  {entry.prayer}
+                  {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
+                    <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
+                  ) : (
+                    <div className="whitespace-pre-line">{entry.prayer}</div>
+                  )}
                 </div>
               )}
             </div>

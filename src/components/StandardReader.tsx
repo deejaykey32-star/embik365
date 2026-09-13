@@ -306,12 +306,16 @@ export const StandardReader: React.FC<Props> = ({
       {/* Main Reading Card */}
       <article className="bg-white dark:bg-[#111722] rounded-3xl p-6 sm:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
         {/* Main Content */}
-        <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed whitespace-pre-line text-justify ${
+        <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed text-justify ${
           fontSize === 'normal' ? 'text-base sm:text-lg leading-7 sm:leading-8' :
           fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
           'text-xl sm:text-2xl leading-9 sm:leading-10'
         }`}>
-          {entry.content}
+          {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
+            <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
+          ) : (
+            <div className="whitespace-pre-line">{entry.content}</div>
+          )}
         </div>
 
         {/* Quote if present */}
@@ -331,9 +335,13 @@ export const StandardReader: React.FC<Props> = ({
               <Heart className="w-4 h-4 text-rose-600 dark:text-rose-400" />
               <span>Modlitwa Końcowa</span>
             </div>
-            <p className="font-serif-book italic text-base sm:text-lg text-[#3f3125] dark:text-[#cbd5e1] leading-relaxed">
-              {entry.prayer}
-            </p>
+            <div className="font-serif-book italic text-base sm:text-lg text-[#3f3125] dark:text-[#cbd5e1] leading-relaxed">
+              {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
+                <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
+              ) : (
+                <div className="whitespace-pre-line">{entry.prayer}</div>
+              )}
+            </div>
           </div>
         )}
       </article>
