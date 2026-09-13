@@ -12,6 +12,42 @@ declare type PagesFunction<Env = unknown> = (context: {
   env: Env;
 }) => Promise<Response> | Response;
 
+async function serverTranslateText(text: string, targetLang: string): Promise<string> {
+  if (!text || !text.trim() || targetLang === 'pl') return text;
+
+  const cleanText = text.replace(/<[^>]*>/g, ' ').substring(0, 1500).trim();
+  if (!cleanText) return text;
+
+  // 1. Try MyMemory Free API
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`);
+    if (res.ok) {
+      const data = await res.json() as any;
+      if (data?.responseData?.translatedText) {
+        return data.responseData.translatedText;
+      }
+    }
+  } catch (e) {
+    console.warn('MyMemory server translate failed:', e);
+  }
+
+  // 2. Fallback Google GTX API
+  try {
+    const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
+    const res = await fetch(gtxUrl);
+    if (res.ok) {
+      const json = await res.json() as any;
+      if (Array.isArray(json) && Array.isArray(json[0])) {
+        return json[0].map((item: any) => item[0] || '').join('');
+      }
+    }
+  } catch (e) {
+    console.warn('Google GTX server translate failed:', e);
+  }
+
+  return text;
+}
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -98,13 +134,30 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         intention?: string;
       };
 
+      const targetLang = (body.targetLang || 'en').toLowerCase();
+
       if (!env.GEMINI_API_KEY) {
+        const [transTitle, transContent, transPrayer, transMystery, transIntention] = await Promise.all([
+          serverTranslateText(body.title || '', targetLang),
+          serverTranslateText(body.text || '', targetLang),
+          body.prayer ? serverTranslateText(body.prayer, targetLang) : Promise.resolve(undefined),
+          body.mystery ? serverTranslateText(body.mystery, targetLang) : Promise.resolve(undefined),
+          body.intention ? serverTranslateText(body.intention, targetLang) : Promise.resolve(undefined)
+        ]);
+
         return new Response(
           JSON.stringify({
-            error: 'Brak klucza GEMINI_API_KEY w zmiennych środowiskowych Cloudflare Pages.',
-            useFallback: true
+            success: true,
+            translation: {
+              title: transTitle || body.title,
+              content: transContent || body.text,
+              prayer: transPrayer || body.prayer,
+              mystery: transMystery || body.mystery,
+              intention: transIntention || body.intention
+            },
+            targetLang
           }),
-          { status: 503, headers: corsHeaders }
+          { headers: corsHeaders }
         );
       }
 
@@ -142,10 +195,23 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       );
 
       if (!geminiRes.ok) {
-        const errText = await geminiRes.text();
+        const [transTitle, transContent, transPrayer] = await Promise.all([
+          serverTranslateText(body.title || '', targetLang),
+          serverTranslateText(body.text || '', targetLang),
+          body.prayer ? serverTranslateText(body.prayer, targetLang) : Promise.resolve(undefined)
+        ]);
+
         return new Response(
-          JSON.stringify({ error: `Błąd API Gemini: ${errText}` }),
-          { status: 500, headers: corsHeaders }
+          JSON.stringify({
+            success: true,
+            translation: {
+              title: transTitle || body.title,
+              content: transContent || body.text,
+              prayer: transPrayer || body.prayer
+            },
+            targetLang
+          }),
+          { headers: corsHeaders }
         );
       }
 

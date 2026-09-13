@@ -248,6 +248,42 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     }
   };
 
+  // Strip external inline formatting (font, color, background, inline styles) on paste
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
+    const plainText = e.clipboardData.getData('text/plain');
+    const htmlData = e.clipboardData.getData('text/html');
+
+    let cleanHtml = '';
+
+    if (plainText && (!htmlData || !htmlData.includes('<'))) {
+      cleanHtml = plainText
+        .split(/\n\r?\n\r?/)
+        .map(para => para.trim())
+        .filter(Boolean)
+        .map(para => `<p>${para.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>')}</p>`)
+        .join('');
+    } else if (htmlData) {
+      const doc = new DOMParser().parseFromString(htmlData, 'text/html');
+      doc.body.querySelectorAll('*').forEach(el => {
+        el.removeAttribute('style');
+        el.removeAttribute('class');
+        el.removeAttribute('face');
+        el.removeAttribute('size');
+        el.removeAttribute('color');
+        el.removeAttribute('bgcolor');
+      });
+      cleanHtml = doc.body.innerHTML;
+    } else if (plainText) {
+      cleanHtml = `<p>${plainText}</p>`;
+    }
+
+    if (cleanHtml) {
+      insertHtmlAtCursor(cleanHtml);
+    }
+  };
+
   return (
     <div className={`rounded-2xl border border-stone-300 dark:border-[#1e293b] bg-white dark:bg-[#0c121e] shadow-xs flex flex-col transition-all ${isFullscreen ? 'fixed inset-0 z-50 rounded-none p-4' : ''} ${className}`}>
       

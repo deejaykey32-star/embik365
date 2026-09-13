@@ -532,32 +532,37 @@ export async function translateTextWithFreeApi(text: string, targetLang: string)
   if (!text || !text.trim() || targetLang === 'pl') return text;
 
   try {
-    const paragraphs = text.split(/\n\n+/);
-    const translatedParagraphs: string[] = [];
+    const cleanText = text.replace(/<[^>]*>/g, ' ').substring(0, 1000).trim();
+    if (!cleanText) return text;
 
-    for (const para of paragraphs) {
-      if (!para.trim()) continue;
-      const cleanPara = para.replace(/<[^>]*>/g, '').trim();
-      if (!cleanPara) continue;
+    // 1. Try MyMemory API
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.responseData?.translatedText && !data.responseData.translatedText.includes('MYMEMORY WARNING')) {
+          return `<p>${data.responseData.translatedText}</p>`;
+        }
+      }
+    } catch {}
 
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanPara)}`;
+    // 2. Try Google GTX API
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
         if (Array.isArray(json) && Array.isArray(json[0])) {
           const translatedStr = json[0].map((item: any) => item[0] || '').join('');
-          translatedParagraphs.push(`<p>${translatedStr}</p>`);
-        } else {
-          translatedParagraphs.push(`<p>${cleanPara}</p>`);
+          return `<p>${translatedStr}</p>`;
         }
-      } else {
-        translatedParagraphs.push(`<p>${cleanPara}</p>`);
       }
-    }
+    } catch {}
 
-    return translatedParagraphs.length > 0 ? translatedParagraphs.join('\n\n') : text;
+    return text;
   } catch (err) {
-    console.warn('Free Google Translation API fallback error:', err);
+    console.warn('Free Translation API error:', err);
     return text;
   }
 }
@@ -589,9 +594,9 @@ export async function translateEntry(
     };
   }
 
-  // 2. Check local client cache
+  // 2. Check local client cache (ignore untranslated fallback items)
   const cached = getStoredTranslation(entry.id, targetLang);
-  if (cached && cached.content && cached.content !== entry.content) {
+  if (cached && cached.content && cached.source === 'api') {
     return {
       ...entry,
       ...cached,
@@ -601,7 +606,7 @@ export async function translateEntry(
 
   const resolvedLangName = targetLangName || SUPPORTED_LANGUAGES.find(l => l.code === targetLang)?.name || targetLang;
 
-  // 3. Request translation from server API (powered by Gemini)
+  // 3. Request translation from server API (powered by Gemini / Server On-the-fly Translation)
   try {
     const response = await fetch('/api/translate', {
       method: 'POST',
@@ -625,7 +630,8 @@ export async function translateEntry(
           mystery: data.translation.mystery || entry.mystery,
           intention: data.translation.intention || entry.intention,
           content: data.translation.content || entry.content,
-          prayer: data.translation.prayer || entry.prayer
+          prayer: data.translation.prayer || entry.prayer,
+          source: 'api' as const
         };
         saveTranslationToStorage(entry.id, targetLang, result);
         return {
@@ -654,7 +660,8 @@ export async function translateEntry(
       content: transContent || entry.content,
       prayer: transPrayer || entry.prayer,
       mystery: transMystery || entry.mystery,
-      intention: transIntention || entry.intention
+      intention: transIntention || entry.intention,
+      source: 'api' as const
     };
 
     saveTranslationToStorage(entry.id, targetLang, result);
@@ -669,7 +676,6 @@ export async function translateEntry(
 
   // 5. Fallback if offline
   const fallback = generateLinguisticFallback(entry, targetLang);
-  saveTranslationToStorage(entry.id, targetLang, fallback);
   return {
     ...entry,
     ...fallback,
