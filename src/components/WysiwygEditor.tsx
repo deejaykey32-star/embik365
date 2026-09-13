@@ -67,22 +67,24 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   const [fontFamily, setFontFamily] = useState('Georgia');
   const [lineHeight, setLineHeight] = useState('1.6');
 
-  // Sync initial content once or on external change
+  // Sync initial content once or on external entry/section change (only when editor is NOT actively focused)
   useEffect(() => {
     setHtmlCode(initialValue || '');
-    if (editorRef.current && mode !== 'html') {
-      editorRef.current.innerHTML = initialValue || '';
+    if (editorRef.current && mode !== 'html' && document.activeElement !== editorRef.current) {
+      if (editorRef.current.innerHTML !== initialValue) {
+        editorRef.current.innerHTML = initialValue || '';
+      }
     }
   }, [initialValue]);
 
-  // Keep editorRef innerHTML in sync with htmlCode whenever mode or htmlCode changes
+  // Keep editorRef innerHTML in sync when switching mode from 'html' to visual mode
   useEffect(() => {
-    if (mode !== 'html' && editorRef.current) {
+    if (mode !== 'html' && editorRef.current && document.activeElement !== editorRef.current) {
       if (editorRef.current.innerHTML !== htmlCode) {
         editorRef.current.innerHTML = htmlCode || '';
       }
     }
-  }, [mode, htmlCode]);
+  }, [mode]);
 
   const switchMode = (newMode: 'simple' | 'advanced' | 'html') => {
     if (mode !== 'html' && editorRef.current) {

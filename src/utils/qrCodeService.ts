@@ -398,13 +398,13 @@ export async function generateQrDataUrl(text: string, size = 300): Promise<strin
   });
 }
 
-// Generate an elegant, complete graphic badge with Title, crisp QR code, display label and URLs, and download as PNG
-export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<void> {
-  // Use destination or shortUrl (the shortUrl is permanent, redirecting to fullUrl in production)
+/**
+ * Generate full PNG graphic badge DataURL (matching downloaded PNG)
+ */
+export async function generateQrBadgeDataUrl(item: QrCodeItem): Promise<string> {
   const targetUrl = item.shortUrl || item.fullUrl;
   const qrDataUrl = await generateQrDataUrl(targetUrl, 400);
 
-  // Create an offscreen canvas to render the complete graphic badge
   const canvas = document.createElement('canvas');
   const width = 600;
   const height = 750;
@@ -413,7 +413,6 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Cannot get canvas context');
 
-  // Load QR image
   const qrImg = new Image();
   qrImg.crossOrigin = 'anonymous';
 
@@ -423,7 +422,7 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
     qrImg.src = qrDataUrl;
   });
 
-  // 1. Background with subtle luxury styling
+  // 1. Background with luxury parchment styling
   ctx.fillStyle = '#fcfbf9';
   ctx.fillRect(0, 0, width, height);
 
@@ -444,7 +443,7 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
 
   ctx.fillStyle = '#6b5847';
   ctx.font = 'italic 15px "Newsreader", Georgia, serif';
-  ctx.fillText('Droga365 • Zeskanuj smartfonem', width / 2, 100);
+  ctx.fillText('Droga365 • Zeskanuj lub kliknij', width / 2, 100);
 
   // Horizontal divider
   ctx.strokeStyle = '#e7ddd1';
@@ -488,11 +487,11 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
 
   ctx.fillStyle = '#854d0e';
   ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('STAŁY SKRÓCONY ADRES (DO DRUKU):', width / 2, 602);
+  ctx.fillText('STAŁY SKRÓCONY ADRES (PRZEKIEROWANIE):', width / 2, 602);
 
   ctx.fillStyle = '#b45309';
   ctx.font = 'bold 16px monospace';
-  ctx.fillText(item.shortUrl, width / 2, 626);
+  ctx.fillText(item.shortUrl || item.fullUrl, width / 2, 626);
 
   ctx.fillStyle = '#78716c';
   ctx.font = '12px "Plus Jakarta Sans", sans-serif';
@@ -504,8 +503,12 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
   ctx.font = '11px "Plus Jakarta Sans", sans-serif';
   ctx.fillText('Widoki na Raj • RHZ • Biblia • E-book • Bio • www.widokinaraj.pl', width / 2, 705);
 
-  // Export to PNG & download
-  const pngUrl = canvas.toDataURL('image/png');
+  return canvas.toDataURL('image/png');
+}
+
+// Generate an elegant, complete graphic badge with Title, crisp QR code, display label and URLs, and download as PNG
+export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<void> {
+  const pngUrl = await generateQrBadgeDataUrl(item);
   const link = document.createElement('a');
   link.download = `QR_${item.id}_${item.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
   link.href = pngUrl;
@@ -514,24 +517,16 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
   document.body.removeChild(link);
 }
 
-// Generate embedded HTML for WYSIWYG editor (entire card is an active link)
+// Generate embedded HTML for WYSIWYG editor (active PNG badge image linked to short URL redirect)
 export async function generateQrWysiwygHtml(item: QrCodeItem): Promise<string> {
   const targetUrl = item.shortUrl || item.fullUrl;
-  const qrDataUrl = await generateQrDataUrl(targetUrl, 180);
+  const badgePngUrl = await generateQrBadgeDataUrl(item);
   return `
-    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="qr-code-embed-card" style="display: block; margin: 20px auto; max-width: 380px; padding: 18px; border: 2px solid #d4b996; border-radius: 16px; background-color: #faf8f5; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: none; color: inherit; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
-      <div style="font-family: 'Cinzel', serif; font-size: 15px; font-weight: bold; color: #b45309; text-transform: uppercase; margin-bottom: 6px;">
-        ${item.title}
-      </div>
-      <div style="margin: 12px auto; display: inline-block; padding: 8px; background: #ffffff; border-radius: 12px; border: 1px solid #e7ddd1; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-        <img src="${qrDataUrl}" alt="${item.title}" style="display: block; width: 150px; height: 150px; margin: 0 auto;" />
-      </div>
-      <div style="font-size: 13px; font-weight: 600; color: #292524; margin-top: 4px; margin-bottom: 8px;">
-        ${item.displayLabel}
-      </div>
-      <div style="font-size: 11px; color: #78716c; background: #f4ede3; padding: 6px 10px; border-radius: 8px; word-break: break-all;">
-        <span style="font-weight: bold; color: #854d0e;">Kliknij lub zeskanuj:</span> <span style="color: #b45309; text-decoration: underline;">${targetUrl}</span>
-      </div>
-    </a>
+    <div style="text-align: center; margin: 24px auto; max-width: 400px;">
+      <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" title="Kliknij, aby przejść do ${item.title} (${targetUrl})" style="display: inline-block; text-decoration: none;">
+        <img src="${badgePngUrl}" alt="${item.title}" style="display: block; max-width: 100%; width: 380px; height: auto; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border: 2px solid #d4b996; margin: 0 auto; transition: transform 0.2s ease;" />
+      </a>
+    </div>
+    <p><br/></p>
   `;
 }
