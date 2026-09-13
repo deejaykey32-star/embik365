@@ -6554,21 +6554,7 @@
       "sectionId": "ebook_wnr"
     }
   },
-  "uploads": [
-    {
-      "id": "docx-1789279047207-5zyc1m",
-      "filename": "1789279047079-18984983-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca__o_____-_12.09.2026.docx",
-      "originalName": "!WnR365_poprawiany-Calosc_Ksiega_A5 - caÅoÅÄ - 12.09.2026.docx",
-      "format": "docx",
-      "url": "/uploads/1789279047079-18984983-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca__o_____-_12.09.2026.docx",
-      "size": 1076221,
-      "sectionId": "info365",
-      "dateKey": "",
-      "title": "wnr365",
-      "description": "Aktualna wersja pliku na dzień 13.09.2026",
-      "uploadedAt": "2026-09-13T05:57:27.207Z"
-    }
-  ],
-  "lastUpdated": "2026-09-13T05:45:53.651Z",
+  "uploads": [],
+  "lastUpdated": "2026-09-13T17:54:39.470Z",
   "updatedBy": "Admin Dominik Kuta"
 }
