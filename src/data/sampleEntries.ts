@@ -117,8 +117,40 @@ Ta biografia to nasz wspólny pamiętnik na każdy dzień roku – opowieść o 
 /**
  * Dynamically resolves or generates a rich entry for any section and cycle date.
  */
-export function getEntryForSectionAndDate(sectionId: SectionId, cycleDate: CycleDate): SectionEntry {
+export function getEntryForSectionAndDate(
+  sectionId: SectionId, 
+  cycleDate: CycleDate,
+  customEntries?: Record<string, SectionEntry>
+): SectionEntry {
   const specificKey = `${sectionId}-${cycleDate.dateKey}`;
+
+  if (customEntries) {
+    if (customEntries[specificKey]) {
+      return customEntries[specificKey];
+    }
+    // Ebook / Reader section fallbacks
+    if (sectionId === 'ebook_wnr' || sectionId === 'wnr365' || sectionId === 'wnr366') {
+      const fb = customEntries[`wnr365-${cycleDate.dateKey}`] ||
+                 customEntries[`ebook_wnr-${cycleDate.dateKey}`] ||
+                 customEntries[`wnr366-${cycleDate.dateKey}`];
+      if (fb) return { ...fb, sectionId };
+    }
+    if (sectionId === 'ebook_rhz' || sectionId === 'rhz365') {
+      const fb = customEntries[`rhz365-${cycleDate.dateKey}`] ||
+                 customEntries[`ebook_rhz-${cycleDate.dateKey}`];
+      if (fb) return { ...fb, sectionId };
+    }
+    if (sectionId === 'ebook_biblia' || sectionId === 'biblia365') {
+      const fb = customEntries[`biblia365-${cycleDate.dateKey}`] ||
+                 customEntries[`ebook_biblia-${cycleDate.dateKey}`];
+      if (fb) return { ...fb, sectionId };
+    }
+    if (sectionId === 'bio365') {
+      const fb = customEntries[`bio365-${cycleDate.dateKey}`];
+      if (fb) return { ...fb, sectionId };
+    }
+  }
+
   let base = BASE_ENTRIES[specificKey];
   if (!base && (sectionId === 'wnr365' || sectionId === 'ebook_wnr' || sectionId === 'wnr366')) {
     base = BASE_ENTRIES[`wnr365-${cycleDate.dateKey}`] || BASE_ENTRIES[`ebook_wnr-${cycleDate.dateKey}`] || BASE_ENTRIES[`wnr366-${cycleDate.dateKey}`];

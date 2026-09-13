@@ -35,6 +35,7 @@ interface Props {
   onOpenDownloadModal?: () => void;
   onOpenLectorModal?: () => void;
   currentLang?: string;
+  customEntries?: Record<string, SectionEntry>;
 }
 
 /**
@@ -49,10 +50,34 @@ function splitContentIntoThreeChunks(content: string): { chunk1: string; chunk2:
     .filter(Boolean);
 
   if (paragraphs.length >= 3) {
-    const p1 = paragraphs[0];
-    const p3 = paragraphs[paragraphs.length - 1];
-    const p2 = paragraphs.slice(1, paragraphs.length - 1).join('\n\n');
-    return { chunk1: p1, chunk2: p2 || p1, chunk3: p3 || p2 || p1 };
+    const totalChars = paragraphs.reduce((acc, p) => acc + p.length, 0);
+    const target = Math.floor(totalChars / 3);
+
+    let currentSum = 0;
+    let idx1 = 1;
+    for (let i = 0; i < paragraphs.length - 2; i++) {
+      currentSum += paragraphs[i].length;
+      if (currentSum >= target) {
+        idx1 = i + 1;
+        break;
+      }
+    }
+
+    currentSum = 0;
+    let idx2 = idx1 + 1;
+    for (let i = idx1; i < paragraphs.length - 1; i++) {
+      currentSum += paragraphs[i].length;
+      if (currentSum >= target) {
+        idx2 = i + 1;
+        break;
+      }
+    }
+
+    const chunk1 = paragraphs.slice(0, idx1).join('\n\n');
+    const chunk2 = paragraphs.slice(idx1, idx2).join('\n\n');
+    const chunk3 = paragraphs.slice(idx2).join('\n\n');
+
+    return { chunk1, chunk2, chunk3 };
   }
 
   if (paragraphs.length === 2) {
@@ -71,7 +96,7 @@ function splitContentIntoThreeChunks(content: string): { chunk1: string; chunk2:
   let split1 = text.indexOf('. ', target1);
   if (split1 === -1) split1 = target1;
 
-  let split2 = text.indexOf('. ', target2);
+  let split2 = text.indexOf('. ', split2 > split1 ? target2 : split1 + 1);
   if (split2 === -1) split2 = target2;
 
   const chunk1 = text.slice(0, split1 + 1).trim();
@@ -89,7 +114,8 @@ function getPdfPageData(
   P: number,
   sectionId: string,
   currentDate: CycleDate,
-  currentEntry: SectionEntry
+  currentEntry: SectionEntry,
+  customEntries?: Record<string, SectionEntry>
 ) {
   const safeP = Math.max(1, Math.min(1460, P));
   const dayNum = Math.floor((safeP - 1) / 4) + 1; // 1 to 365
@@ -98,7 +124,7 @@ function getPdfPageData(
   const dateObj = getCycleDateByDayNumber(dayNum);
   const entryObj = (dayNum === currentDate.dayNumber)
     ? currentEntry
-    : getEntryForSectionAndDate(sectionId, dateObj);
+    : getEntryForSectionAndDate(sectionId as any, dateObj, customEntries);
 
   const { chunk1, chunk2, chunk3 } = splitContentIntoThreeChunks(entryObj.content || '');
 
@@ -131,7 +157,8 @@ export const FlipbookReader: React.FC<Props> = ({
   sectionPdfs,
   onOpenDownloadModal,
   onOpenLectorModal,
-  currentLang = 'pl'
+  currentLang = 'pl',
+  customEntries
 }) => {
   // Total 1460 PDF pages (4 pages per day * 365 days) = 730 2-page spreads
   const [currentSpread, setCurrentSpread] = useState<number>(() => {
@@ -158,8 +185,8 @@ export const FlipbookReader: React.FC<Props> = ({
   const leftPdfPageNum = (currentSpread * 2) - 1;
   const rightPdfPageNum = currentSpread * 2;
 
-  const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry);
-  const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry);
+  const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry, customEntries);
+  const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry, customEntries);
 
   const toggleSpeech = async (e?: React.SyntheticEvent) => {
     if (e) {

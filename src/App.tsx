@@ -405,6 +405,7 @@ export default function App() {
             onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
             onOpenLectorModal={() => setIsLectorModalOpen(true)}
             currentLang={currentLang}
+            customEntries={customEntries}
           />
         ) : (
           <StandardReader
