@@ -211,7 +211,7 @@ export function getHomePageConfig(): HomePageConfig {
   return DEFAULT_HOME_PAGE_CONFIG;
 }
 
-export async function saveHomePageConfig(config: HomePageConfig): Promise<boolean> {
+export async function saveHomePageConfig(config: HomePageConfig, syncToRemote = true): Promise<boolean> {
   try {
     const jsonStr = JSON.stringify(config);
     localStorage.setItem(STORAGE_KEY, jsonStr);
@@ -220,23 +220,32 @@ export async function saveHomePageConfig(config: HomePageConfig): Promise<boolea
     }
     window.dispatchEvent(new CustomEvent('drogowskazy_home_config_updated', { detail: config }));
 
-    // Send to dev server / Cloudflare API for persistence & GitHub auto-sync
-    try {
-      await fetch('/api/entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          key: 'drogowskazy_home_config',
-          entry: { homeConfig: config, title: 'Konfiguracja Strony Startowej Info365' }
-        })
-      });
-    } catch (apiErr) {
-      console.warn('API sync for homeConfig failed, saved locally:', apiErr);
+    if (syncToRemote) {
+      // Send to dev server / Cloudflare API for persistence & GitHub auto-sync
+      try {
+        let ghConfig: any = null;
+        try {
+          const savedGh = localStorage.getItem('drogowskazy_github_config');
+          if (savedGh) ghConfig = JSON.parse(savedGh);
+        } catch {}
+
+        await fetch('/api/entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: 'drogowskazy_home_config',
+            entry: { homeConfig: config, title: 'Konfiguracja Strony Startowej Info365' },
+            githubConfig: ghConfig?.token ? ghConfig : undefined
+          })
+        });
+      } catch (apiErr) {
+        console.warn('API sync for homeConfig failed, saved locally:', apiErr);
+      }
     }
     return true;
   } catch (err: any) {
     console.error('Error saving home page config:', err);
-    alert('Błąd zapisu strony startowej w przeglądarce. Zdjęcie jest zbyt duże. Prosimy wgrać je ponownie.');
+    alert('Błąd zapisu strony startowej. Zdjęcie jest zbyt duże. Prosimy wgrać je ponownie.');
     return false;
   }
 }

@@ -185,6 +185,101 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     return new Response(JSON.stringify({ entries: {}, uploads: [] }), { headers: corsHeaders });
   }
 
+  // Save entry / homeConfig endpoint with GitHub auto-sync
+  if (pathname === '/api/entries' && request.method === 'POST') {
+    try {
+      const body = await request.json() as {
+        key?: string;
+        entry?: any;
+        githubConfig?: { token?: string; owner?: string; repo?: string; branch?: string };
+      };
+
+      if (!body.key || !body.entry) {
+        return new Response(
+          JSON.stringify({ error: 'Brak klucza lub treści wpisu.' }),
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      const owner = body.githubConfig?.owner || env.GITHUB_OWNER || 'deejaykey32-star';
+      const repo = body.githubConfig?.repo || env.GITHUB_REPO || 'embik365';
+      const branch = body.githubConfig?.branch || env.GITHUB_BRANCH || 'main';
+      const token = body.githubConfig?.token || env.GITHUB_TOKEN;
+
+      if (!token) {
+        return new Response(
+          JSON.stringify({ success: true, message: 'Wpis zapisany lokalnie, brak tokena GitHub do publikacji na żywo.' }),
+          { headers: corsHeaders }
+        );
+      }
+
+      // Fetch current entries.json from GitHub
+      let currentData: { entries: Record<string, any>; uploads: any[] } = { entries: {}, uploads: [] };
+      let sha: string | undefined;
+
+      const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/public/data/entries.json?ref=${branch}`, {
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (getRes.ok) {
+        const fileInfo = await getRes.json() as any;
+        sha = fileInfo.sha;
+        const decodedContent = atob(fileInfo.content.replace(/\n/g, ''));
+        currentData = JSON.parse(decodedContent);
+      }
+
+      if (!currentData.entries) currentData.entries = {};
+      currentData.entries[body.key] = {
+        ...body.entry,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Base64 encode updated entries.json
+      const utf8Bytes = new TextEncoder().encode(JSON.stringify(currentData, null, 2));
+      let binary = '';
+      utf8Bytes.forEach(byte => binary += String.fromCharCode(byte));
+      const contentBase64 = btoa(binary);
+
+      // Commit to GitHub
+      const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/public/data/entries.json`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `chore(sync): aktualizacja wpisu ${body.key} z widokinaraj.pl`,
+          content: contentBase64,
+          branch,
+          ...(sha ? { sha } : {})
+        })
+      });
+
+      if (putRes.ok) {
+        return new Response(
+          JSON.stringify({ success: true, syncedToGitHub: true, entry: currentData.entries[body.key] }),
+          { headers: corsHeaders }
+        );
+      } else {
+        const errJson = await putRes.json().catch(() => ({}));
+        return new Response(
+          JSON.stringify({ success: false, error: errJson.message || 'Błąd zapisu w GitHub API' }),
+          { status: 500, headers: corsHeaders }
+        );
+      }
+    } catch (err: any) {
+      return new Response(
+        JSON.stringify({ error: err.message || 'Błąd serwera podczas zapisywania wpisu.' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+  }
+
+
   // Short URL Direct Redirect Endpoint /r/* (Instant 301 Redirect without ads)
   if (pathname.startsWith('/r/') || pathname === '/r') {
     const slug = pathname.replace(/^\/r\/?/i, '').trim().toLowerCase();

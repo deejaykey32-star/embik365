@@ -14,7 +14,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { DownloadPublishModal } from './components/DownloadPublishModal';
 import { LectorSettingsModal } from './components/LectorSettingsModal';
-import { fetchEntriesFromGitHub, syncStateToGitHub } from './utils/githubSync';
+import { fetchEntriesFromGitHub, syncStateToGitHub, getStoredGitHubConfig } from './utils/githubSync';
 import { translateEntry } from './utils/translationService';
 
 import { parseUrlRoute, updateBrowserUrlSlug } from './utils/slugRouter';
@@ -85,20 +85,7 @@ export default function App() {
   });
 
   // 6. GitHub Configuration State
-  const [githubConfig, setGithubConfig] = useState<GitHubConfig>(() => {
-    try {
-      const saved = localStorage.getItem('drogowskazy_github_config');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return {
-      owner: 'deejaykey32-star',
-      repo: 'embik365',
-      branch: 'main',
-      token: '',
-      autoSync: true,
-      useGitHubAsPrimarySource: false
-    };
-  });
+  const [githubConfig, setGithubConfig] = useState<GitHubConfig>(() => getStoredGitHubConfig());
 
   const handleSaveGitHubConfig = (cfg: GitHubConfig) => {
     setGithubConfig(cfg);
@@ -115,21 +102,24 @@ export default function App() {
   const [translatedEntry, setTranslatedEntry] = useState<SectionEntry | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
 
-  // Fetch initial data: GitHub > API > Static /data/entries.json
+  // Fetch initial data: GitHub Raw > API > Static /data/entries.json
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Try GitHub directly if configured as primary source
-      if (githubConfig.token && githubConfig.useGitHubAsPrimarySource) {
-        try {
-          const ghData = await fetchEntriesFromGitHub(githubConfig);
-          if (ghData) {
-            if (ghData.entries) setCustomEntries(ghData.entries);
-            if (ghData.uploads) setUploads(ghData.uploads);
-            return;
+      // 1. Try GitHub raw directly (works for all visitors across all devices without needing a token)
+      try {
+        const ghData = await fetchEntriesFromGitHub(githubConfig);
+        if (ghData && (ghData.entries || ghData.uploads)) {
+          if (ghData.entries) {
+            setCustomEntries(ghData.entries);
+            if (ghData.entries['drogowskazy_home_config']?.homeConfig) {
+              saveHomePageConfig(ghData.entries['drogowskazy_home_config'].homeConfig, false);
+            }
           }
-        } catch (e) {
-          console.warn('Could not load from GitHub primary source, falling back to local:', e);
+          if (ghData.uploads) setUploads(ghData.uploads);
+          return;
         }
+      } catch (e) {
+        console.warn('Could not load from GitHub primary source, falling back to local:', e);
       }
 
       // 2. Try dev server API
@@ -140,7 +130,7 @@ export default function App() {
           if (json.entries) {
             setCustomEntries(json.entries);
             if (json.entries['drogowskazy_home_config']?.homeConfig) {
-              saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig);
+              saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig, false);
             }
           }
           if (json.uploads) setUploads(json.uploads);
@@ -156,7 +146,7 @@ export default function App() {
           if (json.entries) {
             setCustomEntries(json.entries);
             if (json.entries['drogowskazy_home_config']?.homeConfig) {
-              saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig);
+              saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig, false);
             }
           }
           if (json.uploads) setUploads(json.uploads);
@@ -167,7 +157,7 @@ export default function App() {
     };
 
     fetchData();
-  }, [githubConfig.useGitHubAsPrimarySource]);
+  }, []);
 
   // 9. Two-way URL Slug Synchronization
   // A) Update browser URL hash slug whenever active section, date, subview, modal, or PDF viewer changes

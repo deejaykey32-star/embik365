@@ -174,13 +174,15 @@ export async function commitFileToGitHub(
 
 // Fetch database entries from GitHub raw repository
 export async function fetchEntriesFromGitHub(
-  config: GitHubConfig
+  config?: Partial<GitHubConfig>
 ): Promise<{ entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[] } | null> {
-  if (!config.owner || !config.repo) return null;
+  const owner = config?.owner || DEFAULT_GITHUB_CONFIG.owner;
+  const repo = config?.repo || DEFAULT_GITHUB_CONFIG.repo;
+  const branch = config?.branch || DEFAULT_GITHUB_CONFIG.branch;
 
   const rawUrls = [
-    `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/public/data/entries.json`,
-    `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/data/entries.json`
+    `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/public/data/entries.json`,
+    `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/data/entries.json`
   ];
 
   for (const url of rawUrls) {
@@ -199,7 +201,7 @@ export async function fetchEntriesFromGitHub(
               // If URL is relative, point it to raw GitHub or local
               url: u.url.startsWith('http')
                 ? u.url
-                : `https://raw.githubusercontent.com/${config.owner}/${config.repo}/${config.branch}/public${u.url}`
+                : `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/public${u.url}`
             }))
           };
         }
