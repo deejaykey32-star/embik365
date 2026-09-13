@@ -345,23 +345,30 @@ export const LectorSettingsModal: React.FC<Props> = ({
                   value={config.onlineVoiceId}
                   onChange={(e) => {
                     const selectedVoice = ONLINE_VOICES.find(v => v.id === e.target.value);
-                    const updated = {
-                      ...config,
-                      onlineVoiceId: e.target.value,
-                      gender: selectedVoice?.gender || config.gender
-                    };
-                    setConfig(updated);
-                    saveLectorConfig(updated);
+                    if (selectedVoice) {
+                      const updated: LectorConfig = {
+                        ...config,
+                        onlineVoiceId: selectedVoice.id,
+                        gender: selectedVoice.gender,
+                        lang: selectedVoice.lang
+                      };
+                      setConfig(updated);
+                      saveLectorConfig(updated);
+                    }
                   }}
                   className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500 cursor-pointer"
                 >
-                  {(matchingOnlineVoices.length > 0 ? matchingOnlineVoices : ONLINE_VOICES)
-                    .filter(v => genderFilter === 'all' || v.gender === genderFilter)
-                    .map((v) => (
+                  {(() => {
+                    const currentSel = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
+                    const list = ONLINE_VOICES.filter(v => v.lang === config.lang || v.id === config.onlineVoiceId);
+                    const filtered = (list.length > 0 ? list : ONLINE_VOICES)
+                      .filter(v => genderFilter === 'all' || v.gender === genderFilter || v.id === config.onlineVoiceId);
+                    return filtered.map((v) => (
                       <option key={v.id} value={v.id}>
                         {v.name} — {v.gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'} ({v.provider})
                       </option>
-                    ))}
+                    ));
+                  })()}
                 </select>
 
                 {/* Selected Voice Details Card */}

@@ -70,7 +70,31 @@ export const ONLINE_VOICES: OnlineVoiceOption[] = [
 
   // Lingua Latina
   { id: 'la-AI-Marcus', name: 'Marcus ♂ (Lector Ecclesiasticus Masculinus)', lang: 'la', gender: 'male', description: 'Vox eclesiastica solemnis pro orationibus', provider: 'AI Cloud Male' },
-  { id: 'la-AI-Benedicta', name: 'Benedicta ♀ (Lectora Ecclesiastica Feminina)', lang: 'la', gender: 'female', description: 'Vox sancta et serena pro recitatione', provider: 'AI Cloud Female' }
+  { id: 'la-AI-Benedicta', name: 'Benedicta ♀ (Lectora Ecclesiastica Feminina)', lang: 'la', gender: 'female', description: 'Vox sancta et serena pro recitatione', provider: 'AI Cloud Female' },
+
+  // Čeština
+  { id: 'cs-AI-Jan', name: 'Jan ♂ (Český Hlas Mužský)', lang: 'cs', gender: 'male', description: 'Klidný a soustředěný hlas', provider: 'AI Cloud Male' },
+  { id: 'cs-AI-Eliska', name: 'Eliška ♀ (Český Hlas Ženský)', lang: 'cs', gender: 'female', description: 'Jemný a jasný přednes', provider: 'AI Cloud Female' },
+
+  // Slovenčina
+  { id: 'sk-AI-Michal', name: 'Michal ♂ (Slovenský Hlas Mužský)', lang: 'sk', gender: 'male', description: 'Dôstojný a pokojný hlas', provider: 'AI Cloud Male' },
+  { id: 'sk-AI-Zuzana', name: 'Zuzana ♀ (Slovenská Hlas Ženský)', lang: 'sk', gender: 'female', description: 'Jasný čitateľský hlas', provider: 'AI Cloud Female' },
+
+  // Magyar
+  { id: 'hu-AI-Bence', name: 'Bence ♂ (Magyar Férfi Hang)', lang: 'hu', gender: 'male', description: 'Meleg tónusú férfi felolvasóhang', provider: 'AI Cloud Male' },
+  { id: 'hu-AI-Eszter', name: 'Eszter ♀ (Magyar Női Hang)', lang: 'hu', gender: 'female', description: 'Tiszta és dallamos női hang', provider: 'AI Cloud Female' },
+
+  // Română
+  { id: 'ro-AI-Andrei', name: 'Andrei ♂ (Voce Masculină Română)', lang: 'ro', gender: 'male', description: 'Voce caldă și meditativă', provider: 'AI Cloud Male' },
+  { id: 'ro-AI-Elena', name: 'Elena ♀ (Voce Feminină Română)', lang: 'ro', gender: 'female', description: 'Voce senină pentru rugăciune', provider: 'AI Cloud Female' },
+
+  // Lietuvių
+  { id: 'lt-AI-Matas', name: 'Matas ♂ (Lietuviškas Vyriškas Balsas)', lang: 'lt', gender: 'male', description: 'Ramus ir gilus balsas', provider: 'AI Cloud Male' },
+  { id: 'lt-AI-Ieva', name: 'Ieva ♀ (Lietuviškas Moteriškas Balsas)', lang: 'lt', gender: 'female', description: 'Švelnus ir skaidrus balsas', provider: 'AI Cloud Female' },
+
+  // Ελληνικά
+  { id: 'el-AI-Nikos', name: 'Nikos ♂ (Ελληνική Ανδρική Φωνή)', lang: 'el', gender: 'male', description: 'Σοβαρή και ήρεμη φωνή', provider: 'AI Cloud Male' },
+  { id: 'el-AI-Sophia', name: 'Sophia ♀ (Ελληνική Γυναικεία Φωνή)', lang: 'el', gender: 'female', description: 'Καθαρή και γλυκιά φωνή', provider: 'AI Cloud Female' }
 ];
 
 const STORAGE_KEY = 'drogowskazy_lector_config';
@@ -134,14 +158,11 @@ export function findBestLocalVoice(
 
   const targetLang = (langCode || 'pl').toLowerCase();
 
-  // 1. If preferredURI is provided and matches targetLang, verify its availability
+  // 1. If preferredURI is specified, return matching voice directly
   if (preferredURI) {
     const match = voices.find(v => v.voiceURI === preferredURI);
     if (match) {
-      const vLang = match.lang.toLowerCase().replace('_', '-');
-      if (vLang.startsWith(targetLang) || vLang.includes(targetLang)) {
-        return match;
-      }
+      return match;
     }
   }
 
@@ -152,7 +173,6 @@ export function findBestLocalVoice(
   });
 
   if (langVoices.length === 0) {
-    // Global fallback
     return voices.find(v => v.lang.toLowerCase().startsWith(targetLang)) || voices[0];
   }
 
@@ -169,6 +189,8 @@ export function findBestLocalVoice(
 }
 
 let currentAudioElement: HTMLAudioElement | null = null;
+let currentAudioContext: AudioContext | null = null;
+let currentSourceNode: AudioBufferSourceNode | null = null;
 
 export function stopLectorSpeech(): void {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -177,6 +199,14 @@ export function stopLectorSpeech(): void {
   if (currentAudioElement) {
     currentAudioElement.pause();
     currentAudioElement = null;
+  }
+  if (currentSourceNode) {
+    try { currentSourceNode.stop(); } catch {}
+    currentSourceNode = null;
+  }
+  if (currentAudioContext) {
+    try { currentAudioContext.close(); } catch {}
+    currentAudioContext = null;
   }
 }
 
@@ -195,12 +225,12 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
 
   if (!text || !text.trim()) return;
 
-  const targetLang = (overrideLang || config.lang || 'pl').toLowerCase();
-  const targetGender: LectorGender = config.gender || 'male';
+  // 1. Look up online profile by selected onlineVoiceId first
+  let onlineProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
+  const targetLang = (overrideLang || onlineProfile?.lang || config.lang || 'pl').toLowerCase();
+  const targetGender: LectorGender = onlineProfile?.gender || config.gender || 'male';
 
-  // Ensure onlineVoiceId matches targetLang and targetGender
-  let onlineProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId && v.lang === targetLang);
-  if (!onlineProfile) {
+  if (!onlineProfile || (overrideLang && onlineProfile.lang !== overrideLang.toLowerCase())) {
     onlineProfile = ONLINE_VOICES.find(v => v.lang === targetLang && v.gender === targetGender)
       || ONLINE_VOICES.find(v => v.lang === targetLang)
       || ONLINE_VOICES[0];
@@ -208,8 +238,6 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
 
   if (config.mode === 'online') {
     try {
-      if (onStart) onStart();
-
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -217,30 +245,15 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
           text,
           voiceId: onlineProfile.id,
           lang: targetLang,
+          gender: targetGender,
           rate: config.rate,
           pitch: config.pitch
         })
       });
 
       if (response.ok) {
-        const blob = await response.blob();
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        audio.volume = config.volume;
-        audio.playbackRate = config.rate;
-
-        audio.onended = () => {
-          if (onEnd) onEnd();
-          currentAudioElement = null;
-        };
-
-        audio.onerror = (e) => {
-          console.warn('Online Audio playback failed, falling back to local speech:', e);
-          playLocalSpeechFallback({ ...options, overrideLang: targetLang });
-        };
-
-        currentAudioElement = audio;
-        await audio.play();
+        const arrayBuffer = await response.arrayBuffer();
+        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, onStart, onEnd, onError);
       } else {
         playLocalSpeechFallback({ ...options, overrideLang: targetLang });
       }
@@ -250,6 +263,72 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
     }
   } else {
     playLocalSpeechFallback({ ...options, overrideLang: targetLang });
+  }
+}
+
+async function playAudioBufferWithVoiceEffects(
+  arrayBuffer: ArrayBuffer,
+  voiceProfile: OnlineVoiceOption,
+  config: LectorConfig,
+  onStart?: () => void,
+  onEnd?: () => void,
+  onError?: (err: any) => void
+): Promise<void> {
+  try {
+    const AudioCtx = typeof window !== 'undefined' ? (window.AudioContext || (window as any).webkitAudioContext) : null;
+    if (!AudioCtx) {
+      const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.volume = config.volume;
+      audio.playbackRate = config.rate;
+      audio.onended = () => { if (onEnd) onEnd(); currentAudioElement = null; };
+      audio.onerror = (e) => { if (onError) onError(e); };
+      currentAudioElement = audio;
+      if (onStart) onStart();
+      await audio.play();
+      return;
+    }
+
+    const audioCtx = new AudioCtx();
+    const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
+    const source = audioCtx.createBufferSource();
+    source.buffer = decodedData;
+
+    // Pitch factor according to voice character
+    let pitchFactor = 1.0;
+    if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
+      pitchFactor = 0.84;
+    } else if (voiceProfile.gender === 'male') {
+      pitchFactor = 0.92;
+    } else if (voiceProfile.provider.includes('Gentle Female')) {
+      pitchFactor = 1.15;
+    } else if (voiceProfile.gender === 'female') {
+      pitchFactor = 1.08;
+    }
+
+    const finalRate = Math.max(0.5, Math.min(2.0, config.rate * pitchFactor));
+    source.playbackRate.value = finalRate;
+
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = Math.max(0, Math.min(1, config.volume));
+
+    source.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (onStart) onStart();
+
+    source.onended = () => {
+      if (onEnd) onEnd();
+      currentAudioContext = null;
+      currentSourceNode = null;
+    };
+
+    currentAudioContext = audioCtx;
+    currentSourceNode = source;
+    source.start(0);
+  } catch (err) {
+    if (onError) onError(err);
   }
 }
 
@@ -265,7 +344,7 @@ function playLocalSpeechFallback(options: PlayLectorOptions): void {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = config.rate;
-  utterance.pitch = config.pitch * (targetGender === 'female' ? 1.12 : targetGender === 'male' ? 0.90 : 1.0);
+  utterance.pitch = config.pitch * (targetGender === 'female' ? 1.15 : targetGender === 'male' ? 0.88 : 1.0);
   utterance.volume = config.volume;
 
   const chosenVoice = findBestLocalVoice(targetLang, targetGender, config.localVoiceURI);
@@ -290,3 +369,4 @@ function playLocalSpeechFallback(options: PlayLectorOptions): void {
 
   window.speechSynthesis.speak(utterance);
 }
+
