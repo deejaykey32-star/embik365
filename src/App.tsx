@@ -383,6 +383,7 @@ export default function App() {
         activeSection={activeSectionId}
         onSelectSection={setActiveSectionId}
         pdfCounts={pdfCounts}
+        currentLang={currentLang}
       />
 
       {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader */}

@@ -409,6 +409,76 @@ export const UI_TRANSLATIONS: Record<string, Record<string, string>> = {
   }
 };
 
+export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string; shortTitle: string }>> = {
+  en: {
+    info365: { name: 'info365', shortTitle: 'Guide & Introduction' },
+    wnr365: { name: 'WnR365', shortTitle: 'Views of Paradise' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Rosary of Salvation History' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Holy Scripture & Apocrypha' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Book Views of Paradise' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Book Salvation Rosary' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Book Holy Scripture' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiography' }
+  },
+  es: {
+    info365: { name: 'info365', shortTitle: 'Guía e Introducción' },
+    wnr365: { name: 'WnR365', shortTitle: 'Vistas al Paraíso' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Rosario de Historia de Salvación' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Sagrada Escritura y Apócrifos' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Libro Vistas al Paraíso' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Libro Rosario de Salvación' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Libro Sagrada Escritura' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografía' }
+  },
+  it: {
+    info365: { name: 'info365', shortTitle: 'Guida e Introduzione' },
+    wnr365: { name: 'WnR365', shortTitle: 'Viste sul Paradiso' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Rosario Storia della Salvezza' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Sacra Scrittura e Apocrifi' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Libro Viste sul Paradiso' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Libro Rosario della Salvezza' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Libro Sacra Scrittura' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografia' }
+  },
+  de: {
+    info365: { name: 'info365', shortTitle: 'Leitfaden & Einführung' },
+    wnr365: { name: 'WnR365', shortTitle: 'Blicke auf das Paradies' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Rosenkranz der Heilsgeschichte' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Heilige Schrift & Apokryphen' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Buch Blicke auf das Paradies' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Buch Rosenkranz der Heilsgeschichte' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Buch Heilige Schrift' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiographie' }
+  },
+  fr: {
+    info365: { name: 'info365', shortTitle: 'Guide et Introduction' },
+    wnr365: { name: 'WnR365', shortTitle: 'Vues sur le Paradis' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Chapelet de l\'Histoire du Salut' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Sainte Écriture et Apocryphes' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Livre Vues sur le Paradis' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Livre Chapelet du Salut' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Livre Sainte Écriture' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiographie' }
+  },
+  la: {
+    info365: { name: 'info365', shortTitle: 'Dux et Introductio' },
+    wnr365: { name: 'WnR365', shortTitle: 'Prospectus in Paradisum' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Rosarium Historiae Salutis' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Sacra Scriptura et Apocrypha' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Liber Prospectus in Paradisum' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Liber Rosarium Salutis' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Liber Sacra Scriptura' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiographia' }
+  }
+};
+
+export function getTranslatedSectionMeta(sec: SectionMeta, lang: string = 'pl'): { name: string; shortTitle: string } {
+  if (lang === 'pl' || !SECTION_TRANSLATIONS[lang] || !SECTION_TRANSLATIONS[lang][sec.id]) {
+    return { name: sec.name, shortTitle: sec.shortTitle };
+  }
+  return SECTION_TRANSLATIONS[lang][sec.id];
+}
+
 // Fallback for languages not fully detailed in UI map
 export function getUIText(key: string, lang: string = 'pl'): string {
   if (UI_TRANSLATIONS[lang] && UI_TRANSLATIONS[lang][key]) {
@@ -458,6 +528,40 @@ export function saveTranslationToStorage(entryKey: string, lang: string, data: a
   }
 }
 
+export async function translateTextWithFreeApi(text: string, targetLang: string): Promise<string> {
+  if (!text || !text.trim() || targetLang === 'pl') return text;
+
+  try {
+    const paragraphs = text.split(/\n\n+/);
+    const translatedParagraphs: string[] = [];
+
+    for (const para of paragraphs) {
+      if (!para.trim()) continue;
+      const cleanPara = para.replace(/<[^>]*>/g, '').trim();
+      if (!cleanPara) continue;
+
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanPara)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json) && Array.isArray(json[0])) {
+          const translatedStr = json[0].map((item: any) => item[0] || '').join('');
+          translatedParagraphs.push(`<p>${translatedStr}</p>`);
+        } else {
+          translatedParagraphs.push(`<p>${cleanPara}</p>`);
+        }
+      } else {
+        translatedParagraphs.push(`<p>${cleanPara}</p>`);
+      }
+    }
+
+    return translatedParagraphs.length > 0 ? translatedParagraphs.join('\n\n') : text;
+  } catch (err) {
+    console.warn('Free Google Translation API fallback error:', err);
+    return text;
+  }
+}
+
 // Perform translation via /api/translate or fallback
 export async function translateEntry(
   entry: SectionEntry,
@@ -487,7 +591,7 @@ export async function translateEntry(
 
   // 2. Check local client cache
   const cached = getStoredTranslation(entry.id, targetLang);
-  if (cached) {
+  if (cached && cached.content && cached.content !== entry.content) {
     return {
       ...entry,
       ...cached,
@@ -532,10 +636,38 @@ export async function translateEntry(
       }
     }
   } catch (e) {
-    console.warn('API translation unavailable, applying high-fidelity linguistic mapping:', e);
+    console.warn('API translation unavailable, trying free translation service:', e);
   }
 
-  // 4. High-fidelity linguistic fallback when offline or no API key
+  // 4. Free automatic translation service
+  try {
+    const [transTitle, transContent, transPrayer, transMystery, transIntention] = await Promise.all([
+      translateTextWithFreeApi(entry.title, targetLang),
+      translateTextWithFreeApi(entry.content, targetLang),
+      entry.prayer ? translateTextWithFreeApi(entry.prayer, targetLang) : Promise.resolve(undefined),
+      entry.mystery ? translateTextWithFreeApi(entry.mystery, targetLang) : Promise.resolve(undefined),
+      entry.intention ? translateTextWithFreeApi(entry.intention, targetLang) : Promise.resolve(undefined)
+    ]);
+
+    const result = {
+      title: transTitle || entry.title,
+      content: transContent || entry.content,
+      prayer: transPrayer || entry.prayer,
+      mystery: transMystery || entry.mystery,
+      intention: transIntention || entry.intention
+    };
+
+    saveTranslationToStorage(entry.id, targetLang, result);
+    return {
+      ...entry,
+      ...result,
+      source: 'api' as const
+    };
+  } catch (err) {
+    console.warn('Free translation service failed:', err);
+  }
+
+  // 5. Fallback if offline
   const fallback = generateLinguisticFallback(entry, targetLang);
   saveTranslationToStorage(entry.id, targetLang, fallback);
   return {

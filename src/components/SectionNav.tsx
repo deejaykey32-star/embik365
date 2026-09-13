@@ -10,11 +10,13 @@ import {
 } from 'lucide-react';
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
+import { getTranslatedSectionMeta } from '../utils/translationService';
 
 interface Props {
   activeSection: SectionId;
   onSelectSection: (id: SectionId) => void;
   pdfCounts?: Record<string, number>;
+  currentLang?: string;
 }
 
 const ICONS: Record<string, React.ElementType> = {
@@ -30,7 +32,8 @@ const ICONS: Record<string, React.ElementType> = {
 export const SectionNav: React.FC<Props> = ({
   activeSection,
   onSelectSection,
-  pdfCounts = {}
+  pdfCounts = {},
+  currentLang = 'pl'
 }) => {
   return (
     <div className="bg-[#f7f2ea] dark:bg-[#0e131d] border-b border-[#e5d9cc] dark:border-[#1e2638] py-2.5 px-3 sm:px-6 lg:px-8 transition-colors duration-300">
@@ -41,6 +44,7 @@ export const SectionNav: React.FC<Props> = ({
             const IconComponent = ICONS[sec.icon] || BookOpen;
             const isActive = activeSection === sec.id;
             const hasPdf = (pdfCounts[sec.id] || 0) > 0;
+            const meta = getTranslatedSectionMeta(sec, currentLang);
 
             return (
               <button
@@ -65,7 +69,7 @@ export const SectionNav: React.FC<Props> = ({
 
                 <div className="text-left">
                   <div className="font-semibold leading-tight flex items-center gap-1.5">
-                    <span>{sec.name}</span>
+                    <span>{meta.name}</span>
                     {sec.type === 'info' && (
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-sans-ui ${
                         isActive 
@@ -88,7 +92,7 @@ export const SectionNav: React.FC<Props> = ({
                   <div className={`text-[11px] leading-none truncate max-w-[130px] sm:max-w-none ${
                     isActive ? 'text-[#d6c7b7] dark:text-amber-100' : 'text-[#847363] dark:text-[#8b949e]'
                   }`}>
-                    {sec.shortTitle}
+                    {meta.shortTitle}
                   </div>
                 </div>
 
