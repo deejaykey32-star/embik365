@@ -8,7 +8,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_info365',
     title: 'Wprowadzenie Drogowskazy 365',
     displayLabel: 'Zeskanuj, aby otworzyć przewodnik info365',
-    shortUrl: 'https://tinyurl.com/26erofvm',
+    shortUrl: 'https://clck.ru/3Vnjrc',
     fullUrl: 'https://widokinaraj.pl/#info365',
     sectionId: 'info365',
     category: 'Przewodnik',
@@ -18,7 +18,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_wnr365',
     title: 'Widoki na Raj (WnR365)',
     displayLabel: 'Zeskanuj, aby czytać wpis dnia WnR365',
-    shortUrl: 'https://tinyurl.com/2yygjzkw',
+    shortUrl: 'https://clck.ru/3Vnjri',
     fullUrl: 'https://widokinaraj.pl/#wnr365',
     sectionId: 'wnr365',
     category: 'Blog',
@@ -28,7 +28,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_rhz365',
     title: 'Różaniec Historii Zbawienia (RHZ365)',
     displayLabel: 'Zeskanuj, aby odmówić Różaniec IN-LOVE',
-    shortUrl: 'https://tinyurl.com/2d3bx2gu',
+    shortUrl: 'https://clck.ru/3Vnjrj',
     fullUrl: 'https://widokinaraj.pl/#rhz365',
     sectionId: 'rhz365',
     category: 'Modlitwa',
@@ -38,7 +38,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_biblia365',
     title: 'Biblia365 i Apokryfy',
     displayLabel: 'Zeskanuj, aby przeczytać dzisiejszy fragment Pisma',
-    shortUrl: 'https://tinyurl.com/29pjc97q',
+    shortUrl: 'https://clck.ru/3Vnjrd',
     fullUrl: 'https://widokinaraj.pl/#biblia365',
     sectionId: 'biblia365',
     category: 'Słowo Boże',
@@ -48,7 +48,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_wnr',
     title: 'E-book Księga Widoki na Raj',
     displayLabel: 'Zeskanuj, aby otworzyć e-book WnR365',
-    shortUrl: 'https://tinyurl.com/22ncdf9y',
+    shortUrl: 'https://clck.ru/3Vnjrh',
     fullUrl: 'https://widokinaraj.pl/#ebook_wnr',
     sectionId: 'ebook_wnr',
     category: 'E-book',
@@ -58,7 +58,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_rhz',
     title: 'E-book Modlitewnik RHZ365',
     displayLabel: 'Zeskanuj, aby otworzyć e-book różańcowy',
-    shortUrl: 'https://tinyurl.com/27mws567',
+    shortUrl: 'https://clck.ru/3Vnjrf',
     fullUrl: 'https://widokinaraj.pl/#ebook_rhz',
     sectionId: 'ebook_rhz',
     category: 'E-book',
@@ -68,7 +68,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_biblia',
     title: 'E-book Księga Słowa i Apokryfów',
     displayLabel: 'Zeskanuj, aby otworzyć e-book Biblii365',
-    shortUrl: 'https://tinyurl.com/24c87bu3',
+    shortUrl: 'https://clck.ru/3Vnjrg',
     fullUrl: 'https://widokinaraj.pl/#ebook_biblia',
     sectionId: 'ebook_biblia',
     category: 'E-book',
@@ -78,7 +78,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_bio365',
     title: 'Biografia: Ja i Moja Żona (Bio365)',
     displayLabel: 'Zeskanuj, aby czytać wspomnienia małżeńskie',
-    shortUrl: 'https://tinyurl.com/2bxofvfb',
+    shortUrl: 'https://clck.ru/3Vnjre',
     fullUrl: 'https://widokinaraj.pl/#bio365',
     sectionId: 'bio365',
     category: 'Biografia',
@@ -93,7 +93,16 @@ export function getSavedQrCodes(): QrCodeItem[] {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map((item: QrCodeItem) => {
+          if (item.shortUrl && item.shortUrl.includes('tinyurl.com')) {
+            const def = DEFAULT_QR_CODES.find(d => d.id === item.id);
+            return {
+              ...item,
+              shortUrl: def ? def.shortUrl : item.fullUrl
+            };
+          }
+          return item;
+        });
       }
     }
   } catch (err) {
@@ -102,40 +111,41 @@ export function getSavedQrCodes(): QrCodeItem[] {
   return DEFAULT_QR_CODES;
 }
 
+// Save all QR codes to local storage
+export function saveAllQrCodes(codes: QrCodeItem[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
+  } catch (err) {
+    console.error('Failed to save QR database:', err);
+  }
+}
+
 /**
- * Shorten a long URL via API (TinyURL / clck.ru) for instant 301/302 redirects, 100% free and without ads.
+ * Shorten URL via direct free API (clck.ru / is.gd) with 0 ads and instant 301/302 redirection.
  */
 export async function shortenUrlViaApi(longUrl: string): Promise<string> {
-  if (!longUrl || !longUrl.trim()) {
-    throw new Error('Adres URL nie może być pusty.');
-  }
   const cleanUrl = longUrl.trim();
+  if (!cleanUrl) throw new Error('Podaj prawidłowy adres URL');
 
-  // 1. Try local Cloudflare Pages /api/shorten endpoint
+  // 1. Try local Cloudflare Worker backend redirect route first if available
   try {
-    const res = await fetch(`/api/shorten?url=${encodeURIComponent(cleanUrl)}`);
+    const slug = cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+    const res = await fetch('/api/shorten', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: cleanUrl, slug })
+    });
     if (res.ok) {
       const data = await res.json();
-      if (data.shortUrl) return data.shortUrl;
+      if (data.shortUrl) {
+        return data.shortUrl;
+      }
     }
   } catch (err) {
     console.warn('Local /api/shorten endpoint failed, falling back to direct API calls:', err);
   }
 
-  // 2. Direct TinyURL API call (Free, instant 301, no ads)
-  try {
-    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(cleanUrl)}`);
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.startsWith('http')) {
-        return text.trim();
-      }
-    }
-  } catch (err) {
-    console.warn('Direct TinyURL API fetch failed, trying clck.ru:', err);
-  }
-
-  // 3. Direct clck.ru API call (Free, instant redirect, no ads)
+  // 2. Direct clck.ru API call (Free, 100% direct 302 redirect, 0 ads)
   try {
     const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
     if (res.ok) {
@@ -148,7 +158,21 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     console.warn('Direct clck.ru API fetch failed:', err);
   }
 
-  throw new Error('Nie udało się połączyć z usługą skracania adresów URL (TinyURL API). Sprawdź połączenie z siecią.');
+  // 3. Fallback: is.gd API call
+  try {
+    const cleanNoHash = cleanUrl.replace(/#.*$/, '');
+    const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(cleanNoHash)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.shorturl) {
+        return data.shorturl;
+      }
+    }
+  } catch (err) {
+    console.warn('Direct is.gd API fetch failed:', err);
+  }
+
+  throw new Error('Nie udało się połączyć z usługą skracania adresów URL (clck.ru API). Sprawdź połączenie z siecią.');
 }
 
 /**
@@ -174,15 +198,6 @@ export async function batchShortenAllQrCodes(): Promise<QrCodeItem[]> {
 
   saveAllQrCodes(updatedList);
   return updatedList;
-}
-
-// Save all QR codes
-export function saveAllQrCodes(codes: QrCodeItem[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
-  } catch (err) {
-    console.error('Failed to persist QR database:', err);
-  }
 }
 
 // Add or update a QR code

@@ -493,27 +493,33 @@ export const DigitalRosary: React.FC<DigitalRosaryProps> = ({
                           fill="none"
                         />
                         {/* Cross Body */}
-                        {theme === 'dark' ? (
-                          // Dark Theme: White radiant cross with silver corpus
+                        {(model.colorModel === 'CMYK' || bead.label.toLowerCase().includes('biały')) ? (
+                          // White Cross (Model CMYK)
                           <g>
                             {/* Halo behind cross */}
-                            <circle cx={bead.x} cy={bead.y - 4} r="22" fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.6" />
+                            <circle cx={bead.x} cy={bead.y - 4} r="22" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.6" />
                             {/* Vertical bar */}
-                            <rect x={bead.x - 5} y={bead.y - 22} width="10" height="44" rx="2" fill="#f8fafc" stroke="#38bdf8" strokeWidth="1" />
+                            <rect x={bead.x - 6} y={bead.y - 22} width="12" height="44" rx="2" fill="#ffffff" stroke="#d97706" strokeWidth="1.5" />
                             {/* Horizontal bar */}
-                            <rect x={bead.x - 16} y={bead.y - 12} width="32" height="9" rx="2" fill="#f8fafc" stroke="#38bdf8" strokeWidth="1" />
+                            <rect x={bead.x - 17} y={bead.y - 12} width="34" height="10" rx="2" fill="#ffffff" stroke="#d97706" strokeWidth="1.5" />
                             {/* Corpus silhouette */}
-                            <path d={`M ${bead.x} ${bead.y - 10} L ${bead.x} ${bead.y + 10} M ${bead.x - 9} ${bead.y - 7} L ${bead.x + 9} ${bead.y - 7}`} stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" />
+                            <path d={`M ${bead.x} ${bead.y - 10} L ${bead.x} ${bead.y + 10} M ${bead.x - 10} ${bead.y - 7} L ${bead.x + 10} ${bead.y - 7}`} stroke="#78350f" strokeWidth="2.5" strokeLinecap="round" />
                             {/* INRI Tablet */}
-                            <rect x={bead.x - 6} y={bead.y - 20} width="12" height="5" rx="1" fill="#0284c7" />
+                            <rect x={bead.x - 6} y={bead.y - 20} width="12" height="5" rx="1" fill="#d97706" />
                             <text x={bead.x} y={bead.y - 16} textAnchor="middle" fontSize="4" fill="#ffffff" fontWeight="bold">INRI</text>
                           </g>
                         ) : (
-                          // Light Theme: Ebony wood cross with silver corpus and gold trim
+                          // Black Ebony Cross (Model RGBA)
                           <g>
+                            {/* Halo behind cross */}
+                            <circle cx={bead.x} cy={bead.y - 4} r="22" fill="none" stroke="#ca8a04" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.4" />
+                            {/* Vertical bar */}
                             <rect x={bead.x - 6} y={bead.y - 22} width="12" height="44" rx="2" fill="#18181b" stroke="#ca8a04" strokeWidth="1.5" />
+                            {/* Horizontal bar */}
                             <rect x={bead.x - 17} y={bead.y - 12} width="34" height="10" rx="2" fill="#18181b" stroke="#ca8a04" strokeWidth="1.5" />
+                            {/* Corpus silhouette */}
                             <path d={`M ${bead.x} ${bead.y - 10} L ${bead.x} ${bead.y + 10} M ${bead.x - 10} ${bead.y - 7} L ${bead.x + 10} ${bead.y - 7}`} stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                            {/* INRI Tablet */}
                             <rect x={bead.x - 6} y={bead.y - 20} width="12" height="5" rx="1" fill="#ca8a04" />
                             <text x={bead.x} y={bead.y - 16} textAnchor="middle" fontSize="4" fill="#18181b" fontWeight="bold">INRI</text>
                           </g>

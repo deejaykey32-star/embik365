@@ -1405,12 +1405,12 @@ export const AdminPanel: React.FC<Props> = ({
                         }}
                         className="text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
                       >
-                        ⚡ Skróć z TinyURL API
+                        ⚡ Skróć z Bezreklamowego API
                       </button>
                     </label>
                     <input 
                       id="new-qr-short" 
-                      placeholder="https://tinyurl.com/..." 
+                      placeholder="https://clck.ru/..." 
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e] font-mono text-xs"
                     />
                   </div>

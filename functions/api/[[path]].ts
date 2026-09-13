@@ -180,7 +180,33 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     return new Response(JSON.stringify({ entries: {}, uploads: [] }), { headers: corsHeaders });
   }
 
-  // URL Shortening API endpoint (TinyURL / clck.ru - Free, instant 301 redirect, no ads)
+  // Short URL Direct Redirect Endpoint /r/* (Instant 301 Redirect without ads)
+  if (pathname.startsWith('/r/') || pathname === '/r') {
+    const slug = pathname.replace(/^\/r\/?/i, '').trim().toLowerCase();
+    const redirectsMap: Record<string, string> = {
+      'info': 'https://widokinaraj.pl/#info365',
+      'info365': 'https://widokinaraj.pl/#info365',
+      'wnr': 'https://widokinaraj.pl/#wnr365',
+      'wnr365': 'https://widokinaraj.pl/#wnr365',
+      'rhz': 'https://widokinaraj.pl/#rhz365',
+      'rhz365': 'https://widokinaraj.pl/#rhz365',
+      'biblia': 'https://widokinaraj.pl/#biblia365',
+      'biblia365': 'https://widokinaraj.pl/#biblia365',
+      'ebook-wnr': 'https://widokinaraj.pl/#ebook_wnr',
+      'ebook_wnr': 'https://widokinaraj.pl/#ebook_wnr',
+      'ebook-rhz': 'https://widokinaraj.pl/#ebook_rhz',
+      'ebook_rhz': 'https://widokinaraj.pl/#ebook_rhz',
+      'ebook-biblia': 'https://widokinaraj.pl/#ebook_biblia',
+      'ebook_biblia': 'https://widokinaraj.pl/#ebook_biblia',
+      'bio': 'https://widokinaraj.pl/#bio365',
+      'bio365': 'https://widokinaraj.pl/#bio365'
+    };
+
+    const target = redirectsMap[slug] || url.searchParams.get('to') || 'https://widokinaraj.pl/#wnr365';
+    return Response.redirect(target, 301);
+  }
+
+  // URL Shortening API endpoint (clck.ru - Free, instant direct redirect, 100% ad-free)
   if (pathname === '/api/shorten' && (request.method === 'GET' || request.method === 'POST')) {
     try {
       let targetUrl = '';
@@ -198,36 +224,38 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
         );
       }
 
-      // Try TinyURL API
+      // Try clck.ru API (Direct 302 redirect, 0 ads, 0 preview pages)
       try {
-        const tinyRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(targetUrl)}`);
-        if (tinyRes.ok) {
-          const shortUrl = await tinyRes.text();
+        const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`);
+        if (clckRes.ok) {
+          const shortUrl = await clckRes.text();
           if (shortUrl && shortUrl.startsWith('http')) {
             return new Response(
-              JSON.stringify({ success: true, shortUrl: shortUrl.trim(), provider: 'TinyURL' }),
+              JSON.stringify({ success: true, shortUrl: shortUrl.trim(), provider: 'clck.ru' }),
               { headers: corsHeaders }
             );
           }
         }
       } catch (err) {
-        console.warn('TinyURL API failed in worker, trying clck.ru:', err);
+        console.warn('clck.ru API failed in worker, trying is.gd:', err);
       }
 
-      // Fallback: clck.ru API
-      const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`);
-      if (clckRes.ok) {
-        const shortUrl = await clckRes.text();
-        if (shortUrl && shortUrl.startsWith('http')) {
-          return new Response(
-            JSON.stringify({ success: true, shortUrl: shortUrl.trim(), provider: 'clck.ru' }),
-            { headers: corsHeaders }
-          );
+      // Fallback: is.gd API
+      try {
+        const isGdRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(targetUrl.replace(/#.*$/, ''))}`);
+        if (isGdRes.ok) {
+          const data = await isGdRes.json() as { shorturl?: string };
+          if (data.shorturl) {
+            return new Response(
+              JSON.stringify({ success: true, shortUrl: data.shorturl, provider: 'is.gd' }),
+              { headers: corsHeaders }
+            );
+          }
         }
-      }
+      } catch {}
 
       return new Response(
-        JSON.stringify({ error: 'Nie udało się wygenerować skróconego linku przez żadną z usług API.' }),
+        JSON.stringify({ error: 'Nie udało się wygenerować skróconego linku przez żaden z serwisów bez reklam.' }),
         { status: 500, headers: corsHeaders }
       );
     } catch (err: any) {

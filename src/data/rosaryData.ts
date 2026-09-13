@@ -240,8 +240,8 @@ export function generateFull50Rgba(mysteryTitle?: string): RosaryModelDefinition
   // We distribute total 50 small + 4 large beads around the circle perimeter from 90° (bottom left) clockwise to 90° (bottom right).
   // Chalice is at angle 90° (bottom).
   // Total slots: 55 positions (10 small, 1 large, 10 small, 1 large, 10 small, 1 large, 10 small, 1 large, 10 small).
-  const startAngle = 100; // degrees (just clockwise of bottom chalice)
-  const totalSweep = 340; // leaving 20 degrees at bottom for chalice connection
+  const startAngle = 12; // degrees (just clockwise of bottom chalice)
+  const totalSweep = 336; // leaving gap at bottom for chalice connection
   const totalSlots = 54;
   let slotIndex = 0;
 
@@ -462,8 +462,8 @@ export function generateFull50Cmyk(mysteryTitle?: string): RosaryModelDefinition
     { name: 'V Dziesiątek: 10x Czarne (Key)', color: 'black' as const, colorDesc: 'Czarne', letter: undefined }
   ];
 
-  const startAngle = 100;
-  const totalSweep = 340;
+  const startAngle = 12;
+  const totalSweep = 336;
   const totalSlots = 54;
   let slotIndex = 0;
 
@@ -1048,16 +1048,16 @@ export function generateCircle13Rgba(mysteryTitle?: string): RosaryModelDefiniti
   const r = 180;
 
   const circleRgbaBeads = [
-    { num: 1, label: '1. Koralik Przezroczysty (przy kielichu)', color: 'transparent' as const, badge: '1', angle: 120 },
-    { num: 2, label: '2. Koralik Biały (White)', color: 'white' as const, badge: '2', angle: 155 },
-    { num: 3, label: '3. Koralik Czerwony (Red)', color: 'red' as const, badge: '3', angle: 195 },
-    { num: 4, label: '4. Koralik Zielony (Green)', color: 'green' as const, badge: '4', angle: 235 },
-    { num: 5, label: '5. Koralik Niebieski (Blue)', color: 'blue' as const, badge: '5', angle: 275 },
-    { num: 6, label: '6. Koralik Czerwony (Red 2)', color: 'red' as const, badge: '6', angle: 315 },
-    { num: 7, label: '7. Koralik Zielony (Green 2)', color: 'green' as const, badge: '7', angle: 355 },
-    { num: 8, label: '8. Koralik Niebieski (Blue 2)', color: 'blue' as const, badge: '8', angle: 35 },
-    { num: 9, label: '9. Koralik Czarny (Black)', color: 'black' as const, badge: '9', angle: 65 },
-    { num: 10, label: '10. Koralik Przezroczysty (końcowy)', color: 'transparent' as const, badge: '10', angle: 85 }
+    { num: 1, label: '1. Koralik Przezroczysty (przy kielichu)', color: 'transparent' as const, badge: '#7', angle: 20 },
+    { num: 2, label: '2. Koralik Biały (Perła)', color: 'white' as const, badge: '#8', angle: 55 },
+    { num: 3, label: '3. Koralik Czerwony (Rubin)', color: 'red' as const, badge: '#9', angle: 90 },
+    { num: 4, label: '4. Koralik Zielony (Szmaragd)', color: 'green' as const, badge: '#10', angle: 130 },
+    { num: 5, label: '5. Koralik Niebieski (Szafir)', color: 'blue' as const, badge: '#11', angle: 165 },
+    { num: 6, label: '6. Koralik Czerwony (Rubin 2)', color: 'red' as const, badge: '#12', angle: 195 },
+    { num: 7, label: '7. Koralik Zielony (Szmaragd 2)', color: 'green' as const, badge: '#13', angle: 230 },
+    { num: 8, label: '8. Koralik Niebieski (Szafir 2)', color: 'blue' as const, badge: '#14', angle: 270 },
+    { num: 9, label: '9. Koralik Czarny (Onyks)', color: 'black' as const, badge: '#15', angle: 305 },
+    { num: 10, label: '10. Koralik Przezroczysty (końcowy)', color: 'transparent' as const, badge: '#16', angle: 340 }
   ];
 
   circleRgbaBeads.forEach((b) => {
@@ -1109,7 +1109,7 @@ export function generateCircle13Cmyk(mysteryTitle?: string): RosaryModelDefiniti
     stepIndex: step++,
     type: 'cross',
     colorType: 'cross',
-    label: 'Krzyżyk',
+    label: 'Biały Krzyżyk',
     subLabel: 'Wierzę w Boga',
     prayerName: COMMON_PRAYERS.cross.name,
     prayerText: COMMON_PRAYERS.cross.text,
@@ -1225,32 +1225,32 @@ export function generateCircle13Cmyk(mysteryTitle?: string): RosaryModelDefiniti
     badgeNumber: '#6'
   });
 
-  // Circle decade in CMYK matching IMG-20260827-WA0009 / IMG-20260827-WA0010:
-  // 1. Koralik Przezroczysty (przy kielichu)
-  // 2. Koralik Biały
-  // 3. Koralik Czerwony (Red)
-  // 4. Koralik Zielony (Green)
-  // 5. Koralik Niebieski (Blue)
-  // 6. Koralik Cyjan (Cyan)
-  // 7. Koralik Magenta
-  // 8. Koralik Żółty (Yellow)
-  // 9. Koralik Czarny (Key)
-  // 10. Koralik Przezroczysty (końcowy)
+  // Circle decade in CMYK matching 1-to-1 Variant 4 (Linia CMYK):
+  // #7: 1. Koralik Przezroczysty
+  // #8: 2. Koralik Czarny (Key)
+  // #9: 3. Koralik Żółty (Yellow)
+  // #10: 4. Koralik Magenta
+  // #11: 5. Koralik Cyjan (Cyan)
+  // #12: 6. Koralik Niebieski (Blue)
+  // #13: 7. Koralik Zielony (Green)
+  // #14: 8. Koralik Czerwony (Red)
+  // #15: 9. Koralik Biały (Paper)
+  // #16: 10. Koralik Przezroczysty (końcowy)
   const cx = 300;
   const cy = 240;
   const r = 180;
 
   const circleCmykBeads = [
-    { num: 1, label: '1. Koralik Przezroczysty (przy kielichu)', color: 'transparent' as const, badge: '1', angle: 120 },
-    { num: 2, label: '2. Koralik Biały (Paper)', color: 'white' as const, badge: '2', angle: 155 },
-    { num: 3, label: '3. Koralik Czerwony (Red)', color: 'red' as const, badge: '3', angle: 195 },
-    { num: 4, label: '4. Koralik Zielony (Green)', color: 'green' as const, badge: '4', angle: 235 },
-    { num: 5, label: '5. Koralik Niebieski (Blue)', color: 'blue' as const, badge: '5', angle: 275 },
-    { num: 6, label: '6. Koralik Cyjan (Cyan)', color: 'cyan' as const, badge: '6', angle: 315 },
-    { num: 7, label: '7. Koralik Magenta', color: 'magenta' as const, badge: '7', angle: 355 },
-    { num: 8, label: '8. Koralik Żółty (Yellow)', color: 'yellow' as const, badge: '8', angle: 35 },
-    { num: 9, label: '9. Koralik Czarny (Key)', color: 'black' as const, badge: '9', angle: 65 },
-    { num: 10, label: '10. Koralik Przezroczysty (końcowy)', color: 'transparent' as const, badge: '10', angle: 85 }
+    { num: 1, label: '1. Koralik Przezroczysty (przy kielichu)', color: 'transparent' as const, badge: '#7', angle: 20 },
+    { num: 2, label: '2. Koralik Czarny (Key)', color: 'black' as const, badge: '#8', angle: 55 },
+    { num: 3, label: '3. Koralik Żółty (Yellow)', color: 'yellow' as const, badge: '#9', angle: 90 },
+    { num: 4, label: '4. Koralik Magenta (Magenta)', color: 'magenta' as const, badge: '#10', angle: 130 },
+    { num: 5, label: '5. Koralik Cyjan (Cyan)', color: 'cyan' as const, badge: '#11', angle: 165 },
+    { num: 6, label: '6. Koralik Niebieski (Blue)', color: 'blue' as const, badge: '#12', angle: 195 },
+    { num: 7, label: '7. Koralik Zielony (Green)', color: 'green' as const, badge: '#13', angle: 230 },
+    { num: 8, label: '8. Koralik Czerwony (Red)', color: 'red' as const, badge: '#14', angle: 270 },
+    { num: 9, label: '9. Koralik Biały (Paper)', color: 'white' as const, badge: '#15', angle: 305 },
+    { num: 10, label: '10. Koralik Przezroczysty (końcowy)', color: 'transparent' as const, badge: '#16', angle: 340 }
   ];
 
   circleCmykBeads.forEach((b) => {

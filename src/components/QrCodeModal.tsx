@@ -167,7 +167,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
   };
 
   const handleBatchShortenAll = async () => {
-    if (!confirm('Wygenerować bezreklamowe, natychmiastowe skróty (TinyURL API - darmowe przekierowanie 301) dla wszystkich kodów QR?')) return;
+    if (!confirm('Wygenerować bezreklamowe, natychmiastowe skróty (clck.ru / direct API - 0 reklam, natychmiastowe przekierowanie) dla wszystkich kodów QR?')) return;
     setIsShortening(true);
     try {
       const updated = await batchShortenAllQrCodes();
@@ -225,7 +225,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
               onClick={handleBatchShortenAll}
               disabled={isShortening}
               className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              title="Skróć wszystkie linki przez TinyURL API bez reklam"
+              title="Skróć wszystkie linki przez bezreklamowe API (clck.ru / direct)"
             >
               {isShortening ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
               <span>Skróć Wszystkie przez API</span>
@@ -299,7 +299,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                     onClick={handleGenerateApiShortUrl}
                     disabled={isShortening}
                     className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
-                    title="Automatycznie pobierz skrót TinyURL API bez reklam"
+                    title="Automatycznie pobierz skrót bezreklamowy (clck.ru / direct API)"
                   >
                     {isShortening ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                     <span>Skróć z API</span>
@@ -311,7 +311,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                     required
                     value={isCreating ? newShortUrl : editingItem?.shortUrl || ''}
                     onChange={(e) => isCreating ? setNewShortUrl(e.target.value) : setEditingItem(prev => prev ? ({ ...prev, shortUrl: e.target.value }) : null)}
-                    placeholder="https://tinyurl.com/..."
+                    placeholder="https://clck.ru/..."
                     className="w-full p-2 rounded-xl bg-white dark:bg-[#141e30] border border-stone-300 dark:border-stone-700 font-mono text-xs"
                   />
                 </div>
