@@ -2,5 +2,8 @@ name = "embik365"
 main = "worker.ts"
 compatibility_date = "2026-09-12"
 
+[build]
+command = "npm run build"
+
 [assets]
 directory = "./dist"
