@@ -138,8 +138,32 @@
   color: #fde68a;
 }
 
+/* Interactive active QR code card styles */
+a.qr-code-embed-card,
+.qr-code-embed-card {
+  display: block !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+a.qr-code-embed-card:hover,
+.qr-code-embed-card:hover {
+  transform: translateY(-3px) scale(1.01) !important;
+  box-shadow: 0 10px 25px rgba(180, 83, 9, 0.18) !important;
+  border-color: #b45309 !important;
+}
+
+.dark a.qr-code-embed-card,
 .dark .qr-code-embed-card {
   background-color: #161d2a !important;
   border-color: #92400e !important;
   color: #f1f5f9 !important;
+}
+
+.dark a.qr-code-embed-card:hover,
+.dark .qr-code-embed-card:hover {
+  border-color: #f59e0b !important;
+  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.25) !important;
 }

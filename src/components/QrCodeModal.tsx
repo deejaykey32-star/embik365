@@ -359,14 +359,20 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                   key={item.id}
                   className="p-4 rounded-2xl border border-stone-200 dark:border-[#1e2a40] bg-stone-50/70 dark:bg-[#111827] flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-amber-500/50"
                 >
-                  {/* QR Preview Box */}
-                  <div className="w-28 h-28 rounded-xl bg-white p-2 border border-stone-200 shadow-sm flex items-center justify-center shrink-0">
+                  {/* QR Preview Box (Clickable active link) */}
+                  <a
+                    href={item.shortUrl || item.fullUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-28 h-28 rounded-xl bg-white p-2 border border-stone-200 shadow-xs hover:border-amber-500 hover:scale-105 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                    title="Kliknij, aby przetestować przekierowanie w nowej karcie"
+                  >
                     {previewUrl ? (
                       <img src={previewUrl} alt={item.title} className="w-full h-full object-contain" />
                     ) : (
                       <div className="animate-pulse w-full h-full bg-stone-200 rounded-lg" />
                     )}
-                  </div>
+                  </a>
 
                   {/* Metadata */}
                   <div className="flex-1 text-xs space-y-1 w-full text-center sm:text-left">

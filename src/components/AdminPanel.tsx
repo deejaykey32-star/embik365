@@ -1272,14 +1272,20 @@ export const AdminPanel: React.FC<Props> = ({
                     className="p-4 rounded-2xl bg-white dark:bg-[#141a26] border border-[#e2d4c3] dark:border-[#212b3c] shadow-xs flex flex-col justify-between gap-3"
                   >
                     <div className="flex items-start gap-4">
-                      {/* Visual QR Image Preview */}
-                      <div className="w-24 h-24 bg-white p-1.5 rounded-xl border border-gray-200 shadow-xs shrink-0 flex flex-col items-center justify-center">
+                      {/* Visual QR Image Preview (Clickable active link) */}
+                      <a 
+                        href={item.shortUrl || item.fullUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="w-24 h-24 bg-white p-1.5 rounded-xl border border-gray-200 hover:border-amber-500 hover:scale-105 transition-all shadow-xs shrink-0 flex flex-col items-center justify-center cursor-pointer"
+                        title="Kliknij, aby przetestować przekierowanie w nowej karcie"
+                      >
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(item.fullUrl || item.shortUrl)}`}
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(item.shortUrl || item.fullUrl)}`}
                           alt={item.title}
                           className="w-full h-full object-contain"
                         />
-                      </div>
+                      </a>
 
                       {/* Info & URL details */}
                       <div className="flex-1 min-w-0">

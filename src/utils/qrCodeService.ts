@@ -358,11 +358,12 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
   document.body.removeChild(link);
 }
 
-// Generate embedded HTML for WYSIWYG editor
+// Generate embedded HTML for WYSIWYG editor (entire card is an active link)
 export async function generateQrWysiwygHtml(item: QrCodeItem): Promise<string> {
-  const qrDataUrl = await generateQrDataUrl(item.shortUrl || item.fullUrl, 180);
+  const targetUrl = item.shortUrl || item.fullUrl;
+  const qrDataUrl = await generateQrDataUrl(targetUrl, 180);
   return `
-    <div class="qr-code-embed-card" style="margin: 20px auto; max-width: 380px; padding: 18px; border: 2px solid #d4b996; border-radius: 16px; background-color: #faf8f5; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-family: 'Plus Jakarta Sans', sans-serif;">
+    <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="qr-code-embed-card" style="display: block; margin: 20px auto; max-width: 380px; padding: 18px; border: 2px solid #d4b996; border-radius: 16px; background-color: #faf8f5; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: none; color: inherit; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
       <div style="font-family: 'Cinzel', serif; font-size: 15px; font-weight: bold; color: #b45309; text-transform: uppercase; margin-bottom: 6px;">
         ${item.title}
       </div>
@@ -373,8 +374,8 @@ export async function generateQrWysiwygHtml(item: QrCodeItem): Promise<string> {
         ${item.displayLabel}
       </div>
       <div style="font-size: 11px; color: #78716c; background: #f4ede3; padding: 6px 10px; border-radius: 8px; word-break: break-all;">
-        <span style="font-weight: bold; color: #854d0e;">Skrót:</span> <a href="${item.shortUrl}" target="_blank" style="color: #b45309; text-decoration: underline;">${item.shortUrl}</a>
+        <span style="font-weight: bold; color: #854d0e;">Kliknij lub zeskanuj:</span> <span style="color: #b45309; text-decoration: underline;">${targetUrl}</span>
       </div>
-    </div>
+    </a>
   `;
 }
