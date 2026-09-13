@@ -8,7 +8,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_info365',
     title: 'Wprowadzenie Drogowskazy 365',
     displayLabel: 'Zeskanuj, aby otworzyć przewodnik info365',
-    shortUrl: 'https://widokinaraj.pl/r/info',
+    shortUrl: 'https://tinyurl.com/26erofvm',
     fullUrl: 'https://widokinaraj.pl/#info365',
     sectionId: 'info365',
     category: 'Przewodnik',
@@ -18,7 +18,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_wnr365',
     title: 'Widoki na Raj (WnR365)',
     displayLabel: 'Zeskanuj, aby czytać wpis dnia WnR365',
-    shortUrl: 'https://widokinaraj.pl/r/wnr',
+    shortUrl: 'https://tinyurl.com/2yygjzkw',
     fullUrl: 'https://widokinaraj.pl/#wnr365',
     sectionId: 'wnr365',
     category: 'Blog',
@@ -28,7 +28,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_rhz365',
     title: 'Różaniec Historii Zbawienia (RHZ365)',
     displayLabel: 'Zeskanuj, aby odmówić Różaniec IN-LOVE',
-    shortUrl: 'https://widokinaraj.pl/r/rhz',
+    shortUrl: 'https://tinyurl.com/2d3bx2gu',
     fullUrl: 'https://widokinaraj.pl/#rhz365',
     sectionId: 'rhz365',
     category: 'Modlitwa',
@@ -38,7 +38,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_biblia365',
     title: 'Biblia365 i Apokryfy',
     displayLabel: 'Zeskanuj, aby przeczytać dzisiejszy fragment Pisma',
-    shortUrl: 'https://widokinaraj.pl/r/biblia',
+    shortUrl: 'https://tinyurl.com/29pjc97q',
     fullUrl: 'https://widokinaraj.pl/#biblia365',
     sectionId: 'biblia365',
     category: 'Słowo Boże',
@@ -48,7 +48,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_wnr',
     title: 'E-book Księga Widoki na Raj',
     displayLabel: 'Zeskanuj, aby otworzyć e-book WnR365',
-    shortUrl: 'https://widokinaraj.pl/r/ebook-wnr',
+    shortUrl: 'https://tinyurl.com/22ncdf9y',
     fullUrl: 'https://widokinaraj.pl/#ebook_wnr',
     sectionId: 'ebook_wnr',
     category: 'E-book',
@@ -58,7 +58,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_rhz',
     title: 'E-book Modlitewnik RHZ365',
     displayLabel: 'Zeskanuj, aby otworzyć e-book różańcowy',
-    shortUrl: 'https://widokinaraj.pl/r/ebook-rhz',
+    shortUrl: 'https://tinyurl.com/27mws567',
     fullUrl: 'https://widokinaraj.pl/#ebook_rhz',
     sectionId: 'ebook_rhz',
     category: 'E-book',
@@ -68,7 +68,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_biblia',
     title: 'E-book Księga Słowa i Apokryfów',
     displayLabel: 'Zeskanuj, aby otworzyć e-book Biblii365',
-    shortUrl: 'https://widokinaraj.pl/r/ebook-biblia',
+    shortUrl: 'https://tinyurl.com/24c87bu3',
     fullUrl: 'https://widokinaraj.pl/#ebook_biblia',
     sectionId: 'ebook_biblia',
     category: 'E-book',
@@ -78,7 +78,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_bio365',
     title: 'Biografia: Ja i Moja Żona (Bio365)',
     displayLabel: 'Zeskanuj, aby czytać wspomnienia małżeńskie',
-    shortUrl: 'https://widokinaraj.pl/r/bio',
+    shortUrl: 'https://tinyurl.com/2bxofvfb',
     fullUrl: 'https://widokinaraj.pl/#bio365',
     sectionId: 'bio365',
     category: 'Biografia',
@@ -100,6 +100,80 @@ export function getSavedQrCodes(): QrCodeItem[] {
     console.warn('Failed to load QR database:', err);
   }
   return DEFAULT_QR_CODES;
+}
+
+/**
+ * Shorten a long URL via API (TinyURL / clck.ru) for instant 301/302 redirects, 100% free and without ads.
+ */
+export async function shortenUrlViaApi(longUrl: string): Promise<string> {
+  if (!longUrl || !longUrl.trim()) {
+    throw new Error('Adres URL nie może być pusty.');
+  }
+  const cleanUrl = longUrl.trim();
+
+  // 1. Try local Cloudflare Pages /api/shorten endpoint
+  try {
+    const res = await fetch(`/api/shorten?url=${encodeURIComponent(cleanUrl)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.shortUrl) return data.shortUrl;
+    }
+  } catch (err) {
+    console.warn('Local /api/shorten endpoint failed, falling back to direct API calls:', err);
+  }
+
+  // 2. Direct TinyURL API call (Free, instant 301, no ads)
+  try {
+    const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(cleanUrl)}`);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.startsWith('http')) {
+        return text.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('Direct TinyURL API fetch failed, trying clck.ru:', err);
+  }
+
+  // 3. Direct clck.ru API call (Free, instant redirect, no ads)
+  try {
+    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.startsWith('http')) {
+        return text.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('Direct clck.ru API fetch failed:', err);
+  }
+
+  throw new Error('Nie udało się połączyć z usługą skracania adresów URL (TinyURL API). Sprawdź połączenie z siecią.');
+}
+
+/**
+ * Batch shorten all QR codes in the database using the free ad-free API.
+ */
+export async function batchShortenAllQrCodes(): Promise<QrCodeItem[]> {
+  const current = getSavedQrCodes();
+  const updatedList: QrCodeItem[] = [];
+
+  for (const item of current) {
+    let newShort = item.shortUrl;
+    try {
+      newShort = await shortenUrlViaApi(item.fullUrl);
+    } catch (e) {
+      console.warn(`Could not shorten URL for ${item.id}:`, e);
+    }
+    updatedList.push({
+      ...item,
+      shortUrl: newShort,
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  saveAllQrCodes(updatedList);
+  return updatedList;
 }
 
 // Save all QR codes

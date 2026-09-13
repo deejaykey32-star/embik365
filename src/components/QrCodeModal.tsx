@@ -12,7 +12,10 @@ import {
   Sparkles,
   Link2,
   Share2,
-  Copy
+  Copy,
+  Wand2,
+  RefreshCw,
+  Zap
 } from 'lucide-react';
 import { QrCodeItem } from '../types';
 import { 
@@ -21,7 +24,9 @@ import {
   deleteQrCode, 
   updateQrCodeFullUrl, 
   generateAndDownloadQrBadgePng,
-  generateQrDataUrl 
+  generateQrDataUrl,
+  shortenUrlViaApi,
+  batchShortenAllQrCodes
 } from '../utils/qrCodeService';
 
 interface QrCodeModalProps {
@@ -44,6 +49,8 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
   const [qrPreviews, setQrPreviews] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isShortening, setIsShortening] = useState(false);
+  const [shortenError, setShortenError] = useState<string | null>(null);
 
   // New item form state
   const [newTitle, setNewTitle] = useState('');
@@ -137,6 +144,41 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
     }
   };
 
+  const handleGenerateApiShortUrl = async () => {
+    const targetUrl = isCreating ? newFullUrl : editingItem?.fullUrl;
+    if (!targetUrl) {
+      setShortenError('Wprowadź najpierw pełny adres docelowy.');
+      return;
+    }
+    setIsShortening(true);
+    setShortenError(null);
+    try {
+      const generatedShort = await shortenUrlViaApi(targetUrl);
+      if (isCreating) {
+        setNewShortUrl(generatedShort);
+      } else if (editingItem) {
+        setEditingItem(prev => prev ? ({ ...prev, shortUrl: generatedShort }) : null);
+      }
+    } catch (err: any) {
+      setShortenError(err.message || 'Nie udało się wygenerować skrótu API.');
+    } finally {
+      setIsShortening(false);
+    }
+  };
+
+  const handleBatchShortenAll = async () => {
+    if (!confirm('Wygenerować bezreklamowe, natychmiastowe skróty (TinyURL API - darmowe przekierowanie 301) dla wszystkich kodów QR?')) return;
+    setIsShortening(true);
+    try {
+      const updated = await batchShortenAllQrCodes();
+      setQrCodes(updated);
+    } catch (err: any) {
+      alert('Błąd skracania linków: ' + err.message);
+    } finally {
+      setIsShortening(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
       <div className="relative w-full max-w-4xl bg-white dark:bg-[#0c121e] rounded-3xl p-5 sm:p-7 shadow-2xl border border-amber-500/30 my-auto max-h-[92vh] flex flex-col text-[#2c2219] dark:text-[#f1f5f9]">
@@ -152,7 +194,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                 Baza Kodów QR & Generator PNG
               </h3>
               <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
-                Zarządzaj stałymi skróconymi adresami (dla druku) i dynamicznymi adresami docelowymi
+                Zarządzaj stałymi skróconymi adresami API (darmowe, natychmiastowe 301, bez reklam) i dynamicznymi celami
               </p>
             </div>
           </div>
@@ -178,13 +220,25 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
             />
           </div>
 
-          <button
-            onClick={() => { setIsCreating(true); setEditingItem(null); }}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Dodaj Nowy Kod QR</span>
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={handleBatchShortenAll}
+              disabled={isShortening}
+              className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              title="Skróć wszystkie linki przez TinyURL API bez reklam"
+            >
+              {isShortening ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
+              <span>Skróć Wszystkie przez API</span>
+            </button>
+
+            <button
+              onClick={() => { setIsCreating(true); setEditingItem(null); setShortenError(null); }}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Dodaj Nowy Kod QR</span>
+            </button>
+          </div>
         </div>
 
         {/* Create / Edit Form Drawer */}
@@ -197,12 +251,18 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
               <span>{isCreating ? 'Tworzenie Nowego Kodu QR' : `Edycja Kodu: ${editingItem?.title}`}</span>
               <button
                 type="button"
-                onClick={() => { setIsCreating(false); setEditingItem(null); }}
+                onClick={() => { setIsCreating(false); setEditingItem(null); setShortenError(null); }}
                 className="text-stone-400 hover:text-stone-600 cursor-pointer"
               >
                 Anuluj
               </button>
             </div>
+
+            {shortenError && (
+              <div className="p-2 rounded-xl bg-rose-100 dark:bg-rose-950/50 border border-rose-300 text-rose-800 dark:text-rose-200 text-xs">
+                {shortenError}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -230,18 +290,32 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
               </div>
 
               <div>
-                <label className="font-bold block mb-1 flex items-center gap-1">
-                  <span>Skrócony adres URL (Stały do druku):</span>
+                <label className="font-bold block mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <span>Skrócony adres URL (Stały do druku):</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleGenerateApiShortUrl}
+                    disabled={isShortening}
+                    className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+                    title="Automatycznie pobierz skrót TinyURL API bez reklam"
+                  >
+                    {isShortening ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                    <span>Skróć z API</span>
+                  </button>
                 </label>
-                <input
-                  type="url"
-                  required
-                  value={isCreating ? newShortUrl : editingItem?.shortUrl || ''}
-                  onChange={(e) => isCreating ? setNewShortUrl(e.target.value) : setEditingItem(prev => prev ? ({ ...prev, shortUrl: e.target.value }) : null)}
-                  placeholder="https://widokinaraj.pl/r/wnr"
-                  className="w-full p-2 rounded-xl bg-white dark:bg-[#141e30] border border-stone-300 dark:border-stone-700 font-mono"
-                />
-                <span className="text-[10px] text-stone-500">Ten adres jest kodowany w grafice QR na stałe.</span>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="url"
+                    required
+                    value={isCreating ? newShortUrl : editingItem?.shortUrl || ''}
+                    onChange={(e) => isCreating ? setNewShortUrl(e.target.value) : setEditingItem(prev => prev ? ({ ...prev, shortUrl: e.target.value }) : null)}
+                    placeholder="https://tinyurl.com/..."
+                    className="w-full p-2 rounded-xl bg-white dark:bg-[#141e30] border border-stone-300 dark:border-stone-700 font-mono text-xs"
+                  />
+                </div>
+                <span className="text-[10px] text-stone-500">Adres w kodzie QR (darmowe, natychmiastowe 301, zero reklam).</span>
               </div>
 
               <div>
@@ -254,9 +328,9 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                   value={isCreating ? newFullUrl : editingItem?.fullUrl || ''}
                   onChange={(e) => isCreating ? setNewFullUrl(e.target.value) : setEditingItem(prev => prev ? ({ ...prev, fullUrl: e.target.value }) : null)}
                   placeholder="https://widokinaraj.pl/#wnr365"
-                  className="w-full p-2 rounded-xl bg-white dark:bg-[#141e30] border border-amber-500 dark:border-amber-400 font-mono"
+                  className="w-full p-2 rounded-xl bg-white dark:bg-[#141e30] border border-amber-500 dark:border-amber-400 font-mono text-xs"
                 />
-                <span className="text-[10px] text-amber-700 dark:text-amber-400">Możesz zmieniać ten cel w dowolnym momencie bez przedruku!</span>
+                <span className="text-[10px] text-amber-700 dark:text-amber-400">Możesz zmieniać ten cel w dowolnym momencie!</span>
               </div>
             </div>
 

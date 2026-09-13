@@ -35,7 +35,9 @@ import {
   generateAndDownloadQrBadgePng, 
   upsertQrCode, 
   deleteQrCode, 
-  generateQrDataUrl 
+  generateQrDataUrl,
+  shortenUrlViaApi,
+  batchShortenAllQrCodes
 } from '../utils/qrCodeService';
 
 interface Props {
@@ -1340,11 +1342,35 @@ export const AdminPanel: React.FC<Props> = ({
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1">Krótki Adres URL (Przypisany na stałe)</label>
+                    <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1 flex items-center justify-between">
+                      <span>Krótki Adres URL (API / Stały)</span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const fullEl = document.getElementById('new-qr-full') as HTMLInputElement;
+                          const shortEl = document.getElementById('new-qr-short') as HTMLInputElement;
+                          if (!fullEl || !fullEl.value) {
+                            alert('Wpisz najpierw pełny adres docelowy.');
+                            return;
+                          }
+                          try {
+                            shortEl.value = 'Generowanie skrótu API...';
+                            const short = await shortenUrlViaApi(fullEl.value);
+                            shortEl.value = short;
+                          } catch (err: any) {
+                            alert(err.message || 'Błąd generowania skrótu');
+                            shortEl.value = '';
+                          }
+                        }}
+                        className="text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
+                      >
+                        ⚡ Skróć z TinyURL API
+                      </button>
+                    </label>
                     <input 
                       id="new-qr-short" 
-                      placeholder="drogowskazy365.pl/specjalny" 
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e]"
+                      placeholder="https://tinyurl.com/..." 
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e] font-mono text-xs"
                     />
                   </div>
                   <div>

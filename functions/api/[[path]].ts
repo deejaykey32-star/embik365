@@ -180,6 +180,64 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     return new Response(JSON.stringify({ entries: {}, uploads: [] }), { headers: corsHeaders });
   }
 
+  // URL Shortening API endpoint (TinyURL / clck.ru - Free, instant 301 redirect, no ads)
+  if (pathname === '/api/shorten' && (request.method === 'GET' || request.method === 'POST')) {
+    try {
+      let targetUrl = '';
+      if (request.method === 'GET') {
+        targetUrl = url.searchParams.get('url') || '';
+      } else {
+        const body = await request.json() as { url?: string };
+        targetUrl = body.url || '';
+      }
+
+      if (!targetUrl) {
+        return new Response(
+          JSON.stringify({ error: 'Brak parametru url' }),
+          { status: 400, headers: corsHeaders }
+        );
+      }
+
+      // Try TinyURL API
+      try {
+        const tinyRes = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(targetUrl)}`);
+        if (tinyRes.ok) {
+          const shortUrl = await tinyRes.text();
+          if (shortUrl && shortUrl.startsWith('http')) {
+            return new Response(
+              JSON.stringify({ success: true, shortUrl: shortUrl.trim(), provider: 'TinyURL' }),
+              { headers: corsHeaders }
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('TinyURL API failed in worker, trying clck.ru:', err);
+      }
+
+      // Fallback: clck.ru API
+      const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`);
+      if (clckRes.ok) {
+        const shortUrl = await clckRes.text();
+        if (shortUrl && shortUrl.startsWith('http')) {
+          return new Response(
+            JSON.stringify({ success: true, shortUrl: shortUrl.trim(), provider: 'clck.ru' }),
+            { headers: corsHeaders }
+          );
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ error: 'Nie udało się wygenerować skróconego linku przez żadną z usług API.' }),
+        { status: 500, headers: corsHeaders }
+      );
+    } catch (err: any) {
+      return new Response(
+        JSON.stringify({ error: err.message || 'Błąd serwera skracania URL' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+  }
+
   return new Response(
     JSON.stringify({ error: 'Endpoint nie został znaleziony w Cloudflare Pages Functions.' }),
     { status: 404, headers: corsHeaders }
