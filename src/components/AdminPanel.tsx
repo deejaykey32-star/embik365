@@ -135,13 +135,39 @@ export const AdminPanel: React.FC<Props> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (!file.name.toLowerCase().endsWith('.pdf')) {
-        setUploadStatus({ type: 'error', message: 'Dozwolone są wyłącznie pliki PDF.' });
+      const ext = file.name.toLowerCase().split('.').pop() || '';
+      const allowed = ['pdf', 'epub', 'docx', 'doc'];
+      if (!allowed.includes(ext)) {
+        setUploadStatus({ type: 'error', message: 'Dozwolone są pliki PDF, ePUB oraz Word DOCX.' });
         return;
       }
       setSelectedFile(file);
       if (!fileTitle) {
-        setFileTitle(file.name.replace(/\.pdf$/i, ''));
+        setFileTitle(file.name.replace(/\.(pdf|epub|docx|doc)$/i, ''));
+      }
+      setUploadStatus(null);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      const ext = file.name.toLowerCase().split('.').pop() || '';
+      const allowed = ['pdf', 'epub', 'docx', 'doc'];
+      if (!allowed.includes(ext)) {
+        setUploadStatus({ type: 'error', message: 'Dozwolone są pliki PDF, ePUB oraz Word DOCX.' });
+        return;
+      }
+      setSelectedFile(file);
+      if (!fileTitle) {
+        setFileTitle(file.name.replace(/\.(pdf|epub|docx|doc)$/i, ''));
       }
       setUploadStatus(null);
     }
@@ -150,7 +176,7 @@ export const AdminPanel: React.FC<Props> = ({
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
-      setUploadStatus({ type: 'error', message: 'Wybierz plik PDF do wgrania.' });
+      setUploadStatus({ type: 'error', message: 'Wybierz plik (PDF, ePUB lub Word DOCX) do wgrania.' });
       return;
     }
 
@@ -640,6 +666,8 @@ export const AdminPanel: React.FC<Props> = ({
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
                     className="border-2 border-dashed border-[#cbb8a3] dark:border-[#33425b] hover:border-[#8c572b] dark:hover:border-amber-500 rounded-3xl p-6 text-center bg-white/70 dark:bg-[#151c28]/60 hover:bg-[#faf4ec] dark:hover:bg-[#1a2333] transition-all cursor-pointer"
                   >
                     <input
@@ -686,7 +714,7 @@ export const AdminPanel: React.FC<Props> = ({
                     ) : (
                       <>
                         <Upload className="w-4 h-4" />
-                        <span>Wgraj PDF & Synchronizuj z GitHub</span>
+                        <span>Wgraj Dokument (PDF, ePUB, Word DOCX) & Synchronizuj z GitHub</span>
                       </>
                     )}
                   </button>
