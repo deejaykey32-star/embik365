@@ -170,7 +170,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Short URL Direct Redirect Endpoint /r/* (Instant 301 Redirect without ads)
-app.get(['/r/:slug', '/r'], (req, res) => {
+app.get('/r/:slug?', (req, res) => {
   const slug = (req.params.slug || req.query.to || '').toString().trim().toLowerCase();
   const redirectsMap: Record<string, string> = {
     'info': 'https://widokinaraj.pl/#info365',
@@ -192,7 +192,7 @@ app.get(['/r/:slug', '/r'], (req, res) => {
   };
 
   const target = redirectsMap[slug] || (req.query.to ? req.query.to.toString() : 'https://widokinaraj.pl/#wnr365');
-  res.redirect(301, target);
+  return res.redirect(301, target);
 });
 
 // URL Shortening API endpoint (clck.ru / is.gd with 0 ads, server-side fetch)
@@ -558,13 +558,32 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
+
+    // SPA index.html fallback for non-API/non-redirect routes in dev mode
+    app.get('*', async (req, res, next) => {
+      if (req.path.startsWith('/api') || req.path.startsWith('/r/') || req.path === '/r') {
+        return next();
+      }
+      try {
+        const url = req.originalUrl;
+        let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api') || req.path.startsWith('/r/') || req.path === '/r') {
+        return next();
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
