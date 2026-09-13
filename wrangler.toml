@@ -2,5 +2,5 @@ name = "embik365"
 compatibility_date = "2026-09-12"
 pages_build_output_dir = "dist"
 
-[assets]
-directory = "./dist"
+[site]
+bucket = "./dist"
