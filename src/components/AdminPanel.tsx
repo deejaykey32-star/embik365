@@ -28,6 +28,7 @@ import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfi
 import { SECTIONS } from '../data/defaultSections';
 import { CYCLE_DAYS } from '../utils/dateCycle';
 import { testGitHubConnection, uploadPdfDirectlyToGitHub } from '../utils/githubSync';
+import { parseDocumentIntoDayEntries } from '../utils/documentParser';
 import { WysiwygEditor } from './WysiwygEditor';
 import { 
   getSavedQrCodes, 
@@ -93,6 +94,8 @@ export const AdminPanel: React.FC<Props> = ({
   const [fileTitle, setFileTitle] = useState<string>('');
   const [fileDescription, setFileDescription] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [autoParseDays, setAutoParseDays] = useState<boolean>(true);
+  const [uploadProgress, setUploadProgress] = useState<{ percent: number; stageMessage: string } | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error'; message: string; rawUrl?: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -182,6 +185,7 @@ export const AdminPanel: React.FC<Props> = ({
 
     setIsUploading(true);
     setUploadStatus(null);
+    setUploadProgress({ percent: 10, stageMessage: 'Inicjalizacja przesyłania i odczyt pliku...' });
 
     const targetDateObj = CYCLE_DAYS.find(d => d.dateKey === targetDateKey);
     const dayNumberVal = !isGlobalBook && targetDateObj ? targetDateObj.dayNumber : undefined;
@@ -190,6 +194,42 @@ export const AdminPanel: React.FC<Props> = ({
     // Detect file format
     const ext = selectedFile.name.split('.').pop()?.toLowerCase();
     const fileFormat: 'pdf' | 'epub' | 'docx' = ext === 'epub' ? 'epub' : (ext === 'docx' || ext === 'doc') ? 'docx' : 'pdf';
+
+    let parsedDaysCount = 0;
+
+    // Auto-detect & update day entries if enabled
+    if (autoParseDays) {
+      setUploadProgress({ percent: 20, stageMessage: 'Analizowanie nagłówków rozdziałów i dni (np. Dzień 1, Dzień 2...)...' });
+      try {
+        const parseRes = await parseDocumentIntoDayEntries(selectedFile, targetSection, (stageMessage, percent) => {
+          setUploadProgress({ percent, stageMessage });
+        });
+
+        if (parseRes.success && parseRes.totalDaysFound > 0) {
+          parsedDaysCount = parseRes.totalDaysFound;
+          setUploadProgress({ percent: 55, stageMessage: `Rozpoznano ${parsedDaysCount} wpisów. Zapisywanie wpisów dziennych w bazie...` });
+
+          for (const key of Object.keys(parseRes.entries)) {
+            const entry = parseRes.entries[key];
+            await onSaveEntryText(key, {
+              title: entry.title,
+              content: entry.content,
+              prayer: entry.prayer,
+              mystery: entry.mystery,
+              intention: entry.intention,
+              dayNumber: entry.dayNumber,
+              dateKey: entry.dateKey,
+              sectionId: targetSection
+            });
+          }
+          setUploadProgress({ percent: 75, stageMessage: `Pomyślnie zaktualizowano ${parsedDaysCount} wpisów. Przesyłanie pliku źródłowego...` });
+        }
+      } catch (parseErr) {
+        console.warn('Wykrywanie dni z pliku zostało pominięte:', parseErr);
+      }
+    }
+
+    setUploadProgress({ percent: 80, stageMessage: 'Wgrywanie dokumentu źródłowego i synchronizacja z GitHub...' });
 
     // 1. Try server upload with GitHub sync headers
     try {
@@ -218,11 +258,13 @@ export const AdminPanel: React.FC<Props> = ({
         if (data.file) {
           onUploadSuccess(data.file);
           const ghMsg = data.github?.synced
-            ? ' Plik został również pomyślnie wypchnięty do repozytorium GitHub!'
+            ? ' Plik i rozpoznane wpisy zostały pomyślnie wypchnięte do repozytorium GitHub i Cloudflare Pages!'
             : '';
+          const parsedMsg = parsedDaysCount > 0 ? ` Automatycznie rozpoznano i zaktualizowano ${parsedDaysCount} wpisów dziennych.` : '';
+          setUploadProgress({ percent: 100, stageMessage: 'Zakończono pomyślnie!' });
           setUploadStatus({
             type: 'success',
-            message: `Plik ${fileFormat.toUpperCase()} został pomyślnie wgrany.${ghMsg}`,
+            message: `Plik ${fileFormat.toUpperCase()} został pomyślnie wgrany.${parsedMsg}${ghMsg}`,
             rawUrl: data.github?.rawUrl || data.file.url
           });
           setSelectedFile(null);
@@ -265,9 +307,11 @@ export const AdminPanel: React.FC<Props> = ({
         if (ghRes.success) {
           newFileRecord.url = ghRes.rawUrl || '';
           onUploadSuccess(newFileRecord);
+          const parsedMsg = parsedDaysCount > 0 ? ` Automatycznie zaktualizowano ${parsedDaysCount} wpisów dziennych.` : '';
+          setUploadProgress({ percent: 100, stageMessage: 'Zakończono pomyślnie!' });
           setUploadStatus({
             type: 'success',
-            message: `Plik ${fileFormat.toUpperCase()} został pomyślnie dodany i wypchnięty do repozytorium GitHub!`,
+            message: `Plik ${fileFormat.toUpperCase()} został dodany do GitHub.${parsedMsg}`,
             rawUrl: ghRes.rawUrl
           });
           setSelectedFile(null);
@@ -698,6 +742,42 @@ export const AdminPanel: React.FC<Props> = ({
                   </div>
                 </div>
 
+                {/* Auto-detect & Parse Day Headings Checkbox */}
+                <div className="bg-amber-50/70 dark:bg-[#182130]/70 p-4 rounded-2xl border border-[#e2d5c5] dark:border-[#2a384e]">
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={autoParseDays}
+                      onChange={(e) => setAutoParseDays(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-[#cbb8a3] dark:border-[#33425b] accent-amber-600 cursor-pointer"
+                    />
+                    <div>
+                      <div className="font-bold text-xs text-[#2e2318] dark:text-amber-300">
+                        Automatycznie rozpoznaj i zaktualizuj wpisy dla poszczególnych dni
+                      </div>
+                      <div className="text-[11px] text-[#7d6b5b] dark:text-[#94a3b8] mt-0.5 leading-relaxed">
+                        System przeszuka nagłówki pliku (DOCX, ePUB, tekst) w poszukiwaniu dni (np. <i>Dzień 1</i>, <i>Dzień 2</i>, <i>Rozdział 1</i>) i przypisze wyodrębnioną treść bezpośrednio do kalendarza wybranej sekcji.
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Animated Progress Bar */}
+                {isUploading && uploadProgress && (
+                  <div className="bg-amber-500/10 dark:bg-amber-950/30 p-4 rounded-2xl border border-amber-500/30 space-y-2 animate-fade-in">
+                    <div className="flex justify-between items-center text-xs font-bold text-[#443527] dark:text-amber-300">
+                      <span>{uploadProgress.stageMessage}</span>
+                      <span className="font-mono text-amber-700 dark:text-amber-400 font-extrabold">{uploadProgress.percent}%</span>
+                    </div>
+                    <div className="w-full h-3 bg-[#e8ded1] dark:bg-[#1a2333] rounded-full overflow-hidden p-0.5 border border-[#d6c7b5]/50 dark:border-[#2b394e]">
+                      <div 
+                        className="h-full bg-gradient-to-r from-amber-600 to-amber-500 rounded-full transition-all duration-300 shadow-sm"
+                        style={{ width: `${uploadProgress.percent}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Submit button */}
                 <div className="pt-2">
                   <button
@@ -709,7 +789,7 @@ export const AdminPanel: React.FC<Props> = ({
                     {isUploading ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Trwa wgrywanie i synchronizacja z GitHub...</span>
+                        <span>Trwa wgrywanie ({uploadProgress?.percent || 0}%)...</span>
                       </>
                     ) : (
                       <>
