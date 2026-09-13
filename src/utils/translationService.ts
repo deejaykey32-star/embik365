@@ -618,47 +618,121 @@ export function saveTranslationToStorage(entryKey: string, lang: string, data: a
   }
 }
 
+export function splitTextIntoChunks(text: string, maxChunkLen: number = 400): string[] {
+  if (!text || text.length <= maxChunkLen) return [text];
+
+  const hasParagraphs = /<p[^>]*>[\s\S]*?<\/p>/i.test(text);
+  let rawBlocks: string[] = [];
+
+  if (hasParagraphs) {
+    const pMatches = text.match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+    if (pMatches && pMatches.length > 0) {
+      rawBlocks = pMatches.map(p => p.replace(/<[^>]*>/g, '').trim()).filter(Boolean);
+    }
+  }
+
+  if (rawBlocks.length === 0) {
+    rawBlocks = text.split(/\n+/).map(b => b.trim()).filter(Boolean);
+  }
+
+  if (rawBlocks.length === 0) {
+    rawBlocks = [text];
+  }
+
+  const finalChunks: string[] = [];
+
+  for (const block of rawBlocks) {
+    if (block.length <= maxChunkLen) {
+      finalChunks.push(block);
+    } else {
+      const sentences = block.split(/(?<=[.!?])\s+/);
+      let currentChunk = '';
+
+      for (const sentence of sentences) {
+        if (!currentChunk) {
+          currentChunk = sentence;
+        } else if ((currentChunk + ' ' + sentence).length <= maxChunkLen) {
+          currentChunk += ' ' + sentence;
+        } else {
+          finalChunks.push(currentChunk);
+          currentChunk = sentence;
+        }
+      }
+
+      if (currentChunk) {
+        if (currentChunk.length > maxChunkLen) {
+          for (let i = 0; i < currentChunk.length; i += maxChunkLen) {
+            finalChunks.push(currentChunk.substring(i, i + maxChunkLen));
+          }
+        } else {
+          finalChunks.push(currentChunk);
+        }
+      }
+    }
+  }
+
+  return finalChunks.filter(c => c.trim().length > 0);
+}
+
+async function translateSingleChunk(chunk: string, targetLang: string): Promise<string> {
+  if (!chunk || !chunk.trim() || targetLang === 'pl') return chunk;
+
+  const cleanText = chunk.trim();
+  if (cleanText.length === 0) return chunk;
+
+  // 1. Try MyMemory API with max 400 chars per query
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json() as any;
+      const trans = data.responseData?.translatedText;
+      if (
+        trans && 
+        typeof trans === 'string' &&
+        !trans.includes('QUERY LENGTH LIMIT EXCEEDED') &&
+        !trans.includes('MYMEMORY WARNING') &&
+        data.responseStatus === 200
+      ) {
+        return trans;
+      }
+    }
+  } catch {}
+
+  // 2. Try Google GTX API
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const json = await res.json() as any;
+      if (Array.isArray(json) && Array.isArray(json[0])) {
+        const joined = json[0].map((item: any) => item[0] || '').join('');
+        if (joined && !joined.includes('QUERY LENGTH LIMIT EXCEEDED')) {
+          return joined;
+        }
+      }
+    }
+  } catch {}
+
+  return chunk;
+}
+
 export async function translateTextWithFreeApi(text: string, targetLang: string): Promise<string> {
   if (!text || !text.trim() || targetLang === 'pl') return text;
 
   try {
     const hasHtml = /<[a-z][\s\S]*>/i.test(text);
-    const cleanText = text.replace(/<[^>]*>/g, ' ').substring(0, 1200).trim();
-    if (!cleanText) return text;
+    const chunks = splitTextIntoChunks(text, 400);
 
-    let translatedStr = '';
+    const translatedChunks = await Promise.all(
+      chunks.map(chunk => translateSingleChunk(chunk, targetLang))
+    );
 
-    // 1. Try MyMemory API
-    try {
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.responseData?.translatedText && !data.responseData.translatedText.includes('MYMEMORY WARNING')) {
-          translatedStr = data.responseData.translatedText;
-        }
-      }
-    } catch {}
-
-    // 2. Try Google GTX API
-    if (!translatedStr) {
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const json = await res.json();
-          if (Array.isArray(json) && Array.isArray(json[0])) {
-            translatedStr = json[0].map((item: any) => item[0] || '').join('');
-          }
-        }
-      } catch {}
+    if (hasHtml) {
+      return translatedChunks.map(c => `<p>${c}</p>`).join('');
+    } else {
+      return translatedChunks.join('\n\n');
     }
-
-    if (translatedStr) {
-      return hasHtml ? `<p>${translatedStr}</p>` : translatedStr;
-    }
-
-    return text;
   } catch (err) {
     console.warn('Free Translation API error:', err);
     return text;

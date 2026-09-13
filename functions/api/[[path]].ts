@@ -12,40 +12,118 @@ declare type PagesFunction<Env = unknown> = (context: {
   env: Env;
 }) => Promise<Response> | Response;
 
+function splitTextIntoChunks(text: string, maxChunkLen: number = 400): string[] {
+  if (!text || text.length <= maxChunkLen) return [text];
+
+  const hasParagraphs = /<p[^>]*>[\s\S]*?<\/p>/i.test(text);
+  let rawBlocks: string[] = [];
+
+  if (hasParagraphs) {
+    const pMatches = text.match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+    if (pMatches && pMatches.length > 0) {
+      rawBlocks = pMatches.map(p => p.replace(/<[^>]*>/g, '').trim()).filter(Boolean);
+    }
+  }
+
+  if (rawBlocks.length === 0) {
+    rawBlocks = text.split(/\n+/).map(b => b.trim()).filter(Boolean);
+  }
+
+  if (rawBlocks.length === 0) {
+    rawBlocks = [text];
+  }
+
+  const finalChunks: string[] = [];
+
+  for (const block of rawBlocks) {
+    if (block.length <= maxChunkLen) {
+      finalChunks.push(block);
+    } else {
+      const sentences = block.split(/(?<=[.!?])\s+/);
+      let currentChunk = '';
+
+      for (const sentence of sentences) {
+        if (!currentChunk) {
+          currentChunk = sentence;
+        } else if ((currentChunk + ' ' + sentence).length <= maxChunkLen) {
+          currentChunk += ' ' + sentence;
+        } else {
+          finalChunks.push(currentChunk);
+          currentChunk = sentence;
+        }
+      }
+
+      if (currentChunk) {
+        if (currentChunk.length > maxChunkLen) {
+          for (let i = 0; i < currentChunk.length; i += maxChunkLen) {
+            finalChunks.push(currentChunk.substring(i, i + maxChunkLen));
+          }
+        } else {
+          finalChunks.push(currentChunk);
+        }
+      }
+    }
+  }
+
+  return finalChunks.filter(c => c.trim().length > 0);
+}
+
 async function serverTranslateText(text: string, targetLang: string): Promise<string> {
   if (!text || !text.trim() || targetLang === 'pl') return text;
 
-  const cleanText = text.replace(/<[^>]*>/g, ' ').substring(0, 1500).trim();
-  if (!cleanText) return text;
+  const chunks = splitTextIntoChunks(text, 400);
 
-  // 1. Try MyMemory Free API
-  try {
-    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`);
-    if (res.ok) {
-      const data = await res.json() as any;
-      if (data?.responseData?.translatedText) {
-        return data.responseData.translatedText;
+  const translatedChunks = await Promise.all(
+    chunks.map(async (chunk) => {
+      const cleanText = chunk.trim();
+      if (!cleanText) return chunk;
+
+      // 1. Try MyMemory Free API
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=pl|${targetLang}`);
+        if (res.ok) {
+          const data = await res.json() as any;
+          const trans = data?.responseData?.translatedText;
+          if (
+            trans &&
+            typeof trans === 'string' &&
+            !trans.includes('QUERY LENGTH LIMIT EXCEEDED') &&
+            !trans.includes('MYMEMORY WARNING') &&
+            data?.responseStatus === 200
+          ) {
+            return trans;
+          }
+        }
+      } catch (e) {
+        console.warn('MyMemory server translate failed:', e);
       }
-    }
-  } catch (e) {
-    console.warn('MyMemory server translate failed:', e);
-  }
 
-  // 2. Fallback Google GTX API
-  try {
-    const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
-    const res = await fetch(gtxUrl);
-    if (res.ok) {
-      const json = await res.json() as any;
-      if (Array.isArray(json) && Array.isArray(json[0])) {
-        return json[0].map((item: any) => item[0] || '').join('');
+      // 2. Fallback Google GTX API
+      try {
+        const gtxUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(gtxUrl);
+        if (res.ok) {
+          const json = await res.json() as any;
+          if (Array.isArray(json) && Array.isArray(json[0])) {
+            const joined = json[0].map((item: any) => item[0] || '').join('');
+            if (joined && !joined.includes('QUERY LENGTH LIMIT EXCEEDED')) {
+              return joined;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Google GTX server translate failed:', e);
       }
-    }
-  } catch (e) {
-    console.warn('Google GTX server translate failed:', e);
-  }
 
-  return text;
+      return chunk;
+    })
+  );
+
+  const hasHtml = /<[a-z][\s\S]*>/i.test(text);
+  if (hasHtml) {
+    return translatedChunks.map(c => `<p>${c}</p>`).join('');
+  }
+  return translatedChunks.join('\n\n');
 }
 
 export const onRequest: PagesFunction<Env> = async (context) => {
