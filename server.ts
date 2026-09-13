@@ -568,31 +568,56 @@ app.delete('/api/uploads/:id', (req, res) => {
 
 // Online TTS synthesis endpoint (serves high quality neural speech for all languages)
 app.post('/api/tts', async (req, res) => {
-  const { text, lang, voiceId, rate } = req.body;
-  if (!text) {
+  const { text, lang } = req.body;
+  const rawText = (text || '').toString().trim();
+  if (!rawText) {
     return res.status(400).json({ error: 'Brak tekstu do syntezy mowy.' });
   }
 
-  const targetLang = lang || 'pl';
-  const cleanText = text.substring(0, 500).replace(/<[^>]*>/g, '').trim();
+  const targetLang = (lang || 'pl').toLowerCase();
+  
+  // Helper to split text for TTS API
+  const clean = rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const sentences = clean.split(/(?<=[.!?])\s+/);
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const s of sentences) {
+    if (!current) current = s;
+    else if ((current + ' ' + s).length <= 180) current += ' ' + s;
+    else { chunks.push(current); current = s; }
+  }
+  if (current) chunks.push(current);
+
+  const audioBuffers: Buffer[] = [];
 
   try {
-    // 1. Try Google Translate TTS API for natural online voices
-    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${encodeURIComponent(targetLang)}&client=tw-ob`;
-    const ttsRes = await fetch(ttsUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
+    for (const chunk of chunks.slice(0, 20)) {
+      try {
+        const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${encodeURIComponent(targetLang)}&client=tw-ob`;
+        const ttsRes = await fetch(ttsUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
 
-    if (ttsRes.ok) {
-      const arrayBuffer = await ttsRes.arrayBuffer();
+        if (ttsRes.ok) {
+          const arrayBuffer = await ttsRes.arrayBuffer();
+          audioBuffers.push(Buffer.from(arrayBuffer));
+        }
+      } catch (e) {
+        console.warn('Google Translate TTS fetch failed:', e);
+      }
+    }
+
+    if (audioBuffers.length > 0) {
+      const combined = Buffer.concat(audioBuffers);
       res.setHeader('Content-Type', 'audio/mpeg');
       res.setHeader('Cache-Control', 'public, max-age=86400');
-      return res.send(Buffer.from(arrayBuffer));
+      return res.send(combined);
     }
   } catch (e) {
-    console.warn('Google Translate TTS fetch failed:', e);
+    console.warn('TTS server processing failed:', e);
   }
 
   res.status(500).json({ error: 'Nie udało się wygenerować mowy online.' });

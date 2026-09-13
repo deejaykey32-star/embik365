@@ -266,6 +266,39 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   }
 }
 
+export function splitTextForTts(text: string, maxLen: number = 180): string[] {
+  if (!text) return [];
+  const clean = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (clean.length <= maxLen) return [clean];
+
+  const sentences = clean.split(/(?<=[.!?])\s+/);
+  const chunks: string[] = [];
+  let current = '';
+
+  for (const s of sentences) {
+    if (!current) {
+      current = s;
+    } else if ((current + ' ' + s).length <= maxLen) {
+      current += ' ' + s;
+    } else {
+      chunks.push(current);
+      current = s;
+    }
+  }
+
+  if (current) {
+    if (current.length > maxLen) {
+      for (let i = 0; i < current.length; i += maxLen) {
+        chunks.push(current.substring(i, i + maxLen));
+      }
+    } else {
+      chunks.push(current);
+    }
+  }
+
+  return chunks.filter(c => c.trim().length > 0);
+}
+
 async function playAudioBufferWithVoiceEffects(
   arrayBuffer: ArrayBuffer,
   voiceProfile: OnlineVoiceOption,
@@ -283,7 +316,7 @@ async function playAudioBufferWithVoiceEffects(
       audio.volume = config.volume;
       audio.playbackRate = config.rate;
       audio.onended = () => { if (onEnd) onEnd(); currentAudioElement = null; };
-      audio.onerror = (e) => { if (onError) onError(e); };
+      audio.onerror = (e) => { if (onError) onError(e); currentAudioElement = null; };
       currentAudioElement = audio;
       if (onStart) onStart();
       await audio.play();
@@ -291,6 +324,10 @@ async function playAudioBufferWithVoiceEffects(
     }
 
     const audioCtx = new AudioCtx();
+    if (audioCtx.state === 'suspended') {
+      await audioCtx.resume();
+    }
+
     const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
     const source = audioCtx.createBufferSource();
     source.buffer = decodedData;
@@ -328,7 +365,21 @@ async function playAudioBufferWithVoiceEffects(
     currentSourceNode = source;
     source.start(0);
   } catch (err) {
-    if (onError) onError(err);
+    console.warn('AudioContext playback error, using HTML Audio fallback:', err);
+    try {
+      const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.volume = config.volume;
+      audio.playbackRate = config.rate;
+      audio.onended = () => { if (onEnd) onEnd(); currentAudioElement = null; };
+      audio.onerror = (e) => { if (onError) onError(e); currentAudioElement = null; };
+      currentAudioElement = audio;
+      if (onStart) onStart();
+      await audio.play();
+    } catch (e2) {
+      if (onError) onError(e2);
+    }
   }
 }
 
@@ -342,31 +393,58 @@ function playLocalSpeechFallback(options: PlayLectorOptions): void {
   const targetLang = (overrideLang || config.lang || 'pl').toLowerCase();
   const targetGender: LectorGender = config.gender || 'male';
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = config.rate;
-  utterance.pitch = config.pitch * (targetGender === 'female' ? 1.15 : targetGender === 'male' ? 0.88 : 1.0);
-  utterance.volume = config.volume;
-
-  const chosenVoice = findBestLocalVoice(targetLang, targetGender, config.localVoiceURI);
-  if (chosenVoice) {
-    utterance.voice = chosenVoice;
-    utterance.lang = chosenVoice.lang;
-  } else {
-    utterance.lang = `${targetLang}-${targetLang.toUpperCase()}`;
+  const cleanText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!cleanText) {
+    if (onError) onError('Brak tekstu do przeczytania');
+    return;
   }
 
-  utterance.onstart = () => {
-    if (onStart) onStart();
+  const textChunks = splitTextForTts(cleanText, 180);
+  if (textChunks.length === 0) {
+    if (onError) onError('Brak tekstu');
+    return;
+  }
+
+  let chunkIndex = 0;
+
+  const speakNextChunk = () => {
+    if (chunkIndex >= textChunks.length) {
+      if (onEnd) onEnd();
+      return;
+    }
+
+    const currentChunkText = textChunks[chunkIndex];
+    chunkIndex++;
+
+    const utterance = new SpeechSynthesisUtterance(currentChunkText);
+    utterance.rate = config.rate;
+    utterance.pitch = config.pitch * (targetGender === 'female' ? 1.15 : targetGender === 'male' ? 0.88 : 1.0);
+    utterance.volume = config.volume;
+
+    const chosenVoice = findBestLocalVoice(targetLang, targetGender, config.localVoiceURI);
+    if (chosenVoice) {
+      utterance.voice = chosenVoice;
+      utterance.lang = chosenVoice.lang;
+    } else {
+      utterance.lang = `${targetLang}-${targetLang.toUpperCase()}`;
+    }
+
+    if (chunkIndex === 1 && onStart) {
+      onStart();
+    }
+
+    utterance.onend = () => {
+      speakNextChunk();
+    };
+
+    utterance.onerror = (err) => {
+      console.warn('Local speech chunk error:', err);
+      speakNextChunk();
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
-  utterance.onend = () => {
-    if (onEnd) onEnd();
-  };
-
-  utterance.onerror = (err) => {
-    if (onError) onError(err);
-  };
-
-  window.speechSynthesis.speak(utterance);
+  speakNextChunk();
 }
 
