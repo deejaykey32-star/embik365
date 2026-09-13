@@ -9,7 +9,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Wprowadzenie Droga365',
     displayLabel: 'Zeskanuj, aby otworzyć przewodnik info365',
     shortUrl: 'https://clck.ru/3Vnjrc',
-    fullUrl: 'https://widokinaraj.pl/#info365',
+    fullUrl: 'https://widokinaraj.pl/#/info365',
     sectionId: 'info365',
     category: 'Przewodnik',
     createdAt: '2026-01-01'
@@ -19,7 +19,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Widoki na Raj (WnR365)',
     displayLabel: 'Zeskanuj, aby czytać wpis dnia WnR365',
     shortUrl: 'https://clck.ru/3Vnjri',
-    fullUrl: 'https://widokinaraj.pl/#wnr365',
+    fullUrl: 'https://widokinaraj.pl/#/wnr365',
     sectionId: 'wnr365',
     category: 'Blog',
     createdAt: '2026-01-01'
@@ -29,7 +29,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Różaniec Historii Zbawienia (RHZ365)',
     displayLabel: 'Zeskanuj, aby odmówić Różaniec IN-LOVE',
     shortUrl: 'https://clck.ru/3Vnjrj',
-    fullUrl: 'https://widokinaraj.pl/#rhz365',
+    fullUrl: 'https://widokinaraj.pl/#/rhz365',
     sectionId: 'rhz365',
     category: 'Modlitwa',
     createdAt: '2026-01-01'
@@ -39,7 +39,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Biblia365 i Apokryfy',
     displayLabel: 'Zeskanuj, aby przeczytać dzisiejszy fragment Pisma',
     shortUrl: 'https://clck.ru/3Vnjrd',
-    fullUrl: 'https://widokinaraj.pl/#biblia365',
+    fullUrl: 'https://widokinaraj.pl/#/biblia365',
     sectionId: 'biblia365',
     category: 'Słowo Boże',
     createdAt: '2026-01-01'
@@ -49,7 +49,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'E-book Księga Widoki na Raj',
     displayLabel: 'Zeskanuj, aby otworzyć e-book WnR365',
     shortUrl: 'https://clck.ru/3Vnjrh',
-    fullUrl: 'https://widokinaraj.pl/#ebook_wnr',
+    fullUrl: 'https://widokinaraj.pl/#/ebook_wnr',
     sectionId: 'ebook_wnr',
     category: 'E-book',
     createdAt: '2026-01-01'
@@ -59,7 +59,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'E-book Modlitewnik RHZ365',
     displayLabel: 'Zeskanuj, aby otworzyć e-book różańcowy',
     shortUrl: 'https://clck.ru/3Vnjrf',
-    fullUrl: 'https://widokinaraj.pl/#ebook_rhz',
+    fullUrl: 'https://widokinaraj.pl/#/ebook_rhz',
     sectionId: 'ebook_rhz',
     category: 'E-book',
     createdAt: '2026-01-01'
@@ -69,7 +69,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'E-book Księga Słowa i Apokryfów',
     displayLabel: 'Zeskanuj, aby otworzyć e-book Biblii365',
     shortUrl: 'https://clck.ru/3Vnjrg',
-    fullUrl: 'https://widokinaraj.pl/#ebook_biblia',
+    fullUrl: 'https://widokinaraj.pl/#/ebook_biblia',
     sectionId: 'ebook_biblia',
     category: 'E-book',
     createdAt: '2026-01-01'
@@ -79,7 +79,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Biografia: Ja i Moja Żona (Bio365)',
     displayLabel: 'Zeskanuj, aby czytać wspomnienia małżeńskie',
     shortUrl: 'https://clck.ru/3Vnjre',
-    fullUrl: 'https://widokinaraj.pl/#bio365',
+    fullUrl: 'https://widokinaraj.pl/#/bio365',
     sectionId: 'bio365',
     category: 'Biografia',
     createdAt: '2026-01-01'

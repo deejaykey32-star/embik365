@@ -21,24 +21,65 @@ export const CalendarModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   const today = getTodayCycleDate();
-  const [activeMonth, setActiveMonth] = useState<number>(selectedDate.month);
 
-  const monthsList = [
-    { id: 12, label: 'Grudzień', sub: 'Początek cyklu 25 XII oraz finał 1-24 XII' },
-    { id: 1, label: 'Styczeń', sub: 'Dni 8 - 38' },
-    { id: 2, label: 'Luty', sub: 'Dni 39 - 67' },
-    { id: 3, label: 'Marzec', sub: 'Dni 68 - 98' },
-    { id: 4, label: 'Kwiecień', sub: 'Dni 99 - 128' },
-    { id: 5, label: 'Maj', sub: 'Dni 129 - 159' },
-    { id: 6, label: 'Czerwiec', sub: 'Dni 160 - 189' },
-    { id: 7, label: 'Lipiec', sub: 'Dni 190 - 220' },
-    { id: 8, label: 'Sierpień', sub: 'Dni 221 - 251' },
-    { id: 9, label: 'Wrzesień', sub: 'Dni 252 - 281' },
-    { id: 10, label: 'Październik', sub: 'Dni 282 - 312' },
-    { id: 11, label: 'Listopad', sub: 'Dni 313 - 342' },
+  const getInitialMonthKey = (date: CycleDate): string => {
+    if (date.month === 12) {
+      return date.day >= 25 ? 'december_start' : 'december_end';
+    }
+    const keys: Record<number, string> = {
+      1: 'january', 2: 'february', 3: 'march', 4: 'april', 5: 'may', 6: 'june',
+      7: 'july', 8: 'august', 9: 'september', 10: 'october', 11: 'november'
+    };
+    return keys[date.month] || 'december_start';
+  };
+
+  const [activeMonthKey, setActiveMonthKey] = useState<string>(() => getInitialMonthKey(selectedDate));
+
+  interface MonthOption {
+    id: string;
+    label: string;
+    sub: string;
+    title: string;
+    monthNum: number;
+    filter: (d: CycleDate) => boolean;
+    isStartDec?: boolean;
+    isEndDec?: boolean;
+  }
+
+  const monthsList: MonthOption[] = [
+    {
+      id: 'december_start',
+      label: 'Grudzień (25 – 31 XII)',
+      sub: 'Początek cyklu: Dni 1 – 7',
+      title: 'Grudzień • Początek cyklu (25 – 31 XII)',
+      monthNum: 12,
+      filter: d => d.month === 12 && d.day >= 25,
+      isStartDec: true
+    },
+    { id: 'january', label: 'Styczeń', sub: 'Dni 8 – 38', title: 'Styczeń', monthNum: 1, filter: d => d.month === 1 },
+    { id: 'february', label: 'Luty', sub: 'Dni 39 – 67', title: 'Luty', monthNum: 2, filter: d => d.month === 2 },
+    { id: 'march', label: 'Marzec', sub: 'Dni 68 – 98', title: 'Marzec', monthNum: 3, filter: d => d.month === 3 },
+    { id: 'april', label: 'Kwiecień', sub: 'Dni 99 – 128', title: 'Kwiecień', monthNum: 4, filter: d => d.month === 4 },
+    { id: 'may', label: 'Maj', sub: 'Dni 129 – 159', title: 'Maj', monthNum: 5, filter: d => d.month === 5 },
+    { id: 'june', label: 'Czerwiec', sub: 'Dni 160 – 189', title: 'Czerwiec', monthNum: 6, filter: d => d.month === 6 },
+    { id: 'july', label: 'Lipiec', sub: 'Dni 190 – 220', title: 'Lipiec', monthNum: 7, filter: d => d.month === 7 },
+    { id: 'august', label: 'Sierpień', sub: 'Dni 221 – 251', title: 'Sierpień', monthNum: 8, filter: d => d.month === 8 },
+    { id: 'september', label: 'Wrzesień', sub: 'Dni 252 – 281', title: 'Wrzesień', monthNum: 9, filter: d => d.month === 9 },
+    { id: 'october', label: 'Październik', sub: 'Dni 282 – 312', title: 'Październik', monthNum: 10, filter: d => d.month === 10 },
+    { id: 'november', label: 'Listopad', sub: 'Dni 313 – 342', title: 'Listopad', monthNum: 11, filter: d => d.month === 11 },
+    {
+      id: 'december_end',
+      label: 'Grudzień (1 – 24 XII)',
+      sub: 'Finał cyklu: Dni 343 – 366',
+      title: 'Grudzień • Finał cyklu (1 – 24 XII)',
+      monthNum: 12,
+      filter: d => d.month === 12 && d.day <= 24,
+      isEndDec: true
+    }
   ];
 
-  const daysInMonth = CYCLE_DAYS.filter(d => d.month === activeMonth);
+  const activeMonthItem = monthsList.find(m => m.id === activeMonthKey) || monthsList[0];
+  const daysInMonth = CYCLE_DAYS.filter(activeMonthItem.filter);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
@@ -89,17 +130,21 @@ export const CalendarModal: React.FC<Props> = ({
           {/* Months list */}
           <div className="md:col-span-4 border-r border-[#e7ded2] dark:border-[#212b3c] overflow-y-auto p-3 bg-[#f8f3eb] dark:bg-[#0f1420] space-y-1">
             <div className="text-[11px] uppercase tracking-wider font-bold text-[#8c7867] dark:text-[#94a3b8] px-2 py-1">
-              Miesiące
+              Miesiące (25 XII → 24 XII)
             </div>
             {monthsList.map(m => {
-              const isSelected = activeMonth === m.id;
-              const isTodayMonth = today.month === m.id;
+              const isSelected = activeMonthKey === m.id;
+              const isTodayMonth = (today.month === m.monthNum) && (
+                (m.id === 'december_start' && today.day >= 25) ||
+                (m.id === 'december_end' && today.day <= 24) ||
+                (m.monthNum !== 12)
+              );
 
               return (
                 <button
                   key={m.id}
                   id={`btn-month-${m.id}`}
-                  onClick={() => setActiveMonth(m.id)}
+                  onClick={() => setActiveMonthKey(m.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all flex items-center justify-between cursor-pointer ${
                     isSelected
                       ? 'bg-[#35281e] dark:bg-amber-600 text-white shadow-xs font-semibold'
@@ -133,21 +178,24 @@ export const CalendarModal: React.FC<Props> = ({
           <div className="md:col-span-8 p-4 sm:p-6 overflow-y-auto bg-[#faf7f2] dark:bg-[#0d121c]">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading-cinzel font-bold text-base text-[#382b20] dark:text-[#f3e8d2]">
-                Dni w miesiącu: {POLISH_MONTHS.find(m => m.id === activeMonth)?.nameNominative}
+                Dni w miesiącu: {activeMonthItem.title}
               </h3>
               <span className="text-xs text-[#7b6b5c] dark:text-[#94a3b8]">
-                {daysInMonth.length} dni w cyklu
+                {daysInMonth.length} dni w tej sekcji cyklu
               </span>
             </div>
 
-            {/* If December: explain the two parts (25-31 and 1-24) */}
-            {activeMonth === 12 && (
+            {/* December notice banner */}
+            {activeMonthItem.isStartDec && (
               <div className="mb-4 p-3 rounded-xl bg-[#f0e4d4] dark:bg-[#192233] border border-[#ddccba] dark:border-[#2a374d] text-xs text-[#614936] dark:text-[#cbd5e1]">
-                <div className="font-bold mb-1 dark:text-amber-300">Uwaga do Grudnia w cyklu rocznym:</div>
-                <div className="flex flex-col gap-1">
-                  <div>• <span className="font-semibold">25 - 31 grudnia:</span> Początek cyklu (Dni 1 do 7)</div>
-                  <div>• <span className="font-semibold">1 - 24 grudnia:</span> Zakończenie cyklu (Dni 343 do 366)</div>
-                </div>
+                <div className="font-bold mb-1 dark:text-amber-300">Początek Cyklu Rocznego (25 – 31 Grudnia):</div>
+                <div>Okres Narodzenia Pańskiego • Dni 1 do 7 w rocznym cyklu Droga365</div>
+              </div>
+            )}
+            {activeMonthItem.isEndDec && (
+              <div className="mb-4 p-3 rounded-xl bg-[#f0e4d4] dark:bg-[#192233] border border-[#ddccba] dark:border-[#2a374d] text-xs text-[#614936] dark:text-[#cbd5e1]">
+                <div className="font-bold mb-1 dark:text-amber-300">Zakończenie i Finał Cyklu Rocznego (1 – 24 Grudnia):</div>
+                <div>Okres Adwentu • Dni 343 do 366 zwieńczające roczną wędrówkę</div>
               </div>
             )}
 

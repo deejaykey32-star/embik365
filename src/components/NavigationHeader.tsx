@@ -11,10 +11,13 @@ import {
   Moon,
   GitBranch,
   Download,
-  Globe
+  Globe,
+  Link as LinkIcon,
+  Check
 } from 'lucide-react';
 import { CycleDate, AdminUser, AppTheme, SUPPORTED_LANGUAGES } from '../types';
 import { getUIText } from '../utils/translationService';
+import { copyCurrentPageUrl } from '../utils/slugRouter';
 
 interface Props {
   currentDate: CycleDate;
@@ -31,6 +34,7 @@ interface Props {
   onLanguageChange: (lang: string) => void;
   onOpenDownloadModal: () => void;
   onOpenLectorModal?: () => void;
+  onCopyLink?: () => void;
 }
 
 export const NavigationHeader: React.FC<Props> = ({
@@ -47,8 +51,20 @@ export const NavigationHeader: React.FC<Props> = ({
   currentLang,
   onLanguageChange,
   onOpenDownloadModal,
-  onOpenLectorModal
+  onOpenLectorModal,
+  onCopyLink
 }) => {
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopy = async () => {
+    if (onCopyLink) {
+      onCopyLink();
+    } else {
+      await copyCurrentPageUrl();
+    }
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2200);
+  };
 
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
@@ -163,6 +179,21 @@ export const NavigationHeader: React.FC<Props> = ({
                 </select>
               </div>
             </div>
+
+            {/* Copy Direct URL Slug Link Button */}
+            <button
+              onClick={handleCopy}
+              id="btn-copy-direct-link"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border transition-all shadow-xs cursor-pointer text-xs font-semibold ${
+                copiedLink
+                  ? 'bg-emerald-600 text-white border-emerald-700'
+                  : 'border-[#d6c7b5] dark:border-[#2a374f] bg-white dark:bg-[#161f2e] text-[#4d3d2e] dark:text-amber-300 hover:bg-[#f4ece1] dark:hover:bg-[#212d42]'
+              }`}
+              title="Kopiuj bezpośredni odnośnik URL do tej sekcji, dnia i podwidoku"
+            >
+              {copiedLink ? <Check className="w-4 h-4 text-white" /> : <LinkIcon className="w-4 h-4 text-[#8a5327] dark:text-amber-400" />}
+              <span className="hidden lg:inline">{copiedLink ? 'Skopiowano URL!' : 'Link'}</span>
+            </button>
 
             {/* Audio Lector Settings Button (Local / Online Voices) */}
             {onOpenLectorModal && (

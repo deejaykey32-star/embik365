@@ -16,7 +16,12 @@ import { LectorSettingsModal } from './components/LectorSettingsModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub } from './utils/githubSync';
 import { translateEntry } from './utils/translationService';
 
+import { parseUrlRoute, updateBrowserUrlSlug } from './utils/slugRouter';
+
 export default function App() {
+  // Parse initial URL slug route
+  const initialRoute = parseUrlRoute();
+
   // 1. Theme state: 'light' | 'dark'
   const [theme, setTheme] = useState<AppTheme>(() => {
     try {
@@ -55,16 +60,18 @@ export default function App() {
     } catch {}
   };
 
-  // 3. Current Section & Date (defaulting to info365 as first section and today's date in cycle starting Dec 25)
-  const [activeSectionId, setActiveSectionId] = useState<SectionId>('info365');
-  const [currentDate, setCurrentDate] = useState<CycleDate>(() => getTodayCycleDate());
+  // 3. Current Section & Date initialized from URL slug
+  const [activeSectionId, setActiveSectionId] = useState<SectionId>(initialRoute.sectionId);
+  const [currentDate, setCurrentDate] = useState<CycleDate>(initialRoute.date);
 
-  // 4. Modals state
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  // 4. Modals state initialized from URL slug subview
+  const [isCalendarOpen, setIsCalendarOpen] = useState(initialRoute.subview === 'kalendarz');
+  const [isAdminOpen, setIsAdminOpen] = useState(
+    initialRoute.subview === 'admin' || initialRoute.subview === 'panel' || initialRoute.subview === 'kody-qr'
+  );
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
-  const [isLectorModalOpen, setIsLectorModalOpen] = useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(initialRoute.subview === 'pobierz' || initialRoute.subview === 'download');
+  const [isLectorModalOpen, setIsLectorModalOpen] = useState(initialRoute.subview === 'lektor' || initialRoute.subview === 'lector');
 
   // 5. Admin Authentication state (defaulting to saved session if present)
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
@@ -150,6 +157,47 @@ export default function App() {
 
     fetchData();
   }, [githubConfig.useGitHubAsPrimarySource]);
+
+  // 9. Two-way URL Slug Synchronization
+  // A) Update browser URL hash slug whenever active section, date, subview, modal, or PDF viewer changes
+  useEffect(() => {
+    let subview: string | undefined = undefined;
+    if (isCalendarOpen) subview = 'kalendarz';
+    else if (isDownloadModalOpen) subview = 'pobierz';
+    else if (isLectorModalOpen) subview = 'lektor';
+    else if (isAdminOpen) subview = 'admin';
+
+    updateBrowserUrlSlug({
+      sectionId: activeSectionId,
+      date: currentDate,
+      subview,
+      pdfId: viewingPdf?.id
+    });
+  }, [activeSectionId, currentDate, isCalendarOpen, isAdminOpen, isDownloadModalOpen, isLectorModalOpen, viewingPdf]);
+
+  // B) Listen to browser URL hashchange and popstate events (direct link pasting / back / forward navigation)
+  useEffect(() => {
+    const handleRouteSync = () => {
+      const route = parseUrlRoute();
+      if (route.sectionId) setActiveSectionId(route.sectionId);
+      if (route.date) setCurrentDate(route.date);
+      setIsCalendarOpen(route.subview === 'kalendarz');
+      setIsAdminOpen(route.subview === 'admin' || route.subview === 'panel' || route.subview === 'kody-qr');
+      setIsDownloadModalOpen(route.subview === 'pobierz' || route.subview === 'download');
+      setIsLectorModalOpen(route.subview === 'lektor' || route.subview === 'lector');
+      if (route.pdfId && uploads.length > 0) {
+        const match = uploads.find(u => u.id === route.pdfId);
+        if (match) setViewingPdf(match);
+      }
+    };
+
+    window.addEventListener('hashchange', handleRouteSync);
+    window.addEventListener('popstate', handleRouteSync);
+    return () => {
+      window.removeEventListener('hashchange', handleRouteSync);
+      window.removeEventListener('popstate', handleRouteSync);
+    };
+  }, [uploads]);
 
   // Compute active section metadata
   const activeSection = getSectionById(activeSectionId);
