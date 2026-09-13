@@ -24,8 +24,11 @@ import {
   RefreshCw, 
   Monitor, 
   Upload, 
-  FileText
+  FileText,
+  Link2,
+  QrCode
 } from 'lucide-react';
+import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
 
 // Automatically import all files from src/pliki using Vite's import.meta.glob
 const plikiModules = (import.meta as any).glob('../pliki/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -509,6 +512,43 @@ export const MediaLibraryViewer: React.FC = () => {
     setTimeout(() => setCopiedUrl(null), 2500);
   };
 
+  const copyClckRuLink = async (item: PlikItem) => {
+    try {
+      const fullUrl = item.url.startsWith('/') 
+        ? `${window.location.origin}${item.url}`
+        : item.url;
+      const shortUrl = await shortenUrlViaApi(fullUrl);
+      await navigator.clipboard.writeText(shortUrl);
+      setCopiedUrl(shortUrl);
+      alert(`Skopiowano skrócony link clck.ru do schowka:\n${shortUrl}`);
+      setTimeout(() => setCopiedUrl(null), 2500);
+    } catch (err: any) {
+      alert(err.message || 'Błąd generowania linku clck.ru');
+    }
+  };
+
+  const createQrCodeForFile = async (item: PlikItem) => {
+    try {
+      const fullUrl = item.url.startsWith('/') 
+        ? `${window.location.origin}${item.url}`
+        : item.url;
+      const shortUrl = await shortenUrlViaApi(fullUrl);
+      const newItem = {
+        id: `qr_file_${Date.now()}`,
+        title: item.name,
+        displayLabel: `Zeskanuj, aby zobaczyć plik ${item.name}`,
+        shortUrl,
+        fullUrl,
+        category: 'Materiały src/pliki',
+        createdAt: new Date().toISOString()
+      };
+      upsertQrCode(newItem);
+      alert(`Pomyślnie dodano kod QR dla pliku "${item.name}" z linkiem clck.ru:\n${shortUrl}`);
+    } catch (err: any) {
+      alert(err.message || 'Błąd tworzenia kodu QR');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header & Tab Controls */}
@@ -697,9 +737,16 @@ export const MediaLibraryViewer: React.FC = () => {
                     )}
 
                     <button
+                      onClick={() => copyClckRuLink(item)}
+                      className="p-2.5 rounded-full bg-amber-700 hover:bg-amber-600 text-white shadow-lg transition-transform hover:scale-110 cursor-pointer"
+                      title="Skróć i kopiuj link clck.ru"
+                    >
+                      <Link2 className="w-5 h-5 text-amber-300" />
+                    </button>
+                    <button
                       onClick={() => copyToClipboard(item.url)}
                       className="p-2.5 rounded-full bg-gray-800 hover:bg-gray-700 text-white shadow-lg transition-transform hover:scale-110 cursor-pointer"
-                      title="Kopiuj link do pliku"
+                      title="Kopiuj bezposredni link"
                     >
                       {copiedUrl === item.url ? <Check className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
                     </button>
@@ -717,26 +764,48 @@ export const MediaLibraryViewer: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-gray-100 dark:border-[#1e293b]">
-                    <button
-                      onClick={() => {
-                        setSelectedTextureUrl(item.url);
-                        setActiveMediaTab('3d');
-                      }}
-                      className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <Box className="w-3.5 h-3.5" />
-                      <span>Użyj w 3D</span>
-                    </button>
+                  <div className="mt-3 flex flex-col gap-2 pt-2 border-t border-gray-100 dark:border-[#1e293b]">
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => copyClckRuLink(item)}
+                        className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        title="Skróć ten plik przez clck.ru i skopiuj"
+                      >
+                        <Link2 className="w-3.5 h-3.5" />
+                        <span>Kopiuj clck.ru</span>
+                      </button>
 
-                    <a
-                      href={item.url}
-                      download={item.name}
-                      className="text-[11px] font-semibold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Pobierz</span>
-                    </a>
+                      <button
+                        onClick={() => createQrCodeForFile(item)}
+                        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        title="Dodaj ten plik do Bazy Kodów QR"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>Kod QR</span>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between opacity-80 pt-1 border-t border-dashed border-gray-200 dark:border-gray-800">
+                      <button
+                        onClick={() => {
+                          setSelectedTextureUrl(item.url);
+                          setActiveMediaTab('3d');
+                        }}
+                        className="text-[10px] font-medium text-stone-600 dark:text-stone-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Box className="w-3 h-3" />
+                        <span>Użyj w 3D</span>
+                      </button>
+
+                      <a
+                        href={item.url}
+                        download={item.name}
+                        className="text-[10px] font-medium text-stone-600 dark:text-stone-400 hover:underline flex items-center gap-1"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Pobierz</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1097,9 +1166,17 @@ export const MediaLibraryViewer: React.FC = () => {
                   <RotateCw className="w-4 h-4" />
                 </button>
                 <button
+                  onClick={() => copyClckRuLink(selectedImage)}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  title="Kopiuj skrócony link clck.ru"
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  <span>Kopiuj clck.ru</span>
+                </button>
+                <button
                   onClick={() => copyToClipboard(selectedImage.url)}
                   className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
-                  title="Kopiuj URL"
+                  title="Kopiuj bezpośredni URL"
                 >
                   {copiedUrl === selectedImage.url ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 </button>

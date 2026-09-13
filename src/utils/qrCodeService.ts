@@ -124,38 +124,43 @@ export function saveAllQrCodes(codes: QrCodeItem[]): void {
  * Shorten URL via direct free API (clck.ru / is.gd) with 0 ads and instant 301/302 redirection.
  */
 export async function shortenUrlViaApi(longUrl: string): Promise<string> {
-  const cleanUrl = longUrl.trim();
+  let cleanUrl = longUrl.trim();
   if (!cleanUrl) return 'https://widokinaraj.pl';
 
-  // 1. Try local Express / Cloudflare Worker backend API (/api/shorten - Server-side fetch with NO CORS restrictions!)
+  // Normalize relative paths (e.g. /assets/RGB-model-1-UU-G6evC.jpg) to full URLs for clck.ru API
+  if (cleanUrl.startsWith('/')) {
+    const origin = typeof window !== 'undefined' && window.location?.origin 
+      ? window.location.origin 
+      : 'https://widokinaraj.pl';
+    cleanUrl = `${origin}${cleanUrl}`;
+  } else if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+
+  // 1. Direct clck.ru API call (fastest)
   try {
-    const slug = cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
-    const res = await fetch('/api/shorten', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: cleanUrl, slug })
-    });
+    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.trim().startsWith('http')) {
+        return text.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('Direct clck.ru API fetch failed, trying backend /api/shorten:', err);
+  }
+
+  // 2. Try backend API (/api/shorten - Server-side fetch with NO CORS restrictions!)
+  try {
+    const res = await fetch(`/api/shorten?url=${encodeURIComponent(cleanUrl)}`);
     if (res.ok) {
       const data = await res.json();
-      if (data.shortUrl) {
+      if (data.shortUrl && data.shortUrl.startsWith('http')) {
         return data.shortUrl;
       }
     }
   } catch (err) {
     console.warn('/api/shorten endpoint failed, trying client fallbacks:', err);
-  }
-
-  // 2. Direct clck.ru API call (if client CORS allows)
-  try {
-    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.startsWith('http')) {
-        return text.trim();
-      }
-    }
-  } catch (err) {
-    console.warn('Direct clck.ru API fetch failed:', err);
   }
 
   // 3. Fallback: is.gd API call
@@ -172,11 +177,6 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     console.warn('Direct is.gd API fetch failed:', err);
   }
 
-  // 4. Guaranteed Fallback: Never throw an error that breaks QR creation! Return clean internal short URL or cleanUrl
-  const slug = cleanUrl.split('#').pop() || cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 12);
-  if (slug && slug.length > 0 && !slug.includes('/')) {
-    return `https://widokinaraj.pl/r/${slug.toLowerCase()}`;
-  }
   return cleanUrl;
 }
 
