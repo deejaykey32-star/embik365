@@ -148,7 +148,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
   const [introHtml, setIntroHtml] = useState<string>(() => {
     return localStorage.getItem('drogowskazy_info365_intro') || `
       <p style="font-size: 18px; line-height: 1.7; margin-bottom: 16px;">
-        Witaj w <strong>Drogowskazach 365</strong> – kompleksowej przestrzeni duchowej i czytelniczej, w której wiara łączy się z literaturą, modlitwą różańcową, Pismem Świętym oraz osobistym świadectwem życia.
+        Witaj w <strong>Droga365</strong> – kompleksowej przestrzeni duchowej i czytelniczej, w której wiara łączy się z literaturą, modlitwą różańcową, Pismem Świętym oraz osobistym świadectwem życia.
       </p>
       <p style="font-size: 16px; line-height: 1.7; margin-bottom: 16px;">
         Roczny cykl aplikacji rozpoczyna się <strong>25 grudnia</strong> (w Uroczystość Narodzenia Pańskiego) i biegnie nieprzerwanie do <strong>24 grudnia</strong> (Wigilii). Każdego dnia otrzymujesz nową porcję strawy duchowej, rozważań, modlitw i świadectwa.
@@ -217,7 +217,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-heading-cinzel font-bold text-[#3a2717] dark:text-[#f8fafc] mb-3 leading-tight">
-            Drogowskazy 365
+            Droga365
           </h1>
           <h2 className="text-base sm:text-lg font-serif-book italic text-[#785b3a] dark:text-[#cbd5e1] mb-6">
             Roczny cykl od 25 grudnia do 24 grudnia • 7 Dzieł w Jednym Miejscu

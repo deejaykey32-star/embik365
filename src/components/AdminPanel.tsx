@@ -31,6 +31,7 @@ import { testGitHubConnection, uploadPdfDirectlyToGitHub } from '../utils/github
 import { parseDocumentIntoDayEntries } from '../utils/documentParser';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { WysiwygEditor } from './WysiwygEditor';
+import { MediaLibraryViewer } from './MediaLibraryViewer';
 import { 
   getSavedQrCodes, 
   generateAndDownloadQrBadgePng, 
@@ -86,8 +87,8 @@ export const AdminPanel: React.FC<Props> = ({
 }) => {
   if (!isOpen) return null;
 
-  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes'
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes'>('upload');
+  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library'
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library'>('upload');
 
   // QR Code Database state
   const [adminQrCodes, setAdminQrCodes] = useState<QrCodeItem[]>(() => getSavedQrCodes());
@@ -615,6 +616,19 @@ export const AdminPanel: React.FC<Props> = ({
             <QrCode className="w-4 h-4" />
             <span>Baza Kodów QR & PNG</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('media_library')}
+            id="tab-admin-media"
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'media_library'
+                ? 'border-[#8c572b] dark:border-amber-400 text-[#8c572b] dark:text-amber-400 bg-white/60 dark:bg-[#161c28]'
+                : 'border-transparent text-[#6e5d4d] dark:text-[#94a3b8] hover:text-[#382b20] dark:hover:text-white'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Zasoby (src/pliki) & 2D/3D / HTML</span>
+          </button>
         </div>
 
         {/* Tab Content Body */}
@@ -849,7 +863,7 @@ export const AdminPanel: React.FC<Props> = ({
                   <span>Repozytorium GitHub jako Nadrzędne Źródło Danych</span>
                 </div>
                 <p className="text-xs text-[#6e5d4d] dark:text-[#cbd5e1] leading-relaxed">
-                  Aplikacja Drogowskazy 365 jest statycznym projektem (Vite + React) przygotowanym do hostingu na <strong>Cloudflare Pages</strong>. Każde wgranie pliku PDF lub edycja wpisu może bezpośrednio aktualizować pliki w repozytorium GitHub, a Cloudflare Pages pobiera i serwuje aktualne dane!
+                  Aplikacja Droga365 jest statycznym projektem (Vite + React) przygotowanym do hostingu na <strong>Cloudflare Pages</strong>. Każde wgranie pliku PDF lub edycja wpisu może bezpośrednio aktualizować pliki w repozytorium GitHub, a Cloudflare Pages pobiera i serwuje aktualne dane!
                 </p>
               </div>
 
@@ -933,7 +947,7 @@ export const AdminPanel: React.FC<Props> = ({
                       GitHub Personal Access Token (PAT)
                     </label>
                     <a
-                      href="https://github.com/settings/tokens/new?scopes=repo&description=Drogowskazy365"
+                      href="https://github.com/settings/tokens/new?scopes=repo&description=Droga365"
                       target="_blank"
                       rel="noreferrer"
                       className="text-[11px] text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1"
@@ -1256,7 +1270,7 @@ export const AdminPanel: React.FC<Props> = ({
                 <div>
                   <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-[#2a2016] dark:text-[#f3e8d2] flex items-center gap-2">
                     <QrCode className="w-5 h-5 text-amber-700 dark:text-amber-400" />
-                    <span>Baza Kodów QR Drogowskazy 365</span>
+                    <span>Baza Kodów QR Droga365</span>
                   </h3>
                   <p className="text-xs text-[#786756] dark:text-[#94a3b8]">
                     Kody QR w formie grafiki z opcją pobrania jako wysokiej jakości plik PNG. Krótki adres Url jest przypisany na stałe, a pełny adres docelowy może być zmieniany dynamicznie w dowolnej chwili.
@@ -1378,7 +1392,7 @@ export const AdminPanel: React.FC<Props> = ({
                     <label className="block font-bold text-gray-700 dark:text-gray-300 mb-1">Nazwa pod kodem (Wyświetlana)</label>
                     <input 
                       id="new-qr-label" 
-                      placeholder="np. Skanuj: Drogowskazy365" 
+                      placeholder="np. Skanuj: Droga365" 
                       className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e]"
                     />
                   </div>
@@ -1459,6 +1473,9 @@ export const AdminPanel: React.FC<Props> = ({
               </div>
             </div>
           )}
+
+          {/* TAB 6: MEDIA LIBRARY (src/pliki), VIDEO, HTML LIVE & 2D/3D */}
+          {activeTab === 'media_library' && <MediaLibraryViewer />}
         </div>
       </div>
     </div>

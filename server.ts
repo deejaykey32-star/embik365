@@ -199,7 +199,7 @@ app.post('/api/github/push-local', async (req, res) => {
     await execPromise('git config user.email "kuta.dominik@gmail.com"').catch(() => {});
     await execPromise('git branch -M ' + targetBranch).catch(() => {});
     await execPromise('git add -A').catch(() => {});
-    await execPromise('git commit -m "chore: aktualizacja plików Drogowskazy 365 z Google Antigravity"').catch(() => {});
+    await execPromise('git commit -m "chore: aktualizacja plików Droga365 z Google Antigravity"').catch(() => {});
 
     // Try set-url or add remote
     try {
@@ -501,7 +501,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Drogowskazy 365 Server running on http://0.0.0.0:${PORT}`);
+    console.log(`Droga365 Server running on http://0.0.0.0:${PORT}`);
   });
 }
 

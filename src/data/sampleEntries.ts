@@ -5,7 +5,7 @@ export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
   'info365-12-25': {
     title: 'Wprowadzenie: Narodzenie Pańskie i Początek Cyklu',
     subtitle: 'info365 • Dzień 1 cyklu rocznego (25 grudnia)',
-    content: `Witaj w rocznym cyklu Drogowskazy 365. Dziś, 25 grudnia, w Boże Narodzenie, rozpoczynamy naszą wędrówkę przez 7 wielkich dzieł: Widoki na Raj (WnR365), Różaniec Historii Zbawienia (RHZ365), Biblię365 z Apokryfami oraz e-booki w formie flipbooka i biografię małżeńską Bio365.`,
+    content: `Witaj w rocznym cyklu Droga365. Dziś, 25 grudnia, w Boże Narodzenie, rozpoczynamy naszą wędrówkę przez 7 wielkich dzieł: Widoki na Raj (WnR365), Różaniec Historii Zbawienia (RHZ365), Biblię365 z Apokryfami oraz e-booki w formie flipbooka i biografię małżeńską Bio365.`,
     quote: '"Początek Ewangelii Jezusa Chrystusa, Syna Bożego." (Mk 1, 1)',
     prayer: 'Błogosław, Panie, wszystkim czytelnikom i pielgrzymom tej drogi.'
   },
@@ -160,9 +160,9 @@ function generateThematicEntry(sectionId: SectionId, cycleDate: CycleDate): Sect
         sectionId,
         dateKey: cycleDate.dateKey,
         dayNumber,
-        title: `Przewodnik Drogowskazy 365: Dzień ${dayNumber}`,
+        title: `Przewodnik Droga365: Dzień ${dayNumber}`,
         subtitle: `${displayDate} • ${season}`,
-        content: `Dziś jest dzień ${dayNumber} w rocznym cyklu czytelniczym Drogowskazy 365. Zachęcamy do zapoznania się z dzisiejszymi rozważaniami w blogu Widoki na Raj (WnR365), modlitwą różańcową (RHZ365), czytaniem Pisma Świętego (Biblia365) lub lekturą wybranego e-booka.`,
+        content: `Dziś jest dzień ${dayNumber} w rocznym cyklu czytelniczym Droga365. Zachęcamy do zapoznania się z dzisiejszymi rozważaniami w blogu Widoki na Raj (WnR365), modlitwą różańcową (RHZ365), czytaniem Pisma Świętego (Biblia365) lub lekturą wybranego e-booka.`,
         quote: `"Twoje słowo jest lampą dla moich stóp i światłem na mojej ścieżce." (Ps 119, 105)`,
         prayer: `Panie, prowadź nas bezpiecznie przez każdy dzień tego roku.`
       };

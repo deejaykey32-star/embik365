@@ -7,7 +7,7 @@ export const SECTIONS: SectionMeta[] = [
     shortTitle: 'Wprowadzenie & Przewodnik',
     subtitle: 'Wstęp, opis sekcji i szybki dostęp do wszystkich tomów',
     type: 'info',
-    description: 'Wprowadzenie do rocznego cyklu Drogowskazy 365, opisy każdego z 7 tomów z ilustracjami i bezpośrednimi odnośnikami.',
+    description: 'Wprowadzenie do rocznego cyklu Droga365, opisy każdego z 7 tomów z ilustracjami i bezpośrednimi odnośnikami.',
     badge: 'Przewodnik 365',
     icon: 'Compass',
     accentColor: '#7c3aed', // violet-600

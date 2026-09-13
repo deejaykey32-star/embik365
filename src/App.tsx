@@ -368,7 +368,7 @@ export default function App() {
       <footer className="bg-[#f2ece3] dark:bg-[#0a0f18] border-t border-[#e2d5c7] dark:border-[#1d2636] py-6 px-4 text-center text-xs text-[#7b6b5c] dark:text-[#8b949e] transition-colors">
         <div className="max-w-4xl mx-auto space-y-1.5">
           <p className="font-heading-cinzel font-semibold text-[#423325] dark:text-[#f0f6fc]">
-            Drogowskazy 365 • info365 • WnR365 • RHZ365 • Biblia365 • Bio365
+            Droga365 • info365 • WnR365 • RHZ365 • Biblia365 • Bio365
           </p>
           <p>
             Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span> • Administrator: Dominik Kuta

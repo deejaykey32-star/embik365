@@ -3,7 +3,7 @@ import { SectionEntry, SectionMeta, SUPPORTED_LANGUAGES } from '../types';
 // UI Dictionary for all supported languages
 export const UI_TRANSLATIONS: Record<string, Record<string, string>> = {
   pl: {
-    appTitle: 'Drogowskazy 365',
+    appTitle: 'Droga365',
     tagline: 'Codzienny Przewodnik Duchowy i Księga Życia',
     today: 'Dzisiaj',
     readToday: 'Czytaj dzisiaj',

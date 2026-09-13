@@ -67,7 +67,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
 
       const safeSection = meta.id.replace(/[^a-zA-Z0-9]/g, '_');
       const safeDate = (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
-      const baseFilename = `Drogowskazy365_${safeSection}_${safeDate}_${exportLang}`;
+      const baseFilename = `Droga365_${safeSection}_${safeDate}_${exportLang}`;
 
       if (selectedFormat === 'pdf') {
         const blob = await generatePodPdf(entryToExport, meta, {

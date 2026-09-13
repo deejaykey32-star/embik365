@@ -61,7 +61,7 @@ export const NavigationHeader: React.FC<Props> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-heading-cinzel font-bold text-lg sm:text-2xl text-[#2a221b] dark:text-[#f3e8d2] tracking-wide">
-                  Drogowskazy 365
+                  Droga365
                 </h1>
                 <span className="hidden md:inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-[#eee4d6] dark:bg-[#1a2333] text-[#785434] dark:text-amber-300 border border-[#dac7b3] dark:border-[#2a374f]">
                   25 XII - 24 XII

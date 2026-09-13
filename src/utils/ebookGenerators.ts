@@ -80,7 +80,7 @@ export async function generatePodPdf(
   doc.setTextColor(80, 80, 80);
   doc.text(meta.name.toUpperCase(), pageWidth / 2, 70, { align: 'center' });
   doc.setFontSize(10);
-  doc.text('DROGOWSKAZY 365', pageWidth / 2, 80, { align: 'center' });
+  doc.text('DROGA365', pageWidth / 2, 80, { align: 'center' });
 
   // PAGE 2: Verso (pusta / dedykacja)
   doc.addPage();
@@ -131,9 +131,9 @@ export async function generatePodPdf(
     `Copyright © ${new Date().getFullYear()} by ${author}`,
     'Wszelkie prawa zastrzeżone.',
     '',
-    'Tytuł dzieła: Drogowskazy 365 – ' + meta.name,
+    'Tytuł dzieła: Droga365 – ' + meta.name,
     'Autor i opracowanie tekstu: ' + author,
-    'Projekt typograficzny i skład POD: System Drogowskazy 365',
+    'Projekt typograficzny i skład POD: System Droga365',
     '',
     'Wydanie I – Druk na Żądanie (Print-On-Demand)',
     'Dystrybucja i publikacja: Amazon KDP, Empik Selfpublishing, Legimi, Ridero.',
@@ -414,7 +414,7 @@ export async function generatePodDocx(
       <w:pPr><w:spacing w:after="100"/><w:jc w:val="left"/></w:pPr>
       <w:r>
         <w:rPr><w:sz w:val="18"/><w:color w:val="777777"/></w:rPr>
-        <w:t>Drogowskazy 365 – Wydanie I Print-on-Demand (POD).</w:t>
+        <w:t>Droga365 – Wydanie I Print-on-Demand (POD).</w:t>
       </w:r>
     </w:p>
     <w:p>
@@ -577,7 +577,7 @@ p.first {
     <dc:creator>${author}</dc:creator>
     <dc:identifier id="BookID">${bookId}</dc:identifier>
     <dc:language>${options.language || 'pl'}</dc:language>
-    <dc:publisher>Drogowskazy 365 – Dominik Kuta</dc:publisher>
+    <dc:publisher>Droga365 – Dominik Kuta</dc:publisher>
     <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta>
   </metadata>
   <manifest>

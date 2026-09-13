@@ -7,6 +7,11 @@ interface Env {
   ASSETS?: { fetch: (req: Request) => Promise<Response> };
 }
 
+declare type PagesFunction<Env = unknown> = (context: {
+  request: Request;
+  env: Env;
+}) => Promise<Response> | Response;
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);

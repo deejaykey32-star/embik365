@@ -6,7 +6,7 @@ const STORAGE_KEY = 'drogowskazy_qr_database';
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
   {
     id: 'qr_info365',
-    title: 'Wprowadzenie Drogowskazy 365',
+    title: 'Wprowadzenie Droga365',
     displayLabel: 'Zeskanuj, aby otworzyć przewodnik info365',
     shortUrl: 'https://clck.ru/3Vnjrc',
     fullUrl: 'https://widokinaraj.pl/#info365',
@@ -303,7 +303,7 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
 
   ctx.fillStyle = '#6b5847';
   ctx.font = 'italic 15px "Newsreader", Georgia, serif';
-  ctx.fillText('Drogowskazy 365 • Zeskanuj smartfonem', width / 2, 100);
+  ctx.fillText('Droga365 • Zeskanuj smartfonem', width / 2, 100);
 
   // Horizontal divider
   ctx.strokeStyle = '#e7ddd1';
