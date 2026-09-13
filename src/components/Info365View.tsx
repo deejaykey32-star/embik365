@@ -36,7 +36,7 @@ import {
   uploadImageFileToServer,
   SECTION_ICONS_MAP 
 } from '../utils/homePageConfig';
-import { getUIText } from '../utils/translationService';
+import { getUIText, translateTextWithFreeApi } from '../utils/translationService';
 
 interface Info365ViewProps {
   onSelectSection: (id: SectionId) => void;
@@ -56,6 +56,8 @@ export const Info365View: React.FC<Info365ViewProps> = ({
   currentLang = 'pl'
 }) => {
   const [config, setConfig] = useState<HomePageConfig>(() => getHomePageConfig());
+  const [translatedConfig, setTranslatedConfig] = useState<HomePageConfig | null>(null);
+  const [isTranslatingPage, setIsTranslatingPage] = useState<boolean>(false);
 
   useEffect(() => {
     const handleUpdate = (e: any) => {
@@ -68,6 +70,67 @@ export const Info365View: React.FC<Info365ViewProps> = ({
     window.addEventListener('drogowskazy_home_config_updated', handleUpdate);
     return () => window.removeEventListener('drogowskazy_home_config_updated', handleUpdate);
   }, []);
+
+  // Live on-the-fly translation effect for Home Page (Info365)
+  useEffect(() => {
+    if (currentLang === 'pl') {
+      setTranslatedConfig(null);
+      setIsTranslatingPage(false);
+      return;
+    }
+
+    let isMounted = true;
+    setIsTranslatingPage(true);
+
+    const translatePageConfig = async () => {
+      try {
+        const [tHeroTitle, tHeroSub, tIntro] = await Promise.all([
+          translateTextWithFreeApi(config.heroTitle, currentLang),
+          translateTextWithFreeApi(config.heroSubtitle, currentLang),
+          translateTextWithFreeApi(config.introHtml, currentLang)
+        ]);
+
+        const tShowcases = await Promise.all(
+          config.showcases.map(async (s) => {
+            const [tName, tBadge, tShort, tFull] = await Promise.all([
+              translateTextWithFreeApi(s.name, currentLang),
+              translateTextWithFreeApi(s.badge, currentLang),
+              translateTextWithFreeApi(s.shortDesc, currentLang),
+              translateTextWithFreeApi(s.fullDesc, currentLang)
+            ]);
+            return {
+              ...s,
+              name: tName.replace(/<[^>]*>/g, '').trim() || s.name,
+              badge: tBadge.replace(/<[^>]*>/g, '').trim() || s.badge,
+              shortDesc: tShort.replace(/<[^>]*>/g, '').trim() || s.shortDesc,
+              fullDesc: tFull || s.fullDesc
+            };
+          })
+        );
+
+        if (isMounted) {
+          setTranslatedConfig({
+            heroTitle: tHeroTitle.replace(/<[^>]*>/g, '').trim() || config.heroTitle,
+            heroSubtitle: tHeroSub.replace(/<[^>]*>/g, '').trim() || config.heroSubtitle,
+            introHtml: tIntro || config.introHtml,
+            showcases: tShowcases
+          });
+          setIsTranslatingPage(false);
+        }
+      } catch (err) {
+        console.warn('Page translation failed:', err);
+        if (isMounted) setIsTranslatingPage(false);
+      }
+    };
+
+    translatePageConfig();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [config, currentLang]);
+
+  const activeConfig = (currentLang !== 'pl' && translatedConfig) ? translatedConfig : config;
 
   // Modal editing state for Intro WYSIWYG
   const [editingIntro, setEditingIntro] = useState<boolean>(false);
@@ -238,16 +301,16 @@ export const Info365View: React.FC<Info365ViewProps> = ({
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-heading-cinzel font-bold text-[#3a2717] dark:text-[#f8fafc] mb-3 leading-tight">
-            {config.heroTitle}
+            {activeConfig.heroTitle}
           </h1>
           <h2 className="text-base sm:text-lg font-serif-book italic text-[#785b3a] dark:text-[#cbd5e1] mb-6">
-            {config.heroSubtitle}
+            {activeConfig.heroSubtitle}
           </h2>
 
           {/* Rendered Intro HTML */}
           <div 
             className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200"
-            dangerouslySetInnerHTML={{ __html: config.introHtml }}
+            dangerouslySetInnerHTML={{ __html: activeConfig.introHtml }}
           />
 
           {/* Admin toolbar inside Hero Banner */}
@@ -305,7 +368,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
 
       {/* Grid of 7 Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {config.showcases.map((section) => {
+        {activeConfig.showcases.map((section) => {
           const IconComponent = SECTION_ICONS_MAP[section.id] || Compass;
           return (
             <div

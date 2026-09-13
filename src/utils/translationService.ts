@@ -469,6 +469,96 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Liber Rosarium Salutis' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Liber Sacra Scriptura' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiographia' }
+  },
+  pt: {
+    info365: { name: 'info365', shortTitle: 'Guia e Introdução' },
+    wnr365: { name: 'WnR365', shortTitle: 'Vistas do Paraíso' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Terço da História da Salvação' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Sagrada Escritura e Apócrifos' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Livro Vistas do Paraíso' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Livro Terço da Salvação' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Livro Sagrada Escritura' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografia' }
+  },
+  uk: {
+    info365: { name: 'info365', shortTitle: 'Провідник та Вступ' },
+    wnr365: { name: 'WnR365', shortTitle: 'Види на Рай' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Вервиця Історії Спасіння' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Святе Письмо та Апокрифи' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Книга Види на Рай' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Книга Вервиця Спасіння' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Книга Святе Письмо' },
+    bio365: { name: 'Bio365', shortTitle: 'Автобіографія' }
+  },
+  cs: {
+    info365: { name: 'info365', shortTitle: 'Průvodce a Úvod' },
+    wnr365: { name: 'WnR365', shortTitle: 'Pohledy na Ráj' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Růženec Historie Spásy' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Písmo Svaté a Apokryfy' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Kniha Pohledy na Ráj' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Kniha Růženec Spásy' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Kniha Písmo Svaté' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografie' }
+  },
+  sk: {
+    info365: { name: 'info365', shortTitle: 'Sprievodca a Úvod' },
+    wnr365: { name: 'WnR365', shortTitle: 'Pohľady na Raj' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Ruženec Histórie Spásy' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Písmo Sväté a Apokryfy' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Kniha Pohľady na Raj' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Kniha Ruženec Spásy' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Kniha Písmo Sväté' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografia' }
+  },
+  hu: {
+    info365: { name: 'info365', shortTitle: 'Útmutató és Bevezetés' },
+    wnr365: { name: 'WnR365', shortTitle: 'Kilátás a Paradicsomra' },
+    rhz365: { name: 'RHZ365', shortTitle: 'A Üdvösségtörténet Rózsafüzére' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Szentírás és Apokrifek' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Könyv Kilátás a Paradicsomra' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Könyv Üdvösség Rózsafüzére' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Könyv Szentírás' },
+    bio365: { name: 'Bio365', shortTitle: 'Önéletrajz' }
+  },
+  ro: {
+    info365: { name: 'info365', shortTitle: 'Ghid și Introducere' },
+    wnr365: { name: 'WnR365', shortTitle: 'Priviri spre Rai' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Rozariul Istoriei Mântuirii' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Sfânta Scriptură și Apocrife' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Carte Priviri spre Rai' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Carte Rozariul Mântuirii' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Carte Sfânta Scriptură' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografie' }
+  },
+  lt: {
+    info365: { name: 'info365', shortTitle: 'Gidas ir Įvadas' },
+    wnr365: { name: 'WnR365', shortTitle: 'Rojaus Vaizdai' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Išganymo Istorijos Rožynas' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Šventasis Raštas ir Apokrifai' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Knyga Rojaus Vaizdai' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Knyga Išganymo Rožynas' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Knyga Šventasis Raštas' },
+    bio365: { name: 'Bio365', shortTitle: 'Autobiografija' }
+  },
+  el: {
+    info365: { name: 'info365', shortTitle: 'Οδηγός & Εισαγωγή' },
+    wnr365: { name: 'WnR365', shortTitle: 'Θέα στον Παράδεισο' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Ροδάριο της Ιστορίας Σωτηρίας' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Αγία Γραφή & Απόκρυφα' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Βιβλίο Θέα στον Παράδεισο' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Βιβλίο Ροδάριο Σωτηρίας' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Βιβλίο Αγία Γραφή' },
+    bio365: { name: 'Bio365', shortTitle: 'Αυτοβιογραφία' }
+  },
+  ru: {
+    info365: { name: 'info365', shortTitle: 'Руководство и Введение' },
+    wnr365: { name: 'WnR365', shortTitle: 'Виды на Рай' },
+    rhz365: { name: 'RHZ365', shortTitle: 'Розарий Истории Спасения' },
+    biblia365: { name: 'Biblia365', shortTitle: 'Священное Писание и Апокрифы' },
+    ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Книга Виды на Рай' },
+    ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Книга Розарий Спасения' },
+    ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Книга Священное Писание' },
+    bio365: { name: 'Bio365', shortTitle: 'Автобиография' }
   }
 };
 
@@ -532,8 +622,11 @@ export async function translateTextWithFreeApi(text: string, targetLang: string)
   if (!text || !text.trim() || targetLang === 'pl') return text;
 
   try {
-    const cleanText = text.replace(/<[^>]*>/g, ' ').substring(0, 1000).trim();
+    const hasHtml = /<[a-z][\s\S]*>/i.test(text);
+    const cleanText = text.replace(/<[^>]*>/g, ' ').substring(0, 1200).trim();
     if (!cleanText) return text;
+
+    let translatedStr = '';
 
     // 1. Try MyMemory API
     try {
@@ -542,23 +635,28 @@ export async function translateTextWithFreeApi(text: string, targetLang: string)
       if (res.ok) {
         const data = await res.json();
         if (data.responseData?.translatedText && !data.responseData.translatedText.includes('MYMEMORY WARNING')) {
-          return `<p>${data.responseData.translatedText}</p>`;
+          translatedStr = data.responseData.translatedText;
         }
       }
     } catch {}
 
     // 2. Try Google GTX API
-    try {
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const json = await res.json();
-        if (Array.isArray(json) && Array.isArray(json[0])) {
-          const translatedStr = json[0].map((item: any) => item[0] || '').join('');
-          return `<p>${translatedStr}</p>`;
+    if (!translatedStr) {
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=pl&tl=${targetLang}&dt=t&q=${encodeURIComponent(cleanText)}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json) && Array.isArray(json[0])) {
+            translatedStr = json[0].map((item: any) => item[0] || '').join('');
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    }
+
+    if (translatedStr) {
+      return hasHtml ? `<p>${translatedStr}</p>` : translatedStr;
+    }
 
     return text;
   } catch (err) {
