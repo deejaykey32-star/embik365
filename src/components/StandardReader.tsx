@@ -19,7 +19,7 @@ import {
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
-import { playLectorSpeech, stopLectorSpeech, getLectorConfig } from '../utils/audioLectorService';
+import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 
 interface Props {
   section: SectionMeta;
@@ -68,7 +68,12 @@ export const StandardReader: React.FC<Props> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const toggleSpeech = async () => {
+  const toggleSpeech = async (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    unlockMobileAudio();
+
     if (isSpeaking) {
       stopLectorSpeech();
       setIsSpeaking(false);
@@ -87,7 +92,6 @@ export const StandardReader: React.FC<Props> = ({
       onError: () => setIsSpeaking(false)
     });
   };
-
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 transition-colors duration-300">
@@ -140,8 +144,12 @@ export const StandardReader: React.FC<Props> = ({
 
             {/* Read aloud toggle */}
             <button
-              onClick={toggleSpeech}
-              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+              onClick={(e) => toggleSpeech(e)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                toggleSpeech(e);
+              }}
+              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer touch-manipulation ${
                 isSpeaking
                   ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
                   : 'bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#dccdc0] dark:border-[#29364b]'

@@ -18,7 +18,7 @@ import {
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES } from '../types';
 import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
-import { playLectorSpeech, stopLectorSpeech, getLectorConfig } from '../utils/audioLectorService';
+import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 
 interface Props {
   section: SectionMeta;
@@ -57,7 +57,12 @@ export const FlipbookReader: React.FC<Props> = ({
   const [isRosaryModalOpen, setIsRosaryModalOpen] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
-  const toggleSpeech = async () => {
+  const toggleSpeech = async (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    unlockMobileAudio();
+
     if (isSpeaking) {
       stopLectorSpeech();
       setIsSpeaking(false);
@@ -288,9 +293,13 @@ export const FlipbookReader: React.FC<Props> = ({
 
           {/* Audio Lector Speech Play / Pause button */}
           <button
-            onClick={toggleSpeech}
+            onClick={(e) => toggleSpeech(e)}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              toggleSpeech(e);
+            }}
             id="btn-flipbook-lector-play"
-            className={`p-2 rounded-xl transition-colors border text-xs font-semibold flex items-center gap-1 cursor-pointer ${
+            className={`p-2 rounded-xl transition-colors border text-xs font-semibold flex items-center gap-1 cursor-pointer touch-manipulation ${
               isSpeaking
                 ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
                 : 'hover:bg-[#ebe0d3] dark:hover:bg-[#1b2333] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#d8c8b6] dark:border-[#28354a]'

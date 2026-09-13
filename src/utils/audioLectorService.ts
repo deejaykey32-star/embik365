@@ -191,6 +191,35 @@ export function findBestLocalVoice(
 let currentAudioElement: HTMLAudioElement | null = null;
 let currentAudioContext: AudioContext | null = null;
 let currentSourceNode: AudioBufferSourceNode | null = null;
+let sharedAudioCtx: AudioContext | null = null;
+
+export function unlockMobileAudio(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return null;
+
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      sharedAudioCtx = new AudioCtx();
+    }
+
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume();
+    }
+
+    // Play a 1-sample silent buffer to unlock iOS Safari / Android Chrome autoplay restrictions
+    const buffer = sharedAudioCtx.createBuffer(1, 1, 22050);
+    const source = sharedAudioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(sharedAudioCtx.destination);
+    source.start(0);
+
+    return sharedAudioCtx;
+  } catch (e) {
+    console.warn('Mobile audio unlock warning:', e);
+    return null;
+  }
+}
 
 export function stopLectorSpeech(): void {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -221,9 +250,15 @@ export interface PlayLectorOptions {
 
 export async function playLectorSpeech(options: PlayLectorOptions): Promise<void> {
   const { text, config, overrideLang, onStart, onEnd, onError } = options;
+
+  // 0. Synchronously unlock AudioContext inside mobile user touch gesture
+  unlockMobileAudio();
   stopLectorSpeech();
 
-  if (!text || !text.trim()) return;
+  if (!text || !text.trim()) {
+    if (onError) onError('Brak tekstu');
+    return;
+  }
 
   // 1. Look up online profile by selected onlineVoiceId first
   let onlineProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
@@ -308,62 +343,53 @@ async function playAudioBufferWithVoiceEffects(
   onError?: (err: any) => void
 ): Promise<void> {
   try {
-    const AudioCtx = typeof window !== 'undefined' ? (window.AudioContext || (window as any).webkitAudioContext) : null;
-    if (!AudioCtx) {
-      const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.volume = config.volume;
-      audio.playbackRate = config.rate;
-      audio.onended = () => { if (onEnd) onEnd(); currentAudioElement = null; };
-      audio.onerror = (e) => { if (onError) onError(e); currentAudioElement = null; };
-      currentAudioElement = audio;
+    let audioCtx = sharedAudioCtx;
+    if (!audioCtx || audioCtx.state === 'closed') {
+      audioCtx = unlockMobileAudio();
+    }
+
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
+      const source = audioCtx.createBufferSource();
+      source.buffer = decodedData;
+
+      // Pitch factor according to voice character
+      let pitchFactor = 1.0;
+      if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
+        pitchFactor = 0.84;
+      } else if (voiceProfile.gender === 'male') {
+        pitchFactor = 0.92;
+      } else if (voiceProfile.provider.includes('Gentle Female')) {
+        pitchFactor = 1.15;
+      } else if (voiceProfile.gender === 'female') {
+        pitchFactor = 1.08;
+      }
+
+      const finalRate = Math.max(0.5, Math.min(2.0, config.rate * pitchFactor));
+      source.playbackRate.value = finalRate;
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = Math.max(0, Math.min(1, config.volume));
+
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
       if (onStart) onStart();
-      await audio.play();
+
+      source.onended = () => {
+        if (onEnd) onEnd();
+        currentSourceNode = null;
+      };
+
+      currentAudioContext = audioCtx;
+      currentSourceNode = source;
+      source.start(0);
       return;
     }
-
-    const audioCtx = new AudioCtx();
-    if (audioCtx.state === 'suspended') {
-      await audioCtx.resume();
-    }
-
-    const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
-    const source = audioCtx.createBufferSource();
-    source.buffer = decodedData;
-
-    // Pitch factor according to voice character
-    let pitchFactor = 1.0;
-    if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
-      pitchFactor = 0.84;
-    } else if (voiceProfile.gender === 'male') {
-      pitchFactor = 0.92;
-    } else if (voiceProfile.provider.includes('Gentle Female')) {
-      pitchFactor = 1.15;
-    } else if (voiceProfile.gender === 'female') {
-      pitchFactor = 1.08;
-    }
-
-    const finalRate = Math.max(0.5, Math.min(2.0, config.rate * pitchFactor));
-    source.playbackRate.value = finalRate;
-
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = Math.max(0, Math.min(1, config.volume));
-
-    source.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
-    if (onStart) onStart();
-
-    source.onended = () => {
-      if (onEnd) onEnd();
-      currentAudioContext = null;
-      currentSourceNode = null;
-    };
-
-    currentAudioContext = audioCtx;
-    currentSourceNode = source;
-    source.start(0);
   } catch (err) {
     console.warn('AudioContext playback error, using HTML Audio fallback:', err);
     try {

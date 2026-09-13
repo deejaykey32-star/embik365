@@ -24,7 +24,8 @@ import {
   getLocalVoicesForLang, 
   ONLINE_VOICES,
   playLectorSpeech,
-  stopLectorSpeech
+  stopLectorSpeech,
+  unlockMobileAudio
 } from '../utils/audioLectorService';
 
 interface Props {
@@ -464,8 +465,16 @@ export const LectorSettingsModal: React.FC<Props> = ({
         <div className="pt-4 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={handleTestSpeech}
-            className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-950 dark:text-amber-300 border border-amber-500/40 font-bold flex items-center gap-2 cursor-pointer transition-colors"
+            onClick={() => {
+              unlockMobileAudio();
+              handleTestSpeech();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              unlockMobileAudio();
+              handleTestSpeech();
+            }}
+            className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-950 dark:text-amber-300 border border-amber-500/40 font-bold flex items-center gap-2 cursor-pointer transition-colors touch-manipulation"
           >
             {isPlayingTest ? <Square className="w-4 h-4 fill-amber-600" /> : <Play className="w-4 h-4 fill-amber-600" />}
             <span>{isPlayingTest ? 'Zatrzymaj Odsłuch' : '🔊 Przetestuj Głos Lektora'}</span>
