@@ -201,6 +201,14 @@ export async function parseDocumentIntoDayEntries(
         content: bodyLines.join('\n\n') || extractedTitle || `Rozważanie na dzień ${currentDayNum}`,
         prayer
       };
+
+      if (sectionId === 'wnr365') {
+        const ebookKey = `ebook_wnr-${dateKey}`;
+        parsedEntries[ebookKey] = { ...parsedEntries[entryKey], sectionId: 'ebook_wnr' };
+      } else if (sectionId === 'ebook_wnr') {
+        const wnrKey = `wnr365-${dateKey}`;
+        parsedEntries[wnrKey] = { ...parsedEntries[entryKey], sectionId: 'wnr365' };
+      }
     }
   };
 

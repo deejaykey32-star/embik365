@@ -120,10 +120,8 @@ Ta biografia to nasz wspólny pamiętnik na każdy dzień roku – opowieść o 
 export function getEntryForSectionAndDate(sectionId: SectionId, cycleDate: CycleDate): SectionEntry {
   const specificKey = `${sectionId}-${cycleDate.dateKey}`;
   let base = BASE_ENTRIES[specificKey];
-  if (!base && sectionId === 'wnr365') {
-    base = BASE_ENTRIES[`wnr366-${cycleDate.dateKey}`];
-  } else if (!base && sectionId === 'wnr366') {
-    base = BASE_ENTRIES[`wnr365-${cycleDate.dateKey}`];
+  if (!base && (sectionId === 'wnr365' || sectionId === 'ebook_wnr' || sectionId === 'wnr366')) {
+    base = BASE_ENTRIES[`wnr365-${cycleDate.dateKey}`] || BASE_ENTRIES[`ebook_wnr-${cycleDate.dateKey}`] || BASE_ENTRIES[`wnr366-${cycleDate.dateKey}`];
   }
 
   if (base && base.title && base.content) {

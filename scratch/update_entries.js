@@ -65,7 +65,8 @@ async function updateAllEntriesFromDocx() {
     if (currentDayNum !== null && currentDayNum >= 1 && currentDayNum <= 366) {
       const cycleDate = getCycleDateByDayNumber(currentDayNum);
       const dateKey = cycleDate.dateKey;
-      const entryKey = `wnr365-${dateKey}`;
+      const wnrKey = `wnr365-${dateKey}`;
+      const ebookKey = `ebook_wnr-${dateKey}`;
 
       let mystery;
       let intention;
@@ -105,9 +106,7 @@ async function updateAllEntriesFromDocx() {
         ? `Dzień ${currentDayNum} (${cycleDate.displayDate}): ${extractedTitle}`
         : `Dzień ${currentDayNum} – ${cycleDate.displayDate}`;
 
-      parsedEntries[entryKey] = {
-        id: entryKey,
-        sectionId: 'wnr365',
+      const entryObj = {
         dateKey,
         dayNumber: currentDayNum,
         title: displayTitle,
@@ -117,6 +116,9 @@ async function updateAllEntriesFromDocx() {
         prayer,
         updatedAt: new Date().toISOString()
       };
+
+      parsedEntries[wnrKey] = { ...entryObj, id: wnrKey, sectionId: 'wnr365' };
+      parsedEntries[ebookKey] = { ...entryObj, id: ebookKey, sectionId: 'ebook_wnr' };
     }
   };
 
@@ -163,8 +165,9 @@ async function updateAllEntriesFromDocx() {
     fs.writeFileSync(filePath, jsonString, 'utf-8');
   });
 
-  console.log(`Pomyślnie zaktualizowano ${updatedCount} wpisów we wszystkich plikach entries.json!`);
-  console.log('Sprawdzenie wpisu Dzień 2 (12-26):', dbData.entries['wnr365-12-26']);
+  console.log(`Pomyślnie zaktualizowano ${updatedCount} wpisów dla wnr365 i ebook_wnr!`);
+  console.log('Wpis WnR365 dla 12-26:', dbData.entries['wnr365-12-26']?.title);
+  console.log('Wpis Ebook_WnR dla 12-26:', dbData.entries['ebook_wnr-12-26']?.title);
 }
 
 updateAllEntriesFromDocx().catch(console.error);
