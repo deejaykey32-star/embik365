@@ -428,6 +428,58 @@ export const FlipbookReader: React.FC<Props> = ({
   const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>, isRightPage: boolean = false) => {
     const pageNum = isRightPage ? rightPdfPageNum : leftPdfPageNum;
 
+    // Special 1:1 Title Cover Page rendering for Page 1
+    if (pageNum === 1) {
+      if (viewMode === 'pdf' && activePdf) {
+        const pdfPageUrl = `${activePdf.url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
+        return (
+          <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md min-h-[440px] sm:min-h-[500px]">
+            <iframe
+              key={`pdf-frame-${activePdf.id}-page1`}
+              src={pdfPageUrl}
+              title={`Strona Tytułowa 1:1 (Strona PDF 1 z 1460)`}
+              className="w-full h-full min-h-[440px] sm:min-h-[500px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-auto transition-all duration-300"
+            />
+          </div>
+        );
+      }
+
+      // Elegant 1:1 Title Cover Page in Text View
+      return (
+        <div className="flex flex-col h-full justify-between items-center text-center p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto min-h-[420px]">
+          <div className="w-full pt-4 border-b border-amber-600/20 pb-4">
+            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
+              Wydanie Książkowe 1:1 • Tom 365 Dni
+            </span>
+          </div>
+
+          <div className="my-auto space-y-4 py-6">
+            <div className="w-16 h-16 mx-auto rounded-full bg-amber-600/15 border-2 border-amber-600/40 flex items-center justify-center text-amber-800 dark:text-amber-300 shadow-md">
+              <BookOpen className="w-8 h-8" />
+            </div>
+
+            <h1 className="font-heading-cinzel text-2xl sm:text-3xl font-extrabold text-[#2c1e12] dark:text-[#f3e8d2] tracking-wide leading-tight">
+              {section.name}
+            </h1>
+
+            <p className="font-serif-book italic text-sm sm:text-base text-[#6b5543] dark:text-[#cbd5e1] max-w-md mx-auto">
+              {section.subtitle || section.description}
+            </p>
+
+            <div className="w-24 h-0.5 mx-auto bg-gradient-to-r from-transparent via-amber-600 to-transparent my-3" />
+
+            <div className="text-xs font-semibold text-[#8a725f] dark:text-[#94a3b8] font-sans-ui uppercase tracking-widest">
+              Autor: Dominik Kuta • Droga365
+            </div>
+          </div>
+
+          <div className="w-full pb-2 border-t border-amber-600/20 pt-3 text-[11px] text-[#7a6552] dark:text-[#94a3b8] font-serif-book italic">
+            Strona Tytułowa 1:1 • Pierwsza Kartka Księgi
+          </div>
+        </div>
+      );
+    }
+
     if (viewMode === 'pdf' && activePdf) {
       const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
       return (

@@ -29630,8 +29630,30 @@
       "updatedAt": "2026-09-13T17:58:22.698Z"
     }
   },
-  "uploads": [],
+  "uploads": [
+    {
+      "id": "pdf-wnr365-full",
+      "filename": "1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf",
+      "originalName": "_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf",
+      "format": "pdf",
+      "url": "/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf",
+      "size": 4358441,
+      "sectionId": "ebook_wnr",
+      "title": "Widoki na Raj (WnR365) - Pełny PDF 1:1",
+      "description": "Zaimportowany przez administratora pełny plik PDF książki.",
+      "uploadedAt": "2026-09-13T12:00:00.000Z"
+    }
+  ],
   "qrCodes": [
+    {
+      "id": "qr_file_1789390170655",
+      "title": "jing-jang.jpg",
+      "displayLabel": "Zeskanuj, aby zobaczyć plik jing-jang.jpg",
+      "shortUrl": "https://widokinaraj.pl",
+      "fullUrl": "https://widokinaraj.pl/#file_1789390170655",
+      "category": "Materiały src/pliki",
+      "createdAt": "2026-09-14T12:49:30.655Z"
+    },
     {
       "id": "qr_info365",
       "title": "Wprowadzenie Droga365",
@@ -29723,6 +29745,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-14T03:55:00.000Z",
+  "lastUpdated": "2026-09-14T12:53:12.717Z",
   "updatedBy": "Admin Dominik Kuta"
 }
