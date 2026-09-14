@@ -104,22 +104,10 @@ export const AdminPanel: React.FC<Props> = ({
   const [homeConfig, setHomeConfig] = useState<HomePageConfig>(() => getHomePageConfig());
   const [homeSaveStatus, setHomeSaveStatus] = useState<string | null>(null);
 
-
   // QR Code Database state
   const [adminQrCodes, setAdminQrCodes] = useState<QrCodeItem[]>(() => getSavedQrCodes());
   const [qrPreviews, setQrPreviews] = useState<Record<string, string>>({});
   const [downloadingQrId, setDownloadingQrId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      if (initialTab) {
-        setActiveTab(initialTab);
-      }
-      setAdminQrCodes(getSavedQrCodes());
-    }
-  }, [isOpen, initialTab]);
-
-  if (!isOpen) return null;
 
   // Form state for PDF upload
   const [targetSection, setTargetSection] = useState<SectionId>(currentSectionId);
@@ -155,8 +143,17 @@ export const AdminPanel: React.FC<Props> = ({
   const [isSavingEntry, setIsSavingEntry] = useState(false);
   const [saveEntryStatus, setSaveEntryStatus] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isOpen) {
+      if (initialTab) {
+        setActiveTab(initialTab);
+      }
+      setAdminQrCodes(getSavedQrCodes());
+    }
+  }, [isOpen, initialTab]);
+
   // Sync editor fields whenever selected section or dateKey changes
-  React.useEffect(() => {
+  useEffect(() => {
     const cycleDate = CYCLE_DAYS.find(d => d.dateKey === editDateKey) || currentDate;
     const key = `${editSectionId}-${editDateKey}`;
     const custom = allEntriesData.entries[key] || 
@@ -173,7 +170,9 @@ export const AdminPanel: React.FC<Props> = ({
     setEditContent(entryToEdit.content || '');
     setEditPrayer(entryToEdit.prayer || '');
     setSaveEntryStatus(null);
-  }, [editSectionId, editDateKey, allEntriesData]);
+  }, [editSectionId, editDateKey, allEntriesData, currentDate]);
+
+  if (!isOpen) return null;
 
   // Google Login for Dominik Kuta
   const handleGoogleLogin = (emailChoice: string = 'kuta.dominik@gmail.com') => {
