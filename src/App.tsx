@@ -479,7 +479,7 @@ export default function App() {
         ) : activeSection.type === 'flipbook' ? (
 
           <FlipbookReader
-            key={`flipbook-${activeSectionId}-${currentDate.dateKey}-${currentLang}`}
+            key={`flipbook-${activeSectionId}-${currentLang}`}
             section={activeSection}
             currentDate={currentDate}
             entry={displayedEntry}

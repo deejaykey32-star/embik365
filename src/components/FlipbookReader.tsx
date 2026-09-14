@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   BookOpen, 
   ChevronLeft, 
@@ -386,36 +386,42 @@ export const FlipbookReader: React.FC<Props> = ({
     } catch {}
   };
 
+  const flipTimerRef = useRef<any>(null);
+
   const handleTurnNext = () => {
-    if (currentPageNum >= 1460 || isFlipping) return;
-    setIsFlipping(true);
+    if (currentPageNum >= 1460) return;
+    const step = layoutMode === 'single' ? 1 : (currentPageNum === 1 ? 1 : 2);
+    const nextPos = Math.min(1460, currentPageNum + step);
+    setCurrentPageNum(nextPos);
+    const newDayNum = Math.floor((nextPos - 1) / 4) + 1;
+    onSelectDate(getCycleDateByDayNumber(newDayNum));
+
     setFlipDirection('next');
+    setIsFlipping(true);
     playPageFlipSound();
 
-    setTimeout(() => {
-      const step = layoutMode === 'single' ? 1 : (currentPageNum === 1 ? 1 : 2);
-      const nextPos = Math.min(1460, currentPageNum + step);
-      setCurrentPageNum(nextPos);
-      const newDayNum = Math.floor((nextPos - 1) / 4) + 1;
-      onSelectDate(getCycleDateByDayNumber(newDayNum));
+    if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
+    flipTimerRef.current = setTimeout(() => {
       setIsFlipping(false);
-    }, 280);
+    }, 220);
   };
 
   const handleTurnPrev = () => {
-    if (currentPageNum <= 1 || isFlipping) return;
-    setIsFlipping(true);
+    if (currentPageNum <= 1) return;
+    const step = layoutMode === 'single' ? 1 : (currentPageNum <= 2 ? 1 : 2);
+    const prevPos = Math.max(1, currentPageNum - step);
+    setCurrentPageNum(prevPos);
+    const newDayNum = Math.floor((prevPos - 1) / 4) + 1;
+    onSelectDate(getCycleDateByDayNumber(newDayNum));
+
     setFlipDirection('prev');
+    setIsFlipping(true);
     playPageFlipSound();
 
-    setTimeout(() => {
-      const step = layoutMode === 'single' ? 1 : (currentPageNum <= 2 ? 1 : 2);
-      const prevPos = Math.max(1, currentPageNum - step);
-      setCurrentPageNum(prevPos);
-      const newDayNum = Math.floor((prevPos - 1) / 4) + 1;
-      onSelectDate(getCycleDateByDayNumber(newDayNum));
+    if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
+    flipTimerRef.current = setTimeout(() => {
       setIsFlipping(false);
-    }, 280);
+    }, 220);
   };
 
   // Keyboard navigation & ESC key handler for Fullscreen zoom
@@ -430,7 +436,7 @@ export const FlipbookReader: React.FC<Props> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPageNum, isFlipping, isFullscreenZoom, layoutMode]);
+  }, [currentPageNum, isFullscreenZoom, layoutMode]);
 
   const handleOpenFullscreen = () => {
     setIsFullscreenZoom(true);
@@ -858,7 +864,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Previous page arrow button (left) */}
         <button
           onClick={handleTurnPrev}
-          disabled={currentPageNum <= 1 || isFlipping}
+          disabled={currentPageNum <= 1}
           id="btn-flip-left"
           className="absolute left-0 sm:-left-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w lewo (Poprzednia strona A5)"
@@ -869,7 +875,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Next page arrow button (right) */}
         <button
           onClick={handleTurnNext}
-          disabled={currentPageNum >= 1460 || isFlipping}
+          disabled={currentPageNum >= 1460}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w prawo (Następna strona A5)"
