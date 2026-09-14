@@ -207,7 +207,13 @@ app.get('/r/:slug?', (req, res) => {
     'ebook-biblia': 'https://widokinaraj.pl/#ebook_biblia',
     'ebook_biblia': 'https://widokinaraj.pl/#ebook_biblia',
     'bio': 'https://widokinaraj.pl/#bio365',
-    'bio365': 'https://widokinaraj.pl/#bio365'
+    'bio365': 'https://widokinaraj.pl/#bio365',
+    'grafika': 'https://widokinaraj.pl/#grafika',
+    'media': 'https://widokinaraj.pl/#grafika',
+    'zasoby': 'https://widokinaraj.pl/#grafika',
+    'uploads': 'https://widokinaraj.pl/#grafika',
+    'galeria': 'https://widokinaraj.pl/#grafika',
+    'materialy': 'https://widokinaraj.pl/#grafika'
   };
 
   const target = redirectsMap[slug] || (req.query.to ? req.query.to.toString() : 'https://widokinaraj.pl/#wnr365');

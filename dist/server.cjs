@@ -187,7 +187,13 @@ app.get("/r/:slug?", (req, res) => {
     "ebook-biblia": "https://widokinaraj.pl/#ebook_biblia",
     "ebook_biblia": "https://widokinaraj.pl/#ebook_biblia",
     "bio": "https://widokinaraj.pl/#bio365",
-    "bio365": "https://widokinaraj.pl/#bio365"
+    "bio365": "https://widokinaraj.pl/#bio365",
+    "grafika": "https://widokinaraj.pl/#grafika",
+    "media": "https://widokinaraj.pl/#grafika",
+    "zasoby": "https://widokinaraj.pl/#grafika",
+    "uploads": "https://widokinaraj.pl/#grafika",
+    "galeria": "https://widokinaraj.pl/#grafika",
+    "materialy": "https://widokinaraj.pl/#grafika"
   };
   const target = redirectsMap[slug] || (req.query.to ? req.query.to.toString() : "https://widokinaraj.pl/#wnr365");
   return res.redirect(301, target);
@@ -432,6 +438,55 @@ var handleFileUpload = async (req, res) => {
 };
 app.post("/api/upload-pdf", upload.single("pdfFile"), handleFileUpload);
 app.post("/api/upload-file", upload.single("pdfFile"), handleFileUpload);
+app.post("/api/upload-base64", async (req, res) => {
+  try {
+    const { dataUrl, filename: reqFilename, title } = req.body;
+    if (!dataUrl || typeof dataUrl !== "string") {
+      return res.status(400).json({ error: "Brak danych pliku (dataUrl)." });
+    }
+    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      if (dataUrl.startsWith("http://") || dataUrl.startsWith("https://") || dataUrl.startsWith("/")) {
+        return res.json({ success: true, url: dataUrl });
+      }
+      return res.status(400).json({ error: "Nieprawid\u0142owy format base64 Data URI." });
+    }
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, "base64");
+    let ext = "jpg";
+    if (mimeType.includes("png")) ext = "png";
+    else if (mimeType.includes("gif")) ext = "gif";
+    else if (mimeType.includes("webp")) ext = "webp";
+    else if (mimeType.includes("svg")) ext = "svg";
+    const safeName = (reqFilename || title || "material").replace(/[^a-zA-Z0-9.-]/g, "_").replace(/\.[a-zA-Z0-9]+$/i, "");
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1e6)}-${safeName}.${ext}`;
+    const savePath = import_path.default.join(publicUploadsDir, filename);
+    const rootSavePath = import_path.default.join(uploadsDir, filename);
+    import_fs.default.writeFileSync(savePath, buffer);
+    try {
+      import_fs.default.writeFileSync(rootSavePath, buffer);
+    } catch {
+    }
+    const staticUrl = `/uploads/${filename}`;
+    const token = process.env.GITHUB_TOKEN;
+    if (token) {
+      syncFileToGitHub(
+        `public/uploads/${filename}`,
+        base64Data,
+        `feat(media): upload ${filename}`,
+        process.env.GITHUB_OWNER || "deejaykey32-star",
+        process.env.GITHUB_REPO || "embik365",
+        process.env.GITHUB_BRANCH || "main",
+        token
+      ).catch((e) => console.error("GitHub sync base64 failed:", e));
+    }
+    res.json({ success: true, url: staticUrl, filename });
+  } catch (err) {
+    console.error("Base64 upload error:", err);
+    res.status(500).json({ error: err.message || "B\u0142\u0105d zapisu pliku base64." });
+  }
+});
 app.post("/api/tts", async (req, res) => {
   try {
     const { text, lang } = req.body;

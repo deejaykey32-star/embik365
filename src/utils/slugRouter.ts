@@ -249,6 +249,8 @@ export function parseUrlRoute(): ParsedRoute {
         subview = 'pobierz';
       } else if (parts[0] === 'kody-qr' || parts[0] === 'qr') {
         subview = 'kody-qr';
+      } else if (parts[0] === 'grafika' || parts[0] === 'media' || parts[0] === 'zasoby' || parts[0] === 'uploads' || parts[0] === 'galeria' || parts[0] === 'materialy') {
+        subview = 'grafika';
       }
     }
   }
@@ -288,7 +290,7 @@ export function buildUrlSlug(route: {
 
 /**
  * Updates browser URL pathname without causing a page reload
- * Resulting URL format: widokinaraj.pl/sekcja/dzień
+ * Resulting URL format: widokinaraj.pl/sekcja/dzień or #sekcja
  */
 export function updateBrowserUrlSlug(route: {
   sectionId: SectionId;
@@ -299,7 +301,13 @@ export function updateBrowserUrlSlug(route: {
 }): void {
   if (typeof window === 'undefined') return;
   const path = buildUrlSlug(route);
-  if (window.location.pathname !== path || window.location.hash) {
+  if (window.location.hash && window.location.hash.startsWith('#')) {
+    const cleanHash = window.location.hash.replace(/^#\/?/, '').split('/')[0];
+    if (cleanHash === route.sectionId || (route.subview && cleanHash === route.subview)) {
+      return;
+    }
+  }
+  if (window.location.pathname !== path) {
     window.history.replaceState(null, '', path);
   }
 }

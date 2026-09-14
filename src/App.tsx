@@ -128,6 +128,11 @@ export default function App() {
   // 7. Entries and Uploads state
   const [customEntries, setCustomEntries] = useState<Record<string, Partial<SectionEntry>>>({});
   const [uploads, setUploads] = useState<UploadedPdf[]>(DEFAULT_SYSTEM_UPLOADS);
+  const [adminTab, setAdminTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'>(() => {
+    if (initialRoute.subview === 'grafika' || initialRoute.subview === 'media' || initialRoute.subview === 'zasoby' || initialRoute.subview === 'uploads' || initialRoute.subview === 'galeria' || initialRoute.subview === 'materialy') return 'media_library';
+    if (initialRoute.subview === 'kody-qr' || initialRoute.subview === 'qr') return 'qrcodes';
+    return 'upload';
+  });
 
   // 8. Translation cache and active translated entry
   const [translatedEntry, setTranslatedEntry] = useState<SectionEntry | null>(null);
@@ -138,9 +143,9 @@ export default function App() {
     const fetchData = async () => {
       // 1. Try GitHub raw directly (works for all visitors across all devices without needing a token)
       try {
-        const ghData = await fetchEntriesFromGitHub(githubConfig);
+        const ghData = await fetchFromGitHubRaw(githubConfig);
         if (ghData && (ghData.entries || ghData.uploads || ghData.qrCodes)) {
-          if (ghData.entries) {
+          if (ghData.entries && Object.keys(ghData.entries).length > 0) {
             setCustomEntries(ghData.entries);
             if (ghData.entries['drogowskazy_home_config']?.homeConfig) {
               saveHomePageConfig(ghData.entries['drogowskazy_home_config'].homeConfig, false);
@@ -156,16 +161,16 @@ export default function App() {
           }
           return;
         }
-      } catch (e) {
-        console.warn('Could not load from GitHub primary source, falling back to local:', e);
+      } catch (err) {
+        console.warn('Could not fetch from GitHub raw:', err);
       }
 
-      // 2. Try dev server API
+      // 2. Try backend API server
       try {
         const res = await fetch('/api/data');
         if (res.ok) {
           const json = await res.json();
-          if (json.entries) {
+          if (json.entries && Object.keys(json.entries).length > 0) {
             setCustomEntries(json.entries);
             if (json.entries['drogowskazy_home_config']?.homeConfig) {
               saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig, false);
@@ -181,13 +186,15 @@ export default function App() {
           }
           return;
         }
-      } catch {}
+      } catch (err) {
+        console.warn('Could not fetch initial data from backend API:', err);
+      }
 
-      // 3. Try static file /data/entries.json (for Cloudflare Pages static hosting)
+      // 3. Fallback to static public /data/entries.json
       try {
-        const staticRes = await fetch('/data/entries.json');
-        if (staticRes.ok) {
-          const json = await staticRes.json();
+        const res = await fetch('/data/entries.json');
+        if (res.ok) {
+          const json = await res.json();
           if (json.entries) {
             setCustomEntries(json.entries);
             if (json.entries['drogowskazy_home_config']?.homeConfig) {
@@ -218,7 +225,9 @@ export default function App() {
     if (isCalendarOpen) subview = 'kalendarz';
     else if (isDownloadModalOpen) subview = 'pobierz';
     else if (isLectorModalOpen) subview = 'lektor';
-    else if (isAdminOpen) subview = 'admin';
+    else if (isAdminOpen) {
+      subview = adminTab === 'media_library' ? 'grafika' : adminTab === 'qrcodes' ? 'kody-qr' : 'admin';
+    }
 
     updateBrowserUrlSlug({
       sectionId: activeSectionId,
@@ -226,7 +235,7 @@ export default function App() {
       subview,
       pdfId: viewingPdf?.id
     });
-  }, [activeSectionId, currentDate, isCalendarOpen, isAdminOpen, isDownloadModalOpen, isLectorModalOpen, viewingPdf]);
+  }, [activeSectionId, currentDate, isCalendarOpen, isAdminOpen, isDownloadModalOpen, isLectorModalOpen, viewingPdf, adminTab]);
 
   // B) Listen to browser URL hashchange and popstate events (direct link pasting / back / forward navigation)
   useEffect(() => {
@@ -235,14 +244,29 @@ export default function App() {
       if (route.sectionId) setActiveSectionId(route.sectionId);
       if (route.date) setCurrentDate(route.date);
       setIsCalendarOpen(route.subview === 'kalendarz');
-      setIsAdminOpen(route.subview === 'admin' || route.subview === 'panel' || route.subview === 'kody-qr');
       setIsDownloadModalOpen(route.subview === 'pobierz' || route.subview === 'download');
       setIsLectorModalOpen(route.subview === 'lektor' || route.subview === 'lector');
+      
+      if (route.subview === 'grafika' || route.subview === 'media' || route.subview === 'zasoby' || route.subview === 'uploads' || route.subview === 'galeria' || route.subview === 'materialy') {
+        setIsAdminOpen(true);
+        setAdminTab('media_library');
+      } else if (route.subview === 'kody-qr' || route.subview === 'qr') {
+        setIsAdminOpen(true);
+        setAdminTab('qrcodes');
+      } else if (route.subview === 'admin' || route.subview === 'panel') {
+        setIsAdminOpen(true);
+        setAdminTab('upload');
+      } else {
+        setIsAdminOpen(false);
+      }
+
       if (route.pdfId && uploads.length > 0) {
         const match = uploads.find(u => u.id === route.pdfId);
         if (match) setViewingPdf(match);
       }
     };
+
+    handleRouteSync();
 
     window.addEventListener('hashchange', handleRouteSync);
     window.addEventListener('popstate', handleRouteSync);
@@ -533,6 +557,7 @@ export default function App() {
         onSaveGitHubConfig={handleSaveGitHubConfig}
         onSyncAllToGitHub={handleSyncAllToGitHub}
         allEntriesData={{ entries: customEntries, uploads }}
+        initialTab={adminTab}
       />
 
       {/* 7. PDF Viewer Modal */}

@@ -72,6 +72,7 @@ interface Props {
   onSaveGitHubConfig: (config: GitHubConfig) => void;
   onSyncAllToGitHub: () => Promise<{ success: boolean; message: string }>;
   allEntriesData: { entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[] };
+  initialTab?: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage';
 }
 
 export const AdminPanel: React.FC<Props> = ({
@@ -93,12 +94,11 @@ export const AdminPanel: React.FC<Props> = ({
   githubConfig,
   onSaveGitHubConfig,
   onSyncAllToGitHub,
-  allEntriesData
+  allEntriesData,
+  initialTab
 }) => {
-  if (!isOpen) return null;
-
   // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'>(initialTab || 'upload');
 
   // Home Page (Info365) Configuration state
   const [homeConfig, setHomeConfig] = useState<HomePageConfig>(() => getHomePageConfig());
@@ -112,9 +112,14 @@ export const AdminPanel: React.FC<Props> = ({
 
   useEffect(() => {
     if (isOpen) {
+      if (initialTab) {
+        setActiveTab(initialTab);
+      }
       setAdminQrCodes(getSavedQrCodes());
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen, initialTab]);
+
+  if (!isOpen) return null;
 
   // Form state for PDF upload
   const [targetSection, setTargetSection] = useState<SectionId>(currentSectionId);
