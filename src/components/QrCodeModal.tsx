@@ -19,6 +19,7 @@ import {
   Upload
 } from 'lucide-react';
 import { QrCodeItem } from '../types';
+import QRCode from 'qrcode';
 import { 
   getSavedQrCodes, 
   upsertQrCode, 
@@ -40,17 +41,35 @@ const QrImageDisplay: React.FC<{ text: string; title: string }> = ({ text, title
 
   useEffect(() => {
     let isMounted = true;
-    generateQrSvgDataUrl(text || 'https://widokinaraj.pl', 180)
-      .then(url => { if (isMounted) setSrc(url); })
-      .catch(() => {});
+    const target = (text || 'https://widokinaraj.pl').trim();
+
+    QRCode.toDataURL(target, {
+      width: 220,
+      margin: 1,
+      color: { dark: '#111827', light: '#ffffff' },
+      errorCorrectionLevel: 'M'
+    })
+    .then(url => {
+      if (isMounted) setSrc(url);
+    })
+    .catch(() => {
+      generateQrSvgDataUrl(target, 220).then(svgUrl => {
+        if (isMounted) setSrc(svgUrl);
+      });
+    });
+
     return () => { isMounted = false; };
   }, [text]);
 
   if (!src) {
-    return <div className="w-full h-full bg-stone-200 dark:bg-stone-800 rounded-lg animate-pulse" />;
+    return (
+      <div className="w-full h-full bg-stone-100 dark:bg-stone-800 rounded-lg animate-pulse flex items-center justify-center text-[10px] text-stone-400">
+        Ładowanie QR...
+      </div>
+    );
   }
 
-  return <img src={src} alt={title} className="w-full h-full object-contain" />;
+  return <img src={src} alt={title} className="w-full h-full object-contain pointer-events-auto" />;
 };
 
 interface QrCodeModalProps {

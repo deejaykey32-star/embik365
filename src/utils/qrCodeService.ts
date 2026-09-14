@@ -414,11 +414,13 @@ export async function generateQrBadgeDataUrl(item: QrCodeItem): Promise<string> 
   if (!ctx) throw new Error('Cannot get canvas context');
 
   const qrImg = new Image();
-  qrImg.crossOrigin = 'anonymous';
+  if (!qrDataUrl.startsWith('data:')) {
+    qrImg.crossOrigin = 'anonymous';
+  }
 
   await new Promise<void>((resolve, reject) => {
     qrImg.onload = () => resolve();
-    qrImg.onerror = reject;
+    qrImg.onerror = (err) => reject(new Error('Nie udało się wczytać grafiki QR do pliku PNG.'));
     qrImg.src = qrDataUrl;
   });
 
@@ -510,11 +512,18 @@ export async function generateQrBadgeDataUrl(item: QrCodeItem): Promise<string> 
 export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<void> {
   const pngUrl = await generateQrBadgeDataUrl(item);
   const link = document.createElement('a');
-  link.download = `QR_${item.id}_${item.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
+  const safeId = (item.id || 'kod').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const safeTitle = (item.title || 'QR').replace(/[^a-zA-Z0-9_-]/g, '_');
+  link.download = `QR_${safeId}_${safeTitle}.png`;
   link.href = pngUrl;
+  link.setAttribute('download', link.download);
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  setTimeout(() => {
+    try {
+      document.body.removeChild(link);
+    } catch {}
+  }, 300);
 }
 
 /**
@@ -522,7 +531,8 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
  */
 export async function generateQrSvgDataUrl(text: string, size = 300): Promise<string> {
   try {
-    const svgText = await QRCode.toString(text || 'https://widokinaraj.pl', {
+    const target = text || 'https://widokinaraj.pl';
+    const svgText = await QRCode.toString(target, {
       type: 'svg',
       width: size,
       margin: 1,
@@ -532,7 +542,7 @@ export async function generateQrSvgDataUrl(text: string, size = 300): Promise<st
       },
       errorCorrectionLevel: 'M'
     });
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svgText)}`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
   } catch (err) {
     console.warn('SVG QR generation fallback:', err);
     return await generateQrDataUrl(text, size);
