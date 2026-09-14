@@ -13,7 +13,8 @@ import {
   Download,
   Globe,
   Link as LinkIcon,
-  Check
+  Check,
+  Search
 } from 'lucide-react';
 import { CycleDate, AdminUser, AppTheme, SUPPORTED_LANGUAGES } from '../types';
 import { getUIText } from '../utils/translationService';
@@ -25,6 +26,7 @@ interface Props {
   onNextDay: () => void;
   onToday: () => void;
   onOpenCalendar: () => void;
+  onOpenSearch?: () => void;
   adminUser: AdminUser | null;
   onOpenAdmin: () => void;
   theme: AppTheme;
@@ -43,6 +45,7 @@ export const NavigationHeader: React.FC<Props> = ({
   onNextDay,
   onToday,
   onOpenCalendar,
+  onOpenSearch,
   adminUser,
   onOpenAdmin,
   theme,
@@ -145,8 +148,23 @@ export const NavigationHeader: React.FC<Props> = ({
             </button>
           </div>
 
-          {/* Right Action Bar: Download/Publish + Language + Theme + Admin */}
+          {/* Right Action Bar: Search + Download/Publish + Language + Theme + Admin */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Prominent Search Button */}
+            {onOpenSearch && (
+              <button
+                onClick={onOpenSearch}
+                id="btn-header-search"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-[#f0e4d4] hover:bg-[#e6d7c4] dark:bg-[#192232] dark:hover:bg-[#232e42] text-[#4d3d2e] dark:text-amber-300 border border-[#d6c7b5] dark:border-[#2a374f] font-semibold text-xs sm:text-sm transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Szukaj frazy we wszystkich tomach lub wybranej sekcji (Skrót: Ctrl+K)"
+              >
+                <Search className="w-4 h-4 text-[#8a5327] dark:text-amber-400" />
+                <span className="hidden sm:inline">Szukaj</span>
+                <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-[#0f1522] rounded border border-amber-500/30 text-[#6e5d4e] dark:text-amber-300">
+                  Ctrl+K
+                </kbd>
+              </button>
+            )}
             {/* Download & Publish Button (KDP, Empik, Legimi, PDF, DOCX, ePUB) */}
             <button
               onClick={onOpenDownloadModal}

@@ -14,6 +14,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { DownloadPublishModal } from './components/DownloadPublishModal';
 import { LectorSettingsModal } from './components/LectorSettingsModal';
+import { SearchModal } from './components/SearchModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub, getStoredGitHubConfig } from './utils/githubSync';
 import { translateEntry } from './utils/translationService';
 
@@ -73,6 +74,19 @@ export default function App() {
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(initialRoute.subview === 'pobierz' || initialRoute.subview === 'download');
   const [isLectorModalOpen, setIsLectorModalOpen] = useState(initialRoute.subview === 'lektor' || initialRoute.subview === 'lector');
+  const [isSearchOpen, setIsSearchOpen] = useState(initialRoute.subview === 'szukaj' || initialRoute.subview === 'search');
+
+  // Global Ctrl+K / Cmd+K keyboard shortcut listener for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // 5. Admin Authentication state (defaulting to saved session if present)
   const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
@@ -385,6 +399,7 @@ export default function App() {
         onNextDay={handleNextDay}
         onToday={handleToday}
         onOpenCalendar={() => setIsCalendarOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
         adminUser={adminUser}
         onOpenAdmin={() => setIsAdminOpen(true)}
         theme={theme}
@@ -529,6 +544,18 @@ export default function App() {
         isOpen={isLectorModalOpen}
         onClose={() => setIsLectorModalOpen(false)}
         currentLang={currentLang}
+      />
+
+      {/* 10. Global Search Modal (Single Section / All Sections Search) */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        currentSectionId={activeSectionId}
+        onSelectResult={(secId, date) => {
+          setActiveSectionId(secId);
+          setCurrentDate(date);
+        }}
+        customEntries={customEntries}
       />
     </div>
   );
