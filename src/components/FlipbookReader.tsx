@@ -509,14 +509,14 @@ export const FlipbookReader: React.FC<Props> = ({
       if (viewMode === 'pdf' && activePdf) {
         const pdfPageUrl = `${activePdf.url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
         return (
-          <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md min-h-[460px] sm:min-h-[540px] pointer-events-none select-none">
+          <div className="w-full h-full flex-1 flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md pointer-events-none select-none">
             <iframe
               key={`pdf-frame-${activePdf.id}-page1`}
               src={pdfPageUrl}
               title={`Strona Tytułowa 1:1 (Strona PDF 1 z 1460)`}
               scrolling="no"
-              className="w-full h-full min-h-[460px] sm:min-h-[540px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
-              style={{ pointerEvents: 'none', border: 0 }}
+              className="w-full h-full flex-1 border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
+              style={{ pointerEvents: 'none', border: 0, width: '100%', height: '100%' }}
             />
           </div>
         );
@@ -524,34 +524,34 @@ export const FlipbookReader: React.FC<Props> = ({
 
       // Elegant 1:1 Title Cover Page in Text View
       return (
-        <div className="flex flex-col h-full justify-between items-center text-center p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto min-h-[440px] overflow-hidden select-none">
-          <div className="w-full pt-4 border-b border-amber-600/20 pb-4">
+        <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1">
+          <div className="w-full pt-2 border-b border-amber-600/20 pb-2">
             <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
               Wydanie Książkowe 1:1 • Tom 365 Dni
             </span>
           </div>
 
-          <div className="my-auto space-y-4 py-6">
-            <div className="w-16 h-16 mx-auto rounded-full bg-amber-600/15 border-2 border-amber-600/40 flex items-center justify-center text-amber-800 dark:text-amber-300 shadow-md">
-              <BookOpen className="w-8 h-8" />
+          <div className="my-auto space-y-3 py-4">
+            <div className="w-14 h-14 mx-auto rounded-full bg-amber-600/15 border-2 border-amber-600/40 flex items-center justify-center text-amber-800 dark:text-amber-300 shadow-md">
+              <BookOpen className="w-7 h-7" />
             </div>
 
-            <h1 className="font-heading-cinzel text-2xl sm:text-3xl font-extrabold text-[#2c1e12] dark:text-[#f3e8d2] tracking-wide leading-tight">
+            <h1 className="font-heading-cinzel text-xl sm:text-2xl font-extrabold text-[#2c1e12] dark:text-[#f3e8d2] tracking-wide leading-tight">
               {section.name}
             </h1>
 
-            <p className="font-serif-book italic text-sm sm:text-base text-[#6b5543] dark:text-[#cbd5e1] max-w-md mx-auto">
+            <p className="font-serif-book italic text-xs sm:text-sm text-[#6b5543] dark:text-[#cbd5e1] max-w-md mx-auto">
               {section.subtitle || section.description}
             </p>
 
-            <div className="w-24 h-0.5 mx-auto bg-gradient-to-r from-transparent via-amber-600 to-transparent my-3" />
+            <div className="w-20 h-0.5 mx-auto bg-gradient-to-r from-transparent via-amber-600 to-transparent my-2" />
 
-            <div className="text-xs font-semibold text-[#8a725f] dark:text-[#94a3b8] font-sans-ui uppercase tracking-widest">
+            <div className="text-[11px] font-semibold text-[#8a725f] dark:text-[#94a3b8] font-sans-ui uppercase tracking-widest">
               Autor: Dominik Kuta • Droga365
             </div>
           </div>
 
-          <div className="w-full pb-2 border-t border-amber-600/20 pt-3 text-[11px] text-[#7a6552] dark:text-[#94a3b8] font-serif-book italic">
+          <div className="w-full pb-1 border-t border-amber-600/20 pt-2 text-[10px] text-[#7a6552] dark:text-[#94a3b8] font-serif-book italic">
             Strona Tytułowa 1:1 • Pierwsza Kartka Księgi
           </div>
         </div>
@@ -561,21 +561,21 @@ export const FlipbookReader: React.FC<Props> = ({
     if (viewMode === 'pdf' && activePdf) {
       const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
       return (
-        <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-xs min-h-[460px] sm:min-h-[540px] pointer-events-none select-none">
+        <div className="w-full h-full flex-1 flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-xs pointer-events-none select-none">
           <iframe
             key={`pdf-frame-${activePdf.id}-${pageNum}`}
             src={pdfPageUrl}
             title={`Strona PDF ${pageNum} z 1460`}
             scrolling="no"
-            className="w-full h-full min-h-[460px] sm:min-h-[540px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
-            style={{ pointerEvents: 'none', border: 0 }}
+            className="w-full h-full flex-1 border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
+            style={{ pointerEvents: 'none', border: 0, width: '100%', height: '100%' }}
           />
         </div>
       );
     }
 
     return (
-      <div className="flex flex-col h-full justify-between space-y-3 overflow-hidden">
+      <div className="flex flex-col h-full flex-1 justify-between space-y-3 overflow-hidden">
         <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-white text-justify flex-1 overflow-y-auto pr-1 ${
           fontSize === 'sm' ? 'text-xs leading-5' :
           fontSize === 'base' ? 'text-sm leading-6' :
@@ -592,17 +592,17 @@ export const FlipbookReader: React.FC<Props> = ({
         </div>
 
         {data.subPage === 4 && (
-          <div className="mt-2 p-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between gap-3 text-xs shrink-0">
+          <div className="mt-2 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between gap-3 text-xs shrink-0">
             {(() => {
               const qrItem = getQrCodeForSection(section.id, section.name);
               return (
                 <>
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-10 h-10 p-0.5 bg-white rounded-lg border shrink-0">
+                    <div className="w-9 h-9 p-0.5 bg-white rounded-lg border shrink-0">
                       <QrImageDisplay text={qrItem.shortUrl || qrItem.fullUrl} title={section.name} />
                     </div>
                     <div className="overflow-hidden text-left">
-                      <div className="font-bold text-[11px] truncate text-[#2f271f] dark:text-white">
+                      <div className="font-bold text-[10px] truncate text-[#2f271f] dark:text-white">
                         {qrItem.title}
                       </div>
                       <div className="text-[9px] font-mono text-amber-800 dark:text-amber-300 truncate">
@@ -619,7 +619,7 @@ export const FlipbookReader: React.FC<Props> = ({
                     title="Pobierz kod QR jako plik PNG (300 DPI)"
                   >
                     <Download className="w-3 h-3" />
-                    <span>Pobierz PNG</span>
+                    <span>PNG</span>
                   </button>
                 </>
               );
@@ -633,9 +633,9 @@ export const FlipbookReader: React.FC<Props> = ({
               e.stopPropagation();
               setIsRosaryModalOpen(true);
             }}
-            className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs mt-2 shrink-0"
+            className="w-full py-1.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs mt-1 shrink-0"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Otwórz Cyfrowy Różaniec RHZ
+            <Sparkles className="w-3.5 h-3.5" /> Cyfrowy Różaniec RHZ
           </button>
         )}
       </div>
@@ -643,12 +643,12 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   return (
-    <div className={`min-h-[calc(100vh-140px)] ${currentTheme.wrapper} transition-colors duration-300 py-6 px-3 sm:px-6 flex flex-col justify-between`}>
+    <div className={`min-h-[calc(100vh-140px)] ${currentTheme.wrapper} transition-colors duration-300 py-4 px-2 sm:px-6 flex flex-col justify-between`}>
       {/* Flipbook Header Controls */}
-      <div className="max-w-5xl mx-auto w-full mb-4 flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-black/90 backdrop-blur-md p-3 rounded-2xl border border-[#dbcabb] dark:border-[#222222] shadow-xs">
+      <div className="max-w-5xl mx-auto w-full mb-3 flex flex-wrap items-center justify-between gap-2.5 bg-white/80 dark:bg-black/90 backdrop-blur-md p-2.5 rounded-2xl border border-[#dbcabb] dark:border-[#222222] shadow-xs">
         {/* Book Title & Section Badge */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#443324] dark:bg-amber-600 text-amber-300 dark:text-white flex items-center justify-center shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-[#443324] dark:bg-amber-600 text-amber-300 dark:text-white flex items-center justify-center shadow-xs shrink-0">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
@@ -666,9 +666,9 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Action controls: Layout mode, Title Page, Fullscreen Zoom, View Mode, Download, TOC, Font size, Sound, Bookmarks, Theme */}
+        {/* Action controls */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          {/* Layout Mode Toggle (Dwustronicowy vs Jednostronicowy) */}
+          {/* Layout Mode Toggle */}
           <div className="flex items-center rounded-xl border border-[#d8c8b6] dark:border-[#28354a] p-0.5 bg-[#f5ecdf] dark:bg-[#18202e]">
             <button
               onClick={() => setLayoutMode('spread')}
@@ -862,17 +862,17 @@ export const FlipbookReader: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Main Flipbook Stage (Strict Viewport Container, No Vertical Bleed) */}
-      <div className="max-w-5xl mx-auto w-full flex-1 flex items-center justify-center relative perspective-2000 py-4">
+      {/* Main Flipbook Stage (Dynamic Height, Entire Page Visible Without Cutoff) */}
+      <div className="max-w-5xl mx-auto w-full flex-1 flex items-center justify-center relative perspective-2000 py-2">
         {/* Previous page arrow button (left) */}
         <button
           onClick={handleTurnPrev}
           disabled={currentPageNum <= 1 || isFlipping}
           id="btn-flip-left"
-          className="absolute left-0 sm:-left-4 z-40 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
+          className="absolute left-0 sm:-left-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w lewo (Poprzednia strona PDF)"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
         {/* Next page arrow button (right) */}
@@ -880,27 +880,27 @@ export const FlipbookReader: React.FC<Props> = ({
           onClick={handleTurnNext}
           disabled={currentPageNum >= 1460 || isFlipping}
           id="btn-flip-right"
-          className="absolute right-0 sm:-right-4 z-40 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
+          className="absolute right-0 sm:-right-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w prawo (Następna strona PDF)"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
         {/* Outer Hardcover Book Frame */}
-        <div className={`w-full ${layoutMode === 'single' ? 'max-w-2xl' : 'max-w-5xl'} rounded-[28px] p-2 sm:p-3 bg-gradient-to-b from-[#422e1e] via-[#2d1e13] to-[#1d120a] dark:from-[#1e150c] dark:via-[#140e08] dark:to-[#0a0604] border-[6px] sm:border-[10px] border-[#382618] dark:border-[#1a110a] book-hard-cover relative shadow-2xl overflow-hidden transition-all duration-300`}>
+        <div className={`w-full ${layoutMode === 'single' ? 'max-w-2xl' : 'max-w-5xl'} rounded-[24px] p-2 sm:p-3 bg-gradient-to-b from-[#422e1e] via-[#2d1e13] to-[#1d120a] dark:from-[#1e150c] dark:via-[#140e08] dark:to-[#0a0604] border-[4px] sm:border-[8px] border-[#382618] dark:border-[#1a110a] book-hard-cover relative shadow-2xl overflow-hidden transition-all duration-300`}>
           {/* Decorative Corner Accents */}
           <div className="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-amber-500/40 rounded-tl-md pointer-events-none z-10" />
           <div className="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-amber-500/40 rounded-tr-md pointer-events-none z-10" />
           <div className="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-amber-500/40 rounded-bl-md pointer-events-none z-10" />
           <div className="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-amber-500/40 rounded-br-md pointer-events-none z-10" />
 
-          {/* 3D Open Book Inner Container (Strict height, zero vertical scroll) */}
+          {/* 3D Open Book Inner Container (Dynamic height matching viewport, zero cutoff) */}
           <div 
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onWheel={handleWheelTurn}
-            className={`w-full h-[580px] sm:h-[660px] rounded-2xl relative overflow-hidden transform-style-3d select-none transition-transform duration-300 ${
+            className={`w-full h-[650px] sm:h-[720px] md:h-[780px] lg:h-[820px] max-h-[82vh] rounded-xl relative overflow-hidden transform-style-3d select-none transition-transform duration-300 ${
               layoutMode === 'spread' ? 'grid grid-cols-1 md:grid-cols-2' : 'flex flex-col'
             } ${isFlipping ? 'scale-[0.998]' : ''}`}
           >
@@ -908,11 +908,11 @@ export const FlipbookReader: React.FC<Props> = ({
             {layoutMode === 'single' ? (
               <div 
                 onClick={handleOpenFullscreen}
-                className={`w-full h-full flex flex-col justify-between p-6 sm:p-10 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
+                className={`w-full h-full flex flex-col justify-between p-3 sm:p-5 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
                 title="Kliknij, aby otworzyć stronę w trybie pełnoekranowym"
               >
                 {/* Single page header */}
-                <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between shrink-0">
+                <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between shrink-0">
                   <span className="font-heading-cinzel text-xs font-bold uppercase tracking-widest text-[#7a6755] dark:text-white">
                     {section.shortTitle}
                   </span>
@@ -922,12 +922,12 @@ export const FlipbookReader: React.FC<Props> = ({
                 </div>
 
                 {/* Single page 1:1 body */}
-                <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
                   {renderPdfPageBody(singlePageData, currentPageNum)}
                 </div>
 
                 {/* Single page footer */}
-                <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white shrink-0">
+                <div className="border-t border-black/10 dark:border-white/20 pt-2 flex items-center justify-between text-xs text-[#8a7867] dark:text-white shrink-0">
                   <span className="font-serif-book font-bold">Strona {currentPageNum}</span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -962,13 +962,13 @@ export const FlipbookReader: React.FC<Props> = ({
                 {/* Left Page (Desktop Spread) */}
                 <div 
                   onClick={handleOpenFullscreen}
-                  className={`hidden md:flex flex-col justify-between p-6 sm:p-10 border-r border-[#d4c5b3] dark:border-[#222222] ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full`}
+                  className={`hidden md:flex flex-col justify-between p-3 sm:p-5 border-r border-[#d4c5b3] dark:border-[#222222] ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full`}
                   title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
                 >
-                  <div className="absolute top-0 right-0 bottom-0 w-16 pointer-events-none page-crease-left z-10" />
+                  <div className="absolute top-0 right-0 bottom-0 w-12 pointer-events-none page-crease-left z-10" />
 
                   {/* Left page header */}
-                  <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between shrink-0">
+                  <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between shrink-0">
                     <span className="font-heading-cinzel text-xs font-bold uppercase tracking-widest text-[#7a6755] dark:text-white">
                       {section.shortTitle}
                     </span>
@@ -978,12 +978,12 @@ export const FlipbookReader: React.FC<Props> = ({
                   </div>
 
                   {/* Left page 1:1 content */}
-                  <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
                     {renderPdfPageBody(leftPageData, leftPdfPageNum)}
                   </div>
 
                   {/* Left page footer */}
-                  <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white shrink-0">
+                  <div className="border-t border-black/10 dark:border-white/20 pt-2 flex items-center justify-between text-xs text-[#8a7867] dark:text-white shrink-0">
                     <span>Tom 365 PDF</span>
                     <span className="font-serif-book font-bold">Strona {leftPdfPageNum}</span>
                   </div>
@@ -992,7 +992,7 @@ export const FlipbookReader: React.FC<Props> = ({
                 </div>
 
                 {/* Central Hard Spine Binding Joint - Physically Locks Left and Right Pages Together */}
-                <div className="hidden md:flex absolute left-1/2 top-0 bottom-0 w-8 sm:w-10 -translate-x-1/2 pointer-events-none z-20 book-spine-joint flex-col justify-between items-center py-4 border-x border-black/20 dark:border-white/10 shadow-2xl">
+                <div className="hidden md:flex absolute left-1/2 top-0 bottom-0 w-6 sm:w-8 -translate-x-1/2 pointer-events-none z-20 book-spine-joint flex-col justify-between items-center py-4 border-x border-black/20 dark:border-white/10 shadow-2xl">
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-800/50 dark:bg-amber-400/40 shadow-xs" />
                   <div className="w-0.5 h-full bg-gradient-to-b from-black/10 via-black/25 to-black/10 dark:from-white/5 dark:via-white/15 dark:to-white/5 my-2" />
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-800/50 dark:bg-amber-400/40 shadow-xs" />
@@ -1001,19 +1001,19 @@ export const FlipbookReader: React.FC<Props> = ({
                 {/* Right Page (Desktop/Mobile Spread) */}
                 <div 
                   onClick={handleOpenFullscreen}
-                  className={`flex flex-col justify-between p-6 sm:p-10 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full`}
+                  className={`flex flex-col justify-between p-3 sm:p-5 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full`}
                   title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
                 >
-                  <div className="absolute top-0 left-0 bottom-0 w-16 pointer-events-none page-crease-right z-10" />
+                  <div className="absolute top-0 left-0 bottom-0 w-12 pointer-events-none page-crease-right z-10" />
 
                   {isBookmarked && (
-                    <div className="absolute top-0 right-8 z-30 w-6 h-12 bg-amber-600 rounded-b-md shadow-md flex items-end justify-center pb-1">
-                      <Bookmark className="w-3.5 h-3.5 text-white fill-white" />
+                    <div className="absolute top-0 right-6 z-30 w-5 h-10 bg-amber-600 rounded-b-md shadow-md flex items-end justify-center pb-1">
+                      <Bookmark className="w-3 h-3 text-white fill-white" />
                     </div>
                   )}
 
                   {/* Right page header */}
-                  <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between shrink-0">
+                  <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between shrink-0">
                     <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
                       Strona PDF {rightPdfPageNum} z 1460
                     </span>
@@ -1025,12 +1025,12 @@ export const FlipbookReader: React.FC<Props> = ({
                   </div>
 
                   {/* Right page 1:1 content */}
-                  <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
                     {renderPdfPageBody(rightPageData, rightPdfPageNum)}
                   </div>
 
                   {/* Right page footer */}
-                  <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white shrink-0">
+                  <div className="border-t border-black/10 dark:border-white/20 pt-2 flex items-center justify-between text-xs text-[#8a7867] dark:text-white shrink-0">
                     <span className="font-serif-book font-bold">Strona {rightPdfPageNum}</span>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -1067,20 +1067,20 @@ export const FlipbookReader: React.FC<Props> = ({
             {/* 3D HORIZONTAL PAGE FLIP ANIMATED LEAF OVERLAY */}
             {isFlipping && (
               <div 
-                className={`hidden md:flex flex-col justify-between p-6 sm:p-10 absolute top-0 bottom-0 w-1/2 z-30 pointer-events-none ${
+                className={`hidden md:flex flex-col justify-between p-3 sm:p-5 absolute top-0 bottom-0 w-1/2 z-30 pointer-events-none ${
                   flipDirection === 'next'
                     ? 'right-0 animate-flip-next'
                     : 'left-0 animate-flip-prev'
                 } ${flipDirection === 'next' ? currentTheme.pageRight : currentTheme.pageLeft} border border-black/10 dark:border-white/20 shadow-2xl overflow-hidden h-full`}
               >
-                <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
+                <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
                   <span>Przewracanie kartki...</span>
                   <span>Strona {flipDirection === 'next' ? rightPdfPageNum : leftPdfPageNum}</span>
                 </div>
-                <div className="my-auto py-4 flex-1 flex flex-col justify-between opacity-80 blur-[0.3px] overflow-hidden">
+                <div className="my-auto py-2 flex-1 flex flex-col justify-between opacity-80 blur-[0.3px] overflow-hidden">
                   {renderPdfPageBody(flipDirection === 'next' ? rightPageData : leftPageData, flipDirection === 'next' ? rightPdfPageNum : leftPdfPageNum)}
                 </div>
-                <div className="border-t border-black/10 dark:border-white/20 pt-3 text-xs text-center text-amber-800 dark:text-amber-300 font-serif-book font-bold shrink-0">
+                <div className="border-t border-black/10 dark:border-white/20 pt-2 text-xs text-center text-amber-800 dark:text-amber-300 font-serif-book font-bold shrink-0">
                   📖 {section.name}
                 </div>
               </div>
@@ -1090,7 +1090,7 @@ export const FlipbookReader: React.FC<Props> = ({
       </div>
 
       {/* Bottom Page Turner Bar & PDF Page Slider (1 to 1460) */}
-      <div className="max-w-5xl mx-auto w-full mt-4 bg-white/80 dark:bg-black/90 backdrop-blur-md p-3 rounded-2xl border border-[#dbcabb] dark:border-[#222222] shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="max-w-5xl mx-auto w-full mt-3 bg-white/80 dark:bg-black/90 backdrop-blur-md p-2.5 rounded-2xl border border-[#dbcabb] dark:border-[#222222] shadow-xs flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenCalendar}
@@ -1195,18 +1195,18 @@ export const FlipbookReader: React.FC<Props> = ({
 
       {/* FULLSCREEN E-READER MODE MODAL */}
       {isFullscreenZoom && (
-        <div className="fixed inset-0 z-50 bg-[#070b14]/98 backdrop-blur-2xl flex flex-col p-3 sm:p-6 overflow-hidden animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-[#070b14]/98 backdrop-blur-2xl flex flex-col p-2 sm:p-4 overflow-hidden animate-fade-in">
           {/* Top Fullscreen Controls Bar */}
-          <div className="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 bg-[#131a29]/90 border border-amber-500/30 p-3 sm:p-4 rounded-2xl shadow-2xl mb-4 shrink-0">
+          <div className="w-full max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 bg-[#131a29]/90 border border-amber-500/30 p-2.5 sm:p-3 rounded-2xl shadow-2xl mb-2 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold">
-                <BookOpen className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold shrink-0">
+                <BookOpen className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-white">
+                <h3 className="font-heading-cinzel font-bold text-sm sm:text-base text-white">
                   {section.name} • Czytnik E-Reader Pełny Ekran
                 </h3>
-                <p className="text-xs text-amber-300 font-serif-book">
+                <p className="text-[11px] text-amber-300 font-serif-book">
                   {singlePageData.displayDate} • Dzień {singlePageData.dayNumber} z 365 (Strona PDF {currentPageNum} z 1460)
                 </p>
               </div>
@@ -1260,64 +1260,64 @@ export const FlipbookReader: React.FC<Props> = ({
               <button
                 onClick={handleCloseFullscreen}
                 id="btn-close-fullscreen-zoom"
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xl text-xs sm:text-sm border border-amber-400/40"
+                className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-xl text-xs sm:text-sm border border-amber-400/40"
                 title="Zamknij tryb pełnoekranowy (Naciśnij Esc)"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-4 h-4 text-white" />
                 <span>Wyjdź (Esc)</span>
               </button>
             </div>
           </div>
 
-          {/* Fullscreen Reading Stage (No vertical scrolling or bleed) */}
-          <div className="w-full max-w-7xl mx-auto flex-1 overflow-hidden rounded-3xl border-2 border-amber-500/30 dark:border-[#222222] shadow-2xl p-4 sm:p-8 bg-[#FAF7F2] dark:bg-black text-[#2c2219] dark:text-white flex flex-col justify-between">
+          {/* Fullscreen Reading Stage (Full screen viewport height, zero bottom cutoff) */}
+          <div className="w-full max-w-7xl mx-auto flex-1 overflow-hidden rounded-2xl border-2 border-amber-500/30 dark:border-[#222222] shadow-2xl p-2.5 sm:p-5 bg-[#FAF7F2] dark:bg-black text-[#2c2219] dark:text-white flex flex-col justify-between">
             {layoutMode === 'single' ? (
-              <div className="flex flex-col justify-between p-6 sm:p-10 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden max-w-3xl mx-auto w-full">
-                <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
+              <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden max-w-3xl mx-auto w-full">
+                <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
                   <span>{section.shortTitle}</span>
                   <span>Strona PDF {currentPageNum} z 1460</span>
                 </div>
 
-                <div className="my-auto py-6 flex-1 flex flex-col justify-between overflow-hidden">
+                <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
                   {renderPdfPageBody(singlePageData, currentPageNum)}
                 </div>
 
-                <div className="border-t border-black/10 dark:border-white/20 pt-3 text-xs text-[#8a7867] dark:text-white flex justify-between shrink-0">
+                <div className="border-t border-black/10 dark:border-white/20 pt-2 text-xs text-[#8a7867] dark:text-white flex justify-between shrink-0">
                   <span>Wydanie E-Book 365 Dni</span>
                   <span className="font-bold">Strona {currentPageNum}</span>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 h-full overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-full overflow-hidden">
                 {/* Left Zoomed Page 1:1 */}
-                <div className="flex flex-col justify-between p-6 sm:p-8 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden">
-                  <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
+                <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden">
+                  <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
                     <span>{section.shortTitle}</span>
                     <span>Strona PDF {leftPdfPageNum} z 1460</span>
                   </div>
 
-                  <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
                     {renderPdfPageBody(leftPageData, leftPdfPageNum)}
                   </div>
 
-                  <div className="border-t border-black/10 dark:border-white/20 pt-3 text-xs text-[#8a7867] dark:text-white flex justify-between shrink-0">
+                  <div className="border-t border-black/10 dark:border-white/20 pt-2 text-xs text-[#8a7867] dark:text-white flex justify-between shrink-0">
                     <span>Wydanie E-Book 365 Dni</span>
                     <span className="font-bold">Strona {leftPdfPageNum}</span>
                   </div>
                 </div>
 
                 {/* Right Zoomed Page 1:1 */}
-                <div className="flex flex-col justify-between p-6 sm:p-8 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden">
-                  <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
+                <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden">
+                  <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
                     <span>Dzień {rightPageData.dayNumber} z 365</span>
                     <span>Strona PDF {rightPdfPageNum} z 1460</span>
                   </div>
 
-                  <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
                     {renderPdfPageBody(rightPageData, rightPdfPageNum)}
                   </div>
 
-                  <div className="border-t border-black/10 dark:border-white/20 pt-3 text-xs text-[#8a7867] dark:text-white flex justify-between shrink-0">
+                  <div className="border-t border-black/10 dark:border-white/20 pt-2 text-xs text-[#8a7867] dark:text-white flex justify-between shrink-0">
                     <span className="font-bold">Strona {rightPdfPageNum}</span>
                     <span>{rightPageData.displayDate}</span>
                   </div>
