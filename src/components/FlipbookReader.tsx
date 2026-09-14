@@ -39,23 +39,28 @@ interface Props {
 }
 
 /**
- * Splits text into three balanced reading chunks for 1:1 PDF page rendering
+ * Splits text into four balanced reading chunks for 1:1 PDF page rendering across 4 subpages per day
  */
-function splitContentIntoThreeChunks(content: string): { chunk1: string; chunk2: string; chunk3: string } {
-  if (!content) return { chunk1: '', chunk2: '', chunk3: '' };
+function splitContentIntoFourChunks(content: string, prayer?: string): { chunk1: string; chunk2: string; chunk3: string; chunk4: string } {
+  let fullText = (content || '').trim();
+  if (prayer && prayer.trim() && !fullText.includes(prayer.trim())) {
+    fullText = `${fullText}\n\nModlitwa:\n${prayer.trim()}`;
+  }
 
-  const paragraphs = content
+  if (!fullText) return { chunk1: '', chunk2: '', chunk3: '', chunk4: '' };
+
+  const paragraphs = fullText
     .split(/\n\n+|<p[^>]*>|<\/p>/i)
     .map(p => p.replace(/<[^>]*>/g, '').trim())
     .filter(Boolean);
 
-  if (paragraphs.length >= 3) {
+  if (paragraphs.length >= 4) {
     const totalChars = paragraphs.reduce((acc, p) => acc + p.length, 0);
-    const target = Math.floor(totalChars / 3);
+    const target = Math.floor(totalChars / 4);
 
     let currentSum = 0;
     let idx1 = 1;
-    for (let i = 0; i < paragraphs.length - 2; i++) {
+    for (let i = 0; i < paragraphs.length - 3; i++) {
       currentSum += paragraphs[i].length;
       if (currentSum >= target) {
         idx1 = i + 1;
@@ -65,7 +70,7 @@ function splitContentIntoThreeChunks(content: string): { chunk1: string; chunk2:
 
     currentSum = 0;
     let idx2 = idx1 + 1;
-    for (let i = idx1; i < paragraphs.length - 1; i++) {
+    for (let i = idx1; i < paragraphs.length - 2; i++) {
       currentSum += paragraphs[i].length;
       if (currentSum >= target) {
         idx2 = i + 1;
@@ -73,37 +78,57 @@ function splitContentIntoThreeChunks(content: string): { chunk1: string; chunk2:
       }
     }
 
+    currentSum = 0;
+    let idx3 = idx2 + 1;
+    for (let i = idx2; i < paragraphs.length - 1; i++) {
+      currentSum += paragraphs[i].length;
+      if (currentSum >= target) {
+        idx3 = i + 1;
+        break;
+      }
+    }
+
     const chunk1 = paragraphs.slice(0, idx1).join('\n\n');
     const chunk2 = paragraphs.slice(idx1, idx2).join('\n\n');
-    const chunk3 = paragraphs.slice(idx2).join('\n\n');
+    const chunk3 = paragraphs.slice(idx2, idx3).join('\n\n');
+    const chunk4 = paragraphs.slice(idx3).join('\n\n');
 
-    return { chunk1, chunk2, chunk3 };
+    return { chunk1, chunk2, chunk3, chunk4 };
+  }
+
+  if (paragraphs.length === 3) {
+    return { chunk1: paragraphs[0], chunk2: paragraphs[1], chunk3: paragraphs[2], chunk4: '' };
   }
 
   if (paragraphs.length === 2) {
-    return { chunk1: paragraphs[0], chunk2: paragraphs[1], chunk3: '' };
+    return { chunk1: paragraphs[0], chunk2: paragraphs[1], chunk3: '', chunk4: '' };
   }
 
-  const text = content.replace(/<[^>]*>/g, '').trim();
-  if (text.length < 300) {
-    return { chunk1: text, chunk2: '', chunk3: '' };
+  const text = fullText.replace(/<[^>]*>/g, '').trim();
+  if (text.length < 400) {
+    return { chunk1: text, chunk2: '', chunk3: '', chunk4: '' };
   }
 
   const len = text.length;
-  const target1 = Math.floor(len / 3);
-  const target2 = Math.floor((len * 2) / 3);
+  const target1 = Math.floor(len / 4);
+  const target2 = Math.floor((len * 2) / 4);
+  const target3 = Math.floor((len * 3) / 4);
 
   let split1 = text.indexOf('. ', target1);
   if (split1 === -1) split1 = target1;
 
-  let split2 = text.indexOf('. ', split2 > split1 ? target2 : split1 + 1);
+  let split2 = text.indexOf('. ', target2 > split1 ? target2 : split1 + 1);
   if (split2 === -1) split2 = target2;
+
+  let split3 = text.indexOf('. ', target3 > split2 ? target3 : split2 + 1);
+  if (split3 === -1) split3 = target3;
 
   const chunk1 = text.slice(0, split1 + 1).trim();
   const chunk2 = text.slice(split1 + 1, split2 + 1).trim();
-  const chunk3 = text.slice(split2 + 1).trim();
+  const chunk3 = text.slice(split2 + 1, split3 + 1).trim();
+  const chunk4 = text.slice(split3 + 1).trim();
 
-  return { chunk1, chunk2, chunk3 };
+  return { chunk1, chunk2, chunk3, chunk4 };
 }
 
 /**
@@ -126,7 +151,18 @@ function getPdfPageData(
     ? currentEntry
     : getEntryForSectionAndDate(sectionId as any, dateObj, customEntries);
 
-  const { chunk1, chunk2, chunk3 } = splitContentIntoThreeChunks(entryObj.content || '');
+  let fullRawText = entryObj.content || '';
+  if (entryObj.title && !fullRawText.trim().startsWith(entryObj.title.trim()) && !fullRawText.trim().startsWith('[')) {
+    fullRawText = `${entryObj.title}\n\n${fullRawText}`;
+  }
+
+  const { chunk1, chunk2, chunk3, chunk4 } = splitContentIntoFourChunks(fullRawText, entryObj.prayer);
+
+  let chunk = '';
+  if (subPage === 1) chunk = chunk1;
+  else if (subPage === 2) chunk = chunk2;
+  else if (subPage === 3) chunk = chunk3;
+  else chunk = chunk4;
 
   return {
     pdfPageNumber: safeP,
@@ -137,9 +173,7 @@ function getPdfPageData(
     season: dateObj.season,
     title: entryObj.title || `Dzień ${dayNum} – ${dateObj.displayDate}`,
     subtitle: entryObj.subtitle,
-    chunk1,
-    chunk2,
-    chunk3,
+    chunk,
     prayer: entryObj.prayer,
     mystery: entryObj.mystery,
     intention: entryObj.intention,
@@ -344,157 +378,36 @@ export const FlipbookReader: React.FC<Props> = ({
    * Helper component to render 1:1 PDF Page content (4 pages per day)
    */
   const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>) => {
-    if (data.subPage === 1) {
-      // PDF Page 1: Title, Subtitle, Season & Opening Reading Chunk 1
-      return (
-        <div className="flex flex-col h-full justify-between space-y-3">
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-widest block font-sans-ui">
-              {data.season || 'Cykl Roczny'} • Dzień {data.dayNumber} z 365
-            </span>
-
-            <h2 className="font-heading-cinzel font-bold text-xl sm:text-2xl text-[#2c2016] dark:text-[#f3e8d2] leading-tight">
-              {data.title}
-            </h2>
-
-            {data.subtitle && (
-              <p className="font-serif-book italic text-xs text-[#7d6b5b] dark:text-[#94a3b8]">
-                {data.subtitle}
-              </p>
-            )}
-          </div>
-
-          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
-            fontSize === 'sm' ? 'text-xs leading-5' :
-            fontSize === 'base' ? 'text-sm leading-6' :
-            fontSize === 'lg' ? 'text-base leading-7' :
-            'text-lg leading-8'
-          }`}>
-            <div className="whitespace-pre-line">{data.chunk1}</div>
-          </div>
-
-          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Strona 1 / 4 (Otwarcie)</span>
-            <span>Rozważanie cz. I na nast. stronie →</span>
-          </div>
+    return (
+      <div className="flex flex-col h-full justify-between space-y-3">
+        <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
+          fontSize === 'sm' ? 'text-xs leading-5' :
+          fontSize === 'base' ? 'text-sm leading-6' :
+          fontSize === 'lg' ? 'text-base leading-7' :
+          'text-lg leading-8'
+        }`}>
+          {data.chunk ? (
+            <div className="whitespace-pre-line">{data.chunk}</div>
+          ) : (
+            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center my-auto">
+              "W ciszy modlitwy odnajdujemy siłę na każdy dzień. Boże obietnice są niewzruszone jak fundamenty niebios."
+            </div>
+          )}
         </div>
-      );
-    } else if (data.subPage === 2) {
-      // PDF Page 2: Core Reading Chunk 2
-      return (
-        <div className="flex flex-col h-full justify-between space-y-3">
-          <div className="border-b border-black/5 dark:border-white/5 pb-1">
-            <span className="font-heading-cinzel text-xs font-bold text-[#685544] dark:text-amber-400">
-              Dzień {data.dayNumber} • Rozważanie (Część I)
-            </span>
-          </div>
 
-          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
-            fontSize === 'sm' ? 'text-xs leading-5' :
-            fontSize === 'base' ? 'text-sm leading-6' :
-            fontSize === 'lg' ? 'text-base leading-7' :
-            'text-lg leading-8'
-          }`}>
-            {data.chunk2 ? (
-              <div className="whitespace-pre-line">{data.chunk2}</div>
-            ) : (
-              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center my-auto">
-                "Niech słowo Chrystusa przebywa w was z całym swym bogactwem. Z wdzięcznością śpiewajcie w sercach waszych Bogu." (Kol 3, 16)
-              </div>
-            )}
-          </div>
-
-          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Strona 2 / 4 (Głębia)</span>
-            <span>Rozważanie cz. II na nast. stronie →</span>
-          </div>
-        </div>
-      );
-    } else if (data.subPage === 3) {
-      // PDF Page 3: Core Reading Chunk 3
-      return (
-        <div className="flex flex-col h-full justify-between space-y-3">
-          <div className="border-b border-black/5 dark:border-white/5 pb-1">
-            <span className="font-heading-cinzel text-xs font-bold text-[#685544] dark:text-amber-400">
-              Dzień {data.dayNumber} • Rozważanie (Część II)
-            </span>
-          </div>
-
-          <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
-            fontSize === 'sm' ? 'text-xs leading-5' :
-            fontSize === 'base' ? 'text-sm leading-6' :
-            fontSize === 'lg' ? 'text-base leading-7' :
-            'text-lg leading-8'
-          }`}>
-            {data.chunk3 ? (
-              <div className="whitespace-pre-line">{data.chunk3}</div>
-            ) : (
-              <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 italic text-xs leading-relaxed text-center my-auto">
-                "W ciszy modlitwy odnajdujemy siłę na każdy dzień. Boże obietnice są niewzruszone jak fundamenty niebios."
-              </div>
-            )}
-          </div>
-
-          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Strona 3 / 4 (Synteza)</span>
-            <span>Modlitwa Serca na nast. stronie →</span>
-          </div>
-        </div>
-      );
-    } else {
-      // PDF Page 4: Prayer of the heart & Meditation
-      return (
-        <div className="flex flex-col h-full justify-between space-y-3">
-          <div className="border-b border-black/5 dark:border-white/5 pb-1">
-            <span className="font-heading-cinzel text-xs font-bold text-amber-800 dark:text-amber-400">
-              Dzień {data.dayNumber} • Modlitwa Serca & Kontemplacja
-            </span>
-          </div>
-
-          <div className="flex-1 space-y-3 overflow-hidden">
-            {data.prayer ? (
-              <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-l-4 border-amber-600 dark:border-amber-500 font-serif-book italic text-sm text-[#46372a] dark:text-amber-100">
-                <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-amber-800 dark:text-amber-400 mb-1">
-                  Modlitwa Serca:
-                </span>
-                <div className="whitespace-pre-line">{data.prayer}</div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border-l-4 border-amber-600 font-serif-book italic text-sm text-[#46372a] dark:text-amber-100">
-                <span className="block font-sans-ui not-italic font-bold text-[11px] uppercase tracking-wider text-amber-800 dark:text-amber-400 mb-1">
-                  Modlitwa Wieczorna:
-                </span>
-                Panie mój i Boże, oddaję Ci cały ten dzień, Twojej miłości zawierza moje serce i bliskich. Amen.
-              </div>
-            )}
-
-            {data.mystery && (
-              <div className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 text-xs font-serif-book">
-                <span className="font-bold text-amber-900 dark:text-amber-300">Tajemnica: </span>
-                {data.mystery}
-              </div>
-            )}
-
-            {section.id === 'ebook_rhz' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsRosaryModalOpen(true);
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              >
-                <Sparkles className="w-3.5 h-3.5" /> Otwórz Cyfrowy Różaniec RHZ
-              </button>
-            )}
-          </div>
-
-          <div className="text-[11px] font-serif-book italic text-[#8c7968] dark:text-[#94a3b8] border-t border-black/5 dark:border-white/5 pt-2 flex justify-between">
-            <span>Strona 4 / 4 (Zwieńczenie)</span>
-            <span>PDF Strona {data.pdfPageNumber} / 1460</span>
-          </div>
-        </div>
-      );
-    }
+        {data.subPage === 4 && section.id === 'ebook_rhz' && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsRosaryModalOpen(true);
+            }}
+            className="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs mt-2"
+          >
+            <Sparkles className="w-3.5 h-3.5" /> Otwórz Cyfrowy Różaniec RHZ
+          </button>
+        )}
+      </div>
+    );
   };
 
   return (

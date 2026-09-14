@@ -133,6 +133,7 @@ export interface SectionEntry {
   image?: string;
   pdfs?: UploadedPdf[];
   updatedAt?: string;
+  homeConfig?: HomePageConfig;
   translations?: Record<string, {
     title: string;
     subtitle?: string;
