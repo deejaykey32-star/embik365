@@ -240,6 +240,39 @@ export const FlipbookReader: React.FC<Props> = ({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
+  const defaultWnrPdf: UploadedPdf = {
+    id: 'pdf-wnr365-full',
+    filename: '1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    originalName: '_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    format: 'pdf',
+    url: '/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    size: 4358441,
+    sectionId: 'ebook_wnr',
+    title: 'Księga Widoki na Raj (WnR365) - Pełny PDF 1:1',
+    description: 'Zaimportowany przez administratora pełny plik PDF książki.',
+    uploadedAt: '2026-09-13T12:00:00.000Z'
+  };
+
+  // Find PDFs attached to this specific section (ebook_wnr, ebook_rhz, ebook_biblia, bio365)
+  const matchingPdfs = sectionPdfs.filter(
+    p => p.sectionId === section.id ||
+         (section.id === 'ebook_wnr' && (p.sectionId === 'wnr365' || p.sectionId === 'ebook_wnr')) ||
+         (section.id === 'ebook_rhz' && (p.sectionId === 'rhz365' || p.sectionId === 'ebook_rhz')) ||
+         (section.id === 'ebook_biblia' && (p.sectionId === 'biblia365' || p.sectionId === 'ebook_biblia')) ||
+         (section.id === 'bio365' && (p.sectionId === 'bio365' || p.sectionId === 'ebook_bio'))
+  );
+
+  const activePdf = matchingPdfs[0] || (section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366' ? defaultWnrPdf : null);
+
+  // Set view mode automatically based on active PDF presence
+  useEffect(() => {
+    if (activePdf) {
+      setViewMode('pdf');
+    } else {
+      setViewMode('text');
+    }
+  }, [activePdf?.id, section.id]);
+
   // Save current reading position and layout mode to localStorage
   useEffect(() => {
     try {
@@ -455,29 +488,6 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   const currentTheme = getThemeStyles();
-
-  const defaultWnrPdf: UploadedPdf = {
-    id: 'pdf-wnr365-full',
-    filename: '1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-    originalName: '_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-    format: 'pdf',
-    url: '/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-    size: 4358441,
-    sectionId: 'ebook_wnr',
-    title: 'Księga Widoki na Raj (WnR365) - Pełny PDF 1:1',
-    description: 'Zaimportowany przez administratora pełny plik PDF książki.',
-    uploadedAt: '2026-09-13T12:00:00.000Z'
-  };
-
-  // Find PDFs attached to this section or this specific day
-  const matchingPdfs = sectionPdfs.filter(
-    p => p.sectionId === section.id ||
-         (section.id === 'ebook_wnr' && (p.sectionId === 'wnr365' || p.sectionId === 'ebook_wnr')) ||
-         (section.id === 'ebook_rhz' && (p.sectionId === 'rhz365' || p.sectionId === 'ebook_rhz')) ||
-         (section.id === 'ebook_biblia' && (p.sectionId === 'biblia365' || p.sectionId === 'ebook_biblia'))
-  );
-
-  const activePdf = matchingPdfs[0] || (section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366' ? defaultWnrPdf : null);
 
   // Mouse wheel handler to turn pages horizontally (disabling vertical scrolling)
   const [wheelCooldown, setWheelCooldown] = useState<boolean>(false);
