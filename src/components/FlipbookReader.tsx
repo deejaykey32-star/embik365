@@ -379,7 +379,7 @@ export const FlipbookReader: React.FC<Props> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSpread, isFlipping, isFullscreenZoom]);
+  }, [currentPageNum, isFlipping, isFullscreenZoom]);
 
   const toggleBookmark = () => {
     const updated = isBookmarked
@@ -803,7 +803,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Previous page arrow button (left) */}
         <button
           onClick={handleTurnPrev}
-          disabled={currentSpread <= 1 || isFlipping}
+          disabled={currentPageNum <= 1 || isFlipping}
           id="btn-flip-left"
           className="absolute left-0 sm:-left-4 z-40 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w lewo (Poprzednia strona PDF)"
@@ -814,7 +814,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Next page arrow button (right) */}
         <button
           onClick={handleTurnNext}
-          disabled={currentSpread >= 730 || isFlipping}
+          disabled={currentPageNum >= 1459 || isFlipping}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-40 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w prawo (Następna strona PDF)"
@@ -937,7 +937,7 @@ export const FlipbookReader: React.FC<Props> = ({
                       e.stopPropagation();
                       handleTurnPrev();
                     }}
-                    disabled={currentSpread <= 1}
+                    disabled={currentPageNum <= 1}
                     className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
                     title="Poprzednia karta"
                   >
@@ -949,7 +949,7 @@ export const FlipbookReader: React.FC<Props> = ({
                       e.stopPropagation();
                       handleTurnNext();
                     }}
-                    disabled={currentSpread >= 730}
+                    disabled={currentPageNum >= 1459}
                     className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
                     title="Następna karta"
                   >
