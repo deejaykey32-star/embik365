@@ -234,7 +234,7 @@ export const FlipbookReader: React.FC<Props> = ({
   const [isRosaryModalOpen, setIsRosaryModalOpen] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isFullscreenZoom, setIsFullscreenZoom] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'pdf' | 'text'>('pdf');
+  const [viewMode, setViewMode] = useState<'pdf' | 'text'>('text');
 
   // Touch gesture state for horizontal page flipping
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -264,14 +264,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const activePdf = matchingPdfs[0] || (section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366' ? defaultWnrPdf : null);
 
-  // Set view mode automatically based on active PDF presence
-  useEffect(() => {
-    if (activePdf) {
-      setViewMode('pdf');
-    } else {
-      setViewMode('text');
-    }
-  }, [activePdf?.id, section.id]);
+
 
   // Save current reading position and layout mode to localStorage
   useEffect(() => {
@@ -720,6 +713,19 @@ export const FlipbookReader: React.FC<Props> = ({
             <FileText className="w-3.5 h-3.5" />
             <span>{viewMode === 'pdf' ? 'PDF A5' : 'Tekst'}</span>
           </button>
+
+          {/* Open Full PDF Modal */}
+          {activePdf && (
+            <button
+              onClick={() => onOpenPdf(activePdf)}
+              id="btn-flipbook-open-pdf"
+              className="px-2.5 py-1.5 rounded-xl bg-red-600/15 hover:bg-red-600/25 text-red-800 dark:text-red-300 border border-red-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Otwórz pełny czytnik pliku PDF"
+            >
+              <FileText className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+              <span className="hidden sm:inline">Podgląd PDF</span>
+            </button>
+          )}
 
           {/* Zoom Fullscreen E-Reader Trigger */}
           <button
