@@ -29646,6 +29646,15 @@
   ],
   "qrCodes": [
     {
+      "id": "qr_file_1789390170655",
+      "title": "jing-jang.jpg",
+      "displayLabel": "Zeskanuj, aby zobaczyć plik jing-jang.jpg",
+      "shortUrl": "https://widokinaraj.pl",
+      "fullUrl": "https://widokinaraj.pl/#file_1789390170655",
+      "category": "Materiały src/pliki",
+      "createdAt": "2026-09-14T12:49:30.655Z"
+    },
+    {
       "id": "qr_info365",
       "title": "Wprowadzenie Droga365",
       "displayLabel": "Zeskanuj, aby otworzyć przewodnik info365",
@@ -29736,6 +29745,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-14T02:47:46.693Z",
+  "lastUpdated": "2026-09-14T12:53:12.717Z",
   "updatedBy": "Admin Dominik Kuta"
 }
