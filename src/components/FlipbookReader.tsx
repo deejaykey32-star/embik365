@@ -499,35 +499,35 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   /**
-   * Helper component to render 1:1 PDF Page content (4 pages per day) with zero vertical scroll bleeding
+   * Helper component to render 1:1 PDF Page content in exact A5 format (148 x 210 mm ratio)
    */
   const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>, targetPageNum: number) => {
     const pageNum = targetPageNum;
 
-    // Special 1:1 Title Cover Page rendering for Page 1
+    // Special 1:1 Title Cover Page rendering for Page 1 in A5 format
     if (pageNum === 1) {
       if (viewMode === 'pdf' && activePdf) {
         const pdfPageUrl = `${activePdf.url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
         return (
-          <div className="w-full h-full flex-1 flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md pointer-events-none select-none">
+          <div className="w-full h-full flex-1 flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md pointer-events-none select-none aspect-[148/210]">
             <iframe
               key={`pdf-frame-${activePdf.id}-page1`}
               src={pdfPageUrl}
-              title={`Strona Tytułowa 1:1 (Strona PDF 1 z 1460)`}
+              title={`Strona Tytułowa 1:1 (Format A5 - Strona PDF 1 z 1460)`}
               scrolling="no"
-              className="w-full h-full flex-1 border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
+              className="w-full h-full flex-1 border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden aspect-[148/210]"
               style={{ pointerEvents: 'none', border: 0, width: '100%', height: '100%' }}
             />
           </div>
         );
       }
 
-      // Elegant 1:1 Title Cover Page in Text View
+      // Elegant 1:1 Title Cover Page in Text View (Format A5)
       return (
-        <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1">
+        <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1 aspect-[148/210]">
           <div className="w-full pt-2 border-b border-amber-600/20 pb-2">
             <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
-              Wydanie Książkowe 1:1 • Tom 365 Dni
+              Format A5 (148 x 210 mm) • Tom 365 Dni
             </span>
           </div>
 
@@ -552,7 +552,7 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
 
           <div className="w-full pb-1 border-t border-amber-600/20 pt-2 text-[10px] text-[#7a6552] dark:text-[#94a3b8] font-serif-book italic">
-            Strona Tytułowa 1:1 • Pierwsza Kartka Księgi
+            Strona Tytułowa A5 1:1 • Pierwsza Kartka Księgi
           </div>
         </div>
       );
@@ -561,13 +561,13 @@ export const FlipbookReader: React.FC<Props> = ({
     if (viewMode === 'pdf' && activePdf) {
       const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
       return (
-        <div className="w-full h-full flex-1 flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-xs pointer-events-none select-none">
+        <div className="w-full h-full flex-1 flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-xs pointer-events-none select-none aspect-[148/210]">
           <iframe
             key={`pdf-frame-${activePdf.id}-${pageNum}`}
             src={pdfPageUrl}
-            title={`Strona PDF ${pageNum} z 1460`}
+            title={`Strona PDF ${pageNum} z 1460 (Format A5)`}
             scrolling="no"
-            className="w-full h-full flex-1 border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
+            className="w-full h-full flex-1 border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden aspect-[148/210]"
             style={{ pointerEvents: 'none', border: 0, width: '100%', height: '100%' }}
           />
         </div>
@@ -575,7 +575,7 @@ export const FlipbookReader: React.FC<Props> = ({
     }
 
     return (
-      <div className="flex flex-col h-full flex-1 justify-between space-y-3 overflow-hidden">
+      <div className="flex flex-col h-full flex-1 justify-between space-y-3 overflow-hidden aspect-[148/210]">
         <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-white text-justify flex-1 overflow-y-auto pr-1 ${
           fontSize === 'sm' ? 'text-xs leading-5' :
           fontSize === 'base' ? 'text-sm leading-6' :
@@ -657,7 +657,7 @@ export const FlipbookReader: React.FC<Props> = ({
                 {section.name}
               </span>
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-medium border border-amber-200 dark:border-amber-800/60">
-                {layoutMode === 'spread' ? 'Widok 2 Strony (Książka)' : 'Widok 1 Strona'}
+                Format Książkowy A5 (148x210 mm)
               </span>
             </div>
             <p className="text-xs text-[#716152] dark:text-[#94a3b8] font-serif-book">
@@ -678,10 +678,10 @@ export const FlipbookReader: React.FC<Props> = ({
                   ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
                   : 'text-[#615143] dark:text-[#94a3b8] hover:bg-black/5 dark:hover:bg-white/5'
               }`}
-              title="Widok książkowy (Lewa i Prawa strona)"
+              title="Widok książkowy A5 (Lewa i Prawa strona)"
             >
               <Columns className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">2 Strony</span>
+              <span className="hidden sm:inline">2 Strony A5</span>
             </button>
             <button
               onClick={() => setLayoutMode('single')}
@@ -691,10 +691,10 @@ export const FlipbookReader: React.FC<Props> = ({
                   ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
                   : 'text-[#615143] dark:text-[#94a3b8] hover:bg-black/5 dark:hover:bg-white/5'
               }`}
-              title="Widok jednostronicowy (Tylko aktualna strona)"
+              title="Widok jednostronicowy A5 (Tylko 1 strona)"
             >
               <Square className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">1 Strona</span>
+              <span className="hidden sm:inline">1 Strona A5</span>
             </button>
           </div>
 
@@ -718,10 +718,10 @@ export const FlipbookReader: React.FC<Props> = ({
                 ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs'
                 : 'bg-[#f0e4d4] dark:bg-[#1c2434] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#d8c8b6] dark:border-[#28354a]'
             }`}
-            title="Przełącz widok: 1:1 Plik PDF lub Wyciągnięty Tekst"
+            title="Przełącz widok: 1:1 Plik PDF A5 lub Wyciągnięty Tekst"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>{viewMode === 'pdf' ? 'PDF 1:1' : 'Tekst'}</span>
+            <span>{viewMode === 'pdf' ? 'PDF A5' : 'Tekst'}</span>
           </button>
 
           {/* Zoom Fullscreen E-Reader Trigger */}
@@ -729,7 +729,7 @@ export const FlipbookReader: React.FC<Props> = ({
             onClick={handleOpenFullscreen}
             id="btn-flipbook-zoom"
             className="px-2.5 py-1.5 rounded-xl bg-amber-600 text-white hover:bg-amber-700 border border-amber-500 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-            title="Tryb Pełnoekranowy Czytnika E-Reader"
+            title="Tryb Pełnoekranowy Czytnika A5"
           >
             <Maximize2 className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Pełny ekran</span>
@@ -862,7 +862,7 @@ export const FlipbookReader: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Main Flipbook Stage (Dynamic Height, Entire Page Visible Without Cutoff) */}
+      {/* Main Flipbook Stage (Exact Format A5: 148 x 210 mm) */}
       <div className="max-w-5xl mx-auto w-full flex-1 flex items-center justify-center relative perspective-2000 py-2">
         {/* Previous page arrow button (left) */}
         <button
@@ -870,7 +870,7 @@ export const FlipbookReader: React.FC<Props> = ({
           disabled={currentPageNum <= 1 || isFlipping}
           id="btn-flip-left"
           className="absolute left-0 sm:-left-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
-          title="Przewróć kartkę w lewo (Poprzednia strona PDF)"
+          title="Przewróć kartkę w lewo (Poprzednia strona A5)"
         >
           <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
@@ -881,35 +881,35 @@ export const FlipbookReader: React.FC<Props> = ({
           disabled={currentPageNum >= 1460 || isFlipping}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
-          title="Przewróć kartkę w prawo (Następna strona PDF)"
+          title="Przewróć kartkę w prawo (Następna strona A5)"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
         {/* Outer Hardcover Book Frame */}
-        <div className={`w-full ${layoutMode === 'single' ? 'max-w-2xl' : 'max-w-5xl'} rounded-[24px] p-2 sm:p-3 bg-gradient-to-b from-[#422e1e] via-[#2d1e13] to-[#1d120a] dark:from-[#1e150c] dark:via-[#140e08] dark:to-[#0a0604] border-[4px] sm:border-[8px] border-[#382618] dark:border-[#1a110a] book-hard-cover relative shadow-2xl overflow-hidden transition-all duration-300`}>
+        <div className={`w-full ${layoutMode === 'single' ? 'max-w-[480px]' : 'max-w-5xl'} rounded-[24px] p-2 sm:p-3 bg-gradient-to-b from-[#422e1e] via-[#2d1e13] to-[#1d120a] dark:from-[#1e150c] dark:via-[#140e08] dark:to-[#0a0604] border-[4px] sm:border-[8px] border-[#382618] dark:border-[#1a110a] book-hard-cover relative shadow-2xl overflow-hidden transition-all duration-300`}>
           {/* Decorative Corner Accents */}
           <div className="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-amber-500/40 rounded-tl-md pointer-events-none z-10" />
           <div className="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-amber-500/40 rounded-tr-md pointer-events-none z-10" />
           <div className="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-amber-500/40 rounded-bl-md pointer-events-none z-10" />
           <div className="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-amber-500/40 rounded-br-md pointer-events-none z-10" />
 
-          {/* 3D Open Book Inner Container (Dynamic height matching viewport, zero cutoff) */}
+          {/* 3D Open Book Inner Container (Strict A5 Format 148x210mm Ratio, 1:1 Complete Pages Visible) */}
           <div 
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onWheel={handleWheelTurn}
-            className={`w-full h-[650px] sm:h-[720px] md:h-[780px] lg:h-[820px] max-h-[82vh] rounded-xl relative overflow-hidden transform-style-3d select-none transition-transform duration-300 ${
-              layoutMode === 'spread' ? 'grid grid-cols-1 md:grid-cols-2' : 'flex flex-col'
+            className={`w-full rounded-xl relative overflow-hidden transform-style-3d select-none transition-transform duration-300 ${
+              layoutMode === 'spread' ? 'grid grid-cols-1 md:grid-cols-2 aspect-auto md:aspect-[297/210]' : 'flex flex-col aspect-[148/210]'
             } ${isFlipping ? 'scale-[0.998]' : ''}`}
           >
-            {/* SINGLE PAGE LAYOUT MODE */}
+            {/* SINGLE PAGE LAYOUT MODE (SINGLE A5 CARD: ASPECT 148/210) */}
             {layoutMode === 'single' ? (
               <div 
                 onClick={handleOpenFullscreen}
-                className={`w-full h-full flex flex-col justify-between p-3 sm:p-5 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
-                title="Kliknij, aby otworzyć stronę w trybie pełnoekranowym"
+                className={`w-full h-full flex flex-col justify-between p-3 sm:p-5 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden aspect-[148/210]`}
+                title="Kliknij, aby otworzyć stronę A5 w trybie pełnoekranowym"
               >
                 {/* Single page header */}
                 <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between shrink-0">
@@ -917,12 +917,12 @@ export const FlipbookReader: React.FC<Props> = ({
                     {section.shortTitle}
                   </span>
                   <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                    Strona PDF {currentPageNum} z 1460
+                    Strona PDF {currentPageNum} z 1460 (A5)
                   </span>
                 </div>
 
                 {/* Single page 1:1 body */}
-                <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
+                <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden aspect-[148/210]">
                   {renderPdfPageBody(singlePageData, currentPageNum)}
                 </div>
 
@@ -957,12 +957,12 @@ export const FlipbookReader: React.FC<Props> = ({
                 </div>
               </div>
             ) : (
-              /* SPREAD LAYOUT MODE (LEFT + RIGHT PAGES SIDE-BY-SIDE) */
+              /* SPREAD LAYOUT MODE (TWO A5 PAGES SIDE-BY-SIDE = A4 SPREAD 297x210) */
               <>
-                {/* Left Page (Desktop Spread) */}
+                {/* Left Page (Desktop Spread A5) */}
                 <div 
                   onClick={handleOpenFullscreen}
-                  className={`hidden md:flex flex-col justify-between p-3 sm:p-5 border-r border-[#d4c5b3] dark:border-[#222222] ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full`}
+                  className={`hidden md:flex flex-col justify-between p-3 sm:p-5 border-r border-[#d4c5b3] dark:border-[#222222] ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full aspect-[148/210]`}
                   title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
                 >
                   <div className="absolute top-0 right-0 bottom-0 w-12 pointer-events-none page-crease-left z-10" />
@@ -973,12 +973,12 @@ export const FlipbookReader: React.FC<Props> = ({
                       {section.shortTitle}
                     </span>
                     <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                      Strona PDF {leftPdfPageNum} z 1460
+                      Strona PDF {leftPdfPageNum} z 1460 (A5)
                     </span>
                   </div>
 
                   {/* Left page 1:1 content */}
-                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden aspect-[148/210]">
                     {renderPdfPageBody(leftPageData, leftPdfPageNum)}
                   </div>
 
@@ -998,10 +998,10 @@ export const FlipbookReader: React.FC<Props> = ({
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-800/50 dark:bg-amber-400/40 shadow-xs" />
                 </div>
 
-                {/* Right Page (Desktop/Mobile Spread) */}
+                {/* Right Page (Desktop/Mobile Spread A5) */}
                 <div 
                   onClick={handleOpenFullscreen}
-                  className={`flex flex-col justify-between p-3 sm:p-5 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full`}
+                  className={`flex flex-col justify-between p-3 sm:p-5 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden h-full aspect-[148/210]`}
                   title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
                 >
                   <div className="absolute top-0 left-0 bottom-0 w-12 pointer-events-none page-crease-right z-10" />
@@ -1015,7 +1015,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   {/* Right page header */}
                   <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between shrink-0">
                     <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                      Strona PDF {rightPdfPageNum} z 1460
+                      Strona PDF {rightPdfPageNum} z 1460 (A5)
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="font-heading-cinzel text-xs font-bold text-[#7a6755] dark:text-white">
@@ -1025,7 +1025,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   </div>
 
                   {/* Right page 1:1 content */}
-                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden aspect-[148/210]">
                     {renderPdfPageBody(rightPageData, rightPdfPageNum)}
                   </div>
 
@@ -1071,17 +1071,17 @@ export const FlipbookReader: React.FC<Props> = ({
                   flipDirection === 'next'
                     ? 'right-0 animate-flip-next'
                     : 'left-0 animate-flip-prev'
-                } ${flipDirection === 'next' ? currentTheme.pageRight : currentTheme.pageLeft} border border-black/10 dark:border-white/20 shadow-2xl overflow-hidden h-full`}
+                } ${flipDirection === 'next' ? currentTheme.pageRight : currentTheme.pageLeft} border border-black/10 dark:border-white/20 shadow-2xl overflow-hidden h-full aspect-[148/210]`}
               >
                 <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
-                  <span>Przewracanie kartki...</span>
+                  <span>Przewracanie kartki A5...</span>
                   <span>Strona {flipDirection === 'next' ? rightPdfPageNum : leftPdfPageNum}</span>
                 </div>
-                <div className="my-auto py-2 flex-1 flex flex-col justify-between opacity-80 blur-[0.3px] overflow-hidden">
+                <div className="my-auto py-1 flex-1 flex flex-col justify-between opacity-80 blur-[0.3px] overflow-hidden aspect-[148/210]">
                   {renderPdfPageBody(flipDirection === 'next' ? rightPageData : leftPageData, flipDirection === 'next' ? rightPdfPageNum : leftPdfPageNum)}
                 </div>
                 <div className="border-t border-black/10 dark:border-white/20 pt-2 text-xs text-center text-amber-800 dark:text-amber-300 font-serif-book font-bold shrink-0">
-                  📖 {section.name}
+                  📖 {section.name} (Format A5)
                 </div>
               </div>
             )}
@@ -1193,7 +1193,7 @@ export const FlipbookReader: React.FC<Props> = ({
         </div>
       )}
 
-      {/* FULLSCREEN E-READER MODE MODAL */}
+      {/* FULLSCREEN E-READER MODE MODAL (FORMAT A5) */}
       {isFullscreenZoom && (
         <div className="fixed inset-0 z-50 bg-[#070b14]/98 backdrop-blur-2xl flex flex-col p-2 sm:p-4 overflow-hidden animate-fade-in">
           {/* Top Fullscreen Controls Bar */}
@@ -1204,7 +1204,7 @@ export const FlipbookReader: React.FC<Props> = ({
               </div>
               <div>
                 <h3 className="font-heading-cinzel font-bold text-sm sm:text-base text-white">
-                  {section.name} • Czytnik E-Reader Pełny Ekran
+                  {section.name} • Czytnik E-Reader A5 (Pełny Ekran)
                 </h3>
                 <p className="text-[11px] text-amber-300 font-serif-book">
                   {singlePageData.displayDate} • Dzień {singlePageData.dayNumber} z 365 (Strona PDF {currentPageNum} z 1460)
@@ -1225,7 +1225,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   }`}
                 >
                   <Columns className="w-3.5 h-3.5" />
-                  <span>2 Strony</span>
+                  <span>2 Strony A5</span>
                 </button>
                 <button
                   onClick={() => setLayoutMode('single')}
@@ -1236,7 +1236,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   }`}
                 >
                   <Square className="w-3.5 h-3.5" />
-                  <span>1 Strona</span>
+                  <span>1 Strona A5</span>
                 </button>
               </div>
 
@@ -1269,16 +1269,16 @@ export const FlipbookReader: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Fullscreen Reading Stage (Full screen viewport height, zero bottom cutoff) */}
+          {/* Fullscreen Reading Stage (Format A5 - Aspect 148/210) */}
           <div className="w-full max-w-7xl mx-auto flex-1 overflow-hidden rounded-2xl border-2 border-amber-500/30 dark:border-[#222222] shadow-2xl p-2.5 sm:p-5 bg-[#FAF7F2] dark:bg-black text-[#2c2219] dark:text-white flex flex-col justify-between">
             {layoutMode === 'single' ? (
-              <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden max-w-3xl mx-auto w-full">
+              <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden max-w-[500px] mx-auto w-full aspect-[148/210]">
                 <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
                   <span>{section.shortTitle}</span>
-                  <span>Strona PDF {currentPageNum} z 1460</span>
+                  <span>Strona PDF {currentPageNum} z 1460 (A5)</span>
                 </div>
 
-                <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
+                <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden aspect-[148/210]">
                   {renderPdfPageBody(singlePageData, currentPageNum)}
                 </div>
 
@@ -1288,15 +1288,15 @@ export const FlipbookReader: React.FC<Props> = ({
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-full overflow-hidden">
-                {/* Left Zoomed Page 1:1 */}
-                <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-full overflow-hidden items-center justify-center">
+                {/* Left Zoomed Page 1:1 A5 */}
+                <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden aspect-[148/210]">
                   <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
                     <span>{section.shortTitle}</span>
-                    <span>Strona PDF {leftPdfPageNum} z 1460</span>
+                    <span>Strona PDF {leftPdfPageNum} z 1460 (A5)</span>
                   </div>
 
-                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden aspect-[148/210]">
                     {renderPdfPageBody(leftPageData, leftPdfPageNum)}
                   </div>
 
@@ -1306,14 +1306,14 @@ export const FlipbookReader: React.FC<Props> = ({
                   </div>
                 </div>
 
-                {/* Right Zoomed Page 1:1 */}
-                <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden">
+                {/* Right Zoomed Page 1:1 A5 */}
+                <div className="flex flex-col justify-between p-3 sm:p-5 rounded-2xl bg-black/5 dark:bg-black border border-black/10 dark:border-white/20 h-full overflow-hidden aspect-[148/210]">
                   <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
                     <span>Dzień {rightPageData.dayNumber} z 365</span>
-                    <span>Strona PDF {rightPdfPageNum} z 1460</span>
+                    <span>Strona PDF {rightPdfPageNum} z 1460 (A5)</span>
                   </div>
 
-                  <div className="my-auto py-2 flex-1 flex flex-col justify-between overflow-hidden">
+                  <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden aspect-[148/210]">
                     {renderPdfPageBody(rightPageData, rightPdfPageNum)}
                   </div>
 
