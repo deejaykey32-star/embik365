@@ -70,7 +70,16 @@ export default function App() {
   // 4. Modals state initialized from URL slug subview
   const [isCalendarOpen, setIsCalendarOpen] = useState(initialRoute.subview === 'kalendarz');
   const [isAdminOpen, setIsAdminOpen] = useState(
-    initialRoute.subview === 'admin' || initialRoute.subview === 'panel' || initialRoute.subview === 'kody-qr'
+    initialRoute.subview === 'admin' || 
+    initialRoute.subview === 'panel' || 
+    initialRoute.subview === 'kody-qr' || 
+    initialRoute.subview === 'qr' ||
+    initialRoute.subview === 'grafika' ||
+    initialRoute.subview === 'media' ||
+    initialRoute.subview === 'zasoby' ||
+    initialRoute.subview === 'uploads' ||
+    initialRoute.subview === 'galeria' ||
+    initialRoute.subview === 'materialy'
   );
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(initialRoute.subview === 'pobierz' || initialRoute.subview === 'download');
@@ -243,9 +252,9 @@ export default function App() {
       const route = parseUrlRoute();
       if (route.sectionId) setActiveSectionId(route.sectionId);
       if (route.date) setCurrentDate(route.date);
-      setIsCalendarOpen(route.subview === 'kalendarz');
-      setIsDownloadModalOpen(route.subview === 'pobierz' || route.subview === 'download');
-      setIsLectorModalOpen(route.subview === 'lektor' || route.subview === 'lector');
+      if (route.subview === 'kalendarz') setIsCalendarOpen(true);
+      if (route.subview === 'pobierz' || route.subview === 'download') setIsDownloadModalOpen(true);
+      if (route.subview === 'lektor' || route.subview === 'lector') setIsLectorModalOpen(true);
       
       if (route.subview === 'grafika' || route.subview === 'media' || route.subview === 'zasoby' || route.subview === 'uploads' || route.subview === 'galeria' || route.subview === 'materialy') {
         setIsAdminOpen(true);
@@ -256,8 +265,6 @@ export default function App() {
       } else if (route.subview === 'admin' || route.subview === 'panel') {
         setIsAdminOpen(true);
         setAdminTab('upload');
-      } else {
-        setIsAdminOpen(false);
       }
 
       if (route.pdfId && uploads.length > 0) {
@@ -265,8 +272,6 @@ export default function App() {
         if (match) setViewingPdf(match);
       }
     };
-
-    handleRouteSync();
 
     window.addEventListener('hashchange', handleRouteSync);
     window.addEventListener('popstate', handleRouteSync);
