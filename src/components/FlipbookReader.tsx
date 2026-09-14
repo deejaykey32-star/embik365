@@ -197,9 +197,20 @@ export const FlipbookReader: React.FC<Props> = ({
   currentLang = 'pl',
   customEntries
 }) => {
-  // Total 1460 PDF pages (4 pages per day * 365 days) = 730 2-page spreads
-  const [currentSpread, setCurrentSpread] = useState<number>(() => {
-    return (currentDate.dayNumber - 1) * 2 + 1;
+  // Persistent E-Reader Reading Position Memory per book (1 to 1460 PDF pages)
+  const STORAGE_POS_KEY = `drogowskazy_reader_pos_${section.id}`;
+
+  const [currentPageNum, setCurrentPageNum] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_POS_KEY);
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 1460) {
+          return parsed === 1 ? 1 : (parsed % 2 === 1 ? parsed - 1 : parsed);
+        }
+      }
+    } catch {}
+    return 1; // Start on Title / Cover Page 1 on initial section open!
   });
 
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
@@ -217,6 +228,13 @@ export const FlipbookReader: React.FC<Props> = ({
   // Touch gesture state for horizontal page flipping
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  // Save current reading position to localStorage whenever currentPageNum changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_POS_KEY, currentPageNum.toString());
+    } catch {}
+  }, [currentPageNum, STORAGE_POS_KEY]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.targetTouches[0].clientX);
@@ -240,17 +258,26 @@ export const FlipbookReader: React.FC<Props> = ({
     setTouchEndX(null);
   };
 
-  // Sync currentSpread when currentDate prop changes externally
-  useEffect(() => {
-    const targetSpread = (currentDate.dayNumber - 1) * 2 + 1;
-    setCurrentSpread(targetSpread);
-  }, [currentDate.dayNumber]);
+  // Calculate 1:1 PDF Page numbers for left and right pages
+  // Page 1: Single Title Page 1 on right, inside cover on left
+  // Page 2 & 3: Left PDF Page 2, Right PDF Page 3
+  const leftPdfPageNum = currentPageNum === 1 ? 0 : currentPageNum;
+  const rightPdfPageNum = currentPageNum === 1 ? 1 : currentPageNum + 1;
 
-  const leftPdfPageNum = (currentSpread * 2) - 1;
-  const rightPdfPageNum = currentSpread * 2;
-
-  const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry, customEntries);
+  const leftPageData = getPdfPageData(leftPdfPageNum || 1, section.id, currentDate, entry, customEntries);
   const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry, customEntries);
+
+  const handleResetToTitlePage = () => {
+    if (currentPageNum === 1 || isFlipping) return;
+    setIsFlipping(true);
+    setFlipDirection('prev');
+    playPageFlipSound();
+    setTimeout(() => {
+      setCurrentPageNum(1);
+      onSelectDate(getCycleDateByDayNumber(1));
+      setIsFlipping(false);
+    }, 280);
+  };
 
   const toggleSpeech = async (e?: React.SyntheticEvent) => {
     if (e) {
@@ -311,32 +338,30 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   const handleTurnNext = () => {
-    if (currentSpread >= 730 || isFlipping) return;
+    if (currentPageNum >= 1459 || isFlipping) return;
     setIsFlipping(true);
     setFlipDirection('next');
     playPageFlipSound();
 
     setTimeout(() => {
-      const nextSpread = currentSpread + 1;
-      setCurrentSpread(nextSpread);
-      const newLeftPage = (nextSpread * 2) - 1;
-      const newDayNum = Math.floor((newLeftPage - 1) / 4) + 1;
+      const nextPos = currentPageNum === 1 ? 2 : Math.min(1460, currentPageNum + 2);
+      setCurrentPageNum(nextPos);
+      const newDayNum = Math.floor((nextPos - 1) / 4) + 1;
       onSelectDate(getCycleDateByDayNumber(newDayNum));
       setIsFlipping(false);
     }, 280);
   };
 
   const handleTurnPrev = () => {
-    if (currentSpread <= 1 || isFlipping) return;
+    if (currentPageNum <= 1 || isFlipping) return;
     setIsFlipping(true);
     setFlipDirection('prev');
     playPageFlipSound();
 
     setTimeout(() => {
-      const prevSpread = currentSpread - 1;
-      setCurrentSpread(prevSpread);
-      const newLeftPage = (prevSpread * 2) - 1;
-      const newDayNum = Math.floor((newLeftPage - 1) / 4) + 1;
+      const prevPos = currentPageNum <= 2 ? 1 : Math.max(1, currentPageNum - 2);
+      setCurrentPageNum(prevPos);
+      const newDayNum = Math.floor((prevPos - 1) / 4) + 1;
       onSelectDate(getCycleDateByDayNumber(newDayNum));
       setIsFlipping(false);
     }, 280);
@@ -607,8 +632,19 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Action controls: View Mode, Fullscreen Zoom, Download, TOC, Font size, Sound, Bookmarks, Theme */}
+        {/* Action controls: View Mode, Title Page, Fullscreen Zoom, Download, TOC, Font size, Sound, Bookmarks, Theme */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Reset to Title Page Button */}
+          <button
+            onClick={handleResetToTitlePage}
+            id="btn-flipbook-titlepage"
+            className="px-2.5 py-1.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Wróć do Strony Tytułowej (Strona 1)"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+            <span className="hidden sm:inline">Strona Tytułowa</span>
+          </button>
+
           {/* View Mode Toggle (PDF 1:1 vs Text) */}
           <button
             onClick={() => setViewMode(viewMode === 'pdf' ? 'text' : 'pdf')}
@@ -975,20 +1011,19 @@ export const FlipbookReader: React.FC<Props> = ({
             type="range"
             min="1"
             max="1460"
-            step="2"
-            value={leftPdfPageNum}
+            step="1"
+            value={currentPageNum}
             onChange={(e) => {
               const pNum = parseInt(e.target.value, 10);
-              const targetSpread = Math.floor((pNum - 1) / 2) + 1;
-              setCurrentSpread(targetSpread);
-              const newLeftPage = (targetSpread * 2) - 1;
-              const newDayNum = Math.floor((newLeftPage - 1) / 4) + 1;
+              const targetPage = pNum === 1 ? 1 : (pNum % 2 === 1 ? pNum - 1 : pNum);
+              setCurrentPageNum(targetPage);
+              const newDayNum = Math.floor((targetPage - 1) / 4) + 1;
               onSelectDate(getCycleDateByDayNumber(newDayNum));
             }}
             className="w-36 sm:w-56 accent-[#8c572b] dark:accent-amber-500 cursor-pointer"
           />
           <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono font-bold text-amber-800 dark:text-amber-400">
-            {leftPdfPageNum} / 1460 Stron PDF
+            {currentPageNum === 1 ? 'Strona Tytułowa 1' : `Strony PDF ${leftPdfPageNum}-${rightPdfPageNum}`} / 1460
           </span>
         </div>
       </div>
@@ -1023,8 +1058,8 @@ export const FlipbookReader: React.FC<Props> = ({
                     key={d.dateKey}
                     onClick={() => {
                       onSelectDate(d);
-                      const targetSpread = (d.dayNumber - 1) * 2 + 1;
-                      setCurrentSpread(targetSpread);
+                      const targetPage = dPdfNum === 1 ? 1 : (dPdfNum % 2 === 1 ? dPdfNum - 1 : dPdfNum);
+                      setCurrentPageNum(targetPage);
                       setShowToc(false);
                     }}
                     className={`w-full text-left px-3 py-2.5 rounded-xl text-sm flex items-center justify-between transition-all cursor-pointer ${
