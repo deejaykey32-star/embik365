@@ -422,6 +422,25 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const activePdf = matchingPdfs[0] || (section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366' ? defaultWnrPdf : null);
 
+  // Mouse wheel handler to turn pages horizontally (disabling vertical scrolling)
+  const [wheelCooldown, setWheelCooldown] = useState<boolean>(false);
+
+  const handleWheelTurn = (e: React.WheelEvent) => {
+    if (wheelCooldown || isFlipping) return;
+    const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (Math.abs(delta) < 12) return;
+
+    if (delta > 0) {
+      handleTurnNext();
+      setWheelCooldown(true);
+      setTimeout(() => setWheelCooldown(false), 450);
+    } else {
+      handleTurnPrev();
+      setWheelCooldown(true);
+      setTimeout(() => setWheelCooldown(false), 450);
+    }
+  };
+
   /**
    * Helper component to render 1:1 PDF Page content (4 pages per day)
    */
@@ -433,12 +452,13 @@ export const FlipbookReader: React.FC<Props> = ({
       if (viewMode === 'pdf' && activePdf) {
         const pdfPageUrl = `${activePdf.url}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
         return (
-          <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md min-h-[440px] sm:min-h-[500px]">
+          <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-md min-h-[440px] sm:min-h-[500px] pointer-events-none select-none">
             <iframe
               key={`pdf-frame-${activePdf.id}-page1`}
               src={pdfPageUrl}
               title={`Strona Tytułowa 1:1 (Strona PDF 1 z 1460)`}
-              className="w-full h-full min-h-[440px] sm:min-h-[500px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-auto transition-all duration-300"
+              scrolling="no"
+              className="w-full h-full min-h-[440px] sm:min-h-[500px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
             />
           </div>
         );
@@ -446,7 +466,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
       // Elegant 1:1 Title Cover Page in Text View
       return (
-        <div className="flex flex-col h-full justify-between items-center text-center p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto min-h-[420px]">
+        <div className="flex flex-col h-full justify-between items-center text-center p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto min-h-[420px] overflow-hidden select-none">
           <div className="w-full pt-4 border-b border-amber-600/20 pb-4">
             <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
               Wydanie Książkowe 1:1 • Tom 365 Dni
@@ -483,12 +503,13 @@ export const FlipbookReader: React.FC<Props> = ({
     if (viewMode === 'pdf' && activePdf) {
       const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
       return (
-        <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-xs min-h-[440px] sm:min-h-[500px]">
+        <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-black shadow-xs min-h-[440px] sm:min-h-[500px] pointer-events-none select-none">
           <iframe
             key={`pdf-frame-${activePdf.id}-${pageNum}`}
             src={pdfPageUrl}
             title={`Strona PDF ${pageNum} z 1460`}
-            className="w-full h-full min-h-[440px] sm:min-h-[500px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-auto transition-all duration-300"
+            scrolling="no"
+            className="w-full h-full min-h-[440px] sm:min-h-[500px] border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
           />
         </div>
       );
@@ -778,6 +799,7 @@ export const FlipbookReader: React.FC<Props> = ({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            onWheel={handleWheelTurn}
             className={`w-full min-h-[560px] sm:min-h-[640px] rounded-2xl grid grid-cols-1 md:grid-cols-2 relative overflow-hidden transform-style-3d select-none transition-transform duration-300 ${
               isFlipping ? (flipDirection === 'next' ? 'scale-[0.998]' : 'scale-[0.998]') : ''
             }`}
