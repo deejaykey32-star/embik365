@@ -98,12 +98,60 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
   }
 ];
 
+export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'grafika', isShort = false): string {
+  const defaultBase = isShort ? 'https://widokinaraj.pl/r/' : 'https://widokinaraj.pl/#';
+  if (!url) {
+    return `${defaultBase}${fallbackSlug}`;
+  }
+  let clean = url.trim();
+
+  // Detect base64 Data URIs, blob URIs, SVG markup, raw base64 data strings, or abnormally long non-HTTP targets
+  if (
+    clean.startsWith('data:') ||
+    clean.startsWith('blob:') ||
+    clean.includes('data:image/') ||
+    clean.includes(';base64,') ||
+    clean.startsWith('/9j/') ||
+    clean.startsWith('PHN2Zw') ||
+    (clean.length > 300 && !clean.startsWith('http://') && !clean.startsWith('https://'))
+  ) {
+    return `${defaultBase}${fallbackSlug}`;
+  }
+
+  // Remove duplicate slash in hash route e.g. widokinaraj.pl/#/ -> widokinaraj.pl/#
+  if (clean.includes('widokinaraj.pl/#/')) {
+    clean = clean.replace('widokinaraj.pl/#/', 'widokinaraj.pl/#');
+  }
+
+  // Prepend origin if relative URL
+  if (clean.startsWith('/')) {
+    const origin = typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'https://widokinaraj.pl';
+    clean = `${origin}${clean}`;
+  } else if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+    clean = `https://${clean}`;
+  }
+
+  return clean;
+}
+
+export function sanitizeQrItem(item: QrCodeItem): QrCodeItem {
+  const fallbackSlug = item.sectionId || item.id.replace(/^qr_/, '') || 'grafika';
+  return {
+    ...item,
+    shortUrl: sanitizeQrUrl(item.shortUrl, fallbackSlug, true),
+    fullUrl: sanitizeQrUrl(item.fullUrl, fallbackSlug, false)
+  };
+}
+
 // Set in-memory QR codes (e.g. from GitHub / server fetch) and persist to local storage
 export function setSavedQrCodes(codes: QrCodeItem[]): void {
   if (Array.isArray(codes) && codes.length > 0) {
-    memoryQrCodes = codes;
+    const sanitized = codes.map(c => sanitizeQrItem(c));
+    memoryQrCodes = sanitized;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
     } catch {}
   }
 }
@@ -111,36 +159,14 @@ export function setSavedQrCodes(codes: QrCodeItem[]): void {
 // Retrieve all QR codes from memory, local storage or defaults
 export function getSavedQrCodes(): QrCodeItem[] {
   if (memoryQrCodes && memoryQrCodes.length > 0) {
-    return memoryQrCodes;
+    return memoryQrCodes.map(c => sanitizeQrItem(c));
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const result = parsed.map((item: QrCodeItem) => {
-          let cleanShort = item.shortUrl;
-          let cleanFull = item.fullUrl;
-
-          if (cleanFull && cleanFull.includes('widokinaraj.pl/#/')) {
-            cleanFull = cleanFull.replace('widokinaraj.pl/#/', 'widokinaraj.pl/#');
-          }
-
-          // If item.fullUrl or shortUrl contains base64 data URI or legacy clck.ru, sanitize to official domain links
-          if (cleanFull && (cleanFull.startsWith('data:') || cleanFull.startsWith('blob:'))) {
-            cleanFull = `https://widokinaraj.pl/#${item.sectionId || 'info365'}`;
-          }
-          if (cleanShort && (cleanShort.includes('clck.ru') || cleanShort.startsWith('data:') || cleanShort.startsWith('blob:') || cleanShort.includes('tinyurl.com'))) {
-            const def = DEFAULT_QR_CODES.find(d => d.id === item.id);
-            cleanShort = def ? def.shortUrl : `https://widokinaraj.pl/r/${item.sectionId || item.id.replace(/^qr_/, '')}`;
-          }
-
-          return {
-            ...item,
-            fullUrl: cleanFull,
-            shortUrl: cleanShort
-          };
-        });
+        const result = parsed.map((item: QrCodeItem) => sanitizeQrItem(item));
         memoryQrCodes = result;
         return result;
       }
@@ -148,8 +174,8 @@ export function getSavedQrCodes(): QrCodeItem[] {
   } catch (err) {
     console.warn('Failed to load QR database:', err);
   }
-  memoryQrCodes = DEFAULT_QR_CODES;
-  return DEFAULT_QR_CODES;
+  memoryQrCodes = DEFAULT_QR_CODES.map(c => sanitizeQrItem(c));
+  return memoryQrCodes;
 }
 
 /**
@@ -525,10 +551,7 @@ export function importQrCodes(importedItems: QrCodeItem[], mode: 'merge' | 'repl
 
 // Generate raw QR code DataURL (PNG) from text
 export async function generateQrDataUrl(text: string, size = 300): Promise<string> {
-  let target = (text || 'https://widokinaraj.pl').trim();
-  if (target.startsWith('data:') || target.startsWith('blob:')) {
-    target = 'https://widokinaraj.pl';
-  }
+  const target = sanitizeQrUrl(text, 'grafika', true);
   return await QRCode.toDataURL(target, {
     width: size,
     margin: 2,
@@ -543,7 +566,8 @@ export async function generateQrDataUrl(text: string, size = 300): Promise<strin
 /**
  * Generate full PNG graphic badge DataURL (matching downloaded PNG)
  */
-export async function generateQrBadgeDataUrl(item: QrCodeItem): Promise<string> {
+export async function generateQrBadgeDataUrl(rawItem: QrCodeItem): Promise<string> {
+  const item = sanitizeQrItem(rawItem);
   const targetUrl = item.shortUrl || item.fullUrl;
   const qrDataUrl = await generateQrDataUrl(targetUrl, 400);
 
