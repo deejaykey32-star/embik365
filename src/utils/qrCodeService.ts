@@ -1,7 +1,9 @@
 import QRCode from 'qrcode';
-import { QrCodeItem, SectionId } from '../types';
+import { QrCodeItem, SectionId, GitHubConfig } from '../types';
+import { getStoredGitHubConfig, syncStateToGitHub } from './githubSync';
 
 const STORAGE_KEY = 'drogowskazy_qr_database';
+let memoryQrCodes: QrCodeItem[] | null = null;
 
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
   {
@@ -86,14 +88,27 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
   }
 ];
 
-// Retrieve all QR codes from local storage or defaults
+// Set in-memory QR codes (e.g. from GitHub / server fetch) and persist to local storage
+export function setSavedQrCodes(codes: QrCodeItem[]): void {
+  if (Array.isArray(codes) && codes.length > 0) {
+    memoryQrCodes = codes;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
+    } catch {}
+  }
+}
+
+// Retrieve all QR codes from memory, local storage or defaults
 export function getSavedQrCodes(): QrCodeItem[] {
+  if (memoryQrCodes && memoryQrCodes.length > 0) {
+    return memoryQrCodes;
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((item: QrCodeItem) => {
+        const result = parsed.map((item: QrCodeItem) => {
           if (item.shortUrl && item.shortUrl.includes('tinyurl.com')) {
             const def = DEFAULT_QR_CODES.find(d => d.id === item.id);
             return {
@@ -103,20 +118,51 @@ export function getSavedQrCodes(): QrCodeItem[] {
           }
           return item;
         });
+        memoryQrCodes = result;
+        return result;
       }
     }
   } catch (err) {
     console.warn('Failed to load QR database:', err);
   }
+  memoryQrCodes = DEFAULT_QR_CODES;
   return DEFAULT_QR_CODES;
 }
 
-// Save all QR codes to local storage
-export function saveAllQrCodes(codes: QrCodeItem[]): void {
+// Save all QR codes to memory, local storage, backend server, and GitHub repo
+export function saveAllQrCodes(
+  codes: QrCodeItem[],
+  githubConfig?: GitHubConfig,
+  currentEntries?: Record<string, any>,
+  currentUploads?: any[]
+): void {
+  memoryQrCodes = codes;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
   } catch (err) {
-    console.error('Failed to save QR database:', err);
+    console.error('Failed to save QR database to localStorage:', err);
+  }
+
+  const activeConfig = githubConfig || getStoredGitHubConfig();
+
+  // 1. Post to backend server endpoint
+  fetch('/api/qr-codes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ qrCodes: codes, githubConfig: activeConfig })
+  }).catch(err => {
+    console.warn('/api/qr-codes server sync failed:', err);
+  });
+
+  // 2. Direct GitHub sync fallback if GitHub token is present
+  if (activeConfig.token?.trim() && activeConfig.autoSync) {
+    syncStateToGitHub(activeConfig, {
+      entries: currentEntries || {},
+      uploads: currentUploads || [],
+      qrCodes: codes
+    }).catch(ghErr => {
+      console.warn('Direct GitHub QR sync failed:', ghErr);
+    });
   }
 }
 

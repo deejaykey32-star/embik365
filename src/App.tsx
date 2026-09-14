@@ -16,6 +16,7 @@ import { DownloadPublishModal } from './components/DownloadPublishModal';
 import { LectorSettingsModal } from './components/LectorSettingsModal';
 import { SearchModal } from './components/SearchModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub, getStoredGitHubConfig } from './utils/githubSync';
+import { setSavedQrCodes, getSavedQrCodes } from './utils/qrCodeService';
 import { translateEntry } from './utils/translationService';
 
 import { parseUrlRoute, updateBrowserUrlSlug } from './utils/slugRouter';
@@ -138,7 +139,7 @@ export default function App() {
       // 1. Try GitHub raw directly (works for all visitors across all devices without needing a token)
       try {
         const ghData = await fetchEntriesFromGitHub(githubConfig);
-        if (ghData && (ghData.entries || ghData.uploads)) {
+        if (ghData && (ghData.entries || ghData.uploads || ghData.qrCodes)) {
           if (ghData.entries) {
             setCustomEntries(ghData.entries);
             if (ghData.entries['drogowskazy_home_config']?.homeConfig) {
@@ -149,6 +150,9 @@ export default function App() {
             setUploads(ghData.uploads);
           } else {
             setUploads(DEFAULT_SYSTEM_UPLOADS);
+          }
+          if (ghData.qrCodes && ghData.qrCodes.length > 0) {
+            setSavedQrCodes(ghData.qrCodes);
           }
           return;
         }
@@ -172,6 +176,9 @@ export default function App() {
           } else {
             setUploads(DEFAULT_SYSTEM_UPLOADS);
           }
+          if (json.qrCodes && json.qrCodes.length > 0) {
+            setSavedQrCodes(json.qrCodes);
+          }
           return;
         }
       } catch {}
@@ -191,6 +198,9 @@ export default function App() {
             setUploads(json.uploads);
           } else {
             setUploads(DEFAULT_SYSTEM_UPLOADS);
+          }
+          if (json.qrCodes && json.qrCodes.length > 0) {
+            setSavedQrCodes(json.qrCodes);
           }
         }
       } catch (err) {
@@ -327,7 +337,8 @@ export default function App() {
     if (githubConfig.autoSync && githubConfig.token) {
       syncStateToGitHub(githubConfig, {
         entries: customEntries,
-        uploads: updatedUploads
+        uploads: updatedUploads,
+        qrCodes: getSavedQrCodes()
       }).catch(console.error);
     }
   };
@@ -363,7 +374,8 @@ export default function App() {
       try {
         await syncStateToGitHub(githubConfig, {
           entries: updatedEntries,
-          uploads
+          uploads,
+          qrCodes: getSavedQrCodes()
         });
       } catch (ghErr) {
         console.warn('GitHub autoSync failed:', ghErr);
@@ -378,7 +390,8 @@ export default function App() {
     }
     return await syncStateToGitHub(githubConfig, {
       entries: customEntries,
-      uploads
+      uploads,
+      qrCodes: getSavedQrCodes()
     });
   };
 

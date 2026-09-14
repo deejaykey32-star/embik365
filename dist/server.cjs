@@ -98,20 +98,35 @@ function getStoredData() {
   try {
     if (import_fs.default.existsSync(publicEntriesFilePath)) {
       const content = import_fs.default.readFileSync(publicEntriesFilePath, "utf-8");
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      return {
+        entries: parsed.entries || {},
+        uploads: parsed.uploads || [],
+        qrCodes: parsed.qrCodes || []
+      };
     }
     if (import_fs.default.existsSync(entriesFilePath)) {
       const content = import_fs.default.readFileSync(entriesFilePath, "utf-8");
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      return {
+        entries: parsed.entries || {},
+        uploads: parsed.uploads || [],
+        qrCodes: parsed.qrCodes || []
+      };
     }
   } catch (err) {
     console.error("Error reading entries file:", err);
   }
-  return { entries: {}, uploads: [] };
+  return { entries: {}, uploads: [], qrCodes: [] };
 }
 function saveStoredData(data) {
   try {
-    const jsonStr = JSON.stringify(data, null, 2);
+    const payload = {
+      entries: data.entries || {},
+      uploads: data.uploads || [],
+      qrCodes: data.qrCodes || []
+    };
+    const jsonStr = JSON.stringify(payload, null, 2);
     import_fs.default.writeFileSync(entriesFilePath, jsonStr, "utf-8");
     import_fs.default.writeFileSync(publicEntriesFilePath, jsonStr, "utf-8");
   } catch (err) {
@@ -290,6 +305,40 @@ app.post("/api/entries", async (req, res) => {
     }
   }
   res.json({ success: true, entry: data.entries[key] });
+});
+app.get("/api/qr-codes", (req, res) => {
+  const data = getStoredData();
+  res.json({ qrCodes: data.qrCodes || [] });
+});
+app.post("/api/qr-codes", async (req, res) => {
+  const { qrCodes, githubConfig } = req.body;
+  if (!Array.isArray(qrCodes)) {
+    return res.status(400).json({ error: "Brak danych kod\xF3w QR (oczekiwana tablica)." });
+  }
+  const data = getStoredData();
+  data.qrCodes = qrCodes;
+  saveStoredData(data);
+  const token = githubConfig?.token || process.env.GITHUB_TOKEN;
+  const owner = githubConfig?.owner || process.env.GITHUB_OWNER || "deejaykey32-star";
+  const repo = githubConfig?.repo || process.env.GITHUB_REPO || "embik365";
+  const branch = githubConfig?.branch || process.env.GITHUB_BRANCH || "main";
+  if (token && githubConfig?.autoSync !== false) {
+    try {
+      const jsonBuffer = Buffer.from(JSON.stringify(data, null, 2));
+      syncFileToGitHub(
+        "public/data/entries.json",
+        jsonBuffer.toString("base64"),
+        `chore(qr): aktualizacja bazy kod\xF3w QR w repozytorium GitHub`,
+        owner,
+        repo,
+        branch,
+        token
+      ).catch((e) => console.error("Background GitHub QR sync failed:", e));
+    } catch (e) {
+      console.warn("Could not sync QR codes to GitHub:", e);
+    }
+  }
+  res.json({ success: true, qrCodes: data.qrCodes });
 });
 var handleFileUpload = async (req, res) => {
   try {

@@ -95,26 +95,41 @@ const entriesFilePath = path.join(dataDir, 'entries.json');
 const publicEntriesFilePath = path.join(publicDataDir, 'entries.json');
 
 // Helper to read entries
-function getStoredData(): { entries: Record<string, any>; uploads: any[] } {
+function getStoredData(): { entries: Record<string, any>; uploads: any[]; qrCodes: any[] } {
   try {
     if (fs.existsSync(publicEntriesFilePath)) {
       const content = fs.readFileSync(publicEntriesFilePath, 'utf-8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      return {
+        entries: parsed.entries || {},
+        uploads: parsed.uploads || [],
+        qrCodes: parsed.qrCodes || []
+      };
     }
     if (fs.existsSync(entriesFilePath)) {
       const content = fs.readFileSync(entriesFilePath, 'utf-8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      return {
+        entries: parsed.entries || {},
+        uploads: parsed.uploads || [],
+        qrCodes: parsed.qrCodes || []
+      };
     }
   } catch (err) {
     console.error('Error reading entries file:', err);
   }
-  return { entries: {}, uploads: [] };
+  return { entries: {}, uploads: [], qrCodes: [] };
 }
 
 // Helper to save entries (syncs to both root and public/data for static packaging)
-function saveStoredData(data: { entries: Record<string, any>; uploads: any[] }) {
+function saveStoredData(data: { entries: Record<string, any>; uploads: any[]; qrCodes?: any[] }) {
   try {
-    const jsonStr = JSON.stringify(data, null, 2);
+    const payload = {
+      entries: data.entries || {},
+      uploads: data.uploads || [],
+      qrCodes: data.qrCodes || []
+    };
+    const jsonStr = JSON.stringify(payload, null, 2);
     fs.writeFileSync(entriesFilePath, jsonStr, 'utf-8');
     fs.writeFileSync(publicEntriesFilePath, jsonStr, 'utf-8');
   } catch (err) {
@@ -332,6 +347,48 @@ app.post('/api/entries', async (req, res) => {
   }
 
   res.json({ success: true, entry: data.entries[key] });
+});
+
+// Save or get QR Codes database
+app.get('/api/qr-codes', (req, res) => {
+  const data = getStoredData();
+  res.json({ qrCodes: data.qrCodes || [] });
+});
+
+app.post('/api/qr-codes', async (req, res) => {
+  const { qrCodes, githubConfig } = req.body;
+  if (!Array.isArray(qrCodes)) {
+    return res.status(400).json({ error: 'Brak danych kodów QR (oczekiwana tablica).' });
+  }
+
+  const data = getStoredData();
+  data.qrCodes = qrCodes;
+  saveStoredData(data);
+
+  // If GitHub token is present, commit data/entries.json
+  const token = githubConfig?.token || process.env.GITHUB_TOKEN;
+  const owner = githubConfig?.owner || process.env.GITHUB_OWNER || 'deejaykey32-star';
+  const repo = githubConfig?.repo || process.env.GITHUB_REPO || 'embik365';
+  const branch = githubConfig?.branch || process.env.GITHUB_BRANCH || 'main';
+
+  if (token && githubConfig?.autoSync !== false) {
+    try {
+      const jsonBuffer = Buffer.from(JSON.stringify(data, null, 2));
+      syncFileToGitHub(
+        'public/data/entries.json',
+        jsonBuffer.toString('base64'),
+        `chore(qr): aktualizacja bazy kodów QR w repozytorium GitHub`,
+        owner,
+        repo,
+        branch,
+        token
+      ).catch(e => console.error('Background GitHub QR sync failed:', e));
+    } catch (e) {
+      console.warn('Could not sync QR codes to GitHub:', e);
+    }
+  }
+
+  res.json({ success: true, qrCodes: data.qrCodes });
 });
 
 // Upload file endpoint (supports PDF, ePUB, DOCX)

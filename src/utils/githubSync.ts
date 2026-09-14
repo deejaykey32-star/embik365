@@ -1,4 +1,4 @@
-import { GitHubConfig, UploadedPdf, SectionEntry } from '../types';
+import { GitHubConfig, UploadedPdf, SectionEntry, QrCodeItem } from '../types';
 
 const STORAGE_KEY = 'drogowskazy_github_config';
 
@@ -175,7 +175,7 @@ export async function commitFileToGitHub(
 // Fetch database entries from GitHub raw repository
 export async function fetchEntriesFromGitHub(
   config?: Partial<GitHubConfig>
-): Promise<{ entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[] } | null> {
+): Promise<{ entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[]; qrCodes?: QrCodeItem[] } | null> {
   const owner = config?.owner || DEFAULT_GITHUB_CONFIG.owner;
   const repo = config?.repo || DEFAULT_GITHUB_CONFIG.repo;
   const branch = config?.branch || DEFAULT_GITHUB_CONFIG.branch;
@@ -193,7 +193,7 @@ export async function fetchEntriesFromGitHub(
       });
       if (res.ok) {
         const json = await res.json();
-        if (json && (json.entries || json.uploads)) {
+        if (json && (json.entries || json.uploads || json.qrCodes)) {
           return {
             entries: json.entries || {},
             uploads: (json.uploads || []).map((u: UploadedPdf) => ({
@@ -202,7 +202,8 @@ export async function fetchEntriesFromGitHub(
               url: u.url.startsWith('http')
                 ? u.url
                 : `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/public${u.url}`
-            }))
+            })),
+            qrCodes: json.qrCodes || []
           };
         }
       }
@@ -212,7 +213,7 @@ export async function fetchEntriesFromGitHub(
   }
 
   // If token is provided, try GitHub Contents API (works for private repos too!)
-  if (config.token?.trim()) {
+  if (config?.token?.trim()) {
     try {
       const res = await fetch(
         `https://api.github.com/repos/${config.owner}/${config.repo}/contents/public/data/entries.json?ref=${config.branch}`,
@@ -227,7 +228,8 @@ export async function fetchEntriesFromGitHub(
         const json = await res.json();
         return {
           entries: json.entries || {},
-          uploads: json.uploads || []
+          uploads: json.uploads || [],
+          qrCodes: json.qrCodes || []
         };
       }
     } catch (e) {
@@ -243,7 +245,7 @@ export async function uploadPdfDirectlyToGitHub(
   file: File,
   fileRecord: UploadedPdf,
   config: GitHubConfig,
-  currentData: { entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[] }
+  currentData: { entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[]; qrCodes?: QrCodeItem[] }
 ): Promise<{ success: boolean; rawUrl?: string; error?: string }> {
   if (!config.token?.trim()) {
     return {
@@ -294,6 +296,7 @@ export async function uploadPdfDirectlyToGitHub(
     const newDataPayload = {
       entries: updatedEntries,
       uploads: updatedUploads,
+      qrCodes: currentData.qrCodes || [],
       lastUpdated: new Date().toISOString()
     };
 
@@ -321,7 +324,7 @@ export async function uploadPdfDirectlyToGitHub(
 // Sync full state to GitHub
 export async function syncStateToGitHub(
   config: GitHubConfig,
-  data: { entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[] }
+  data: { entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[]; qrCodes?: QrCodeItem[] }
 ): Promise<{ success: boolean; message: string }> {
   if (!config.token?.trim()) {
     return { success: false, message: 'Wymagany jest token GitHub do synchronizacji.' };
@@ -331,6 +334,7 @@ export async function syncStateToGitHub(
     const payload = {
       entries: data.entries,
       uploads: data.uploads,
+      qrCodes: data.qrCodes || [],
       lastUpdated: new Date().toISOString(),
       updatedBy: 'Admin Dominik Kuta'
     };
