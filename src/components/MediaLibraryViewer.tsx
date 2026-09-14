@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
-import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
+import { shortenUrlViaApi, upsertQrCode, uploadBase64ImageToServer } from '../utils/qrCodeService';
 
 // Automatically import all files from src/pliki using Vite's import.meta.glob
 const plikiModules = (import.meta as any).glob('../pliki/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -685,9 +685,21 @@ export const MediaLibraryViewer: React.FC = () => {
 
   const createQrCodeForFile = async (item: PlikItem) => {
     try {
-      const fullUrl = item.url.startsWith('/') 
-        ? `${window.location.origin}${item.url}`
-        : item.url;
+      let rawUrl = item.url || '';
+
+      // If the file url is a base64 Data URI or blob, upload it to the server first to get a static URL
+      if (rawUrl.startsWith('data:') || rawUrl.startsWith('blob:')) {
+        const staticUrl = await uploadBase64ImageToServer(rawUrl, item.name || item.filename);
+        if (staticUrl && !staticUrl.startsWith('data:')) {
+          rawUrl = staticUrl;
+          item.url = staticUrl; // Update item url in state
+        }
+      }
+
+      const fullUrl = rawUrl.startsWith('/') 
+        ? `${window.location.origin}${rawUrl}`
+        : rawUrl;
+
       const shortUrl = await shortenUrlViaApi(fullUrl);
       const newItem = {
         id: `qr_file_${Date.now()}`,

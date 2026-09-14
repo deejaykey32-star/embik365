@@ -109,14 +109,23 @@ export function getSavedQrCodes(): QrCodeItem[] {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
         const result = parsed.map((item: QrCodeItem) => {
-          if (item.shortUrl && item.shortUrl.includes('tinyurl.com')) {
-            const def = DEFAULT_QR_CODES.find(d => d.id === item.id);
-            return {
-              ...item,
-              shortUrl: def ? def.shortUrl : item.fullUrl
-            };
+          let cleanShort = item.shortUrl;
+          let cleanFull = item.fullUrl;
+
+          // If item.fullUrl or shortUrl contains base64 data URI, sanitize to prevent QR code failure
+          if (cleanFull && (cleanFull.startsWith('data:') || cleanFull.startsWith('blob:'))) {
+            cleanFull = `https://widokinaraj.pl/#/${item.sectionId || 'info365'}`;
           }
-          return item;
+          if (cleanShort && (cleanShort.startsWith('data:') || cleanShort.startsWith('blob:') || cleanShort.includes('tinyurl.com'))) {
+            const def = DEFAULT_QR_CODES.find(d => d.id === item.id);
+            cleanShort = def ? def.shortUrl : cleanFull;
+          }
+
+          return {
+            ...item,
+            fullUrl: cleanFull,
+            shortUrl: cleanShort
+          };
         });
         memoryQrCodes = result;
         return result;
@@ -202,13 +211,47 @@ export function saveAllQrCodes(
 }
 
 /**
+ * Upload base64 image data URL to backend server to convert into a static file URL in /uploads/
+ */
+export async function uploadBase64ImageToServer(dataUrl: string, filename?: string): Promise<string> {
+  try {
+    const res = await fetch('/api/upload-base64', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl, filename })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) return data.url;
+    }
+  } catch (e) {
+    console.warn('Failed to upload base64 image to server:', e);
+  }
+  return dataUrl;
+}
+
+/**
  * Shorten URL via direct free API (clck.ru / is.gd) with 0 ads and instant 301/302 redirection.
  */
 export async function shortenUrlViaApi(longUrl: string): Promise<string> {
-  let cleanUrl = longUrl.trim();
+  let cleanUrl = (longUrl || '').trim();
   if (!cleanUrl) return 'https://widokinaraj.pl';
 
-  // Normalize relative paths (e.g. /assets/RGB-model-1-UU-G6evC.jpg) to full URLs for clck.ru API
+  // If longUrl is a raw base64 Data URI or blob, convert it to a static file URL first!
+  if (cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) {
+    try {
+      const staticUrl = await uploadBase64ImageToServer(cleanUrl, 'material');
+      if (staticUrl && (staticUrl.startsWith('http://') || staticUrl.startsWith('https://') || staticUrl.startsWith('/'))) {
+        cleanUrl = staticUrl;
+      } else {
+        return 'https://widokinaraj.pl';
+      }
+    } catch {
+      return 'https://widokinaraj.pl';
+    }
+  }
+
+  // Normalize relative paths (e.g. /uploads/ying_yang.jpg) to full URLs for clck.ru API
   if (cleanUrl.startsWith('/')) {
     const origin = typeof window !== 'undefined' && window.location?.origin 
       ? window.location.origin 
