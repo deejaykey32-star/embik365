@@ -129,6 +129,41 @@ export function getSavedQrCodes(): QrCodeItem[] {
   return DEFAULT_QR_CODES;
 }
 
+/**
+ * Get or resolve the official QR code item for a given section or entry
+ */
+export function getQrCodeForSection(sectionId: string, sectionName?: string): QrCodeItem {
+  const all = getSavedQrCodes();
+  const cleanId = (sectionId || 'info365').toLowerCase();
+  
+  // 1. Direct match by sectionId or id
+  const match = all.find(q => 
+    q.sectionId === cleanId || 
+    q.id === `qr_${cleanId}` || 
+    q.id === cleanId
+  );
+  if (match) return match;
+
+  // 2. Fallback match in DEFAULT_QR_CODES
+  const defMatch = DEFAULT_QR_CODES.find(q => 
+    q.sectionId === cleanId || 
+    q.id === `qr_${cleanId}`
+  );
+  if (defMatch) return defMatch;
+
+  // 3. Dynamic fallback
+  return {
+    id: `qr_${cleanId}`,
+    title: sectionName || `Sekcja ${sectionId}`,
+    displayLabel: `Zeskanuj, aby otworzyć ${sectionName || sectionId}`,
+    shortUrl: `https://widokinaraj.pl/r/${cleanId}`,
+    fullUrl: `https://widokinaraj.pl/#/${cleanId}`,
+    sectionId: cleanId,
+    category: 'Droga365',
+    createdAt: '2026-01-01'
+  };
+}
+
 // Save all QR codes to memory, local storage, backend server, and GitHub repo
 export function saveAllQrCodes(
   codes: QrCodeItem[],

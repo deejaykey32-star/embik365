@@ -14,12 +14,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  Globe
+  Globe,
+  ExternalLink,
+  QrCode
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
+import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
+import { QrImageDisplay } from './QrImageDisplay';
 
 interface Props {
   section: SectionMeta;
@@ -365,6 +369,64 @@ export const StandardReader: React.FC<Props> = ({
             </div>
           </div>
         )}
+
+        {/* Official QR Code Badge Box for sharing and printing */}
+        {(() => {
+          const qrItem = getQrCodeForSection(section.id, section.name);
+          return (
+            <div className="mt-8 p-5 sm:p-6 rounded-2xl bg-[#faf7f2] dark:bg-[#151c27] border border-[#e5d9ca] dark:border-[#212c3e] flex flex-col sm:flex-row items-center gap-6 shadow-xs">
+              <a
+                href={qrItem.shortUrl || qrItem.fullUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-28 h-28 sm:w-32 sm:h-32 p-2 bg-white rounded-2xl border border-[#dfd2c2] dark:border-[#2b384e] shadow-md hover:scale-105 transition-transform shrink-0 flex items-center justify-center cursor-pointer"
+                title="Kliknij, aby przetestować przekierowanie QR"
+              >
+                <QrImageDisplay text={qrItem.shortUrl || qrItem.fullUrl} title={qrItem.title} />
+              </a>
+
+              <div className="flex-1 text-center sm:text-left space-y-2">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-600/15 text-amber-900 dark:text-amber-300 border border-amber-500/30 uppercase tracking-wider flex items-center gap-1">
+                    <QrCode className="w-3 h-3" />
+                    <span>Oficjalny Kod QR</span>
+                  </span>
+                  <span className="text-xs font-mono text-[#7d6c5d] dark:text-[#94a3b8]">
+                    {qrItem.shortUrl || qrItem.fullUrl}
+                  </span>
+                </div>
+                <h4 className="font-bold text-base text-[#2d2217] dark:text-[#f3e8d2] font-heading-cinzel">
+                  {qrItem.title}
+                </h4>
+                <p className="text-xs text-[#6e5d4e] dark:text-[#a0aec0] font-serif-book">
+                  {qrItem.displayLabel || `Zeskanuj smartfonem lub kliknij kod QR, aby przejść bezpośrednio do tej sekcji.`}
+                </p>
+
+                <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <button
+                    onClick={async () => {
+                      await generateAndDownloadQrBadgePng(qrItem);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    title="Pobierz plik graficzny PNG wysokiej rozdzielczości (300 DPI) do druku"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Pobierz Kod QR (PNG 300 DPI)</span>
+                  </button>
+                  <a
+                    href={qrItem.shortUrl || qrItem.fullUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-[#e8ded1] dark:bg-[#1e2738] hover:bg-[#dcd0c2] dark:hover:bg-[#28354c] text-[#3d2f23] dark:text-[#f1f5f9] text-xs font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+                    <span>Otwórz link</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </article>
 
       {/* Bottom Nav between days */}

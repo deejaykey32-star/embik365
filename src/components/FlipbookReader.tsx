@@ -14,15 +14,18 @@ import {
   Globe,
   Sparkles,
   X,
-  ZoomIn,
   Maximize2,
-  Minimize2
+  Minimize2,
+  QrCode,
+  ZoomIn
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES } from '../types';
 import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
+import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
+import { QrImageDisplay } from './QrImageDisplay';
 
 interface Props {
   section: SectionMeta;
@@ -429,6 +432,42 @@ export const FlipbookReader: React.FC<Props> = ({
             </div>
           )}
         </div>
+
+        {data.subPage === 4 && (
+          <div className="mt-2 p-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between gap-3 text-xs">
+            {(() => {
+              const qrItem = getQrCodeForSection(section.id, section.name);
+              return (
+                <>
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="w-10 h-10 p-0.5 bg-white rounded-lg border shrink-0">
+                      <QrImageDisplay text={qrItem.shortUrl || qrItem.fullUrl} title={section.name} />
+                    </div>
+                    <div className="overflow-hidden text-left">
+                      <div className="font-bold text-[11px] truncate text-[#2f271f] dark:text-white">
+                        {qrItem.title}
+                      </div>
+                      <div className="text-[9px] font-mono text-amber-800 dark:text-amber-300 truncate">
+                        {qrItem.shortUrl || qrItem.fullUrl}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await generateAndDownloadQrBadgePng(qrItem);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Pobierz kod QR jako plik PNG (300 DPI)"
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Pobierz PNG</span>
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        )}
 
         {data.subPage === 4 && section.id === 'ebook_rhz' && (
           <button

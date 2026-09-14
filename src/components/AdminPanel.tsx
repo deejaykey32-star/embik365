@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   ShieldCheck, 
@@ -35,6 +35,7 @@ import { parseDocumentIntoDayEntries } from '../utils/documentParser';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { WysiwygEditor } from './WysiwygEditor';
 import { MediaLibraryViewer } from './MediaLibraryViewer';
+import { QrImageDisplay } from './QrImageDisplay';
 import { getHomePageConfig, saveHomePageConfig, resetHomePageConfig, uploadImageFileToServer } from '../utils/homePageConfig';
 import { 
   getSavedQrCodes, 
@@ -108,6 +109,12 @@ export const AdminPanel: React.FC<Props> = ({
   const [adminQrCodes, setAdminQrCodes] = useState<QrCodeItem[]>(() => getSavedQrCodes());
   const [qrPreviews, setQrPreviews] = useState<Record<string, string>>({});
   const [downloadingQrId, setDownloadingQrId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setAdminQrCodes(getSavedQrCodes());
+    }
+  }, [isOpen, activeTab]);
 
   // Form state for PDF upload
   const [targetSection, setTargetSection] = useState<SectionId>(currentSectionId);
@@ -1429,11 +1436,7 @@ export const AdminPanel: React.FC<Props> = ({
                         className="w-24 h-24 bg-white p-1.5 rounded-xl border border-gray-200 hover:border-amber-500 hover:scale-105 transition-all shadow-xs shrink-0 flex flex-col items-center justify-center cursor-pointer"
                         title="Kliknij, aby przetestować przekierowanie w nowej karcie"
                       >
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(item.shortUrl || item.fullUrl)}`}
-                          alt={item.title}
-                          className="w-full h-full object-contain"
-                        />
+                        <QrImageDisplay text={item.shortUrl || item.fullUrl} title={item.title} />
                       </a>
 
                       {/* Info & URL details */}

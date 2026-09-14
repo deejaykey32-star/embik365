@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { QrCodeItem } from '../types';
 import QRCode from 'qrcode';
+import { QrImageDisplay } from './QrImageDisplay';
 import { 
   getSavedQrCodes, 
   upsertQrCode, 
@@ -35,42 +36,6 @@ import {
   parseQrCodesFile,
   importQrCodes
 } from '../utils/qrCodeService';
-
-const QrImageDisplay: React.FC<{ text: string; title: string }> = ({ text, title }) => {
-  const [src, setSrc] = useState<string>('');
-
-  useEffect(() => {
-    let isMounted = true;
-    const target = (text || 'https://widokinaraj.pl').trim();
-
-    QRCode.toDataURL(target, {
-      width: 220,
-      margin: 1,
-      color: { dark: '#111827', light: '#ffffff' },
-      errorCorrectionLevel: 'M'
-    })
-    .then(url => {
-      if (isMounted) setSrc(url);
-    })
-    .catch(() => {
-      generateQrSvgDataUrl(target, 220).then(svgUrl => {
-        if (isMounted) setSrc(svgUrl);
-      });
-    });
-
-    return () => { isMounted = false; };
-  }, [text]);
-
-  if (!src) {
-    return (
-      <div className="w-full h-full bg-stone-100 dark:bg-stone-800 rounded-lg animate-pulse flex items-center justify-center text-[10px] text-stone-400">
-        Ładowanie QR...
-      </div>
-    );
-  }
-
-  return <img src={src} alt={title} className="w-full h-full object-contain pointer-events-auto" />;
-};
 
 interface QrCodeModalProps {
   isOpen: boolean;
@@ -102,11 +67,13 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
   const [newFullUrl, setNewFullUrl] = useState('');
   const [newCategory, setNewCategory] = useState('Ogólne');
 
-  // Load QR codes
+  // Load QR codes whenever modal opens
   useEffect(() => {
-    const list = getSavedQrCodes();
-    setQrCodes(list);
-  }, []);
+    if (isOpen) {
+      const list = getSavedQrCodes();
+      setQrCodes(list);
+    }
+  }, [isOpen]);
 
   // Generate previews for all QR codes
   useEffect(() => {

@@ -27,7 +27,8 @@ import {
   Lock,
   Unlock
 } from 'lucide-react';
-import { generateAndDownloadQrBadgePng, getSavedQrCodes } from '../utils/qrCodeService';
+import { generateAndDownloadQrBadgePng, getSavedQrCodes, getQrCodeForSection } from '../utils/qrCodeService';
+import { QrImageDisplay } from './QrImageDisplay';
 import { ElementEditorModal } from './ElementEditorModal';
 import { 
   getHomePageConfig, 
@@ -427,9 +428,27 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 title={`Kliknij, aby otworzyć ${section.name}`}
               >
                 <div>
-                  <p className="font-semibold text-xs text-amber-800 dark:text-amber-300 mb-2">
-                    {section.shortDesc}
-                  </p>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <p className="font-semibold text-xs text-amber-800 dark:text-amber-300 flex-1">
+                      {section.shortDesc}
+                    </p>
+                    {/* Visual QR Code Thumbnail */}
+                    {(() => {
+                      const qrItem = getQrCodeForSection(section.id, section.name);
+                      return (
+                        <div 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadQr(section.qrId, section.name);
+                          }}
+                          className="w-14 h-14 p-1 bg-white dark:bg-stone-900 rounded-lg border border-amber-500/30 shadow-xs shrink-0 hover:scale-105 transition-transform"
+                          title="Kliknij, aby pobrać dedykowany kod QR (PNG)"
+                        >
+                          <QrImageDisplay text={qrItem.shortUrl || qrItem.fullUrl} title={section.name} />
+                        </div>
+                      );
+                    })()}
+                  </div>
                   <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book">
                     {section.fullDesc}
                   </p>
