@@ -10,7 +10,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_info365',
     title: 'Wprowadzenie Droga365',
     displayLabel: 'Zeskanuj, aby otworzyć przewodnik info365',
-    shortUrl: 'https://clck.ru/3Vnjrc',
+    shortUrl: 'https://widokinaraj.pl/r/info365',
     fullUrl: 'https://widokinaraj.pl/#info365',
     sectionId: 'info365',
     category: 'Przewodnik',
@@ -20,7 +20,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_wnr365',
     title: 'Widoki na Raj (WnR365)',
     displayLabel: 'Zeskanuj, aby czytać wpis dnia WnR365',
-    shortUrl: 'https://clck.ru/3Vnjri',
+    shortUrl: 'https://widokinaraj.pl/r/wnr365',
     fullUrl: 'https://widokinaraj.pl/#wnr365',
     sectionId: 'wnr365',
     category: 'Blog',
@@ -30,7 +30,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_rhz365',
     title: 'Różaniec Historii Zbawienia (RHZ365)',
     displayLabel: 'Zeskanuj, aby odmówić Różaniec IN-LOVE',
-    shortUrl: 'https://clck.ru/3Vnjrj',
+    shortUrl: 'https://widokinaraj.pl/r/rhz365',
     fullUrl: 'https://widokinaraj.pl/#rhz365',
     sectionId: 'rhz365',
     category: 'Modlitwa',
@@ -40,7 +40,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_biblia365',
     title: 'Biblia365 i Apokryfy',
     displayLabel: 'Zeskanuj, aby przeczytać dzisiejszy fragment Pisma',
-    shortUrl: 'https://clck.ru/3Vnjrd',
+    shortUrl: 'https://widokinaraj.pl/r/biblia365',
     fullUrl: 'https://widokinaraj.pl/#biblia365',
     sectionId: 'biblia365',
     category: 'Słowo Boże',
@@ -50,7 +50,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_wnr',
     title: 'E-book Księga Widoki na Raj',
     displayLabel: 'Zeskanuj, aby otworzyć e-book WnR365',
-    shortUrl: 'https://clck.ru/3Vnjrh',
+    shortUrl: 'https://widokinaraj.pl/r/ebook_wnr',
     fullUrl: 'https://widokinaraj.pl/#ebook_wnr',
     sectionId: 'ebook_wnr',
     category: 'E-book',
@@ -60,7 +60,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_rhz',
     title: 'E-book Modlitewnik RHZ365',
     displayLabel: 'Zeskanuj, aby otworzyć e-book różańcowy',
-    shortUrl: 'https://clck.ru/3Vnjrf',
+    shortUrl: 'https://widokinaraj.pl/r/ebook_rhz',
     fullUrl: 'https://widokinaraj.pl/#ebook_rhz',
     sectionId: 'ebook_rhz',
     category: 'E-book',
@@ -70,7 +70,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_biblia',
     title: 'E-book Księga Słowa i Apokryfów',
     displayLabel: 'Zeskanuj, aby otworzyć e-book Biblii365',
-    shortUrl: 'https://clck.ru/3Vnjrg',
+    shortUrl: 'https://widokinaraj.pl/r/ebook_biblia',
     fullUrl: 'https://widokinaraj.pl/#ebook_biblia',
     sectionId: 'ebook_biblia',
     category: 'E-book',
@@ -80,7 +80,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_bio365',
     title: 'Biografia: Ja i Moja Żona (Bio365)',
     displayLabel: 'Zeskanuj, aby czytać wspomnienia małżeńskie',
-    shortUrl: 'https://clck.ru/3Vnjre',
+    shortUrl: 'https://widokinaraj.pl/r/bio365',
     fullUrl: 'https://widokinaraj.pl/#bio365',
     sectionId: 'bio365',
     category: 'Biografia',
@@ -126,13 +126,13 @@ export function getSavedQrCodes(): QrCodeItem[] {
             cleanFull = cleanFull.replace('widokinaraj.pl/#/', 'widokinaraj.pl/#');
           }
 
-          // If item.fullUrl or shortUrl contains base64 data URI, sanitize to prevent QR code failure
+          // If item.fullUrl or shortUrl contains base64 data URI or legacy clck.ru, sanitize to official domain links
           if (cleanFull && (cleanFull.startsWith('data:') || cleanFull.startsWith('blob:'))) {
             cleanFull = `https://widokinaraj.pl/#${item.sectionId || 'info365'}`;
           }
-          if (cleanShort && (cleanShort.startsWith('data:') || cleanShort.startsWith('blob:') || cleanShort.includes('tinyurl.com'))) {
+          if (cleanShort && (cleanShort.includes('clck.ru') || cleanShort.startsWith('data:') || cleanShort.startsWith('blob:') || cleanShort.includes('tinyurl.com'))) {
             const def = DEFAULT_QR_CODES.find(d => d.id === item.id);
-            cleanShort = def ? def.shortUrl : cleanFull;
+            cleanShort = def ? def.shortUrl : `https://widokinaraj.pl/r/${item.sectionId || item.id.replace(/^qr_/, '')}`;
           }
 
           return {
