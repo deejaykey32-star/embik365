@@ -94,9 +94,25 @@ export default function App() {
     } catch {}
   };
 
+  // Default system uploads (attached PDF books)
+  const DEFAULT_SYSTEM_UPLOADS: UploadedPdf[] = [
+    {
+      id: 'pdf-wnr365-full',
+      filename: '1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+      originalName: '_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+      format: 'pdf',
+      url: '/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+      size: 4358441,
+      sectionId: 'ebook_wnr',
+      title: 'Widoki na Raj (WnR365) - Pełny PDF 1:1',
+      description: 'Zaimportowany przez administratora pełny plik PDF książki.',
+      uploadedAt: '2026-09-13T12:00:00.000Z'
+    }
+  ];
+
   // 7. Entries and Uploads state
   const [customEntries, setCustomEntries] = useState<Record<string, Partial<SectionEntry>>>({});
-  const [uploads, setUploads] = useState<UploadedPdf[]>([]);
+  const [uploads, setUploads] = useState<UploadedPdf[]>(DEFAULT_SYSTEM_UPLOADS);
 
   // 8. Translation cache and active translated entry
   const [translatedEntry, setTranslatedEntry] = useState<SectionEntry | null>(null);
@@ -115,7 +131,11 @@ export default function App() {
               saveHomePageConfig(ghData.entries['drogowskazy_home_config'].homeConfig, false);
             }
           }
-          if (ghData.uploads) setUploads(ghData.uploads);
+          if (ghData.uploads && ghData.uploads.length > 0) {
+            setUploads(ghData.uploads);
+          } else {
+            setUploads(DEFAULT_SYSTEM_UPLOADS);
+          }
           return;
         }
       } catch (e) {
@@ -133,7 +153,11 @@ export default function App() {
               saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig, false);
             }
           }
-          if (json.uploads) setUploads(json.uploads);
+          if (json.uploads && json.uploads.length > 0) {
+            setUploads(json.uploads);
+          } else {
+            setUploads(DEFAULT_SYSTEM_UPLOADS);
+          }
           return;
         }
       } catch {}
@@ -149,7 +173,11 @@ export default function App() {
               saveHomePageConfig(json.entries['drogowskazy_home_config'].homeConfig, false);
             }
           }
-          if (json.uploads) setUploads(json.uploads);
+          if (json.uploads && json.uploads.length > 0) {
+            setUploads(json.uploads);
+          } else {
+            setUploads(DEFAULT_SYSTEM_UPLOADS);
+          }
         }
       } catch (err) {
         console.warn('Could not fetch static entries.json:', err);

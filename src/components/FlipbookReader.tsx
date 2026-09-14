@@ -209,6 +209,7 @@ export const FlipbookReader: React.FC<Props> = ({
   const [isRosaryModalOpen, setIsRosaryModalOpen] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isFullscreenZoom, setIsFullscreenZoom] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'pdf' | 'text'>('pdf');
 
   // Sync currentSpread when currentDate prop changes externally
   useEffect(() => {
@@ -369,15 +370,49 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const currentTheme = getThemeStyles();
 
+  const defaultWnrPdf: UploadedPdf = {
+    id: 'pdf-wnr365-full',
+    filename: '1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    originalName: '_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    format: 'pdf',
+    url: '/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    size: 4358441,
+    sectionId: 'ebook_wnr',
+    title: 'Księga Widoki na Raj (WnR365) - Pełny PDF 1:1',
+    description: 'Zaimportowany przez administratora pełny plik PDF książki.',
+    uploadedAt: '2026-09-13T12:00:00.000Z'
+  };
+
   // Find PDFs attached to this section or this specific day
   const matchingPdfs = sectionPdfs.filter(
-    p => p.sectionId === section.id && (!p.dateKey || p.dateKey === currentDate.dateKey)
+    p => p.sectionId === section.id ||
+         (section.id === 'ebook_wnr' && (p.sectionId === 'wnr365' || p.sectionId === 'ebook_wnr')) ||
+         (section.id === 'ebook_rhz' && (p.sectionId === 'rhz365' || p.sectionId === 'ebook_rhz')) ||
+         (section.id === 'ebook_biblia' && (p.sectionId === 'biblia365' || p.sectionId === 'ebook_biblia'))
   );
+
+  const activePdf = matchingPdfs[0] || (section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366' ? defaultWnrPdf : null);
 
   /**
    * Helper component to render 1:1 PDF Page content (4 pages per day)
    */
-  const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>) => {
+  const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>, isRightPage: boolean = false) => {
+    const pageNum = isRightPage ? rightPdfPageNum : leftPdfPageNum;
+
+    if (viewMode === 'pdf' && activePdf) {
+      const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
+      return (
+        <div className="w-full h-full flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-[#111622] shadow-xs min-h-[440px] sm:min-h-[500px]">
+          <iframe
+            key={`pdf-frame-${activePdf.id}-${pageNum}`}
+            src={pdfPageUrl}
+            title={`Strona PDF ${pageNum} z 1460`}
+            className="w-full h-full min-h-[440px] sm:min-h-[500px] border-0 rounded-xl bg-white pointer-events-auto"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col h-full justify-between space-y-3">
         <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-[#e2e8f0] text-justify flex-1 overflow-hidden ${
@@ -434,8 +469,23 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Action controls: Fullscreen Zoom, Download, TOC, Font size, Sound, Bookmarks, Theme */}
+        {/* Action controls: View Mode, Fullscreen Zoom, Download, TOC, Font size, Sound, Bookmarks, Theme */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* View Mode Toggle (PDF 1:1 vs Text) */}
+          <button
+            onClick={() => setViewMode(viewMode === 'pdf' ? 'text' : 'pdf')}
+            id="btn-flipbook-viewmode"
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border ${
+              viewMode === 'pdf'
+                ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs'
+                : 'bg-[#f0e4d4] dark:bg-[#1c2434] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#d8c8b6] dark:border-[#28354a]'
+            }`}
+            title="Przełącz widok: 1:1 Plik PDF lub Wyciągnięty Tekst"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>{viewMode === 'pdf' ? 'PDF 1:1' : 'Tekst'}</span>
+          </button>
+
           {/* Zoom Fullscreen Trigger */}
           <button
             onClick={() => setIsFullscreenZoom(true)}
@@ -629,7 +679,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
             {/* Left page 1:1 content */}
             <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
-              {renderPdfPageBody(leftPageData)}
+              {renderPdfPageBody(leftPageData, false)}
             </div>
 
             {/* Left page footer */}
@@ -676,7 +726,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
             {/* Right page 1:1 content */}
             <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
-              {renderPdfPageBody(rightPageData)}
+              {renderPdfPageBody(rightPageData, true)}
             </div>
 
             {/* Right page footer */}
@@ -880,7 +930,7 @@ export const FlipbookReader: React.FC<Props> = ({
                 </div>
 
                 <div className="my-auto py-6 space-y-4">
-                  {renderPdfPageBody(leftPageData)}
+                  {renderPdfPageBody(leftPageData, false)}
                 </div>
 
                 <div className="border-t border-black/10 dark:border-white/10 pt-3 text-xs text-[#8a7867] dark:text-[#94a3b8] flex justify-between">
@@ -897,7 +947,7 @@ export const FlipbookReader: React.FC<Props> = ({
                 </div>
 
                 <div className="my-auto py-6 space-y-4">
-                  {renderPdfPageBody(rightPageData)}
+                  {renderPdfPageBody(rightPageData, true)}
                 </div>
 
                 <div className="border-t border-black/10 dark:border-white/10 pt-3 text-xs text-[#8a7867] dark:text-[#94a3b8] flex justify-between">
