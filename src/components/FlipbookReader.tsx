@@ -214,6 +214,32 @@ export const FlipbookReader: React.FC<Props> = ({
   const [isFullscreenZoom, setIsFullscreenZoom] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'pdf' | 'text'>('pdf');
 
+  // Touch gesture state for horizontal page flipping
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchEndX(null);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return;
+    const diffX = touchStartX - touchEndX;
+    const minSwipeDistance = 45;
+    if (diffX > minSwipeDistance) {
+      handleTurnNext();
+    } else if (diffX < -minSwipeDistance) {
+      handleTurnPrev();
+    }
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
+
   // Sync currentSpread when currentDate prop changes externally
   useEffect(() => {
     const targetSpread = (currentDate.dayNumber - 1) * 2 + 1;
@@ -664,13 +690,13 @@ export const FlipbookReader: React.FC<Props> = ({
       </div>
 
       {/* Main Flipbook Stage */}
-      <div className="max-w-5xl mx-auto w-full flex-1 flex items-center justify-center relative perspective-1500 py-4">
+      <div className="max-w-5xl mx-auto w-full flex-1 flex items-center justify-center relative perspective-2000 py-4">
         {/* Previous page arrow button (left) */}
         <button
           onClick={handleTurnPrev}
           disabled={currentSpread <= 1 || isFlipping}
           id="btn-flip-left"
-          className="absolute left-0 sm:-left-4 z-30 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+          className="absolute left-0 sm:-left-4 z-40 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w lewo (Poprzednia strona PDF)"
         >
           <ChevronLeft className="w-6 h-6" />
@@ -681,122 +707,172 @@ export const FlipbookReader: React.FC<Props> = ({
           onClick={handleTurnNext}
           disabled={currentSpread >= 730 || isFlipping}
           id="btn-flip-right"
-          className="absolute right-0 sm:-right-4 z-30 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+          className="absolute right-0 sm:-right-4 z-40 p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w prawo (Następna strona PDF)"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
-        {/* 3D Book Container */}
-        <div 
-          className={`w-full max-w-4xl min-h-[560px] sm:min-h-[620px] rounded-3xl book-shadow border-4 border-[#3a2c20] dark:border-[#222222] grid grid-cols-1 md:grid-cols-2 relative overflow-hidden transition-transform duration-300 ${
-            isFlipping ? (flipDirection === 'next' ? 'scale-[0.99] rotate-y-2' : 'scale-[0.99] -rotate-y-2') : ''
-          }`}
-        >
-          {/* Left Page (Desktop: PDF Page 1:1) */}
+        {/* Outer Hardcover Book Frame */}
+        <div className="w-full max-w-5xl rounded-[28px] p-2 sm:p-3 bg-gradient-to-b from-[#422e1e] via-[#2d1e13] to-[#1d120a] dark:from-[#1e150c] dark:via-[#140e08] dark:to-[#0a0604] border-[6px] sm:border-[10px] border-[#382618] dark:border-[#1a110a] book-hard-cover relative shadow-2xl">
+          {/* Decorative Corner Accents */}
+          <div className="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-amber-500/40 rounded-tl-md pointer-events-none" />
+          <div className="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-amber-500/40 rounded-tr-md pointer-events-none" />
+          <div className="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-amber-500/40 rounded-bl-md pointer-events-none" />
+          <div className="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-amber-500/40 rounded-br-md pointer-events-none" />
+
+          {/* 3D Open Book Inner Container */}
           <div 
-            onClick={() => setIsFullscreenZoom(true)}
-            className={`hidden md:flex flex-col justify-between p-8 sm:p-10 border-r ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
-            title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`w-full min-h-[560px] sm:min-h-[640px] rounded-2xl grid grid-cols-1 md:grid-cols-2 relative overflow-hidden transform-style-3d select-none transition-transform duration-300 ${
+              isFlipping ? (flipDirection === 'next' ? 'scale-[0.998]' : 'scale-[0.998]') : ''
+            }`}
           >
-            {/* Click hover overlay badge */}
-            <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/5 transition-all flex items-center justify-center pointer-events-none z-10">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć (Strona PDF {leftPdfPageNum})
-              </span>
-            </div>
+            {/* Left Page (Desktop Spread) */}
+            <div 
+              onClick={() => setIsFullscreenZoom(true)}
+              className={`hidden md:flex flex-col justify-between p-7 sm:p-10 border-r border-[#d4c5b3] dark:border-[#222222] ${currentTheme.pageLeft} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
+              title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
+            >
+              {/* Left page crease gradient towards central spine */}
+              <div className="absolute top-0 right-0 bottom-0 w-16 pointer-events-none page-crease-left z-10" />
 
-            {/* Left page top header */}
-            <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between">
-              <span className="font-heading-cinzel text-xs font-bold uppercase tracking-widest text-[#7a6755] dark:text-white">
-                {section.shortTitle}
-              </span>
-              <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                Strona PDF {leftPdfPageNum} z 1460
-              </span>
-            </div>
-
-            {/* Left page 1:1 content */}
-            <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
-              {renderPdfPageBody(leftPageData, false)}
-            </div>
-
-            {/* Left page footer */}
-            <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white">
-              <span>Tom 365 PDF</span>
-              <span className="font-serif-book font-bold">Strona {leftPdfPageNum}</span>
-            </div>
-          </div>
-
-          {/* Book Spine Shadow in the center (Desktop) */}
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-12 -translate-x-1/2 pointer-events-none book-spine z-20" />
-
-          {/* Right Page (Desktop/Mobile: PDF Page 1:1) */}
-          <div 
-            onClick={() => setIsFullscreenZoom(true)}
-            className={`flex flex-col justify-between p-6 sm:p-10 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
-            title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
-          >
-            {/* Click hover overlay badge */}
-            <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/5 transition-all flex items-center justify-center pointer-events-none z-10">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć (Strona PDF {rightPdfPageNum})
-              </span>
-            </div>
-
-            {/* Bookmark ribbon */}
-            {isBookmarked && (
-              <div className="absolute top-0 right-8 z-30 w-6 h-12 bg-amber-600 rounded-b-md shadow-md flex items-end justify-center pb-1">
-                <Bookmark className="w-3.5 h-3.5 text-white fill-white" />
-              </div>
-            )}
-
-            {/* Right page header */}
-            <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between">
-              <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                Strona PDF {rightPdfPageNum} z 1460
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="font-heading-cinzel text-xs font-bold text-[#7a6755] dark:text-white">
-                  {rightPageData.displayDate}
+              {/* Click hover overlay badge */}
+              <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/5 transition-all flex items-center justify-center pointer-events-none z-10">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć (Strona PDF {leftPdfPageNum})
                 </span>
               </div>
-            </div>
 
-            {/* Right page 1:1 content */}
-            <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
-              {renderPdfPageBody(rightPageData, true)}
-            </div>
-
-            {/* Right page footer */}
-            <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white">
-              <span className="font-serif-book font-bold">Strona {rightPdfPageNum}</span>
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTurnPrev();
-                  }}
-                  disabled={currentSpread <= 1}
-                  className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
-                  title="Poprzednia karta"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <span className="font-mono text-[11px]">Dzień {leftPageData.dayNumber} / 365</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTurnNext();
-                  }}
-                  disabled={currentSpread >= 730}
-                  className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
-                  title="Następna karta"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+              {/* Left page top header */}
+              <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between">
+                <span className="font-heading-cinzel text-xs font-bold uppercase tracking-widest text-[#7a6755] dark:text-white">
+                  {section.shortTitle}
+                </span>
+                <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
+                  Strona PDF {leftPdfPageNum} z 1460
+                </span>
               </div>
+
+              {/* Left page 1:1 content */}
+              <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                {renderPdfPageBody(leftPageData, false)}
+              </div>
+
+              {/* Left page footer */}
+              <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white">
+                <span>Tom 365 PDF</span>
+                <span className="font-serif-book font-bold">Strona {leftPdfPageNum}</span>
+              </div>
+
+              {/* Bottom Left Corner Curl */}
+              <div className="page-corner-curl page-corner-curl-left opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all" />
             </div>
+
+            {/* Central Hard Spine Binding Joint - Physically Locks Left and Right Pages Together */}
+            <div className="hidden md:flex absolute left-1/2 top-0 bottom-0 w-8 sm:w-10 -translate-x-1/2 pointer-events-none z-20 book-spine-joint flex-col justify-between items-center py-4 border-x border-black/20 dark:border-white/10 shadow-2xl">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-800/50 dark:bg-amber-400/40 shadow-xs" />
+              <div className="w-0.5 h-full bg-gradient-to-b from-black/10 via-black/25 to-black/10 dark:from-white/5 dark:via-white/15 dark:to-white/5 my-2" />
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-800/50 dark:bg-amber-400/40 shadow-xs" />
+            </div>
+
+            {/* Right Page (Desktop/Mobile Spread) */}
+            <div 
+              onClick={() => setIsFullscreenZoom(true)}
+              className={`flex flex-col justify-between p-6 sm:p-10 ${currentTheme.pageRight} relative cursor-pointer group hover:bg-black/5 dark:hover:bg-white/5 transition-colors overflow-hidden`}
+              title="Kliknij, aby otworzyć stronę PDF w trybie pełnoekranowym"
+            >
+              {/* Right page crease gradient towards central spine */}
+              <div className="absolute top-0 left-0 bottom-0 w-16 pointer-events-none page-crease-right z-10" />
+
+              {/* Click hover overlay badge */}
+              <div className="absolute inset-0 bg-amber-900/0 group-hover:bg-amber-900/5 transition-all flex items-center justify-center pointer-events-none z-10">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <ZoomIn className="w-4 h-4" /> Kliknij, aby powiększyć (Strona PDF {rightPdfPageNum})
+                </span>
+              </div>
+
+              {/* Bookmark ribbon */}
+              {isBookmarked && (
+                <div className="absolute top-0 right-8 z-30 w-6 h-12 bg-amber-600 rounded-b-md shadow-md flex items-end justify-center pb-1">
+                  <Bookmark className="w-3.5 h-3.5 text-white fill-white" />
+                </div>
+              )}
+
+              {/* Right page header */}
+              <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between">
+                <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
+                  Strona PDF {rightPdfPageNum} z 1460
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-heading-cinzel text-xs font-bold text-[#7a6755] dark:text-white">
+                    {rightPageData.displayDate}
+                  </span>
+                </div>
+              </div>
+
+              {/* Right page 1:1 content */}
+              <div className="my-auto py-4 flex-1 flex flex-col justify-between overflow-hidden">
+                {renderPdfPageBody(rightPageData, true)}
+              </div>
+
+              {/* Right page footer */}
+              <div className="border-t border-black/10 dark:border-white/20 pt-3 flex items-center justify-between text-xs text-[#8a7867] dark:text-white">
+                <span className="font-serif-book font-bold">Strona {rightPdfPageNum}</span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTurnPrev();
+                    }}
+                    disabled={currentSpread <= 1}
+                    className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                    title="Poprzednia karta"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="font-mono text-[11px]">Dzień {leftPageData.dayNumber} / 365</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTurnNext();
+                    }}
+                    disabled={currentSpread >= 730}
+                    className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
+                    title="Następna karta"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Right Corner Curl */}
+              <div className="page-corner-curl page-corner-curl-right opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+            </div>
+
+            {/* 3D HORIZONTAL PAGE FLIP ANIMATED LEAF OVERLAY */}
+            {isFlipping && (
+              <div 
+                className={`hidden md:flex flex-col justify-between p-7 sm:p-10 absolute top-0 bottom-0 w-1/2 z-30 pointer-events-none ${
+                  flipDirection === 'next'
+                    ? 'right-0 animate-flip-next'
+                    : 'left-0 animate-flip-prev'
+                } ${flipDirection === 'next' ? currentTheme.pageRight : currentTheme.pageLeft} border border-black/10 dark:border-white/20 shadow-2xl overflow-hidden`}
+              >
+                <div className="border-b border-black/10 dark:border-white/20 pb-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold">
+                  <span>Przewracanie kartki...</span>
+                  <span>Strona {flipDirection === 'next' ? rightPdfPageNum : leftPdfPageNum}</span>
+                </div>
+                <div className="my-auto py-4 flex-1 flex flex-col justify-between opacity-80 blur-[0.3px]">
+                  {renderPdfPageBody(flipDirection === 'next' ? rightPageData : leftPageData, flipDirection === 'next')}
+                </div>
+                <div className="border-t border-black/10 dark:border-white/20 pt-3 text-xs text-center text-amber-800 dark:text-amber-300 font-serif-book font-bold">
+                  📖 {section.name}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
