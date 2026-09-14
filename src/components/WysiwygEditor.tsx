@@ -152,19 +152,74 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     handleInput();
   };
 
-  // Insert Image via URL or local file upload
-  const handleInsertImage = () => {
-    const url = prompt('Wklej adres URL ilustracji lub wybierz plik w administratorze:', 'https://images.unsplash.com/photo-1519817650390-64a93db51149?w=800&auto=format&fit=crop&q=80');
-    if (!url) return;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    let cleanUrl = '';
+
+    // 1. Attempt server upload to get clean /uploads/ path
+    try {
+      const formData = new FormData();
+      formData.append('pdfFile', file);
+      formData.append('title', file.name);
+
+      const res = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.file?.url) {
+          cleanUrl = data.file.url;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend image upload unavailable:', err);
+    }
+
+    // 2. Fallback: Blob URL
+    if (!cleanUrl) {
+      cleanUrl = URL.createObjectURL(file);
+    }
+
     const caption = prompt('Podpis pod ilustracją (opcjonalnie):', '');
     const imgHtml = `
       <figure style="margin: 20px auto; text-align: center; max-width: 100%;">
-        <img src="${url}" alt="${caption || 'Ilustracja'}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto; display: block;" />
+        <img src="${cleanUrl}" alt="${caption || 'Ilustracja'}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto; display: block;" />
         ${caption ? `<figcaption style="font-size: 12px; color: #6b7280; font-style: italic; margin-top: 6px;">${caption}</figcaption>` : ''}
       </figure>
       <p><br/></p>
     `;
     insertHtmlAtCursor(imgHtml);
+    e.target.value = '';
+  };
+
+  // Insert Image via clean URL or direct file upload
+  const handleInsertImage = () => {
+    const choice = confirm('Kliknij [OK], aby wybrać plik graficzny z komputera.\nKliknij [Anuluj], aby podać prosty adres URL z sieci.');
+    if (choice) {
+      fileInputRef.current?.click();
+    } else {
+      let url = prompt('Wklej prosty adres URL ilustracji (np. https://... lub /uploads/...):', '');
+      if (!url) return;
+      url = url.trim();
+      if (url.startsWith('data:image/')) {
+        alert('Wykryto ciąg zakodowany w base64. Zalecamy używanie prostych linków /uploads/ lub HTTP dla zachowania czystości danych.');
+      }
+      const caption = prompt('Podpis pod ilustracją (opcjonalnie):', '');
+      const imgHtml = `
+        <figure style="margin: 20px auto; text-align: center; max-width: 100%;">
+          <img src="${url}" alt="${caption || 'Ilustracja'}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto; display: block;" />
+          ${caption ? `<figcaption style="font-size: 12px; color: #6b7280; font-style: italic; margin-top: 6px;">${caption}</figcaption>` : ''}
+        </figure>
+        <p><br/></p>
+      `;
+      insertHtmlAtCursor(imgHtml);
+    }
   };
 
   // Insert Table
@@ -696,6 +751,15 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <span>Tryb: {mode === 'simple' ? 'Prosta edycja' : mode === 'advanced' ? 'Zaawansowana edycja' : 'Kod źródłowy HTML'}</span>
         <span className="opacity-75">Obsługuje justowanie do obu stron, kody QR i ilustracje</span>
       </div>
+
+      {/* Hidden file input for direct image upload */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        accept="image/*" 
+        className="hidden" 
+        onChange={handleImageFileSelected} 
+      />
 
       {/* QR Code Selection Modal */}
       <QrCodeModal

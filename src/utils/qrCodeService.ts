@@ -517,14 +517,39 @@ export async function generateAndDownloadQrBadgePng(item: QrCodeItem): Promise<v
   document.body.removeChild(link);
 }
 
-// Generate embedded HTML for WYSIWYG editor (active PNG badge image linked to short URL redirect)
+/**
+ * Generate lightweight SVG QR Data URL (instant, tiny size ~1KB)
+ */
+export async function generateQrSvgDataUrl(text: string, size = 300): Promise<string> {
+  try {
+    const svgText = await QRCode.toString(text || 'https://widokinaraj.pl', {
+      type: 'svg',
+      width: size,
+      margin: 1,
+      color: {
+        dark: '#111827',
+        light: '#ffffff'
+      },
+      errorCorrectionLevel: 'M'
+    });
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svgText)}`;
+  } catch (err) {
+    console.warn('SVG QR generation fallback:', err);
+    return await generateQrDataUrl(text, size);
+  }
+}
+
+// Generate embedded HTML for WYSIWYG editor (lightweight SVG QR badge linked to short URL redirect)
 export async function generateQrWysiwygHtml(item: QrCodeItem): Promise<string> {
   const targetUrl = item.shortUrl || item.fullUrl;
-  const badgePngUrl = await generateQrBadgeDataUrl(item);
+  const svgDataUrl = await generateQrSvgDataUrl(targetUrl, 240);
   return `
-    <div style="text-align: center; margin: 24px auto; max-width: 400px;">
-      <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" title="Kliknij, aby przejść do ${item.title} (${targetUrl})" style="display: inline-block; text-decoration: none;">
-        <img src="${badgePngUrl}" alt="${item.title}" style="display: block; max-width: 100%; width: 380px; height: auto; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border: 2px solid #d4b996; margin: 0 auto; transition: transform 0.2s ease;" />
+    <div style="text-align: center; margin: 20px auto; max-width: 340px; padding: 16px; background-color: #fcfbf9; border: 2px solid #d4b996; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+      <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" title="Kliknij, aby otworzyć ${item.title}" style="display: block; text-decoration: none; color: inherit;">
+        <div style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; font-weight: bold; color: #b45309; text-transform: uppercase; margin-bottom: 8px;">${item.title}</div>
+        <img src="${svgDataUrl}" alt="${item.title}" style="display: block; width: 180px; height: 180px; border-radius: 8px; border: 1px solid #e7ddd1; margin: 0 auto; background: #ffffff; padding: 4px;" />
+        <div style="font-size: 13px; font-weight: bold; color: #1c1917; margin-top: 10px;">${item.displayLabel}</div>
+        <div style="font-size: 11px; font-family: monospace; color: #b45309; margin-top: 4px; word-break: break-all;">${targetUrl}</div>
       </a>
     </div>
     <p><br/></p>

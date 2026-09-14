@@ -26,6 +26,7 @@ import {
   updateQrCodeFullUrl, 
   generateAndDownloadQrBadgePng,
   generateQrDataUrl,
+  generateQrSvgDataUrl,
   shortenUrlViaApi,
   batchShortenAllQrCodes,
   exportQrCodesToJson,
@@ -33,6 +34,24 @@ import {
   parseQrCodesFile,
   importQrCodes
 } from '../utils/qrCodeService';
+
+const QrImageDisplay: React.FC<{ text: string; title: string }> = ({ text, title }) => {
+  const [src, setSrc] = useState<string>('');
+
+  useEffect(() => {
+    let isMounted = true;
+    generateQrSvgDataUrl(text || 'https://widokinaraj.pl', 180)
+      .then(url => { if (isMounted) setSrc(url); })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [text]);
+
+  if (!src) {
+    return <div className="w-full h-full bg-stone-200 dark:bg-stone-800 rounded-lg animate-pulse" />;
+  }
+
+  return <img src={src} alt={title} className="w-full h-full object-contain" />;
+};
 
 interface QrCodeModalProps {
   isOpen: boolean;
@@ -419,11 +438,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                     className="w-28 h-28 rounded-xl bg-white p-2 border border-stone-200 shadow-xs hover:border-amber-500 hover:scale-105 transition-all flex items-center justify-center shrink-0 cursor-pointer"
                     title="Kliknij, aby przetestować przekierowanie w nowej karcie"
                   >
-                    {previewUrl ? (
-                      <img src={previewUrl} alt={item.title} className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="animate-pulse w-full h-full bg-stone-200 rounded-lg" />
-                    )}
+                    <QrImageDisplay text={item.shortUrl || item.fullUrl} title={item.title} />
                   </a>
 
                   {/* Metadata */}
