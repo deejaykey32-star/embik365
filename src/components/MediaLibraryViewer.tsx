@@ -65,7 +65,11 @@ export function getItemClckRuUrl(item: PlikItem): string {
   return sanitizeQrUrl('', fileKey || item.id, true);
 }
 
-export const MediaLibraryViewer: React.FC = () => {
+export interface MediaLibraryViewerProps {
+  initialTab?: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio';
+}
+
+export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialTab }) => {
   // 1. Prepare items list from src/pliki & user uploaded materials
   const [items, setItems] = useState<PlikItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,6 +86,19 @@ export const MediaLibraryViewer: React.FC = () => {
     dayNumber: '',
     isPublishedPublic: true,
     createExternal: true,
+  });
+
+  // Active main tab in Media Viewer: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'
+  const [activeMediaTab, setActiveMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'>(() => {
+    if (initialTab) return initialTab;
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      if (hash.includes('aistudio') || hash.includes('ai-studio') || hash.includes('symulacj') || path.includes('aistudio')) {
+        return 'aistudio';
+      }
+    }
+    return 'grid';
   });
 
   const handleSaveNewMaterial = async (e: React.FormEvent) => {
@@ -195,9 +212,6 @@ export const MediaLibraryViewer: React.FC = () => {
     }
   };
   
-  // Active main tab in Media Viewer: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'
-  const [activeMediaTab, setActiveMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'>('grid');
-
   // Lightbox modal state for images
   const [selectedImage, setSelectedImage] = useState<PlikItem | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
