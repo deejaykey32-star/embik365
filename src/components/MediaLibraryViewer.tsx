@@ -52,6 +52,17 @@ export interface PlikItem {
   uploadedAt?: string;
 }
 
+export function getItemClckRuUrl(item: PlikItem): string {
+  const fileKey = item.filename || item.name || '';
+  if (fileKey && FILE_CLCK_MAP[fileKey]) {
+    return FILE_CLCK_MAP[fileKey];
+  }
+  if (item.shortUrl && item.shortUrl.startsWith('https://clck.ru/') && item.shortUrl !== 'https://clck.ru/3Vr8B8') {
+    return item.shortUrl;
+  }
+  return sanitizeQrUrl('', fileKey || item.id, true);
+}
+
 export const MediaLibraryViewer: React.FC = () => {
   // 1. Prepare items list from src/pliki & user uploaded materials
   const [items, setItems] = useState<PlikItem[]>([]);
@@ -331,7 +342,7 @@ export const MediaLibraryViewer: React.FC = () => {
         type = 'other';
       }
 
-      const fileShortUrl = FILE_CLCK_MAP[filename] || sanitizeQrUrl('', filename, true);
+      const fileShortUrl = getItemClckRuUrl({ filename, name: filename, id: filename } as PlikItem);
       list.push({
         id: filename,
         name: filename,
@@ -355,6 +366,7 @@ export const MediaLibraryViewer: React.FC = () => {
         if (Array.isArray(parsed)) {
           parsed.forEach((customItem: PlikItem) => {
             if (!list.some(i => i.id === customItem.id)) {
+              customItem.shortUrl = getItemClckRuUrl(customItem);
               list.unshift(customItem);
             }
           });
@@ -685,9 +697,14 @@ export const MediaLibraryViewer: React.FC = () => {
       const fullUrl = rawUrl.startsWith('/') 
         ? `${window.location.origin}${rawUrl}`
         : rawUrl;
-      let shortUrl = await shortenUrlViaApi(fullUrl);
-      if (!shortUrl || !shortUrl.startsWith('http')) {
-        shortUrl = FILE_CLCK_MAP[item.filename] || sanitizeQrUrl('', item.filename || item.name, true);
+      let shortUrl = getItemClckRuUrl(item);
+      if (!shortUrl || shortUrl === 'https://clck.ru/3Vr8B8') {
+        try {
+          const apiShort = await shortenUrlViaApi(fullUrl);
+          if (apiShort && apiShort.startsWith('https://clck.ru/')) {
+            shortUrl = apiShort;
+          }
+        } catch {}
       }
       if (shortUrl) {
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, shortUrl } : i));
@@ -714,9 +731,14 @@ export const MediaLibraryViewer: React.FC = () => {
         ? `${window.location.origin}${rawUrl}`
         : rawUrl;
 
-      let shortUrl = await shortenUrlViaApi(fullUrl);
-      if (!shortUrl || !shortUrl.startsWith('http')) {
-        shortUrl = FILE_CLCK_MAP[item.filename] || sanitizeQrUrl('', item.filename || item.name, true);
+      let shortUrl = getItemClckRuUrl(item);
+      if (!shortUrl || shortUrl === 'https://clck.ru/3Vr8B8') {
+        try {
+          const apiShort = await shortenUrlViaApi(fullUrl);
+          if (apiShort && apiShort.startsWith('https://clck.ru/')) {
+            shortUrl = apiShort;
+          }
+        } catch {}
       }
 
       if (shortUrl) {
@@ -976,7 +998,7 @@ export const MediaLibraryViewer: React.FC = () => {
                       title="Kliknij, aby skopiować skrócony link clck.ru"
                     >
                       <span className="font-mono text-[11px] font-bold text-amber-800 dark:text-amber-300 truncate">
-                        {item.shortUrl || FILE_CLCK_MAP[item.filename] || FILE_CLCK_MAP[item.name] || 'https://clck.ru/...'}
+                        {getItemClckRuUrl(item)}
                       </span>
                       <Copy className="w-3 h-3 text-amber-700 dark:text-amber-400 shrink-0" />
                     </div>
