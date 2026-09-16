@@ -3,6 +3,15 @@
   "uploads": [],
   "qrCodes": [
     {
+      "id": "qr_file_farby__wiat_o_png",
+      "title": "farby+światło.png",
+      "displayLabel": "Zeskanuj, aby zobaczyć plik farby+światło.png",
+      "shortUrl": "https://clck.ru/3KEHPD9",
+      "fullUrl": "https://widokinaraj.pl/assets/farby_%C5%9Bwiat%C5%82o-CSHfaSku.png",
+      "category": "Materiały src/pliki",
+      "createdAt": "2026-09-16T19:53:50.321Z"
+    },
+    {
       "id": "qr-1789571634057",
       "title": "Film \"Prawdziwa Twarz Jezusa\"",
       "displayLabel": "Film \"Prawdziwa Twarz Jezusa\"",
@@ -442,6 +451,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-16T15:13:54.065Z",
+  "lastUpdated": "2026-09-16T19:53:50.326Z",
   "updatedBy": "Admin Dominik Kuta"
 }
