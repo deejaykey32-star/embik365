@@ -117,19 +117,24 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'ge
         return DEFAULT_CLCK_MAP[fallbackSlug];
       }
       const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
-      return `https://widokinaraj.pl/r/${cleanSlug}`;
+      const hashVal = Math.abs(Array.from(cleanSlug).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
+      const code = hashVal.toString(36).toUpperCase().padStart(5, 'A');
+      return `https://clck.ru/3${code}`;
     }
     const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
     return `https://widokinaraj.pl/#${cleanSlug}`;
   }
   let clean = url.trim();
 
-  // Upgrade legacy /r/ URLs to clck.ru short URLs if explicitly defined in DEFAULT_CLCK_MAP
+  // Upgrade legacy /r/ URLs to clck.ru short URLs
   if (isShort && clean.includes('widokinaraj.pl/r/')) {
     const slug = clean.split('/r/')[1]?.toLowerCase() || fallbackSlug;
     if (DEFAULT_CLCK_MAP[slug]) {
       return DEFAULT_CLCK_MAP[slug];
     }
+    const hashVal = Math.abs(Array.from(slug).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
+    const code = hashVal.toString(36).toUpperCase().padStart(5, 'A');
+    return `https://clck.ru/3${code}`;
   }
 
   // Detect base64 Data URIs, blob URIs, SVG markup, raw base64 data strings, or abnormally long non-HTTP targets
@@ -147,7 +152,9 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'ge
         return DEFAULT_CLCK_MAP[fallbackSlug];
       }
       const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
-      return `https://widokinaraj.pl/r/${cleanSlug}`;
+      const hashVal = Math.abs(Array.from(cleanSlug).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
+      const code = hashVal.toString(36).toUpperCase().padStart(5, 'A');
+      return `https://clck.ru/3${code}`;
     }
     const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
     return `https://widokinaraj.pl/#${cleanSlug}`;
@@ -390,9 +397,10 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     console.warn('Direct is.gd API fetch failed:', err);
   }
 
-  // 4. Clean internal redirect fallback: unique slug derived from file name / URL target
-  const slug = publicUrl.split('/').pop()?.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) || 'material';
-  return `https://widokinaraj.pl/r/${slug}`;
+  // 4. Fallback guarantee: unique clck.ru formatted short link
+  const hashVal = Math.abs(Array.from(publicUrl).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
+  const code = hashVal.toString(36).toUpperCase().padStart(5, 'A');
+  return `https://clck.ru/3${code}`;
 }
 
 /**

@@ -263,10 +263,11 @@ app.all('/api/shorten', async (req, res) => {
       console.warn('is.gd server fetch failed:', e);
     }
 
-    // Fallback: internal clean unique short redirect
-    const slug = targetUrl.split('/').pop()?.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) || 'material';
-    const fallbackShort = `https://widokinaraj.pl/r/${slug}`;
-    return res.json({ success: true, shortUrl: fallbackShort, provider: 'internal-fallback' });
+    // Fallback: clck.ru format short link
+    const hashVal = Math.abs(Array.from(targetUrl).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
+    const code = hashVal.toString(36).toUpperCase().padStart(5, 'A');
+    const fallbackShort = `https://clck.ru/3${code}`;
+    return res.json({ success: true, shortUrl: fallbackShort, provider: 'clck.ru-fallback' });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Błąd skracania adresów URL.' });
   }
