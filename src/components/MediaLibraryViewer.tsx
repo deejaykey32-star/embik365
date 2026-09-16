@@ -349,7 +349,7 @@ export const MediaLibraryViewer: React.FC = () => {
         id: filename,
         name: filename,
         filename,
-        url: url as string,
+        url: `/pliki/${filename}`,
         type,
         ext,
         sectionId: 'general',
@@ -367,6 +367,10 @@ export const MediaLibraryViewer: React.FC = () => {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           parsed.forEach((customItem: PlikItem) => {
+            if (customItem.url && customItem.url.startsWith('blob:')) {
+              const cleanName = (customItem.filename || customItem.name || 'material').replace(/[^a-zA-Z0-9._-]/g, '_');
+              customItem.url = `/uploads/${cleanName}`;
+            }
             if (!list.some(i => i.id === customItem.id)) {
               customItem.shortUrl = getItemClckRuUrl(customItem);
               list.unshift(customItem);

@@ -270,7 +270,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
       const combinedCode = `${html}\n${js}`;
       if (combinedCode.includes('tailwindcss')) libs.push('tailwindcss');
       if (combinedCode.includes('three')) libs.push('threejs');
-      if (combinedCode.includes('react')) libs.push('react');
+      if (combinedCode.includes('react') || combinedCode.includes('jsx') || /<[A-Za-z][\s\S]*?>/.test(js)) libs.push('react');
       if (combinedCode.includes('chart')) libs.push('chartjs');
       if (combinedCode.includes('lucide')) libs.push('lucide');
       if (combinedCode.includes('katex')) libs.push('katex');
@@ -288,7 +288,9 @@ export const AiStudioPackageBuilder: React.FC = () => {
           const srcMatch = m.match(/src=["'](.*?)["']/i);
           if (srcMatch && srcMatch[1]) {
             const src = srcMatch[1];
-            if (!src.startsWith('data:')) customCdns.push(src);
+            if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//')) {
+              customCdns.push(src);
+            }
           } else {
             const scriptCode = m.replace(/<script[^>]*>|<\/script>/gi, '').trim();
             if (scriptCode) js += '\n\n' + scriptCode;
@@ -298,10 +300,15 @@ export const AiStudioPackageBuilder: React.FC = () => {
       }
 
       // 6. Clean html wrapper tags if present
-      html = html
-        .replace(/<!DOCTYPE[^>]*>/gi, '')
-        .replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>/gi, '')
-        .trim();
+      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      if (bodyMatch && bodyMatch[1]) {
+        html = bodyMatch[1].trim();
+      } else {
+        html = html
+          .replace(/<!DOCTYPE[^>]*>/gi, '')
+          .replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>/gi, '')
+          .trim();
+      }
 
       const cleanPkgName = file.name.replace(/\.zip$/i, '').replace(/[^a-zA-Z0-9_-]/g, ' ');
 
@@ -425,21 +432,53 @@ export const AiStudioPackageBuilder: React.FC = () => {
 
   // Build combined standalone HTML document for live iframe sandbox execution
   const buildFullDocumentHtml = (pkg: AiStudioPackage): string => {
-    const cssCdnTags = (pkg.libraries || []).map(libId => {
+    // 1. Filter custom CDN URLs to ONLY include valid external http/https/data URLs
+    const validCustomCdns = (pkg.customCdnUrls || []).filter(url =>
+      url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//') || url.startsWith('data:')
+    );
+
+    const customCdnTags = validCustomCdns.map(url => {
+      if (url.endsWith('.css')) return `<link rel="stylesheet" href="${url}">`;
+      return `<script src="${url}"></script>`;
+    }).join('\n');
+
+    // 2. Check if React, Babel, or JSX is needed
+    const rawJs = pkg.jsContent || '';
+    const hasJsx = /<[A-Za-z][\s\S]*?>/g.test(rawJs) || rawJs.includes('import React') || rawJs.includes('React.') || rawJs.includes('ReactDOM');
+    const hasReactLib = (pkg.libraries || []).includes('react');
+    const needsBabel = hasJsx || hasReactLib;
+
+    let librariesToLoad = [...(pkg.libraries || [])];
+    if (needsBabel && !librariesToLoad.includes('react')) {
+      librariesToLoad.push('react');
+    }
+
+    const cssCdnTags = librariesToLoad.map(libId => {
       const lib = PRESET_LIBRARIES.find(l => l.id === libId);
       return lib?.cssUrl ? `<link rel="stylesheet" href="${lib.cssUrl}">` : '';
     }).filter(Boolean).join('\n');
 
-    const jsCdnTags = (pkg.libraries || []).map(libId => {
+    const jsCdnTags = librariesToLoad.map(libId => {
       const lib = PRESET_LIBRARIES.find(l => l.id === libId);
       if (!lib?.jsUrl) return '';
       return lib.jsUrl.split('\n').map(url => `<script src="${url.trim()}"></script>`).join('\n');
     }).filter(Boolean).join('\n');
 
-    const customCdnTags = (pkg.customCdnUrls || []).map(url => {
-      if (url.endsWith('.css')) return `<link rel="stylesheet" href="${url}">`;
-      return `<script src="${url}"></script>`;
-    }).join('\n');
+    // 3. Ensure HTML has root container if missing
+    let bodyContent = pkg.htmlContent || '';
+    if (!bodyContent.includes('id="root"') && !bodyContent.includes('id="app"') && !bodyContent.includes('id="container"')) {
+      bodyContent = `<div id="root"></div>\n<div id="app"></div>\n${bodyContent}`;
+    }
+
+    // 4. Clean JS imports & exports for browser compatibility
+    let cleanedJs = rawJs
+      .replace(/import\s+.*?\s+from\s+['"][^'"]+['"];?/g, '')
+      .replace(/import\s+['"][^'"]+['"];?/g, '')
+      .replace(/export\s+default\s+function\b/g, 'function')
+      .replace(/export\s+default\s+/g, 'window.App = ')
+      .replace(/export\s+const\s+/g, 'const ');
+
+    const scriptType = needsBabel ? 'text/babel' : 'text/javascript';
 
     return `<!DOCTYPE html>
 <html lang="pl">
@@ -447,19 +486,55 @@ export const AiStudioPackageBuilder: React.FC = () => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${pkg.name || 'Google AI Studio App'}</title>
+  
+  <script>
+    window.global = window;
+    window.process = { env: { NODE_ENV: 'production' } };
+  </script>
+
   ${cssCdnTags}
   ${customCdnTags}
+  
   <style>
     ${pkg.cssContent || ''}
   </style>
+
   ${jsCdnTags}
-</head>
-<body>
-  ${pkg.htmlContent || ''}
 
   <script>
+    window.addEventListener('error', function(e) {
+      var errDiv = document.getElementById('sandbox-error-overlay');
+      if (!errDiv) {
+        errDiv = document.createElement('div');
+        errDiv.id = 'sandbox-error-overlay';
+        errDiv.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;background:#991b1b;color:#ffffff;padding:14px 18px;border-radius:14px;font-family:monospace;font-size:12px;z-index:999999;box-shadow:0 10px 30px rgba(0,0,0,0.6);border:1px solid #f87171;line-height:1.5;max-height:40vh;overflow:auto;';
+        document.body.appendChild(errDiv);
+      }
+      errDiv.innerHTML = '<strong>⚠️ Błąd uruchamiania skryptu Paczki Google AI Studio:</strong><br/>' + (e.message || e.error || 'Błąd wykonania skryptu');
+    });
+  </script>
+</head>
+<body>
+  ${bodyContent}
+
+  <script>
+    if (typeof window.React !== 'undefined' && typeof window.ReactDOM !== 'undefined') {
+      window.react = window.React;
+      if (!window.ReactDOM.createRoot) {
+        window.ReactDOM.createRoot = function(container) {
+          return {
+            render: function(element) {
+              window.ReactDOM.render(element, container);
+            }
+          };
+        };
+      }
+    }
+  </script>
+
+  <script type="${scriptType}">
     try {
-      ${pkg.jsContent || ''}
+      ${cleanedJs}
     } catch (err) {
       console.error('Błąd wykonania skryptu Paczki Google AI Studio:', err);
     }
