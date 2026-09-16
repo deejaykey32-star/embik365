@@ -273,19 +273,7 @@ export const stripTypeScriptTypes = (code: string): string => {
 
   let result = cleanLines.join('\n');
 
-  // 1. Strip TypeScript type annotations on const/let/var declarations (including destructured):
-  // e.g. const FlasherSim: React.FC<FlasherSimProps> = ... -> const FlasherSim = ...
-  result = result.replace(/\b(const|let|var)\s+([^:=]+)\s*:\s*[^=;]+=/g, '$1 $2 =');
-
-  // 2. Strip TypeScript return type annotations on arrow functions:
-  // e.g. (): React.ReactNode => ... -> () => ...
-  result = result.replace(/\):\s*[A-Za-z0-9_.]+(<[^>]+>)?\s*=>/g, ') =>');
-
-  // 3. Strip TypeScript parameter type annotations:
-  // e.g. (props: FlasherSimProps) -> (props)
-  result = result.replace(/:\s*[A-Za-z0-9_.]+(<[^>]+>)?\b(?=[\s,\)])/g, '');
-
-  // 4. Strip type assertions like `as HTMLCanvasElement` or `as any`
+  // Strip type assertions like `as HTMLCanvasElement` or `as any`
   result = result.replace(/\s+as\s+[A-Za-z0-9_.]+(<[^>]+>)?/g, '');
 
   return result;
