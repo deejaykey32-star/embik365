@@ -406,6 +406,18 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     publicUrl = `https://${publicUrl}`;
   }
 
+  // 0. Check FILE_CLCK_MAP or DEFAULT_CLCK_MAP first
+  const urlFilename = publicUrl.split('/').pop() || '';
+  if (urlFilename && FILE_CLCK_MAP[urlFilename]) {
+    return FILE_CLCK_MAP[urlFilename];
+  }
+  try {
+    const decodedFilename = decodeURIComponent(urlFilename);
+    if (decodedFilename && FILE_CLCK_MAP[decodedFilename]) {
+      return FILE_CLCK_MAP[decodedFilename];
+    }
+  } catch {}
+
   // 1. Try backend API (/api/shorten - Server-side fetch to clck.ru with 0 CORS issues)
   try {
     const res = await fetch(`/api/shorten?url=${encodeURIComponent(publicUrl)}`);

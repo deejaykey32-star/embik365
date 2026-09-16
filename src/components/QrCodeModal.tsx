@@ -116,10 +116,25 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
-    const updated = upsertQrCode(editingItem);
+
+    setIsShortening(true);
+    let itemToSave = { ...editingItem };
+    if (!itemToSave.shortUrl || !itemToSave.shortUrl.startsWith('https://clck.ru/')) {
+      try {
+        const generated = await shortenUrlViaApi(itemToSave.fullUrl);
+        if (generated && generated.startsWith('http')) {
+          itemToSave.shortUrl = generated;
+        }
+      } catch (err) {
+        console.warn('Auto clck.ru shorten error on edit save:', err);
+      }
+    }
+    setIsShortening(false);
+
+    const updated = upsertQrCode(itemToSave);
     setQrCodes(updated);
     setEditingItem(null);
   };
@@ -130,7 +145,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
 
     setIsShortening(true);
     let finalShortUrl = newShortUrl.trim();
-    if (!finalShortUrl || !finalShortUrl.includes('clck.ru')) {
+    if (!finalShortUrl || !finalShortUrl.startsWith('https://clck.ru/')) {
       try {
         finalShortUrl = await shortenUrlViaApi(newFullUrl);
       } catch (err) {
@@ -139,13 +154,16 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
     }
     setIsShortening(false);
 
+    const titleStr = newTitle.trim();
+    const labelStr = (newDisplayLabel || `Zeskanuj, aby otworzyć ${titleStr}`).trim();
+
     const newItem: QrCodeItem = {
       id: `qr_${Date.now()}`,
-      title: newTitle,
-      displayLabel: newDisplayLabel || 'Zeskanuj smartfonem',
-      shortUrl: finalShortUrl || newFullUrl,
-      fullUrl: newFullUrl,
-      category: newCategory,
+      title: titleStr,
+      displayLabel: labelStr,
+      shortUrl: finalShortUrl || newFullUrl.trim(),
+      fullUrl: newFullUrl.trim(),
+      category: newCategory || 'Ogólne',
       createdAt: new Date().toISOString()
     };
 
@@ -395,7 +413,19 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
                   required
                   value={isCreating ? newFullUrl : editingItem?.fullUrl || ''}
                   onChange={(e) => isCreating ? setNewFullUrl(e.target.value) : setEditingItem(prev => prev ? ({ ...prev, fullUrl: e.target.value }) : null)}
-                  placeholder="https://widokinaraj.pl/#wnr365"
+                  onBlur={async (e) => {
+                    const targetVal = e.target.value.trim();
+                    if (targetVal && isCreating && (!newShortUrl || !newShortUrl.startsWith('https://clck.ru/'))) {
+                      try {
+                        setIsShortening(true);
+                        const short = await shortenUrlViaApi(targetVal);
+                        if (short) setNewShortUrl(short);
+                      } catch {} finally {
+                        setIsShortening(false);
+                      }
+                    }
+                  }}
+                  placeholder="https://widokinaraj.pl/#wnr365 lub https://widokinaraj.pl/pliki/..."
                   className="w-full p-2 rounded-xl bg-white dark:bg-[#141e30] border border-amber-500 dark:border-amber-400 font-mono text-xs"
                 />
                 <span className="text-[10px] text-amber-700 dark:text-amber-400">Możesz zmieniać ten cel w dowolnym momencie!</span>
