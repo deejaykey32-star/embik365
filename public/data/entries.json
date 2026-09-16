@@ -3,6 +3,14 @@
   "uploads": [],
   "qrCodes": [
     {
+      "id": "qr-1789570023695",
+      "title": "Film \"Prawdziwa Twarz Jezusa\"",
+      "displayLabel": "Film \"Prawdziwa Twarz Jezusa\"",
+      "shortUrl": "https://clck.ru/3VrzDh",
+      "fullUrl": "https://www.youtube.com/watch?v=Nj5IK_nU4hs&t=10s",
+      "createdAt": "2026-09-16T14:47:03.695Z"
+    },
+    {
       "id": "qr_file_270-300x200_png",
       "title": "270-300x200.png",
       "displayLabel": "Zeskanuj, aby zobaczyć plik 270-300x200.png",
@@ -426,6 +434,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-16T13:40:41.371Z",
+  "lastUpdated": "2026-09-16T14:47:03.701Z",
   "updatedBy": "Admin Dominik Kuta"
 }
