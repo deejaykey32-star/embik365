@@ -32,7 +32,7 @@ import {
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
 import { shortenUrlViaApi, upsertQrCode, uploadBase64ImageToServer, FILE_CLCK_MAP, sanitizeQrUrl } from '../utils/qrCodeService';
-import { AiStudioPackageBuilder } from './AiStudioPackageBuilder';
+import { AiStudioPackageBuilder, stripTypeScriptTypes } from './AiStudioPackageBuilder';
 
 // Automatically import all files from src/pliki using Vite's import.meta.glob
 const plikiModules = (import.meta as any).glob('../pliki/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -415,13 +415,90 @@ export const MediaLibraryViewer: React.FC = () => {
     }
   };
 
-  // Update HTML Iframe preview
+  // Update HTML Iframe preview with Babel transpile & ESM import stripping support
   useEffect(() => {
     if (iframeRef.current) {
       const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
       if (doc) {
         doc.open();
-        doc.write(htmlCode);
+
+        let rawHtml = htmlCode || '';
+        const needsTranspile = rawHtml.includes('import ') || rawHtml.includes('export ') || rawHtml.includes('React.') || rawHtml.includes('ReactDOM') || /<[A-Za-z][\s\S]*?>/.test(rawHtml);
+
+        if (needsTranspile) {
+          let inlineScripts = '';
+          let bodyMarkup = rawHtml.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, (match, scriptContent) => {
+            if (scriptContent && scriptContent.trim()) {
+              inlineScripts += '\n\n' + scriptContent.trim();
+            }
+            return '';
+          });
+
+          if (!inlineScripts.trim() && !bodyMarkup.includes('<div') && !bodyMarkup.includes('<p') && !bodyMarkup.includes('<h')) {
+            inlineScripts = rawHtml;
+            bodyMarkup = '<div id="root"></div>\n<div id="app"></div>';
+          }
+
+          const cleanedJs = stripTypeScriptTypes(inlineScripts);
+          const escapedJs = JSON.stringify(cleanedJs);
+
+          doc.write(`<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin="anonymous"></script>
+  <script>
+    window.global = window;
+    window.process = { env: { NODE_ENV: 'production' } };
+    window.require = function(m) { return window.React || {}; };
+    if (window.React) {
+      window.useState = window.React.useState;
+      window.useEffect = window.React.useEffect;
+      window.useRef = window.React.useRef;
+      window.useCallback = window.React.useCallback;
+      window.useMemo = window.React.useMemo;
+    }
+  </script>
+</head>
+<body style="margin:0;padding:16px;font-family:system-ui,sans-serif;">
+  ${bodyMarkup}
+  <script>
+    (function() {
+      try {
+        var rawCode = ${escapedJs};
+        if (typeof window.Babel !== 'undefined') {
+          var compiled = window.Babel.transform(rawCode, { presets: ['react', 'typescript'], filename: 'app.tsx' }).code;
+          eval(compiled);
+        } else {
+          eval(rawCode);
+        }
+        setTimeout(function() {
+          var TargetApp = window.App || (typeof App !== 'undefined' ? App : null);
+          var rootEl = document.getElementById('root') || document.getElementById('app');
+          if (TargetApp && rootEl && rootEl.children.length === 0 && window.ReactDOM) {
+            if (window.ReactDOM.createRoot) {
+              window.ReactDOM.createRoot(rootEl).render(window.React.createElement(TargetApp));
+            } else {
+              window.ReactDOM.render(window.React.createElement(TargetApp), rootEl);
+            }
+          }
+        }, 80);
+      } catch (err) {
+        console.error('Preview Execution Error:', err);
+      }
+    })();
+  </script>
+</body>
+</html>`);
+        } else {
+          doc.write(rawHtml);
+        }
+
         doc.close();
       }
     }
