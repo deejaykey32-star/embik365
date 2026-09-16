@@ -167,16 +167,39 @@ window.addEventListener('resize', () => {
   }
 ];
 
+export const stripTypeScriptTypes = (code: string): string => {
+  if (!code) return '';
+  return code
+    .replace(/export\s+type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/g, '')
+    .replace(/(^|\n)\s*type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/g, '\n')
+    .replace(/export\s+interface\s+[A-Za-z0-9_]+\s*(<[\s\S]*?>)?\s*\{[\s\S]*?\}/g, '')
+    .replace(/(^|\n)\s*interface\s+[A-Za-z0-9_]+\s*(<[\s\S]*?>)?\s*\{[\s\S]*?\}/g, '\n')
+    .replace(/import\s+type\s+[\s\S]*?;/g, '')
+    .replace(/import\s+.*?\s+from\s+['"][^'"]+['"];?/g, '')
+    .replace(/import\s+['"][^'"]+['"];?/g, '')
+    .replace(/export\s+default\s+function\b/g, 'function')
+    .replace(/export\s+default\s+/g, 'window.App = ')
+    .replace(/export\s+const\s+/g, 'const ');
+};
+
 export const AiStudioPackageBuilder: React.FC = () => {
   const [packages, setPackages] = useState<AiStudioPackage[]>(() => {
     try {
       const saved = localStorage.getItem('drogowskazy_ai_studio_packages');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((pkg: AiStudioPackage) => ({
+            ...pkg,
+            jsContent: stripTypeScriptTypes(pkg.jsContent || '')
+          }));
+        }
       }
     } catch {}
-    return SAMPLE_AI_STUDIO_PACKAGES;
+    return SAMPLE_AI_STUDIO_PACKAGES.map(pkg => ({
+      ...pkg,
+      jsContent: stripTypeScriptTypes(pkg.jsContent || '')
+    }));
   });
 
   const [activePkgId, setActivePkgId] = useState<string>(packages[0]?.id || '');
@@ -198,6 +221,13 @@ export const AiStudioPackageBuilder: React.FC = () => {
   const updateActivePkg = (fields: Partial<AiStudioPackage>) => {
     if (!activePkg) return;
     setPackages(prev => prev.map(p => p.id === activePkg.id ? { ...p, ...fields, updatedAt: new Date().toISOString() } : p));
+  };
+
+  const handleFixTypeScriptInActivePkg = () => {
+    if (!activePkg) return;
+    const cleaned = stripTypeScriptTypes(activePkg.jsContent || '');
+    updateActivePkg({ jsContent: cleaned });
+    alert(`Pomyślnie wyczyszczono i naprawiono deklaracje typów TypeScript w paczce "${activePkg.name}"!`);
   };
 
   // ZIP Archive Importer & Unzipper handler
@@ -254,9 +284,16 @@ export const AiStudioPackageBuilder: React.FC = () => {
         } else if (lower.endsWith('.css')) {
           css += `\n/* Plik: ${path} */\n${text}`;
         } else if (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.ts') || lower.endsWith('.jsx') || lower.endsWith('.tsx')) {
+          // Skip pure TypeScript type definition files
+          if (lower.endsWith('.d.ts') || lower.includes('types.ts') || lower.includes('type.ts') || lower.includes('interfaces.ts')) {
+            continue;
+          }
           js += `\n// Plik: ${path}\n${text}`;
         }
       }
+
+      // Clean TypeScript type annotations from runtime JS
+      js = stripTypeScriptTypes(js);
 
       // 3. Replace relative asset references in HTML, CSS, JS with base64 Data URLs
       Object.entries(assetMap).forEach(([fileName, dataUrl]) => {
@@ -656,6 +693,15 @@ export const AiStudioPackageBuilder: React.FC = () => {
           >
             <Download className="w-3.5 h-3.5" />
             <span>Pobierz Plik Paczki (.HTML)</span>
+          </button>
+
+          <button
+            onClick={handleFixTypeScriptInActivePkg}
+            className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Usuń niekompatybilne typy TypeScript z wybranej paczki"
+          >
+            <Wand2 className="w-3.5 h-3.5" />
+            <span>Napraw Kod Paczki (Usuń Typy TS)</span>
           </button>
 
           <button
