@@ -56,6 +56,8 @@ const serveFileHeaders = (res: express.Response, filePath: string) => {
 app.use('/uploads', express.static(publicUploadsDir, { setHeaders: serveFileHeaders }));
 app.use('/uploads', express.static(uploadsDir, { setHeaders: serveFileHeaders }));
 app.use('/data', express.static(publicDataDir));
+app.use('/pliki', express.static(path.join(process.cwd(), 'public', 'pliki')));
+app.use('/src/pliki', (req, res) => res.redirect(301, `/pliki${req.url}`));
 
 // Multer configuration for PDF, ePUB and DOCX uploads
 const storage = multer.diskStorage({
