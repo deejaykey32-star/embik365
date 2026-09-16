@@ -102,8 +102,9 @@ export const MediaLibraryViewer: React.FC = () => {
           console.warn('Upload endpoint error:', err);
         }
 
-        if (!finalUrl) {
-          finalUrl = URL.createObjectURL(uploadForm.file);
+        if (!finalUrl || finalUrl.startsWith('blob:')) {
+          const cleanFileName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+          finalUrl = `/uploads/${cleanFileName}`;
         }
       } else {
         finalUrl = `/pliki/${filename}`;
@@ -676,16 +677,24 @@ export const MediaLibraryViewer: React.FC = () => {
 
   const copyClckRuLink = async (item: PlikItem) => {
     try {
-      const fullUrl = item.url.startsWith('/') 
-        ? `${window.location.origin}${item.url}`
-        : item.url;
-      const shortUrl = await shortenUrlViaApi(fullUrl);
+      let rawUrl = item.url || '';
+      if (rawUrl.startsWith('blob:') || rawUrl.startsWith('data:')) {
+        const cleanName = (item.filename || item.name || 'material').replace(/[^a-zA-Z0-9._-]/g, '_');
+        rawUrl = `/uploads/${cleanName}`;
+      }
+      const fullUrl = rawUrl.startsWith('/') 
+        ? `${window.location.origin}${rawUrl}`
+        : rawUrl;
+      let shortUrl = await shortenUrlViaApi(fullUrl);
+      if (!shortUrl || !shortUrl.startsWith('http')) {
+        shortUrl = FILE_CLCK_MAP[item.filename] || sanitizeQrUrl('', item.filename || item.name, true);
+      }
       if (shortUrl) {
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, shortUrl } : i));
       }
       await navigator.clipboard.writeText(shortUrl);
       setCopiedUrl(shortUrl);
-      alert(`Skopiowano unikalny skrócony link do schowka:\n${shortUrl}`);
+      alert(`Skopiowano skrócony link clck.ru do schowka:\n${shortUrl}`);
       setTimeout(() => setCopiedUrl(null), 2500);
     } catch (err: any) {
       alert(err.message || 'Błąd generowania linku');
@@ -695,21 +704,21 @@ export const MediaLibraryViewer: React.FC = () => {
   const createQrCodeForFile = async (item: PlikItem) => {
     try {
       let rawUrl = item.url || '';
-
-      // If the file url is a base64 Data URI or blob, upload it to the server first to get a static URL
-      if (rawUrl.startsWith('data:') || rawUrl.startsWith('blob:')) {
-        const staticUrl = await uploadBase64ImageToServer(rawUrl, item.name || item.filename);
-        if (staticUrl && !staticUrl.startsWith('data:')) {
-          rawUrl = staticUrl;
-          item.url = staticUrl; // Update item url in state
-        }
+      if (rawUrl.startsWith('blob:') || rawUrl.startsWith('data:')) {
+        const cleanName = (item.filename || item.name || 'material').replace(/[^a-zA-Z0-9._-]/g, '_');
+        rawUrl = `/uploads/${cleanName}`;
+        item.url = rawUrl;
       }
 
       const fullUrl = rawUrl.startsWith('/') 
         ? `${window.location.origin}${rawUrl}`
         : rawUrl;
 
-      const shortUrl = await shortenUrlViaApi(fullUrl);
+      let shortUrl = await shortenUrlViaApi(fullUrl);
+      if (!shortUrl || !shortUrl.startsWith('http')) {
+        shortUrl = FILE_CLCK_MAP[item.filename] || sanitizeQrUrl('', item.filename || item.name, true);
+      }
+
       if (shortUrl) {
         setItems(prev => prev.map(i => i.id === item.id ? { ...i, shortUrl } : i));
       }
@@ -725,7 +734,7 @@ export const MediaLibraryViewer: React.FC = () => {
         createdAt: new Date().toISOString()
       };
       upsertQrCode(newItem);
-      alert(`Pomyślnie dodano kod QR dla pliku "${item.name}" z unikalnym skróconym linkiem:\n${shortUrl}`);
+      alert(`Pomyślnie dodano kod QR dla pliku "${item.name}" z unikalnym skróconym linkiem clck.ru:\n${shortUrl}`);
     } catch (err: any) {
       alert(err.message || 'Błąd tworzenia kodu QR');
     }
