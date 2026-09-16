@@ -182,7 +182,7 @@ export const stripTypeScriptTypes = (code: string): string => {
 
     // Handle multiline import block continuation
     if (inImportBlock) {
-      if (trimmed.includes("from ") || trimmed.endsWith(";") || trimmed.includes("from '") || trimmed.includes('from "')) {
+      if (trimmed.includes("from") || trimmed.includes(";") || trimmed.includes("'") || trimmed.includes('"')) {
         inImportBlock = false;
       }
       continue;
@@ -201,9 +201,9 @@ export const stripTypeScriptTypes = (code: string): string => {
     }
 
     // Check if line starts an import statement
-    const normalized = trimmed.replace(/\s+/g, '');
-    if (/^(import|importtype|import\{|import\*)/.test(normalized)) {
-      if (trimmed.includes("from ") || trimmed.endsWith(";") || /^import\s+['"][^'"]+['"]/.test(trimmed)) {
+    const normalized = trimmed.replace(/\s+/g, ' ');
+    if (/^import\b|^importtype\b|^import\s*\{|^import\s*\*/.test(normalized)) {
+      if (trimmed.includes("from") || trimmed.includes(";") || trimmed.includes("'") || trimmed.includes('"')) {
         continue; // skip single line import
       } else {
         inImportBlock = true; // start multiline import block
@@ -267,6 +267,13 @@ export const stripTypeScriptTypes = (code: string): string => {
   cleanLines.push('\nif (typeof App !== "undefined") window.App = App;');
 
   let result = cleanLines.join('\n');
+
+  // Safety net: final global pass removing any lingering ESM import statements
+  result = result
+    .replace(/^import\s+[\s\S]*?from\s+['"][^'"]+['"];?/gm, '')
+    .replace(/^import\s+['"][^'"]+['"];?/gm, '')
+    .replace(/import\s+[\s\S]*?from\s+['"][^'"]+['"];?/g, '')
+    .replace(/import\s+['"][^'"]+['"];?/g, '');
 
   // Strip type assertions like `as HTMLCanvasElement` or `as any`
   result = result.replace(/\s+as\s+[A-Za-z0-9_.]+(<[^>]+>)?/g, '');
