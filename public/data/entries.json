@@ -3,11 +3,20 @@
   "uploads": [],
   "qrCodes": [
     {
+      "id": "qr_file_wiosna_png",
+      "title": "wiosna.png",
+      "displayLabel": "Zeskanuj, aby zobaczyć plik wiosna.png",
+      "shortUrl": "blob:https://widokinaraj.pl/995bec20-bf54-48ff-85f9-a3f922618cd9",
+      "fullUrl": "blob:https://widokinaraj.pl/995bec20-bf54-48ff-85f9-a3f922618cd9",
+      "category": "Materiały src/pliki",
+      "createdAt": "2026-09-16T13:36:19.250Z"
+    },
+    {
       "id": "qr_file_1789565424229",
       "title": "wiosna.png",
       "displayLabel": "Zeskanuj, aby zobaczyć plik wiosna.png",
-      "shortUrl": "https://clck.ru/3Vr8B8",
-      "fullUrl": "blob:https://widokinaraj.pl/995bec20-bf54-48ff-85f9-a3f922618cd9",
+      "shortUrl": "https://widokinaraj.pl/r/file_1789565424229",
+      "fullUrl": "https://widokinaraj.pl/#file_1789565424229",
       "category": "Materiały src/pliki",
       "createdAt": "2026-09-16T13:30:24.229Z"
     },
@@ -111,6 +120,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-16T13:30:24.231Z",
+  "lastUpdated": "2026-09-16T13:36:19.254Z",
   "updatedBy": "Admin Dominik Kuta"
 }
