@@ -25,7 +25,8 @@ import {
   Plus,
   Sparkles,
   RotateCcw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Package
 } from 'lucide-react';
 import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig, QrCodeItem, HomePageConfig, SectionShowcaseConfig } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -33,6 +34,7 @@ import { CYCLE_DAYS } from '../utils/dateCycle';
 import { testGitHubConnection, uploadPdfDirectlyToGitHub } from '../utils/githubSync';
 import { parseDocumentIntoDayEntries } from '../utils/documentParser';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
+import { AiStudioPackageBuilder } from './AiStudioPackageBuilder';
 import { WysiwygEditor } from './WysiwygEditor';
 import { MediaLibraryViewer } from './MediaLibraryViewer';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -97,8 +99,8 @@ export const AdminPanel: React.FC<Props> = ({
   allEntriesData,
   initialTab
 }) => {
-  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'>(initialTab || 'upload');
+  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio'
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio'>(initialTab || 'upload');
 
   // Home Page (Info365) Configuration state
   const [homeConfig, setHomeConfig] = useState<HomePageConfig>(() => getHomePageConfig());
@@ -704,10 +706,29 @@ export const AdminPanel: React.FC<Props> = ({
             <span>Strona Startowa & Ilustracje</span>
           </button>
 
+          <button
+            onClick={() => setActiveTab('aistudio')}
+            id="tab-admin-aistudio"
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'aistudio'
+                ? 'border-[#8c572b] dark:border-amber-400 text-[#8c572b] dark:text-amber-400 bg-white/60 dark:bg-[#161c28]'
+                : 'border-transparent text-[#6e5d4d] dark:text-[#94a3b8] hover:text-[#382b20] dark:hover:text-white'
+            }`}
+          >
+            <Package className="w-4 h-4 text-amber-500" />
+            <span>Paczki Google AI Studio</span>
+          </button>
+
         </div>
 
         {/* Tab Content Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#faf7f2] dark:bg-[#0d121c]">
+          {/* TAB: GOOGLE AI STUDIO PACKAGES */}
+          {activeTab === 'aistudio' && (
+            <div className="space-y-4">
+              <AiStudioPackageBuilder />
+            </div>
+          )}
           {/* TAB 1: UPLOAD PDF */}
           {activeTab === 'upload' && (
             <div className="max-w-2xl mx-auto space-y-6">

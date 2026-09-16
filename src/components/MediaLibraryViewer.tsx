@@ -26,11 +26,13 @@ import {
   Upload, 
   FileText,
   Link2,
-  QrCode
+  QrCode,
+  Package
 } from 'lucide-react';
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
 import { shortenUrlViaApi, upsertQrCode, uploadBase64ImageToServer, FILE_CLCK_MAP, sanitizeQrUrl } from '../utils/qrCodeService';
+import { AiStudioPackageBuilder } from './AiStudioPackageBuilder';
 
 // Automatically import all files from src/pliki using Vite's import.meta.glob
 const plikiModules = (import.meta as any).glob('../pliki/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -193,8 +195,8 @@ export const MediaLibraryViewer: React.FC = () => {
     }
   };
   
-  // Active main tab in Media Viewer: 'grid' | 'images' | 'video' | 'html' | '3d'
-  const [activeMediaTab, setActiveMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d'>('grid');
+  // Active main tab in Media Viewer: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'
+  const [activeMediaTab, setActiveMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'>('grid');
 
   // Lightbox modal state for images
   const [selectedImage, setSelectedImage] = useState<PlikItem | null>(null);
@@ -852,8 +854,27 @@ export const MediaLibraryViewer: React.FC = () => {
             <Box className="w-4 h-4" />
             <span>Obiekty 2D & 3D WebGL</span>
           </button>
+
+          <button
+            onClick={() => setActiveMediaTab('aistudio')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeMediaTab === 'aistudio'
+                ? 'bg-[#8c572b] dark:bg-amber-600 text-white shadow-sm ring-2 ring-amber-400/40'
+                : 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-500/20 border border-amber-500/30'
+            }`}
+          >
+            <Package className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span>Paczki Google AI Studio (Paczki z Bibliotekami)</span>
+          </button>
         </div>
       </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* GOOGLE AI STUDIO MULTI-FILE PACKAGES & LIBRARIES SANDBOX     */}
+      {/* ------------------------------------------------------------- */}
+      {activeMediaTab === 'aistudio' && (
+        <AiStudioPackageBuilder />
+      )}
 
       {/* ------------------------------------------------------------- */}
       {/* MEDIA TAB 1 & 2: GRID & GALLERY VIEWER FOR src/pliki           */}

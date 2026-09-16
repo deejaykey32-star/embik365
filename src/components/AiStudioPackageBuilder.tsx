@@ -1,0 +1,730 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Sparkles, 
+  Code2, 
+  Layers, 
+  Play, 
+  Copy, 
+  Download, 
+  Check, 
+  Plus, 
+  Trash2, 
+  Edit3, 
+  FileCode, 
+  Box, 
+  QrCode, 
+  FileText, 
+  RefreshCw, 
+  Maximize2, 
+  ExternalLink,
+  Package,
+  Wand2,
+  X,
+  Save,
+  CheckSquare,
+  Square
+} from 'lucide-react';
+import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
+
+export interface AiStudioPackage {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  htmlContent: string;
+  cssContent: string;
+  jsContent: string;
+  libraries: string[];
+  customCdnUrls: string[];
+  shortUrl?: string;
+  fullUrl?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export const PRESET_LIBRARIES = [
+  { id: 'tailwindcss', name: 'TailwindCSS 3.x', category: 'Styling', cssUrl: '', jsUrl: 'https://cdn.tailwindcss.com' },
+  { id: 'threejs', name: 'Three.js (3D Graphics)', category: '3D & WebGL', cssUrl: '', jsUrl: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js' },
+  { id: 'react', name: 'React 18 + ReactDOM + Babel', category: 'Framework', cssUrl: '', jsUrl: 'https://unpkg.com/react@18/umd/react.production.min.js\nhttps://unpkg.com/react-dom@18/umd/react-dom.production.min.js\nhttps://unpkg.com/@babel/standalone/babel.min.js' },
+  { id: 'chartjs', name: 'Chart.js (Wykresy & Data)', category: 'Wykresy', cssUrl: '', jsUrl: 'https://cdn.jsdelivr.net/npm/chart.js' },
+  { id: 'lucide', name: 'Lucide Icons', category: 'Ikony', cssUrl: '', jsUrl: 'https://unpkg.com/lucide@latest' },
+  { id: 'katex', name: 'KaTeX (Formuły Matematyczne)', category: 'Nauka', cssUrl: 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css', jsUrl: 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js' },
+  { id: 'alpinejs', name: 'Alpine.js', category: 'Reaktywność', cssUrl: '', jsUrl: 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js' },
+  { id: 'gsap', name: 'GSAP (Animacje)', category: 'Animacje', cssUrl: '', jsUrl: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js' },
+  { id: 'confetti', name: 'Canvas Confetti', category: 'Efekty', cssUrl: '', jsUrl: 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js' },
+];
+
+export const SAMPLE_AI_STUDIO_PACKAGES: AiStudioPackage[] = [
+  {
+    id: 'pkg_gemini_solar_system',
+    name: 'Interaktywny Układ Słoneczny 3D (Google AI Studio)',
+    description: 'Paczka 3D WebGL z wygenerowaną symulacją Układu Słonecznego w Three.js zawierająca skrypty, modele i animacje orbitalne.',
+    category: 'Symulacje 3D',
+    htmlContent: `<div id="app-container">
+  <div className="ui-overlay">
+    <h2>🌌 Układ Słoneczny 3D (Google AI Studio)</h2>
+    <p>Przeciągaj myszą, aby obracać widok 360°. Kółko myszy przybliża planety.</p>
+  </div>
+  <canvas id="solar-canvas"></canvas>
+</div>`,
+    cssContent: `body { margin: 0; overflow: hidden; background: #030712; font-family: system-ui, sans-serif; }
+#app-container { width: 100vw; height: 100vh; position: relative; }
+.ui-overlay { position: absolute; top: 20px; left: 20px; z-index: 10; color: #fff; background: rgba(15, 23, 42, 0.75); padding: 16px 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(12px); max-width: 360px; }
+.ui-overlay h2 { margin: 0 0 6px 0; font-size: 18px; color: #fbbf24; }
+.ui-overlay p { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.5; }
+#solar-canvas { width: 100%; height: 100%; display: block; }`,
+    jsContent: `// Three.js 3D Engine Initialization
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('solar-canvas'), antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+// Sun
+const sunGeo = new THREE.SphereGeometry(2, 32, 32);
+const sunMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+const sun = new THREE.Mesh(sunGeo, sunMat);
+scene.add(sun);
+
+// Sun Glow Light
+const light = new THREE.PointLight(0xffffff, 2, 100);
+scene.add(light);
+
+// Orbiting Planets
+const planets = [
+  { name: 'Merkury', color: 0x94a3b8, dist: 4, speed: 0.04, size: 0.4 },
+  { name: 'Wenus', color: 0xf59e0b, dist: 6, speed: 0.025, size: 0.6 },
+  { name: 'Ziemia', color: 0x3b82f6, dist: 9, speed: 0.015, size: 0.7 },
+  { name: 'Mars', color: 0xef4444, dist: 12, speed: 0.01, size: 0.5 },
+  { name: 'Jowisz', color: 0xd97706, dist: 16, speed: 0.006, size: 1.2 }
+];
+
+const planetMeshes = planets.map(p => {
+  const geo = new THREE.SphereGeometry(p.size, 24, 24);
+  const mat = new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.6 });
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+
+  // Orbit ring line
+  const orbitGeo = new THREE.BufferGeometry();
+  const points = [];
+  for (let i = 0; i <= 64; i++) {
+    const theta = (i / 64) * Math.PI * 2;
+    points.push(new THREE.Vector3(Math.cos(theta) * p.dist, 0, Math.sin(theta) * p.dist));
+  }
+  orbitGeo.setFromPoints(points);
+  const orbitMat = new THREE.LineBasicMaterial({ color: 0x334155 });
+  const orbitLine = new THREE.Line(orbitGeo, orbitMat);
+  scene.add(orbitLine);
+
+  return { mesh, ...p, angle: Math.random() * Math.PI * 2 };
+});
+
+camera.position.set(0, 14, 22);
+camera.lookAt(0, 0, 0);
+
+// Mouse Drag Rotation
+let isDragging = false;
+let previousMouse = { x: 0, y: 0 };
+window.addEventListener('mousedown', e => { isDragging = true; previousMouse = { x: e.clientX, y: e.clientY }; });
+window.addEventListener('mouseup', () => isDragging = false);
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const deltaX = e.clientX - previousMouse.x;
+  const deltaY = e.clientY - previousMouse.y;
+  scene.rotation.y += deltaX * 0.005;
+  scene.rotation.x += deltaY * 0.005;
+  previousMouse = { x: e.clientX, y: e.clientY };
+});
+
+// Render Loop
+function animate() {
+  requestAnimationFrame(animate);
+  sun.rotation.y += 0.005;
+
+  planetMeshes.forEach(p => {
+    p.angle += p.speed;
+    p.mesh.position.x = Math.cos(p.angle) * p.dist;
+    p.mesh.position.z = Math.sin(p.angle) * p.dist;
+    p.mesh.rotation.y += 0.02;
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});`,
+    libraries: ['threejs'],
+    customCdnUrls: [],
+    createdAt: '2026-09-16T20:00:00.000Z'
+  }
+];
+
+export const AiStudioPackageBuilder: React.FC = () => {
+  const [packages, setPackages] = useState<AiStudioPackage[]>(() => {
+    try {
+      const saved = localStorage.getItem('drogowskazy_ai_studio_packages');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return SAMPLE_AI_STUDIO_PACKAGES;
+  });
+
+  const [activePkgId, setActivePkgId] = useState<string>(packages[0]?.id || '');
+  const [activeTab, setActiveTab] = useState<'run' | 'html' | 'css' | 'js' | 'libraries' | 'import'>('run');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [rawImportText, setRawImportText] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [isEditingMeta, setIsEditingMeta] = useState(false);
+
+  const activePkg = packages.find(p => p.id === activePkgId) || packages[0];
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('drogowskazy_ai_studio_packages', JSON.stringify(packages));
+    } catch {}
+  }, [packages]);
+
+  const updateActivePkg = (fields: Partial<AiStudioPackage>) => {
+    if (!activePkg) return;
+    setPackages(prev => prev.map(p => p.id === activePkg.id ? { ...p, ...fields, updatedAt: new Date().toISOString() } : p));
+  };
+
+  const handleCreateNewPackage = () => {
+    const newPkg: AiStudioPackage = {
+      id: `pkg_ai_${Date.now()}`,
+      name: 'Nowa Paczka Google AI Studio',
+      description: 'Stworzona w edytorze paczek Google AI Studio dla aplikacji Droga365',
+      category: 'Aplikacje Interaktywne',
+      htmlContent: `<div className="container">\n  <h1>Witaj w nowej paczce Google AI Studio!</h1>\n  <p>Dodaj kod HTML, CSS, JavaScript oraz zaznacz potrzebne biblioteki w zakładkach powyżej.</p>\n</div>`,
+      cssContent: `body { font-family: system-ui, sans-serif; padding: 24px; background: #0f172a; color: #f8fafc; }\n.container { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.05); padding: 32px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }`,
+      jsContent: `console.log('Paczka Google AI Studio zainicjalizowana pomyślnie!');`,
+      libraries: ['tailwindcss'],
+      customCdnUrls: [],
+      createdAt: new Date().toISOString()
+    };
+    setPackages(prev => [newPkg, ...prev]);
+    setActivePkgId(newPkg.id);
+    setActiveTab('run');
+  };
+
+  const handleDeletePackage = (id: string) => {
+    if (confirm('Czy na pewno chcesz usunąć tę paczkę Google AI Studio?')) {
+      const filtered = packages.filter(p => p.id !== id);
+      setPackages(filtered);
+      if (filtered.length > 0) setActivePkgId(filtered[0].id);
+    }
+  };
+
+  // Smart Parser for pasting raw outputs from Google AI Studio / Gemini Canvas
+  const handleImportRawAiStudioOutput = () => {
+    if (!rawImportText.trim()) {
+      alert('Wklej kod wyeksportowany z Google AI Studio!');
+      return;
+    }
+
+    let html = '';
+    let css = '';
+    let js = '';
+    const libs: string[] = [...(activePkg?.libraries || [])];
+    const customCdns: string[] = [];
+
+    const text = rawImportText;
+
+    // 1. Extract <style> blocks
+    const styleMatches = text.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+    if (styleMatches) {
+      css = styleMatches.map(m => m.replace(/<style[^>]*>|<\/style>/gi, '').trim()).join('\n\n');
+    }
+
+    // 2. Extract <script> blocks
+    const scriptMatches = text.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+    if (scriptMatches) {
+      scriptMatches.forEach(m => {
+        const srcMatch = m.match(/src=["'](.*?)["']/i);
+        if (srcMatch && srcMatch[1]) {
+          const src = srcMatch[1];
+          if (src.includes('tailwindcss')) libs.push('tailwindcss');
+          else if (src.includes('three')) libs.push('threejs');
+          else if (src.includes('react')) libs.push('react');
+          else if (src.includes('chart')) libs.push('chartjs');
+          else if (src.includes('lucide')) libs.push('lucide');
+          else if (src.includes('katex')) libs.push('katex');
+          else customCdns.push(src);
+        } else {
+          const code = m.replace(/<script[^>]*>|<\/script>/gi, '').trim();
+          if (code) js += (js ? '\n\n' : '') + code;
+        }
+      });
+    }
+
+    // 3. Extract body/HTML content
+    let cleanHtml = text
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>/gi, '')
+      .trim();
+
+    if (!cleanHtml && !css && !js) {
+      cleanHtml = text;
+    }
+
+    updateActivePkg({
+      htmlContent: cleanHtml || activePkg.htmlContent,
+      cssContent: css || activePkg.cssContent,
+      jsContent: js || activePkg.jsContent,
+      libraries: Array.from(new Set(libs)),
+      customCdnUrls: Array.from(new Set(customCdns))
+    });
+
+    setRawImportText('');
+    setActiveTab('run');
+    alert('Pomyślnie zaimportowano i sparsowano kod wygenerowany przez Google AI Studio!');
+  };
+
+  // Build combined standalone HTML document for live iframe sandbox execution
+  const buildFullDocumentHtml = (pkg: AiStudioPackage): string => {
+    const cssCdnTags = (pkg.libraries || []).map(libId => {
+      const lib = PRESET_LIBRARIES.find(l => l.id === libId);
+      return lib?.cssUrl ? `<link rel="stylesheet" href="${lib.cssUrl}">` : '';
+    }).filter(Boolean).join('\n');
+
+    const jsCdnTags = (pkg.libraries || []).map(libId => {
+      const lib = PRESET_LIBRARIES.find(l => l.id === libId);
+      if (!lib?.jsUrl) return '';
+      return lib.jsUrl.split('\n').map(url => `<script src="${url.trim()}"></script>`).join('\n');
+    }).filter(Boolean).join('\n');
+
+    const customCdnTags = (pkg.customCdnUrls || []).map(url => {
+      if (url.endsWith('.css')) return `<link rel="stylesheet" href="${url}">`;
+      return `<script src="${url}"></script>`;
+    }).join('\n');
+
+    return `<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${pkg.name || 'Google AI Studio App'}</title>
+  ${cssCdnTags}
+  ${customCdnTags}
+  <style>
+    ${pkg.cssContent || ''}
+  </style>
+  ${jsCdnTags}
+</head>
+<body>
+  ${pkg.htmlContent || ''}
+
+  <script>
+    try {
+      ${pkg.jsContent || ''}
+    } catch (err) {
+      console.error('Błąd wykonania skryptu Paczki Google AI Studio:', err);
+    }
+  </script>
+</body>
+</html>`;
+  };
+
+  const handleGenerateQr = async () => {
+    if (!activePkg) return;
+    try {
+      const htmlDoc = buildFullDocumentHtml(activePkg);
+      const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlDoc)}`;
+      const shortUrl = await shortenUrlViaApi(`https://widokinaraj.pl/r/${activePkg.id}`);
+
+      upsertQrCode({
+        id: `qr_aistudio_${activePkg.id}`,
+        title: activePkg.name,
+        displayLabel: `Google AI Studio: ${activePkg.name}`,
+        shortUrl,
+        fullUrl: `https://widokinaraj.pl/r/${activePkg.id}`,
+        category: 'Google AI Studio App',
+        createdAt: new Date().toISOString()
+      });
+
+      updateActivePkg({ shortUrl, fullUrl: `https://widokinaraj.pl/r/${activePkg.id}` });
+      alert(`Pomyślnie utworzono kod QR dla paczki "${activePkg.name}" z adresem clck.ru:\n${shortUrl}`);
+    } catch (err: any) {
+      alert(err.message || 'Błąd generowania kodu QR');
+    }
+  };
+
+  const handleDownloadPackageHtml = () => {
+    if (!activePkg) return;
+    const fullHtml = buildFullDocumentHtml(activePkg);
+    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(activePkg.name || 'aistudio_package').replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  if (!activePkg) return null;
+
+  return (
+    <div className="bg-white dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-xl overflow-hidden animate-fade-in text-stone-900 dark:text-stone-100">
+      
+      {/* HEADER TOOLBAR */}
+      <div className="p-5 bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-violet-500/10 dark:from-[#141d2e] dark:via-[#19152b] dark:to-[#111827] border-b border-amber-500/20 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 text-xs font-bold mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span>Kolekcja Paczek Google AI Studio</span>
+          </div>
+          <h3 className="text-xl font-heading-cinzel font-bold text-amber-950 dark:text-amber-300 flex items-center gap-2">
+            <Package className="w-5 h-5 text-amber-600" />
+            <span>{activePkg.name}</span>
+          </h3>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <button
+            onClick={() => setIsEditingMeta(prev => !prev)}
+            className="px-3 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-900 dark:text-amber-200 border border-amber-500/30 font-bold flex items-center gap-1.5 cursor-pointer"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>{isEditingMeta ? 'Zamknij Edycję Tytułu' : 'Edytuj Tytuł Paczki'}</span>
+          </button>
+
+          <button
+            onClick={handleGenerateQr}
+            className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>Kod QR & clck.ru</span>
+          </button>
+
+          <button
+            onClick={handleDownloadPackageHtml}
+            className="px-3 py-2 rounded-xl bg-stone-800 dark:bg-stone-700 hover:bg-stone-700 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Pobierz Plik Paczki (.HTML)</span>
+          </button>
+
+          <button
+            onClick={handleCreateNewPackage}
+            className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Nowa Paczka AI</span>
+          </button>
+        </div>
+      </div>
+
+      {/* PACKAGE METADATA EDITABLE FORM */}
+      {isEditingMeta && (
+        <div className="p-4 bg-amber-500/10 border-b border-amber-500/30 space-y-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-amber-950 dark:text-amber-200 mb-1">Nazwa Paczki Aplikacji</label>
+              <input
+                type="text"
+                value={activePkg.name}
+                onChange={e => updateActivePkg({ name: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#131c2e] border border-amber-500/30 font-semibold"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-amber-950 dark:text-amber-200 mb-1">Kategoria</label>
+              <input
+                type="text"
+                value={activePkg.category}
+                onChange={e => updateActivePkg({ category: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#131c2e] border border-amber-500/30 font-semibold"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block font-bold text-amber-950 dark:text-amber-200 mb-1">Opis Paczki</label>
+            <input
+              type="text"
+              value={activePkg.description}
+              onChange={e => updateActivePkg({ description: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#131c2e] border border-amber-500/30"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* SELECTOR FOR ACTIVE PACKAGE */}
+      <div className="p-3 bg-stone-100 dark:bg-[#111827] border-b border-stone-200 dark:border-stone-800 flex items-center gap-2 overflow-x-auto text-xs scrollbar-thin">
+        <span className="font-bold text-stone-500 shrink-0">Wybierz Paczkę:</span>
+        {packages.map(p => (
+          <div key={p.id} className="flex items-center shrink-0">
+            <button
+              onClick={() => setActivePkgId(p.id)}
+              className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                p.id === activePkgId
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-white dark:bg-[#182234] text-stone-700 dark:text-stone-300 hover:bg-stone-200'
+              }`}
+            >
+              <Package className="w-3.5 h-3.5" />
+              <span>{p.name}</span>
+            </button>
+            {packages.length > 1 && p.id === activePkgId && (
+              <button
+                onClick={() => handleDeletePackage(p.id)}
+                className="ml-1 p-1 text-stone-400 hover:text-red-500 cursor-pointer"
+                title="Usuń tę paczkę"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* NAVIGATION TABS: RUN LIVE, HTML, CSS, JS, LIBRARIES, IMPORT */}
+      <div className="flex items-center gap-1 p-2 bg-stone-50 dark:bg-[#090d16] border-b border-stone-200 dark:border-stone-800 text-xs font-bold overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('run')}
+          className={`px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'run'
+              ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+          }`}
+        >
+          <Play className="w-4 h-4 fill-white" />
+          <span>Uruchom Paczkę Aplikacji (Live Sandbox)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('html')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'html'
+              ? 'bg-amber-600 text-white'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+          }`}
+        >
+          <FileCode className="w-3.5 h-3.5 text-amber-500" />
+          <span>index.html ({activePkg.htmlContent.length} zn)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('css')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'css'
+              ? 'bg-amber-600 text-white'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+          }`}
+        >
+          <FileCode className="w-3.5 h-3.5 text-sky-400" />
+          <span>styles.css ({activePkg.cssContent.length} zn)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('js')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'js'
+              ? 'bg-amber-600 text-white'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+          }`}
+        >
+          <FileCode className="w-3.5 h-3.5 text-yellow-400" />
+          <span>app.js ({activePkg.jsContent.length} zn)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('libraries')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'libraries'
+              ? 'bg-amber-600 text-white'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5 text-purple-400" />
+          <span>Biblioteki CDN ({activePkg.libraries?.length || 0})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('import')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'import'
+              ? 'bg-amber-600 text-white'
+              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+          }`}
+        >
+          <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Importuj z Google AI Studio</span>
+        </button>
+      </div>
+
+      {/* TAB CONTENT AREAS */}
+
+      {/* TAB 1: RUN APPLICATION IN SANDBOX */}
+      {activeTab === 'run' && (
+        <div className="p-4 space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-stone-500">
+              Podejrzyj i uruchom paczkę w izolowanym środowisku sandbox iframe
+            </span>
+            <button
+              onClick={() => setIsFullscreen(prev => !prev)}
+              className="px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 text-stone-800 dark:text-stone-200 font-bold flex items-center gap-1.5 cursor-pointer"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>{isFullscreen ? 'Zamknij Pełny Ekran' : 'Pełny Ekran'}</span>
+            </button>
+          </div>
+
+          <div className={`w-full bg-[#030712] rounded-2xl overflow-hidden border border-amber-500/30 transition-all ${isFullscreen ? 'fixed inset-0 z-50 rounded-none border-none' : 'h-[600px]'}`}>
+            {isFullscreen && (
+              <button
+                onClick={() => setIsFullscreen(false)}
+                className="absolute top-4 right-4 z-50 p-2.5 rounded-2xl bg-black/70 text-white hover:bg-red-600 cursor-pointer shadow-2xl"
+                title="Zamknij pełny ekran"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            )}
+            <iframe
+              srcDoc={buildFullDocumentHtml(activePkg)}
+              className="w-full h-full border-none"
+              title={activePkg.name}
+              sandbox="allow-scripts allow-modals allow-same-origin allow-forms"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: INDEX.HTML EDITOR */}
+      {activeTab === 'html' && (
+        <div className="p-4 space-y-2">
+          <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+            Kod HTML (index.html):
+          </label>
+          <textarea
+            rows={18}
+            value={activePkg.htmlContent}
+            onChange={e => updateActivePkg({ htmlContent: e.target.value })}
+            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
+            placeholder="Wklej lub edytuj tagi HTML..."
+          />
+        </div>
+      )}
+
+      {/* TAB 3: STYLES.CSS EDITOR */}
+      {activeTab === 'css' && (
+        <div className="p-4 space-y-2">
+          <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+            Kaskadowe Arkusze Stylów (styles.css):
+          </label>
+          <textarea
+            rows={18}
+            value={activePkg.cssContent}
+            onChange={e => updateActivePkg({ cssContent: e.target.value })}
+            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-sky-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
+            placeholder="Wklej lub edytuj reguły CSS..."
+          />
+        </div>
+      )}
+
+      {/* TAB 4: APP.JS EDITOR */}
+      {activeTab === 'js' && (
+        <div className="p-4 space-y-2">
+          <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+            Skrypt Logiki JavaScript (app.js):
+          </label>
+          <textarea
+            rows={18}
+            value={activePkg.jsContent}
+            onChange={e => updateActivePkg({ jsContent: e.target.value })}
+            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-yellow-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
+            placeholder="Wklej lub edytuj kod JavaScript..."
+          />
+        </div>
+      )}
+
+      {/* TAB 5: LIBRARIES SELECTOR */}
+      {activeTab === 'libraries' && (
+        <div className="p-6 space-y-4">
+          <div>
+            <h4 className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1">
+              Wybierz Biblioteki CDN Dołączane Do Paczki
+            </h4>
+            <p className="text-xs text-stone-500">
+              Zaznacz biblioteki wygenerowane przez Google AI Studio. Zostaną one automatycznie dołączone przed wykonaniem Twojego kodu.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {PRESET_LIBRARIES.map(lib => {
+              const isSelected = (activePkg.libraries || []).includes(lib.id);
+              return (
+                <div
+                  key={lib.id}
+                  onClick={() => {
+                    const currentLibs = activePkg.libraries || [];
+                    const updated = isSelected
+                      ? currentLibs.filter(id => id !== lib.id)
+                      : [...currentLibs, lib.id];
+                    updateActivePkg({ libraries: updated });
+                  }}
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
+                    isSelected
+                      ? 'bg-amber-500/15 border-amber-500/50 text-amber-950 dark:text-amber-200'
+                      : 'bg-stone-50 dark:bg-[#131c2e] border-stone-200 dark:border-stone-800 hover:border-amber-500/30'
+                  }`}
+                >
+                  <div className="mt-0.5 text-amber-600">
+                    {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs">{lib.name}</div>
+                    <div className="text-[10px] text-stone-500 mt-0.5">{lib.category}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 6: IMPORT FROM GOOGLE AI STUDIO */}
+      {activeTab === 'import' && (
+        <div className="p-6 space-y-4">
+          <div>
+            <h4 className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1 flex items-center gap-2">
+              <Wand2 className="w-4 h-4 text-emerald-500" />
+              <span>Szybki Parser & Import z Google AI Studio (Gemini Canvas)</span>
+            </h4>
+            <p className="text-xs text-stone-500">
+              Skopiuj całą odpowiedź lub pliki wygenerowane w serwisie Google AI Studio (wraz z tagami &lt;script&gt;, &lt;style&gt; i bibliotekami) i wklej poniżej. System automatycznie wyodrębni HTML, CSS, JavaScript i zidentyfikuje biblioteki!
+            </p>
+          </div>
+
+          <textarea
+            rows={12}
+            value={rawImportText}
+            onChange={e => setRawImportText(e.target.value)}
+            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500"
+            placeholder="Wklej surowy wyeksportowany kod z Google AI Studio..."
+          />
+
+          <button
+            onClick={handleImportRawAiStudioOutput}
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
+          >
+            <Wand2 className="w-4 h-4" />
+            <span>Parsuj i Zaimportuj Paczkę Google AI Studio</span>
+          </button>
+        </div>
+      )}
+
+    </div>
+  );
+};
