@@ -280,7 +280,10 @@ export const AiStudioPackageBuilder: React.FC = () => {
         }
       }
 
-      // 2. Second pass: extract code files
+      // 2. Second pass: extract code files with component vs entry point ordering
+      const componentJsBlocks: string[] = [];
+      const entryJsBlocks: string[] = [];
+
       for (const [path, zipEntry] of fileEntries) {
         if (zipEntry.dir) continue;
         const lower = path.toLowerCase();
@@ -299,11 +302,18 @@ export const AiStudioPackageBuilder: React.FC = () => {
           if (lower.endsWith('.d.ts') || lower.includes('types.ts') || lower.includes('type.ts') || lower.includes('interfaces.ts')) {
             continue;
           }
-          js += `\n// Plik: ${path}\n${text}`;
+          const block = `\n// Plik: ${path}\n${text}`;
+          if (lower.endsWith('main.jsx') || lower.endsWith('main.tsx') || lower.endsWith('main.js') || lower.endsWith('index.jsx') || lower.endsWith('index.tsx') || lower.endsWith('index.js')) {
+            entryJsBlocks.push(block);
+          } else {
+            componentJsBlocks.push(block);
+          }
         }
       }
 
-      // Clean TypeScript type annotations from runtime JS
+      js = componentJsBlocks.join('\n') + '\n' + entryJsBlocks.join('\n');
+
+      // Clean TypeScript type annotations & ESM imports from runtime JS
       js = stripTypeScriptTypes(js);
 
       // 3. Replace relative asset references in HTML, CSS, JS with base64 Data URLs
@@ -564,9 +574,19 @@ export const AiStudioPackageBuilder: React.FC = () => {
   ${bodyContent}
 
   <script>
-    if (typeof window.React !== 'undefined' && typeof window.ReactDOM !== 'undefined') {
+    if (typeof window.React !== 'undefined') {
       window.react = window.React;
-      if (!window.ReactDOM.createRoot) {
+      window.useState = window.React.useState;
+      window.useEffect = window.React.useEffect;
+      window.useRef = window.React.useRef;
+      window.useCallback = window.React.useCallback;
+      window.useMemo = window.React.useMemo;
+      window.useContext = window.React.useContext;
+      window.useReducer = window.React.useReducer;
+      window.createContext = window.React.createContext;
+      window.Fragment = window.React.Fragment;
+
+      if (typeof window.ReactDOM !== 'undefined' && !window.ReactDOM.createRoot) {
         window.ReactDOM.createRoot = function(container) {
           return {
             render: function(element) {
@@ -592,6 +612,24 @@ export const AiStudioPackageBuilder: React.FC = () => {
           } else {
             eval(rawCode);
           }
+
+          // Auto-render fallback if App is defined but ReactDOM.render wasn't called or failed due to ordering
+          setTimeout(function() {
+            var TargetApp = window.App || (typeof App !== 'undefined' ? App : null);
+            var rootEl = document.getElementById('root') || document.getElementById('app');
+            if (TargetApp && rootEl && rootEl.children.length === 0 && typeof window.ReactDOM !== 'undefined' && typeof window.React !== 'undefined') {
+              try {
+                if (window.ReactDOM.createRoot) {
+                  window.ReactDOM.createRoot(rootEl).render(window.React.createElement(TargetApp));
+                } else {
+                  window.ReactDOM.render(window.React.createElement(TargetApp), rootEl);
+                }
+              } catch (autoErr) {
+                console.warn('Auto-render fallback note:', autoErr);
+              }
+            }
+          }, 100);
+
         } catch (err) {
           console.error('AI Studio execution error:', err);
           var errDiv = document.getElementById('sandbox-error-overlay');
