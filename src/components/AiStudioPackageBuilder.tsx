@@ -470,13 +470,17 @@ export const AiStudioPackageBuilder: React.FC = () => {
       bodyContent = `<div id="root"></div>\n<div id="app"></div>\n${bodyContent}`;
     }
 
-    // 4. Clean JS imports & exports for browser compatibility
+    // 4. Clean JS imports, exports & TypeScript type declarations for browser compatibility
     let cleanedJs = rawJs
       .replace(/import\s+.*?\s+from\s+['"][^'"]+['"];?/g, '')
       .replace(/import\s+['"][^'"]+['"];?/g, '')
       .replace(/export\s+default\s+function\b/g, 'function')
       .replace(/export\s+default\s+/g, 'window.App = ')
-      .replace(/export\s+const\s+/g, 'const ');
+      .replace(/export\s+const\s+/g, 'const ')
+      .replace(/export\s+type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/g, '')
+      .replace(/^type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/gm, '')
+      .replace(/export\s+interface\s+[A-Za-z0-9_]+[\s\S]*?\{[\s\S]*?\}/g, '')
+      .replace(/^interface\s+[A-Za-z0-9_]+[\s\S]*?\{[\s\S]*?\}/gm, '');
 
     const jsonEscapedJs = JSON.stringify(cleanedJs);
 
@@ -541,7 +545,10 @@ export const AiStudioPackageBuilder: React.FC = () => {
       function executeCode() {
         try {
           if (needsBabel && typeof window.Babel !== 'undefined') {
-            var compiled = window.Babel.transform(rawCode, { presets: ['react', 'env'] }).code;
+            var compiled = window.Babel.transform(rawCode, {
+              presets: ['react', 'typescript', 'env'],
+              filename: 'app.tsx'
+            }).code;
             eval(compiled);
           } else {
             eval(rawCode);
