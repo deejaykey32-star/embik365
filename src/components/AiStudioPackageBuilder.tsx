@@ -611,12 +611,29 @@ export const AiStudioPackageBuilder: React.FC = () => {
 
     // 3. Ensure HTML has root container if missing
     let bodyContent = pkg.htmlContent || '';
+
+    // Extract inline <script> tags from bodyContent to prevent un-stripped browser script execution errors
+    let inlineScriptsFromHtml = '';
+    bodyContent = bodyContent.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, (match, scriptCode) => {
+      const srcMatch = match.match(/src=["'](.*?)["']/i);
+      if (srcMatch && srcMatch[1]) {
+        const src = srcMatch[1];
+        if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//')) {
+          validCustomCdns.push(src);
+        }
+      } else if (scriptCode && scriptCode.trim()) {
+        inlineScriptsFromHtml += '\n\n' + scriptCode.trim();
+      }
+      return '';
+    });
+
     if (!bodyContent.includes('id="root"') && !bodyContent.includes('id="app"') && !bodyContent.includes('id="container"')) {
       bodyContent = `<div id="root"></div>\n<div id="app"></div>\n${bodyContent}`;
     }
 
     // 4. Clean JS imports, exports & TypeScript type declarations for browser compatibility
-    let cleanedJs = stripTypeScriptTypes(rawJs);
+    const combinedJs = rawJs + '\n' + inlineScriptsFromHtml;
+    let cleanedJs = stripTypeScriptTypes(combinedJs);
 
     const jsonEscapedJs = JSON.stringify(cleanedJs);
 
