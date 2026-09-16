@@ -5,6 +5,46 @@ import { getStoredGitHubConfig, syncStateToGitHub } from './githubSync';
 const STORAGE_KEY = 'drogowskazy_qr_database';
 let memoryQrCodes: QrCodeItem[] | null = null;
 
+export const FILE_CLCK_MAP: Record<string, string> = {
+  "270-300x200.png": "https://clck.ru/3VruEJ",
+  "5c7846f4-c5a7-42c7-8fdb-9d65a59ced29.png": "https://clck.ru/3VruEK",
+  "Bóg.gif": "https://clck.ru/3VruEL",
+  "diament2.png": "https://clck.ru/3VruEM",
+  "film-wszystko.mp4": "https://clck.ru/3VruEQ",
+  "flaga-izraela.png": "https://clck.ru/3VruER",
+  "Generuj_pynn_animacj_202602091656.gif": "https://clck.ru/3VruET",
+  "herb-biskupa-adama.jpg": "https://clck.ru/3VruEY",
+  "herb-biskupa-marka.jpg": "https://clck.ru/3VruEZ",
+  "jesien-tom-4.jpg": "https://clck.ru/3VruEb",
+  "jesień.png": "https://clck.ru/3VruEc",
+  "jesień2.png": "https://clck.ru/3VruEd",
+  "Jezus-i-piotr-z-kluczami.jpg": "https://clck.ru/3VruEe",
+  "jing-jang.jpg": "https://clck.ru/3VruEh",
+  "lato-tom-3.jpg": "https://clck.ru/3VruEi",
+  "lato.png": "https://clck.ru/3VruEk",
+  "lato2.png": "https://clck.ru/3VruEm",
+  "medalik.jpg": "https://clck.ru/3VruEn",
+  "Michal-archaniol.jpg": "https://clck.ru/3VruEr",
+  "nieskonczonosc.jpg": "https://clck.ru/3VruEs",
+  "Obraz-milosierdzia-bozego-dla-swiata-calego.jpg": "https://clck.ru/3VruEx",
+  "okładki-komplet.png": "https://clck.ru/3VruEz",
+  "ombw.jpg": "https://clck.ru/3VruF3",
+  "RGB-model-1.jpg": "https://clck.ru/3VruF4",
+  "RHZ-tom-5.jpg": "https://clck.ru/3VruF5",
+  "schemat-trojcy.png": "https://clck.ru/3VruF8",
+  "symbol2.gif": "https://clck.ru/3VruFB",
+  "symbol3.gif": "https://clck.ru/3VruFE",
+  "wiosna-tom-2.jpg": "https://clck.ru/3VruFH",
+  "wiosna.png": "https://clck.ru/3VruFK",
+  "wiosna2.png": "https://clck.ru/3VruFN",
+  "WnR365 - całość poprawiana 16.09.2026.pdf": "https://clck.ru/3VruFP",
+  "wszystko2.png": "https://clck.ru/3VruFR",
+  "zima-tom-1.jpg": "https://clck.ru/3VruFT",
+  "zima.png": "https://clck.ru/3VruFU",
+  "zima2.png": "https://clck.ru/3VruFW",
+  "znak.gif": "https://clck.ru/3VruFZ"
+};
+
 export const DEFAULT_CLCK_MAP: Record<string, string> = {
   info365: 'https://clck.ru/3Vnjrc',
   wnr365: 'https://clck.ru/3Vnjri',
@@ -14,7 +54,8 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   ebook_rhz: 'https://clck.ru/3Vnjrf',
   ebook_biblia: 'https://clck.ru/3Vnjrg',
   bio365: 'https://clck.ru/3Vnjre',
-  grafika: 'https://clck.ru/3Vr8B8'
+  grafika: 'https://clck.ru/3Vr8B8',
+  ...FILE_CLCK_MAP
 };
 
 export const DEFAULT_QR_CODES: QrCodeItem[] = [

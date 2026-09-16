@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
-import { shortenUrlViaApi, upsertQrCode, uploadBase64ImageToServer } from '../utils/qrCodeService';
+import { shortenUrlViaApi, upsertQrCode, uploadBase64ImageToServer, FILE_CLCK_MAP, sanitizeQrUrl } from '../utils/qrCodeService';
 
 // Automatically import all files from src/pliki using Vite's import.meta.glob
 const plikiModules = (import.meta as any).glob('../pliki/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
@@ -330,6 +330,7 @@ export const MediaLibraryViewer: React.FC = () => {
         type = 'other';
       }
 
+      const fileShortUrl = FILE_CLCK_MAP[filename] || sanitizeQrUrl('', filename, true);
       list.push({
         id: filename,
         name: filename,
@@ -339,6 +340,7 @@ export const MediaLibraryViewer: React.FC = () => {
         ext,
         sectionId: 'general',
         category: type === 'video' ? 'Film Wideo MP4' : type === 'gif' ? 'Animacja GIF' : type === '3d' ? 'Model 3D / Tekstura' : type === 'html' ? 'Skrypt HTML' : 'Grafika 2D',
+        shortUrl: fileShortUrl,
         isPublishedPublic: true,
         uploadedAt: new Date().toISOString()
       });
