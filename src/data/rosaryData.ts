@@ -680,14 +680,14 @@ export function generateLine13Rgba(mysteryTitle?: string): RosaryModelDefinition
   // #16: 10. Koralik Przezroczysty (końcowy)
   const lineRgbaBeads = [
     { num: 1, label: '1. Koralik Przezroczysty (przy kielichu)', color: 'transparent' as const, badge: '#7' },
-    { num: 2, label: '2. Koralik Biały (White)', color: 'white' as const, badge: '#8' },
-    { num: 3, label: '3. Koralik Czerwony (Red)', color: 'red' as const, badge: '#9' },
-    { num: 4, label: '4. Koralik Zielony (Green)', color: 'green' as const, badge: '#10' },
-    { num: 5, label: '5. Koralik Niebieski (Blue)', color: 'blue' as const, badge: '#11' },
-    { num: 6, label: '6. Koralik Czerwony (Red 2)', color: 'red' as const, badge: '#12' },
-    { num: 7, label: '7. Koralik Zielony (Green 2)', color: 'green' as const, badge: '#13' },
-    { num: 8, label: '8. Koralik Niebieski (Blue 2)', color: 'blue' as const, badge: '#14' },
-    { num: 9, label: '9. Koralik Czarny (Black)', color: 'black' as const, badge: '#15' },
+    { num: 2, label: '2. Koralik Biały (Perła)', color: 'white' as const, badge: '#8' },
+    { num: 3, label: '3. Koralik Czerwony (Rubin)', color: 'red' as const, badge: '#9' },
+    { num: 4, label: '4. Koralik Zielony (Szmaragd)', color: 'green' as const, badge: '#10' },
+    { num: 5, label: '5. Koralik Niebieski (Szafir)', color: 'blue' as const, badge: '#11' },
+    { num: 6, label: '6. Koralik Cyjan (Cyan)', color: 'cyan' as const, badge: '#12' },
+    { num: 7, label: '7. Koralik Magenta (Purpura)', color: 'magenta' as const, badge: '#13' },
+    { num: 8, label: '8. Koralik Żółty (Yellow)', color: 'yellow' as const, badge: '#14' },
+    { num: 9, label: '9. Koralik Czarny (Onyks)', color: 'black' as const, badge: '#15' },
     { num: 10, label: '10. Koralik Przezroczysty (końcowy)', color: 'transparent' as const, badge: '#16' }
   ];
 
@@ -1053,9 +1053,9 @@ export function generateCircle13Rgba(mysteryTitle?: string): RosaryModelDefiniti
     { num: 3, label: '3. Koralik Czerwony (Rubin)', color: 'red' as const, badge: '#9', angle: 90 },
     { num: 4, label: '4. Koralik Zielony (Szmaragd)', color: 'green' as const, badge: '#10', angle: 130 },
     { num: 5, label: '5. Koralik Niebieski (Szafir)', color: 'blue' as const, badge: '#11', angle: 165 },
-    { num: 6, label: '6. Koralik Czerwony (Rubin 2)', color: 'red' as const, badge: '#12', angle: 195 },
-    { num: 7, label: '7. Koralik Zielony (Szmaragd 2)', color: 'green' as const, badge: '#13', angle: 230 },
-    { num: 8, label: '8. Koralik Niebieski (Szafir 2)', color: 'blue' as const, badge: '#14', angle: 270 },
+    { num: 6, label: '6. Koralik Cyjan (Cyan)', color: 'cyan' as const, badge: '#12', angle: 195 },
+    { num: 7, label: '7. Koralik Magenta (Purpura)', color: 'magenta' as const, badge: '#13', angle: 230 },
+    { num: 8, label: '8. Koralik Żółty (Yellow)', color: 'yellow' as const, badge: '#14', angle: 270 },
     { num: 9, label: '9. Koralik Czarny (Onyks)', color: 'black' as const, badge: '#15', angle: 305 },
     { num: 10, label: '10. Koralik Przezroczysty (końcowy)', color: 'transparent' as const, badge: '#16', angle: 340 }
   ];

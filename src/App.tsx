@@ -293,7 +293,13 @@ export default function App() {
     ...baseEntry,
     ...(customOverride || {}),
     pdfs: uploads.filter(
-      p => p.sectionId === activeSectionId && (!p.dateKey || p.dateKey === currentDate.dateKey)
+      p => (
+        p.sectionId === activeSectionId ||
+        ((activeSectionId === 'wnr365' || activeSectionId === 'ebook_wnr' || activeSectionId === 'wnr366') && (p.sectionId === 'wnr365' || p.sectionId === 'ebook_wnr')) ||
+        ((activeSectionId === 'rhz365' || activeSectionId === 'ebook_rhz') && (p.sectionId === 'rhz365' || p.sectionId === 'ebook_rhz')) ||
+        ((activeSectionId === 'biblia365' || activeSectionId === 'ebook_biblia') && (p.sectionId === 'biblia365' || p.sectionId === 'ebook_biblia')) ||
+        ((activeSectionId === 'bio365' || activeSectionId === 'ebook_bio') && (p.sectionId === 'bio365' || p.sectionId === 'ebook_bio'))
+      ) && (!p.dateKey || p.dateKey === currentDate.dateKey)
     )
   };
 
