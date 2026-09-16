@@ -181,22 +181,30 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'ge
 export function sanitizeQrItem(item: QrCodeItem): QrCodeItem {
   const fallbackSlug = item.sectionId || item.id.replace(/^qr_/, '') || 'general';
 
-  // Automatically repair items that erroneously inherited the main 'grafika' shortUrl (3Vr8B8) despite having a specific custom fullUrl
   let currentShort = item.shortUrl;
   if (
-    currentShort === 'https://clck.ru/3Vr8B8' &&
-    item.id !== 'qr_grafika' &&
-    item.sectionId !== 'grafika' &&
-    item.fullUrl &&
-    !item.fullUrl.endsWith('#grafika')
+    !currentShort ||
+    currentShort.startsWith('blob:') ||
+    currentShort.includes('blob:') ||
+    currentShort.includes('widokinaraj.pl/r/') ||
+    (currentShort === 'https://clck.ru/3Vr8B8' &&
+      item.id !== 'qr_grafika' &&
+      item.sectionId !== 'grafika' &&
+      item.fullUrl &&
+      !item.fullUrl.endsWith('#grafika'))
   ) {
     currentShort = '';
+  }
+
+  let currentFull = item.fullUrl;
+  if (!currentFull || currentFull.startsWith('blob:') || currentFull.includes('blob:')) {
+    currentFull = `https://widokinaraj.pl/#${fallbackSlug}`;
   }
 
   return {
     ...item,
     shortUrl: sanitizeQrUrl(currentShort, fallbackSlug, true),
-    fullUrl: sanitizeQrUrl(item.fullUrl, fallbackSlug, false)
+    fullUrl: sanitizeQrUrl(currentFull, fallbackSlug, false)
   };
 }
 
