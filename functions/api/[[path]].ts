@@ -481,7 +481,11 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       'galeria': 'https://widokinaraj.pl/#grafika',
       'materialy': 'https://widokinaraj.pl/#grafika',
       'farby': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
-      'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png'
+      'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
+      'aistudio': 'https://widokinaraj.pl/#aistudio',
+      'ai-studio': 'https://widokinaraj.pl/#aistudio',
+      'pkg_gemini_solar_system': 'https://widokinaraj.pl/#aistudio',
+      'pkg_ai_1789597375413': 'https://widokinaraj.pl/#aistudio'
     };
 
     let target = staticMap[slug] || url.searchParams.get('to');
