@@ -1,4 +1,6 @@
 node_modules/
+dist/
+scratch/
 build/
 coverage/
 .DS_Store
@@ -6,3 +8,4 @@ coverage/
 bun.lock*
 .env*
 !.env.example
+

@@ -12,26 +12,30 @@ export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
 
   // WnR365 - Day 1 (25 XII)
   'wnr365-12-25': {
-    title: 'Tajemnica Wcielenia: Kiedy Raj schodzi na Ziemię',
+    title: 'Bierzcie Darmo – Spożywajcie i dzielcie się pokarmem z innymi',
     subtitle: 'Widoki na Raj (WnR365) • Dzień 1 cyklu rocznego',
-    content: `Boże Narodzenie nie jest jedynie pamiątką historyczną. To kosmiczne pęknięcie zasłony czasu, przez którą wieczność wkracza w naszą doczesność. 
+    content: `To, co duchowe, powinno być przekazywane bezinteresownie. Jezus posłał swoich uczniów ze słowami: „Darmo otrzymaliście, darmo dawajcie” (Mt 10,8). Dobra duchowe nie są towarem. Ewangelii nie można sprzedać ani kupić, ponieważ jest ona darem Boga dla każdego człowieka.
 
-W rajskim ogrodzie Eden człowiek ukrył się przed obliczem Boga pośród drzew. W stajence betlejemskiej to Bóg przychodzi i odsłania swoje Oblicze w bezbronnym Dziecięciu, owiniętym w pieluszki i złożonym w żłobie. Raj, który wydawał się bezpowrotnie utracony, staje się nagle dostępny na wyciągnięcie ręki – nie za murami niezdobytej twierdzy, lecz w cichej grocie, gdzie bije Serce Zbawiciela.
+Świat coraz bardziej uzależnia się od pieniądza. Nierzadko wartość człowieka mierzy się jego majątkiem, a nie prawdą, dobrem czy miłością bliźniego. Taka pokusa przenika również do życia religijnego. Tymczasem Jezus nauczał bez pobierania opłat, uzdrawiał bez wynagrodzenia i troszczył się o tych, którzy Go słuchali. Gdy ludzie byli głodni, nie odprawił ich, lecz rozmnożył chleby i ryby, pokazując, że miłość poprzedza rachunek zysków i strat.
 
-Gdy patrzymy w niebo w tę świętą noc, widzimy nie tylko gwiazdy, lecz otwartą bramę. "Widoki na Raj" to spojrzenie człowieka, który w zwykłym chlebie powszednim potrafi dostrzec mannę z nieba, a w drugim człowieku – ikonę Stwórcy. Rozpoczynając ten roczny szlak 365 dni, prośmy o wzrok czysty, zdolny dostrzegać piękno Bożego zamysłu w każdym poranku i każdym zmierzchu.`,
-    quote: '"I Słowo stało się ciałem i zamieszkało wśród nas. I oglądaliśmy Jego chwałę..." (J 1, 14)',
-    prayer: 'Panie Jezu Chryste, Dziecię z Betlejem, zamieszkaj dziś na nowo w moim sercu. Ulecz mój wzrok, bym pośród trosk tego świata dostrzegał przebłyski Twojego Raju. Amen.'
+Prawdziwy Kościół rodzi się tam, gdzie ludzie jednoczą się w wierze, nadziei i miłości. Świątynie są miejscami modlitwy i spotkania, lecz same mury nie stanowią istoty Kościoła. Świętymi kamieniami są wierzący, którzy tworzą wspólnotę żywego Boga. Najpiękniejszą świątynią jest serce człowieka, otwarte na obecność Ducha Świętego. Bóg nie potrzebuje naszych dóbr materialnych. Pragnie przede wszystkim naszego serca, naszej miłości i zaufania.
+
+Ofiara ma wartość wtedy, gdy wypływa z wdzięczności i miłości, a nie z przymusu czy przekonania, że można za nią „kupić” Bożą łaskę. Przypowieść o talentach przypomina, że wszystko, co otrzymaliśmy od Boga, powinno przynosić owoce. Talentami są zarówno zdolności, czas, możliwości, jak i dobra materialne. Pieniądz sam w sobie nie jest złem, lecz narzędziem. Staje się błogosławieństwem wtedy, gdy służy dobru i pomocy potrzebującym, a nie wtedy, gdy staje się naszym panem.
+
+Jezus przestrzegał przed służeniem „mamonie”. Chrześcijanin powinien pomnażać otrzymane dary, rozwijać swoje zdolności i uczciwie pracować. Owoce tej pracy mają jednak prowadzić nie tylko do własnego dobrobytu, lecz także do dzielenia się z ubogimi i budowania dobra wspólnego. Historia świata jest również historią dojrzewania ludzkiego ducha. Bóg nieustannie prowadzi człowieka ku pełni życia. Celem nie jest jedynie rozwój materialny, lecz przemiana serca, tak aby wszyscy stali się jednym w Chrystusie. To właśnie jest największe bogactwo, które nie przemija i prowadzi do życia wiecznego.`
   },
   'wnr366-12-25': {
-    title: 'Tajemnica Wcielenia: Kiedy Raj schodzi na Ziemię',
+    title: 'Bierzcie Darmo – Spożywajcie i dzielcie się pokarmem z innymi',
     subtitle: 'Widoki na Raj (WnR365) • Dzień 1 cyklu rocznego',
-    content: `Boże Narodzenie nie jest jedynie pamiątką historyczną. To kosmiczne pęknięcie zasłony czasu, przez którą wieczność wkracza w naszą doczesność. 
+    content: `To, co duchowe, powinno być przekazywane bezinteresownie. Jezus posłał swoich uczniów ze słowami: „Darmo otrzymaliście, darmo dawajcie” (Mt 10,8). Dobra duchowe nie są towarem. Ewangelii nie można sprzedać ani kupić, ponieważ jest ona darem Boga dla każdego człowieka.
 
-W rajskim ogrodzie Eden człowiek ukrył się przed obliczem Boga pośród drzew. W stajence betlejemskiej to Bóg przychodzi i odsłania swoje Oblicze w bezbronnym Dziecięciu, owiniętym w pieluszki i złożonym w żłobie. Raj, który wydawał się bezpowrotnie utracony, staje się nagle dostępny na wyciągnięcie ręki – nie za murami niezdobytej twierdzy, lecz w cichej grocie, gdzie bije Serce Zbawiciela.
+Świat coraz bardziej uzależnia się od pieniądza. Nierzadko wartość człowieka mierzy się jego majątkiem, a nie prawdą, dobrem czy miłością bliźniego. Taka pokusa przenika również do życia religijnego. Tymczasem Jezus nauczał bez pobierania opłat, uzdrawiał bez wynagrodzenia i troszczył się o tych, którzy Go słuchali. Gdy ludzie byli głodni, nie odprawił ich, lecz rozmnożył chleby i ryby, pokazując, że miłość poprzedza rachunek zysków i strat.
 
-Gdy patrzymy w niebo w tę świętą noc, widzimy nie tylko gwiazdy, lecz otwartą bramę. "Widoki na Raj" to spojrzenie człowieka, który w zwykłym chlebie powszednim potrafi dostrzec mannę z nieba, a w drugim człowieku – ikonę Stwórcy. Rozpoczynając ten roczny szlak 365 dni, prośmy o wzrok czysty, zdolny dostrzegać piękno Bożego zamysłu w każdym poranku i każdym zmierzchu.`,
-    quote: '"I Słowo stało się ciałem i zamieszkało wśród nas. I oglądaliśmy Jego chwałę..." (J 1, 14)',
-    prayer: 'Panie Jezu Chryste, Dziecię z Betlejem, zamieszkaj dziś na nowo w moim sercu. Ulecz mój wzrok, bym pośród trosk tego świata dostrzegał przebłyski Twojego Raju. Amen.'
+Prawdziwy Kościół rodzi się tam, gdzie ludzie jednoczą się w wierze, nadziei i miłości. Świątynie są miejscami modlitwy i spotkania, lecz same mury nie stanowią istoty Kościoła. Świętymi kamieniami są wierzący, którzy tworzą wspólnotę żywego Boga. Najpiękniejszą świątynią jest serce człowieka, otwarte na obecność Ducha Świętego. Bóg nie potrzebuje naszych dóbr materialnych. Pragnie przede wszystkim naszego serca, naszej miłości i zaufania.
+
+Ofiara ma wartość wtedy, gdy wypływa z wdzięczności i miłości, a nie z przymusu czy przekonania, że można za nią „kupić” Bożą łaskę. Przypowieść o talentach przypomina, że wszystko, co otrzymaliśmy od Boga, powinno przynosić owoce. Talentami są zarówno zdolności, czas, możliwości, jak i dobra materialne. Pieniądz sam w sobie nie jest złem, lecz narzędziem. Staje się błogosławieństwem wtedy, gdy służy dobru i pomocy potrzebującym, a nie wtedy, gdy staje się naszym panem.
+
+Jezus przestrzegał przed służeniem „mamonie”. Chrześcijanin powinien pomnażać otrzymane dary, rozwijać swoje zdolności i uczciwie pracować. Owoce tej pracy mają jednak prowadzić nie tylko do własnego dobrobytu, lecz także do dzielenia się z ubogimi i budowania dobra wspólnego. Historia świata jest również historią dojrzewania ludzkiego ducha. Bóg nieustannie prowadzi człowieka ku pełni życia. Celem nie jest jedynie rozwój materialny, lecz przemiana serca, tak aby wszyscy stali się jednym w Chrystusie. To właśnie jest największe bogactwo, które nie przemija i prowadzi do życia wiecznego.`
   },
 
   // RHZ365 - Day 1 (25 XII)

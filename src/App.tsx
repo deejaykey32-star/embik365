@@ -152,7 +152,7 @@ export default function App() {
     const fetchData = async () => {
       // 1. Try GitHub raw directly (works for all visitors across all devices without needing a token)
       try {
-        const ghData = await fetchFromGitHubRaw(githubConfig);
+        const ghData = await fetchEntriesFromGitHub(githubConfig);
         if (ghData && (ghData.entries || ghData.uploads || ghData.qrCodes)) {
           if (ghData.entries && Object.keys(ghData.entries).length > 0) {
             setCustomEntries(ghData.entries);
