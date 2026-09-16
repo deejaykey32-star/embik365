@@ -42,7 +42,8 @@ export const FILE_CLCK_MAP: Record<string, string> = {
   "zima-tom-1.jpg": "https://clck.ru/3VrweY",
   "zima.png": "https://clck.ru/3Vrweb",
   "zima2.png": "https://clck.ru/3Vrweh",
-  "znak.gif": "https://clck.ru/3Vrwej"
+  "farby+światło.png": "https://clck.ru/3VsF32",
+  "farby-swiatlo.png": "https://clck.ru/3VsF32",
 };
 
 export const DEFAULT_CLCK_MAP: Record<string, string> = {
