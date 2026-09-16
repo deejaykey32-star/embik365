@@ -33,6 +33,8 @@ export const FILE_CLCK_MAP: Record<string, string> = {
   "ombw.jpg": "https://clck.ru/3Vrwe5",
   "RGB-model-1.jpg": "https://clck.ru/3VrweA",
   "RHZ-tom-5.jpg": "https://clck.ru/3VrweC",
+  "RHZ-ilustracja.png": "https://clck.ru/3VrweC",
+  "RHZ-ilustracja.jpg": "https://clck.ru/3VrweC",
   "schemat-trojcy.png": "https://clck.ru/3VrweD",
   "symbol2.gif": "https://clck.ru/3VrweH",
   "symbol3.gif": "https://clck.ru/3VrweL",
