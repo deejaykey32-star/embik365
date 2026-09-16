@@ -439,7 +439,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
 
     const customCdnTags = validCustomCdns.map(url => {
       if (url.endsWith('.css')) return `<link rel="stylesheet" href="${url}">`;
-      return `<script src="${url}"></script>`;
+      return `<script src="${url}" crossorigin="anonymous"></script>`;
     }).join('\n');
 
     // 2. Check if React, Babel, or JSX is needed
@@ -461,7 +461,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
     const jsCdnTags = librariesToLoad.map(libId => {
       const lib = PRESET_LIBRARIES.find(l => l.id === libId);
       if (!lib?.jsUrl) return '';
-      return lib.jsUrl.split('\n').map(url => `<script src="${url.trim()}"></script>`).join('\n');
+      return lib.jsUrl.split('\n').map(url => `<script src="${url.trim()}" crossorigin="anonymous"></script>`).join('\n');
     }).filter(Boolean).join('\n');
 
     // 3. Ensure HTML has root container if missing
@@ -478,7 +478,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
       .replace(/export\s+default\s+/g, 'window.App = ')
       .replace(/export\s+const\s+/g, 'const ');
 
-    const scriptType = needsBabel ? 'text/babel' : 'text/javascript';
+    const jsonEscapedJs = JSON.stringify(cleanedJs);
 
     return `<!DOCTYPE html>
 <html lang="pl">
@@ -503,6 +503,9 @@ export const AiStudioPackageBuilder: React.FC = () => {
 
   <script>
     window.addEventListener('error', function(e) {
+      var msg = e.message || (e.error ? e.error.message : '');
+      if (!msg || msg === 'Script error.' || msg === 'Script error') return;
+      
       var errDiv = document.getElementById('sandbox-error-overlay');
       if (!errDiv) {
         errDiv = document.createElement('div');
@@ -510,7 +513,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
         errDiv.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;background:#991b1b;color:#ffffff;padding:14px 18px;border-radius:14px;font-family:monospace;font-size:12px;z-index:999999;box-shadow:0 10px 30px rgba(0,0,0,0.6);border:1px solid #f87171;line-height:1.5;max-height:40vh;overflow:auto;';
         document.body.appendChild(errDiv);
       }
-      errDiv.innerHTML = '<strong>⚠️ Błąd uruchamiania skryptu Paczki Google AI Studio:</strong><br/>' + (e.message || e.error || 'Błąd wykonania skryptu');
+      errDiv.innerHTML = '<strong>⚠️ Błąd w kodzie paczki Google AI Studio:</strong><br/>' + msg;
     });
   </script>
 </head>
@@ -530,14 +533,38 @@ export const AiStudioPackageBuilder: React.FC = () => {
         };
       }
     }
-  </script>
 
-  <script type="${scriptType}">
-    try {
-      ${cleanedJs}
-    } catch (err) {
-      console.error('Błąd wykonania skryptu Paczki Google AI Studio:', err);
-    }
+    (function() {
+      var rawCode = ${jsonEscapedJs};
+      var needsBabel = ${needsBabel};
+
+      function executeCode() {
+        try {
+          if (needsBabel && typeof window.Babel !== 'undefined') {
+            var compiled = window.Babel.transform(rawCode, { presets: ['react', 'env'] }).code;
+            eval(compiled);
+          } else {
+            eval(rawCode);
+          }
+        } catch (err) {
+          console.error('AI Studio execution error:', err);
+          var errDiv = document.getElementById('sandbox-error-overlay');
+          if (!errDiv) {
+            errDiv = document.createElement('div');
+            errDiv.id = 'sandbox-error-overlay';
+            errDiv.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;background:#991b1b;color:#ffffff;padding:14px 18px;border-radius:14px;font-family:monospace;font-size:12px;z-index:999999;box-shadow:0 10px 30px rgba(0,0,0,0.6);border:1px solid #f87171;line-height:1.5;max-height:40vh;overflow:auto;';
+            document.body.appendChild(errDiv);
+          }
+          errDiv.innerHTML = '<strong>⚠️ Wyjątek podczas wykonywania skryptu:</strong><br/>' + (err.message || err);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', executeCode);
+      } else {
+        setTimeout(executeCode, 50);
+      }
+    })();
   </script>
 </body>
 </html>`;
