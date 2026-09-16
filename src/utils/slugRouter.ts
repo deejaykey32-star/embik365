@@ -214,6 +214,24 @@ export function parseUrlRoute(): ParsedRoute {
   let flipbookPage: number | undefined = undefined;
 
   if (parts.length > 0) {
+    if (parts[0] === 'r') {
+      const slug = parts[1] ? parts[1].toLowerCase() : '';
+      if (!slug || slug === 'aistudio' || slug === 'ai-studio' || slug.includes('pkg_') || slug.includes('aistudio')) {
+        return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'aistudio' };
+      }
+      const mappedSec = parseSectionSlug(slug);
+      if (mappedSec) {
+        return { sectionId: mappedSec, date: getTodayCycleDate() };
+      }
+      if (slug === 'grafika' || slug === 'media' || slug === 'zasoby' || slug === 'uploads' || slug === 'galeria' || slug === 'materialy') {
+        return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'grafika' };
+      }
+      if (slug === 'kody-qr' || slug === 'qr') {
+        return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'kody-qr' };
+      }
+      return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'aistudio' };
+    }
+
     const firstSec = parseSectionSlug(parts[0]);
     if (firstSec) {
       sectionId = firstSec;
@@ -256,7 +274,7 @@ export function parseUrlRoute(): ParsedRoute {
         subview = 'pobierz';
       } else if (parts[0] === 'kody-qr' || parts[0] === 'qr') {
         subview = 'kody-qr';
-      } else if (parts[0] === 'aistudio' || parts[0] === 'ai-studio' || parts[0] === 'paczkai' || parts[0] === 'symulacje' || parts[0] === 'symulacja') {
+      } else if (parts[0] === 'aistudio' || parts[0] === 'ai-studio' || parts[0] === 'paczkai' || parts[0] === 'symulacje' || parts[0] === 'symulacja' || parts[0].includes('pkg_') || parts[0].includes('aistudio')) {
         subview = 'aistudio';
       } else if (parts[0] === 'grafika' || parts[0] === 'media' || parts[0] === 'zasoby' || parts[0] === 'uploads' || parts[0] === 'galeria' || parts[0] === 'materialy') {
         subview = 'grafika';

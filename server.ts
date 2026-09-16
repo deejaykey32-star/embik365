@@ -232,16 +232,17 @@ app.get('/r/:slug?', (req, res) => {
       const match = data.qrCodes.find((q: any) =>
         (q.id && q.id.toLowerCase() === slug) ||
         (q.id && q.id.toLowerCase() === `qr_${slug}`) ||
+        (q.id && q.id.toLowerCase().includes(slug)) ||
         (q.sectionId && q.sectionId.toLowerCase() === slug)
       );
-      if (match && match.fullUrl) {
+      if (match && match.fullUrl && !match.fullUrl.includes('/r/pkg_ai_')) {
         target = match.fullUrl;
       }
     }
   }
 
-  if (!target) {
-    target = 'https://widokinaraj.pl/#wnr365';
+  if (!target || target.includes('/r/pkg_ai_') || target.includes('/r/')) {
+    target = 'https://widokinaraj.pl/#aistudio';
   }
 
   return res.redirect(302, target);
