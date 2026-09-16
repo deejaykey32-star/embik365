@@ -7,7 +7,8 @@ export type SectionId =
   | 'ebook_wnr'     // ebook WnR365 w formie przewracanych kartek
   | 'ebook_rhz'     // ebook RHZ365 w formie przewracanych kartek
   | 'ebook_biblia'  // Biblia365 w formie przewracanych kartek
-  | 'bio365';       // biografia mnie i żony w formie przewracanych kartek
+  | 'bio365'        // biografia mnie i żony w formie przewracanych kartek
+  | 'grafika';      // galeria materiałów i ilustracji administratora z edytorem WYSIWYG
 
 export type SectionType = 'reader' | 'flipbook' | 'info';
 

@@ -6,7 +6,8 @@ import {
   BookMarked, 
   Compass, 
   Library, 
-  HeartHandshake
+  HeartHandshake,
+  Image as ImageIcon
 } from 'lucide-react';
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -26,7 +27,8 @@ const ICONS: Record<string, React.ElementType> = {
   Book: BookMarked,
   Compass,
   Library,
-  HeartHandshake
+  HeartHandshake,
+  Image: ImageIcon
 };
 
 export const SectionNav: React.FC<Props> = ({

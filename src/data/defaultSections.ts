@@ -96,6 +96,18 @@ export const SECTIONS: SectionMeta[] = [
     icon: 'HeartHandshake',
     accentColor: '#9f1239', // rose-800
     bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent'
+  },
+  {
+    id: 'grafika',
+    name: 'Materiały & Ilustracje',
+    shortTitle: 'Galeria Zasobów',
+    subtitle: 'Repozytorium graficzne, pliki i materiały administratora',
+    type: 'info',
+    description: 'Kompletna galeria materiałów graficznych, ilustracji, okładek książek oraz plików zaimportowanych przez administratora wraz z edytorem WYSIWYG.',
+    badge: 'Galeria & Media',
+    icon: 'Image',
+    accentColor: '#c026d3', // fuchsia-600
+    bgGradient: 'from-fuchsia-900/20 via-purple-800/10 to-transparent'
   }
 ];
 

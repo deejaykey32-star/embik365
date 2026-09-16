@@ -84,7 +84,14 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'bio365': 'bio365',
   'bio': 'bio365',
   'biografia': 'bio365',
-  'ja-i-moja-zona': 'bio365'
+  'ja-i-moja-zona': 'bio365',
+
+  'grafika': 'grafika',
+  'media': 'grafika',
+  'zasoby': 'grafika',
+  'uploads': 'grafika',
+  'galeria': 'grafika',
+  'materialy': 'grafika'
 };
 
 /**

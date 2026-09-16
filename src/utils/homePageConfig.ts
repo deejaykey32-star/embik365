@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon } from 'lucide-react';
 
 export const SECTION_ICONS_MAP: Record<SectionId, any> = {
   wnr365: Feather,
@@ -10,7 +10,8 @@ export const SECTION_ICONS_MAP: Record<SectionId, any> = {
   ebook_rhz: Compass,
   ebook_biblia: Library,
   bio365: HeartHandshake,
-  info365: Compass
+  info365: Compass,
+  grafika: ImageIcon
 };
 
 export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
@@ -111,6 +112,18 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#9f1239',
       bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent',
       qrId: 'qr_bio365'
+    },
+    {
+      id: 'grafika',
+      name: 'Galeria Zasobów & Media',
+      badge: 'Galeria & Ilustracje',
+      shortDesc: 'Materiały graficzne, ilustracje i zasoby opublikowane przez administratora.',
+      fullDesc: 'Interaktywna galeria wszystkich ilustracji, okładek, grafik okolicznościowych i plików zasobów wgranych przez administratora z możliwością edycji opisów i przeglądania w pełnej rozdzielczości.',
+      imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
+      imageAlt: 'Galeria sztuki i ilustracji',
+      color: '#c026d3',
+      bgGradient: 'from-fuchsia-950/20 via-fuchsia-900/10 to-transparent',
+      qrId: 'qr_grafika'
     }
   ]
 };
