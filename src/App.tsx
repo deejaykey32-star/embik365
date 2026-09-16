@@ -19,6 +19,8 @@ import { SearchModal } from './components/SearchModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub, getStoredGitHubConfig } from './utils/githubSync';
 import { setSavedQrCodes, getSavedQrCodes } from './utils/qrCodeService';
 import { translateEntry } from './utils/translationService';
+import { MediaLibraryViewer } from './components/MediaLibraryViewer';
+import { Sparkles, X } from 'lucide-react';
 
 import { parseUrlRoute, updateBrowserUrlSlug } from './utils/slugRouter';
 
@@ -72,9 +74,9 @@ export default function App() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(initialRoute.subview === 'kalendarz');
   const [isAdminOpen, setIsAdminOpen] = useState(
     initialRoute.subview === 'admin' || 
-    initialRoute.subview === 'panel' || 
-    initialRoute.subview === 'kody-qr' || 
-    initialRoute.subview === 'qr' ||
+    initialRoute.subview === 'panel'
+  );
+  const [isPublicMediaViewerOpen, setIsPublicMediaViewerOpen] = useState(
     initialRoute.subview === 'aistudio' ||
     initialRoute.subview === 'ai-studio' ||
     initialRoute.subview === 'grafika' ||
@@ -84,6 +86,10 @@ export default function App() {
     initialRoute.subview === 'galeria' ||
     initialRoute.subview === 'materialy'
   );
+  const [publicMediaTab, setPublicMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'>(() => {
+    if (initialRoute.subview === 'aistudio' || initialRoute.subview === 'ai-studio') return 'aistudio';
+    return 'grid';
+  });
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(initialRoute.subview === 'pobierz' || initialRoute.subview === 'download');
   const [isLectorModalOpen, setIsLectorModalOpen] = useState(initialRoute.subview === 'lektor' || initialRoute.subview === 'lector');
@@ -238,7 +244,9 @@ export default function App() {
     if (isCalendarOpen) subview = 'kalendarz';
     else if (isDownloadModalOpen) subview = 'pobierz';
     else if (isLectorModalOpen) subview = 'lektor';
-    else if (isAdminOpen) {
+    else if (isPublicMediaViewerOpen) {
+      subview = publicMediaTab === 'aistudio' ? 'aistudio' : 'grafika';
+    } else if (isAdminOpen) {
       subview = adminTab === 'aistudio' ? 'aistudio' : adminTab === 'media_library' ? 'grafika' : adminTab === 'qrcodes' ? 'kody-qr' : 'admin';
     }
 
@@ -248,7 +256,7 @@ export default function App() {
       subview,
       pdfId: viewingPdf?.id
     });
-  }, [activeSectionId, currentDate, isCalendarOpen, isAdminOpen, isDownloadModalOpen, isLectorModalOpen, viewingPdf, adminTab]);
+  }, [activeSectionId, currentDate, isCalendarOpen, isPublicMediaViewerOpen, publicMediaTab, isAdminOpen, isDownloadModalOpen, isLectorModalOpen, viewingPdf, adminTab]);
 
   // B) Listen to browser URL hashchange and popstate events (direct link pasting / back / forward navigation)
   useEffect(() => {
@@ -261,11 +269,11 @@ export default function App() {
       if (route.subview === 'lektor' || route.subview === 'lector') setIsLectorModalOpen(true);
       
       if (route.subview === 'aistudio' || route.subview === 'ai-studio') {
-        setIsAdminOpen(true);
-        setAdminTab('aistudio');
+        setIsPublicMediaViewerOpen(true);
+        setPublicMediaTab('aistudio');
       } else if (route.subview === 'grafika' || route.subview === 'media' || route.subview === 'zasoby' || route.subview === 'uploads' || route.subview === 'galeria' || route.subview === 'materialy') {
-        setIsAdminOpen(true);
-        setAdminTab('media_library');
+        setIsPublicMediaViewerOpen(true);
+        setPublicMediaTab('grid');
       } else if (route.subview === 'kody-qr' || route.subview === 'qr') {
         setIsAdminOpen(true);
         setAdminTab('qrcodes');
@@ -565,6 +573,33 @@ export default function App() {
         onSelectDate={setCurrentDate}
         uploadedDateKeys={uploadedDateKeys}
       />
+
+      {/* 5.5 Public Media & Interactive Simulation Viewer Modal */}
+      {isPublicMediaViewerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-7xl max-h-[92vh] bg-[#faf7f2] dark:bg-[#0c121e] border border-amber-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            {/* Header bar with close button */}
+            <div className="px-5 py-3.5 bg-gradient-to-r from-amber-900/40 via-purple-900/30 to-amber-950/40 border-b border-amber-500/30 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>Podgląd multimediów i symulacji interaktywnych</span>
+              </div>
+              <button
+                onClick={() => setIsPublicMediaViewerOpen(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                title="Zamknij podgląd"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body content */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+              <MediaLibraryViewer initialTab={publicMediaTab} readOnly={!adminUser} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 6. Admin Panel Modal (Google Login, GitHub sync, PDF uploads & Content Editor) */}
       <AdminPanel

@@ -281,7 +281,11 @@ export const stripTypeScriptTypes = (code: string): string => {
   return result;
 };
 
-export const AiStudioPackageBuilder: React.FC = () => {
+export interface AiStudioPackageBuilderProps {
+  readOnly?: boolean;
+}
+
+export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ readOnly = false }) => {
   const [packages, setPackages] = useState<AiStudioPackage[]>(() => {
     try {
       const saved = localStorage.getItem('drogowskazy_ai_studio_packages');
@@ -835,21 +839,25 @@ export const AiStudioPackageBuilder: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <button
-            onClick={() => setIsEditingMeta(prev => !prev)}
-            className="px-3 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-900 dark:text-amber-200 border border-amber-500/30 font-bold flex items-center gap-1.5 cursor-pointer"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>{isEditingMeta ? 'Zamknij Edycję Tytułu' : 'Edytuj Tytuł Paczki'}</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setIsEditingMeta(prev => !prev)}
+              className="px-3 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-900 dark:text-amber-200 border border-amber-500/30 font-bold flex items-center gap-1.5 cursor-pointer"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{isEditingMeta ? 'Zamknij Edycję Tytułu' : 'Edytuj Tytuł Paczki'}</span>
+            </button>
+          )}
 
-          <button
-            onClick={handleGenerateQr}
-            className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>Kod QR & clck.ru</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={handleGenerateQr}
+              className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>Kod QR & clck.ru</span>
+            </button>
+          )}
 
           <button
             onClick={handleDownloadPackageHtml}
@@ -859,22 +867,26 @@ export const AiStudioPackageBuilder: React.FC = () => {
             <span>Pobierz Plik Paczki (.HTML)</span>
           </button>
 
-          <button
-            onClick={handleFixTypeScriptInActivePkg}
-            className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-            title="Usuń niekompatybilne typy TypeScript z wybranej paczki"
-          >
-            <Wand2 className="w-3.5 h-3.5" />
-            <span>Napraw Kod Paczki (Usuń Typy TS)</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={handleFixTypeScriptInActivePkg}
+              className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Usuń niekompatybilne typy TypeScript z wybranej paczki"
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              <span>Napraw Kod Paczki (Usuń Typy TS)</span>
+            </button>
+          )}
 
-          <button
-            onClick={handleCreateNewPackage}
-            className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Nowa Paczka AI</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={handleCreateNewPackage}
+              className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nowa Paczka AI</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -929,7 +941,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
               <Package className="w-3.5 h-3.5" />
               <span>{p.name}</span>
             </button>
-            {packages.length > 1 && p.id === activePkgId && (
+            {!readOnly && packages.length > 1 && p.id === activePkgId && (
               <button
                 onClick={() => handleDeletePackage(p.id)}
                 className="ml-1 p-1 text-stone-400 hover:text-red-500 cursor-pointer"
@@ -1004,17 +1016,19 @@ export const AiStudioPackageBuilder: React.FC = () => {
           <span>Biblioteki CDN ({activePkg.libraries?.length || 0})</span>
         </button>
 
-        <button
-          onClick={() => setActiveTab('import')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
-            activeTab === 'import'
-              ? 'bg-amber-600 text-white'
-              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
-          }`}
-        >
-          <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Importuj z Google AI Studio</span>
-        </button>
+        {!readOnly && (
+          <button
+            onClick={() => setActiveTab('import')}
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+              activeTab === 'import'
+                ? 'bg-amber-600 text-white'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+            }`}
+          >
+            <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Importuj z Google AI Studio</span>
+          </button>
+        )}
       </div>
 
       {/* TAB CONTENT AREAS */}

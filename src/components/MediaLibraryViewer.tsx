@@ -67,9 +67,10 @@ export function getItemClckRuUrl(item: PlikItem): string {
 
 export interface MediaLibraryViewerProps {
   initialTab?: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio';
+  readOnly?: boolean;
 }
 
-export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialTab }) => {
+export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialTab, readOnly = false }) => {
   // 1. Prepare items list from src/pliki & user uploaded materials
   const [items, setItems] = useState<PlikItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -899,13 +900,15 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsUploadModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs flex items-center gap-2 shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
-            >
-              <Upload className="w-4 h-4" />
-              <span>Dodaj Nowy Materiał</span>
-            </button>
+            {!readOnly && (
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs flex items-center gap-2 shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Dodaj Nowy Materiał</span>
+              </button>
+            )}
             <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
               Kolekcja: {items.length} Plików
             </span>
@@ -992,7 +995,7 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
       {/* GOOGLE AI STUDIO MULTI-FILE PACKAGES & LIBRARIES SANDBOX     */}
       {/* ------------------------------------------------------------- */}
       {activeMediaTab === 'aistudio' && (
-        <AiStudioPackageBuilder />
+        <AiStudioPackageBuilder readOnly={readOnly} />
       )}
 
       {/* ------------------------------------------------------------- */}
