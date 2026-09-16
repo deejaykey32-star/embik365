@@ -387,6 +387,30 @@ export const MediaLibraryViewer: React.FC = () => {
     }
   }, []);
 
+  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement, Event>, filename: string) => {
+    const target = e.currentTarget;
+    const stage = parseInt(target.dataset.fallbackStage || '0', 10);
+    if (stage === 0) {
+      target.dataset.fallbackStage = '1';
+      target.src = `/pliki/${filename}`;
+    } else if (stage === 1) {
+      target.dataset.fallbackStage = '2';
+      target.src = `/pliki/${encodeURIComponent(filename)}`;
+    } else if (stage === 2) {
+      target.dataset.fallbackStage = '3';
+      let alt = filename;
+      if (filename.includes('jesien')) alt = filename.replace('jesien', 'jesień');
+      else if (filename.includes('jesień')) alt = filename.replace('jesień', 'jesien');
+      target.src = `/pliki/${alt}`;
+    } else if (stage === 3) {
+      target.dataset.fallbackStage = '4';
+      let alt = filename;
+      if (filename.includes('jesien')) alt = filename.replace('jesien', 'jesień');
+      else if (filename.includes('jesień')) alt = filename.replace('jesień', 'jesien');
+      target.src = `/pliki/${encodeURIComponent(alt)}`;
+    }
+  };
+
   // Update HTML Iframe preview
   useEffect(() => {
     if (iframeRef.current) {
@@ -945,6 +969,7 @@ export const MediaLibraryViewer: React.FC = () => {
                       src={item.url}
                       alt={item.name}
                       loading="lazy"
+                      onError={(e) => handleImgError(e, item.filename || item.name)}
                       className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
@@ -1387,7 +1412,12 @@ export const MediaLibraryViewer: React.FC = () => {
                     }`}
                     title={`Tekstura: ${img.name}`}
                   >
-                    <img src={img.url} alt={img.name} className="w-full h-full object-cover rounded-lg" />
+                    <img
+                      src={img.url}
+                      alt={img.name}
+                      onError={(e) => handleImgError(e, img.filename || img.name)}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </button>
                 ))}
               </div>
@@ -1462,6 +1492,7 @@ export const MediaLibraryViewer: React.FC = () => {
               <img
                 src={selectedImage.url}
                 alt={selectedImage.name}
+                onError={(e) => handleImgError(e, selectedImage.filename || selectedImage.name)}
                 className="max-w-full max-h-full object-contain transition-transform duration-200"
                 style={{
                   transform: `scale(${zoomLevel}) rotate(${rotation}deg)`
