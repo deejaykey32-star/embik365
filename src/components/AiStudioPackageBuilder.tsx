@@ -169,28 +169,116 @@ window.addEventListener('resize', () => {
 
 export const stripTypeScriptTypes = (code: string): string => {
   if (!code) return '';
-  return code
-    // 1. Remove multiline & single-line import statements
-    .replace(/import[\s\S]*?from\s+['"][^'"]+['"];?/gi, '')
-    .replace(/import\s+['"][^'"]+['"];?/gi, '')
-    // 2. Remove export { ... } or export * from ...
-    .replace(/export\s+\{[\s\S]*?\};?/gi, '')
-    .replace(/export\s+\*\s+from\s+['"][^'"]+['"];?/gi, '')
-    // 3. Convert export keywords for declarations
-    .replace(/export\s+default\s+function\b/gi, 'function')
-    .replace(/export\s+default\s+class\b/gi, 'class')
-    .replace(/export\s+default\s+/gi, 'window.App = ')
-    .replace(/export\s+const\s+/gi, 'const ')
-    .replace(/export\s+let\s+/gi, 'let ')
-    .replace(/export\s+var\s+/gi, 'var ')
-    .replace(/export\s+function\b/gi, 'function ')
-    .replace(/export\s+class\b/gi, 'class ')
-    // 4. Remove TypeScript type & interface declarations (multiline & single-line)
-    .replace(/export\s+type\s+[\s\S]*?;/gi, '')
-    .replace(/(^|\n)\s*type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/gi, '\n')
-    .replace(/export\s+interface\s+[\s\S]*?\{[\s\S]*?\}/gi, '')
-    .replace(/(^|\n)\s*interface\s+[\s\S]*?\{[\s\S]*?\}/gi, '\n')
-    .replace(/import\s+type[\s\S]*?;/gi, '');
+
+  const lines = code.split('\n');
+  const cleanLines: string[] = [];
+  let inImportBlock = false;
+  let inInterfaceBlock = false;
+  let braceCount = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Handle multiline import block continuation
+    if (inImportBlock) {
+      if (trimmed.includes("from ") || trimmed.endsWith(";") || trimmed.includes("from '") || trimmed.includes('from "')) {
+        inImportBlock = false;
+      }
+      continue;
+    }
+
+    // Handle multiline interface block continuation
+    if (inInterfaceBlock) {
+      const opens = (line.match(/\{/g) || []).length;
+      const closes = (line.match(/\}/g) || []).length;
+      braceCount += opens - closes;
+      if (braceCount <= 0) {
+        inInterfaceBlock = false;
+        braceCount = 0;
+      }
+      continue;
+    }
+
+    // Check if line starts an import statement
+    const normalized = trimmed.replace(/\s+/g, '');
+    if (/^(import|importtype|import\{|import\*)/.test(normalized)) {
+      if (trimmed.includes("from ") || trimmed.endsWith(";") || /^import\s+['"][^'"]+['"]/.test(trimmed)) {
+        continue; // skip single line import
+      } else {
+        inImportBlock = true; // start multiline import block
+        continue;
+      }
+    }
+
+    // Check if line starts an interface definition
+    if (/^(export\s+)?interface\s+[A-Za-z0-9_]+/.test(trimmed)) {
+      if (trimmed.includes('{') && trimmed.includes('}')) {
+        continue; // single line interface
+      }
+      inInterfaceBlock = true;
+      const opens = (line.match(/\{/g) || []).length;
+      const closes = (line.match(/\}/g) || []).length;
+      braceCount = opens - closes;
+      continue;
+    }
+
+    // Check if line starts a type definition
+    if (/^(export\s+)?type\s+[A-Za-z0-9_]+/.test(trimmed) && !trimmed.startsWith('typeof')) {
+      if (trimmed.endsWith(';') || trimmed.includes('=')) {
+        if (trimmed.endsWith(';')) continue;
+      }
+      if (trimmed.includes('=')) {
+        let j = i;
+        let typeEnds = false;
+        while (j < lines.length) {
+          if (lines[j].trim().endsWith(';')) {
+            i = j;
+            typeEnds = true;
+            break;
+          }
+          j++;
+        }
+        if (typeEnds) continue;
+      }
+      continue;
+    }
+
+    // Process export keywords on declarations
+    let processed = line;
+
+    if (/^\s*export\s+\{[\s\S]*?\};?/.test(processed) || /^\s*export\s+\*\s+from/.test(processed)) {
+      continue;
+    }
+
+    processed = processed
+      .replace(/^\s*export\s+default\s+function\s+([A-Za-z0-9_]+)/g, 'function $1\nwindow.App = $1;')
+      .replace(/^\s*export\s+default\s+class\s+([A-Za-z0-9_]+)/g, 'class $1\nwindow.App = $1;')
+      .replace(/^\s*export\s+default\s+/g, 'window.App = ')
+      .replace(/^\s*export\s+const\s+App\b/g, 'const App')
+      .replace(/^\s*export\s+const\s+/g, 'const ')
+      .replace(/^\s*export\s+let\s+/g, 'let ')
+      .replace(/^\s*export\s+var\s+/g, 'var ')
+      .replace(/^\s*export\s+function\s+/g, 'function ')
+      .replace(/^\s*export\s+class\s+/g, 'class ');
+
+    if (/^\s*(const|function|class)\s+App\b/.test(processed) && !processed.includes('window.App')) {
+      cleanLines.push(processed);
+      cleanLines.push('if (typeof App !== "undefined") window.App = App;');
+      continue;
+    }
+
+    cleanLines.push(processed);
+  }
+
+  let result = cleanLines.join('\n');
+
+  // Strip inline TypeScript annotations and type assertions
+  result = result
+    .replace(/:\s*(DiscPattern|SimulationState|Disc|State|Props|Config|boolean|number|string|any|void|never|unknown|React\.FC(<[^>]+>)?|React\.ReactNode|React\.CSSProperties|React\.MouseEvent(<[^>]+>)?)\b/g, '')
+    .replace(/as\s+(DiscPattern|SimulationState|Disc|State|Props|Config|boolean|number|string|any|unknown|HTMLCanvasElement|HTMLDivElement|HTMLElement)\b/g, '');
+
+  return result;
 };
 
 export const AiStudioPackageBuilder: React.FC = () => {
@@ -298,8 +386,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
         } else if (lower.endsWith('.css')) {
           css += `\n/* Plik: ${path} */\n${text}`;
         } else if (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.ts') || lower.endsWith('.jsx') || lower.endsWith('.tsx')) {
-          // Skip pure TypeScript type definition files
-          if (lower.endsWith('.d.ts') || lower.includes('types.ts') || lower.includes('type.ts') || lower.includes('interfaces.ts')) {
+          if (lower.endsWith('.d.ts')) {
             continue;
           }
           const block = `\n// Plik: ${path}\n${text}`;
@@ -543,6 +630,12 @@ export const AiStudioPackageBuilder: React.FC = () => {
   <script>
     window.global = window;
     window.process = { env: { NODE_ENV: 'production' } };
+    window.require = function(mod) {
+      console.warn('Mock require called for module:', mod);
+      if (mod === 'react') return window.React;
+      if (mod === 'react-dom') return window.ReactDOM;
+      return window[mod] || window.React || {};
+    };
   </script>
 
   ${cssCdnTags}
@@ -595,6 +688,20 @@ export const AiStudioPackageBuilder: React.FC = () => {
           };
         };
       }
+
+      var iconNames = ['Play', 'Pause', 'RotateCcw', 'RotateCw', 'Volume2', 'VolumeX', 'Settings', 'Sparkles', 'Check', 'Plus', 'Trash2', 'Edit3', 'Box', 'Archive', 'UploadCloud', 'Wand2', 'X', 'Save', 'Download', 'Copy', 'Maximize2', 'ExternalLink', 'FolderArchive', 'CheckSquare', 'Square', 'Sun', 'Moon', 'Info', 'AlertTriangle', 'HelpCircle', 'Search', 'Filter', 'ChevronDown', 'ChevronUp', 'ChevronLeft', 'ChevronRight', 'ArrowLeft', 'ArrowRight', 'Eye', 'EyeOff', 'Lock', 'Unlock', 'Sliders', 'Activity', 'Zap', 'Flame', 'Layers', 'Grid'];
+      iconNames.forEach(function(name) {
+        if (typeof window[name] === 'undefined') {
+          window[name] = function(props) {
+            var p = props || {};
+            return React.createElement('span', {
+              className: 'lucide-icon-shim ' + (p.className || ''),
+              style: Object.assign({ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }, p.style || {}),
+              title: name
+            }, '✨');
+          };
+        }
+      });
     }
 
     (function() {
@@ -605,7 +712,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
         try {
           if (needsBabel && typeof window.Babel !== 'undefined') {
             var compiled = window.Babel.transform(rawCode, {
-              presets: ['react', 'typescript', 'env'],
+              presets: ['react', 'typescript'],
               filename: 'app.tsx'
             }).code;
             eval(compiled);
