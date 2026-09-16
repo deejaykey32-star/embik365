@@ -693,6 +693,8 @@ export async function generateQrDataUrl(text: string, size = 300): Promise<strin
  */
 export async function generateQrBadgeDataUrl(rawItem: QrCodeItem): Promise<string> {
   const item = sanitizeQrItem(rawItem);
+  const badgeTitle = (rawItem.title || item.title || 'Kod QR').trim();
+  const badgeDisplayLabel = (rawItem.displayLabel || item.displayLabel || 'Zeskanuj smartfonem').trim();
   const targetUrl = item.shortUrl || item.fullUrl;
   const qrDataUrl = await generateQrDataUrl(targetUrl, 400);
 
@@ -732,7 +734,7 @@ export async function generateQrBadgeDataUrl(rawItem: QrCodeItem): Promise<strin
   ctx.fillStyle = '#b45309';
   ctx.font = 'bold 24px "Cinzel", Georgia, serif';
   ctx.textAlign = 'center';
-  ctx.fillText(item.title.toUpperCase(), width / 2, 70);
+  ctx.fillText(badgeTitle.toUpperCase(), width / 2, 70);
 
   ctx.fillStyle = '#6b5847';
   ctx.font = 'italic 15px "Newsreader", Georgia, serif';
@@ -769,7 +771,7 @@ export async function generateQrBadgeDataUrl(rawItem: QrCodeItem): Promise<strin
   ctx.fillStyle = '#1c1917';
   ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(item.displayLabel, width / 2, 545);
+  ctx.fillText(badgeDisplayLabel, width / 2, 545);
 
   // 5. Short URL (Permanent) & Full URL box
   ctx.fillStyle = '#f5ede3';
