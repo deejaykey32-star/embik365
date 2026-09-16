@@ -201,14 +201,9 @@ export const Info365View: React.FC<Info365ViewProps> = ({
       if (match) {
         await generateAndDownloadQrBadgePng(match);
       } else {
-        await generateAndDownloadQrBadgePng({
-          id: targetQrId,
-          title,
-          displayLabel: `Zeskanuj, aby przejść do ${title}`,
-          shortUrl: `https://widokinaraj.pl/r/${targetQrId.replace('qr_', '')}`,
-          fullUrl: `https://widokinaraj.pl/#${targetQrId.replace('qr_', '')}`,
-          createdAt: new Date().toISOString()
-        });
+        const slug = targetQrId.replace('qr_', '');
+        const sectionQr = getQrCodeForSection(slug, title);
+        await generateAndDownloadQrBadgePng(sectionQr);
       }
     } catch (err) {
       console.error('Download QR failed:', err);

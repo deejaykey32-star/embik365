@@ -961,6 +961,16 @@ export const MediaLibraryViewer: React.FC = () => {
                     <p className="text-[11px] text-[#786756] dark:text-[#94a3b8] mt-0.5 font-mono truncate">
                       {item.filename || item.name}
                     </p>
+                    <div 
+                      onClick={() => copyClckRuLink(item)}
+                      className="mt-1.5 flex items-center justify-between gap-1 px-2 py-1 rounded bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/80 transition-colors"
+                      title="Kliknij, aby skopiować skrócony link clck.ru"
+                    >
+                      <span className="font-mono text-[11px] font-bold text-amber-800 dark:text-amber-300 truncate">
+                        {item.shortUrl || FILE_CLCK_MAP[item.filename] || FILE_CLCK_MAP[item.name] || 'https://clck.ru/...'}
+                      </span>
+                      <Copy className="w-3 h-3 text-amber-700 dark:text-amber-400 shrink-0" />
+                    </div>
                     {item.description && (
                       <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 italic">
                         {item.description}
