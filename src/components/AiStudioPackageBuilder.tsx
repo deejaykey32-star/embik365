@@ -273,9 +273,9 @@ export const stripTypeScriptTypes = (code: string): string => {
 
   let result = cleanLines.join('\n');
 
-  // 1. Strip TypeScript type annotations on const/let/var declarations:
+  // 1. Strip TypeScript type annotations on const/let/var declarations (including destructured):
   // e.g. const FlasherSim: React.FC<FlasherSimProps> = ... -> const FlasherSim = ...
-  result = result.replace(/\b(const|let|var)\s+([A-Za-z0-9_]+)\s*:\s*[^=;]+=/g, '$1 $2 =');
+  result = result.replace(/\b(const|let|var)\s+([^:=]+)\s*:\s*[^=;]+=/g, '$1 $2 =');
 
   // 2. Strip TypeScript return type annotations on arrow functions:
   // e.g. (): React.ReactNode => ... -> () => ...
@@ -722,7 +722,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
         try {
           if (needsBabel && typeof window.Babel !== 'undefined') {
             var compiled = window.Babel.transform(rawCode, {
-              presets: ['react', ['typescript', { isTSX: true, allExtensions: true }]],
+              presets: ['react', 'typescript'],
               filename: 'app.tsx'
             }).code;
             eval(compiled);
