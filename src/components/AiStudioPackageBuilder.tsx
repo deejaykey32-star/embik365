@@ -273,10 +273,20 @@ export const stripTypeScriptTypes = (code: string): string => {
 
   let result = cleanLines.join('\n');
 
-  // Strip inline TypeScript annotations and type assertions
-  result = result
-    .replace(/:\s*(DiscPattern|SimulationState|Disc|State|Props|Config|boolean|number|string|any|void|never|unknown|React\.FC(<[^>]+>)?|React\.ReactNode|React\.CSSProperties|React\.MouseEvent(<[^>]+>)?)\b/g, '')
-    .replace(/as\s+(DiscPattern|SimulationState|Disc|State|Props|Config|boolean|number|string|any|unknown|HTMLCanvasElement|HTMLDivElement|HTMLElement)\b/g, '');
+  // 1. Strip TypeScript type annotations on const/let/var declarations:
+  // e.g. const FlasherSim: React.FC<FlasherSimProps> = ... -> const FlasherSim = ...
+  result = result.replace(/\b(const|let|var)\s+([A-Za-z0-9_]+)\s*:\s*[^=;]+=/g, '$1 $2 =');
+
+  // 2. Strip TypeScript return type annotations on arrow functions:
+  // e.g. (): React.ReactNode => ... -> () => ...
+  result = result.replace(/\):\s*[A-Za-z0-9_.]+(<[^>]+>)?\s*=>/g, ') =>');
+
+  // 3. Strip TypeScript parameter type annotations:
+  // e.g. (props: FlasherSimProps) -> (props)
+  result = result.replace(/:\s*[A-Za-z0-9_.]+(<[^>]+>)?\b(?=[\s,\)])/g, '');
+
+  // 4. Strip type assertions like `as HTMLCanvasElement` or `as any`
+  result = result.replace(/\s+as\s+[A-Za-z0-9_.]+(<[^>]+>)?/g, '');
 
   return result;
 };
@@ -712,7 +722,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
         try {
           if (needsBabel && typeof window.Babel !== 'undefined') {
             var compiled = window.Babel.transform(rawCode, {
-              presets: ['react', 'typescript'],
+              presets: ['react', ['typescript', { isTSX: true, allExtensions: true }]],
               filename: 'app.tsx'
             }).code;
             eval(compiled);
