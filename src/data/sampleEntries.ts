@@ -1,6 +1,9 @@
 import { SectionEntry, SectionId, CycleDate } from '../types';
+import { WNR365_FULL_ENTRIES } from './wnr365Data';
 
 export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
+  ...WNR365_FULL_ENTRIES,
+
   // info365 - Guide Day 1
   'info365-12-25': {
     title: 'Wprowadzenie: Narodzenie Pańskie i Początek Cyklu',

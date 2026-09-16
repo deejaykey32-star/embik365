@@ -285,7 +285,7 @@ export default function App() {
   const activeSection = getSectionById(activeSectionId);
 
   // Compute current entry (combining default/generated text with any custom server edits)
-  const baseEntry = getEntryForSectionAndDate(activeSectionId, currentDate);
+  const baseEntry = getEntryForSectionAndDate(activeSectionId, currentDate, customEntries);
   const customOverride = customEntries[`${activeSectionId}-${currentDate.dateKey}`] ||
     (activeSectionId === 'ebook_wnr' ? customEntries[`wnr365-${currentDate.dateKey}`] : undefined) ||
     (activeSectionId === 'wnr365' ? customEntries[`ebook_wnr-${currentDate.dateKey}`] : undefined);
