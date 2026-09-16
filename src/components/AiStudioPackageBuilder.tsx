@@ -170,16 +170,27 @@ window.addEventListener('resize', () => {
 export const stripTypeScriptTypes = (code: string): string => {
   if (!code) return '';
   return code
-    .replace(/export\s+type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/g, '')
-    .replace(/(^|\n)\s*type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/g, '\n')
-    .replace(/export\s+interface\s+[A-Za-z0-9_]+\s*(<[\s\S]*?>)?\s*\{[\s\S]*?\}/g, '')
-    .replace(/(^|\n)\s*interface\s+[A-Za-z0-9_]+\s*(<[\s\S]*?>)?\s*\{[\s\S]*?\}/g, '\n')
-    .replace(/import\s+type\s+[\s\S]*?;/g, '')
-    .replace(/import\s+.*?\s+from\s+['"][^'"]+['"];?/g, '')
-    .replace(/import\s+['"][^'"]+['"];?/g, '')
-    .replace(/export\s+default\s+function\b/g, 'function')
-    .replace(/export\s+default\s+/g, 'window.App = ')
-    .replace(/export\s+const\s+/g, 'const ');
+    // 1. Remove multiline & single-line import statements
+    .replace(/import[\s\S]*?from\s+['"][^'"]+['"];?/gi, '')
+    .replace(/import\s+['"][^'"]+['"];?/gi, '')
+    // 2. Remove export { ... } or export * from ...
+    .replace(/export\s+\{[\s\S]*?\};?/gi, '')
+    .replace(/export\s+\*\s+from\s+['"][^'"]+['"];?/gi, '')
+    // 3. Convert export keywords for declarations
+    .replace(/export\s+default\s+function\b/gi, 'function')
+    .replace(/export\s+default\s+class\b/gi, 'class')
+    .replace(/export\s+default\s+/gi, 'window.App = ')
+    .replace(/export\s+const\s+/gi, 'const ')
+    .replace(/export\s+let\s+/gi, 'let ')
+    .replace(/export\s+var\s+/gi, 'var ')
+    .replace(/export\s+function\b/gi, 'function ')
+    .replace(/export\s+class\b/gi, 'class ')
+    // 4. Remove TypeScript type & interface declarations (multiline & single-line)
+    .replace(/export\s+type\s+[\s\S]*?;/gi, '')
+    .replace(/(^|\n)\s*type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/gi, '\n')
+    .replace(/export\s+interface\s+[\s\S]*?\{[\s\S]*?\}/gi, '')
+    .replace(/(^|\n)\s*interface\s+[\s\S]*?\{[\s\S]*?\}/gi, '\n')
+    .replace(/import\s+type[\s\S]*?;/gi, '');
 };
 
 export const AiStudioPackageBuilder: React.FC = () => {
@@ -508,16 +519,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
     }
 
     // 4. Clean JS imports, exports & TypeScript type declarations for browser compatibility
-    let cleanedJs = rawJs
-      .replace(/import\s+.*?\s+from\s+['"][^'"]+['"];?/g, '')
-      .replace(/import\s+['"][^'"]+['"];?/g, '')
-      .replace(/export\s+default\s+function\b/g, 'function')
-      .replace(/export\s+default\s+/g, 'window.App = ')
-      .replace(/export\s+const\s+/g, 'const ')
-      .replace(/export\s+type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/g, '')
-      .replace(/^type\s+[A-Za-z0-9_]+\s*=[\s\S]*?;/gm, '')
-      .replace(/export\s+interface\s+[A-Za-z0-9_]+[\s\S]*?\{[\s\S]*?\}/g, '')
-      .replace(/^interface\s+[A-Za-z0-9_]+[\s\S]*?\{[\s\S]*?\}/gm, '');
+    let cleanedJs = stripTypeScriptTypes(rawJs);
 
     const jsonEscapedJs = JSON.stringify(cleanedJs);
 
