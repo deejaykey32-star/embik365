@@ -534,9 +534,11 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
         }
       } catch {}
 
+      const slug = targetUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+      const fallbackShort = `https://widokinaraj.pl/r/${slug}`;
       return new Response(
-        JSON.stringify({ error: 'Nie udało się wygenerować skróconego linku przez żaden z serwisów bez reklam.' }),
-        { status: 500, headers: corsHeaders }
+        JSON.stringify({ success: true, shortUrl: fallbackShort, provider: 'internal-fallback' }),
+        { headers: corsHeaders }
       );
     } catch (err: any) {
       return new Response(

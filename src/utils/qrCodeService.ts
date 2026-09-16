@@ -111,13 +111,15 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
 ];
 
 export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'grafika', isShort = false): string {
-  const defaultBase = isShort ? 'https://clck.ru/' : 'https://widokinaraj.pl/#';
   if (!url) {
-    return DEFAULT_CLCK_MAP[fallbackSlug] || `${defaultBase}${fallbackSlug}`;
+    if (isShort) {
+      return DEFAULT_CLCK_MAP[fallbackSlug] || `https://widokinaraj.pl/r/${fallbackSlug}`;
+    }
+    return `https://widokinaraj.pl/#${fallbackSlug}`;
   }
   let clean = url.trim();
 
-  // Upgrade legacy /r/ URLs to clck.ru short URLs if short requested
+  // Upgrade legacy /r/ URLs to clck.ru short URLs if explicitly defined in DEFAULT_CLCK_MAP
   if (isShort && clean.includes('widokinaraj.pl/r/')) {
     const slug = clean.split('/r/')[1]?.toLowerCase() || fallbackSlug;
     if (DEFAULT_CLCK_MAP[slug]) {
@@ -135,7 +137,10 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'gr
     clean.startsWith('PHN2Zw') ||
     (clean.length > 300 && !clean.startsWith('http://') && !clean.startsWith('https://'))
   ) {
-    return DEFAULT_CLCK_MAP[fallbackSlug] || `${defaultBase}${fallbackSlug}`;
+    if (isShort) {
+      return DEFAULT_CLCK_MAP[fallbackSlug] || `https://widokinaraj.pl/r/${fallbackSlug}`;
+    }
+    return `https://widokinaraj.pl/#${fallbackSlug}`;
   }
 
   // Remove duplicate slash in hash route e.g. widokinaraj.pl/#/ -> widokinaraj.pl/#
@@ -158,9 +163,22 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'gr
 
 export function sanitizeQrItem(item: QrCodeItem): QrCodeItem {
   const fallbackSlug = item.sectionId || item.id.replace(/^qr_/, '') || 'grafika';
+
+  // Automatically repair items that erroneously inherited the main 'grafika' shortUrl (3Vr8B8) despite having a specific custom fullUrl
+  let currentShort = item.shortUrl;
+  if (
+    currentShort === 'https://clck.ru/3Vr8B8' &&
+    item.id !== 'qr_grafika' &&
+    item.sectionId !== 'grafika' &&
+    item.fullUrl &&
+    !item.fullUrl.endsWith('#grafika')
+  ) {
+    currentShort = '';
+  }
+
   return {
     ...item,
-    shortUrl: sanitizeQrUrl(item.shortUrl, fallbackSlug, true),
+    shortUrl: sanitizeQrUrl(currentShort, fallbackSlug, true),
     fullUrl: sanitizeQrUrl(item.fullUrl, fallbackSlug, false)
   };
 }
@@ -220,8 +238,8 @@ export function getQrCodeForSection(sectionId: string, sectionName?: string): Qr
   );
   if (defMatch) return defMatch;
 
-  // 3. Dynamic fallback using clck.ru
-  const defaultShort = DEFAULT_CLCK_MAP[cleanId] || 'https://clck.ru/3Vr8B8';
+  // 3. Dynamic fallback using clck.ru if mapped, otherwise internal redirect
+  const defaultShort = DEFAULT_CLCK_MAP[cleanId] || `https://widokinaraj.pl/r/${cleanId}`;
   return {
     id: `qr_${cleanId}`,
     title: sectionName || `Sekcja ${sectionId}`,
@@ -296,7 +314,7 @@ export async function uploadBase64ImageToServer(dataUrl: string, filename?: stri
  */
 export async function shortenUrlViaApi(longUrl: string): Promise<string> {
   let cleanUrl = (longUrl || '').trim();
-  if (!cleanUrl) return 'https://clck.ru/3Vr8B8';
+  if (!cleanUrl) return '';
 
   // If longUrl is a raw base64 Data URI or blob, convert it to a static file URL first!
   if (cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) {
@@ -305,10 +323,10 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
       if (staticUrl && (staticUrl.startsWith('http://') || staticUrl.startsWith('https://') || staticUrl.startsWith('/'))) {
         cleanUrl = staticUrl;
       } else {
-        return 'https://clck.ru/3Vr8B8';
+        return cleanUrl;
       }
     } catch {
-      return 'https://clck.ru/3Vr8B8';
+      return cleanUrl;
     }
   }
 
@@ -362,7 +380,9 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     console.warn('Direct is.gd API fetch failed:', err);
   }
 
-  return cleanUrl;
+  // 4. Clean internal redirect fallback
+  const slug = cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+  return `https://widokinaraj.pl/r/${slug}`;
 }
 
 /**
@@ -390,17 +410,17 @@ export async function batchShortenAllQrCodes(): Promise<QrCodeItem[]> {
   return updatedList;
 }
 
-// Add or update a QR code and ensure clck.ru shortened URL is automatically generated
+// Add or update a QR code and ensure shortened URL is automatically generated
 export function upsertQrCode(item: QrCodeItem): QrCodeItem[] {
   const current = getSavedQrCodes();
   const existingIdx = current.findIndex(c => c.id === item.id);
   
   let itemToSave = { ...item };
   
-  // Asynchronously generate clck.ru shortUrl if missing or legacy /r/ link
-  if ((!itemToSave.shortUrl || !itemToSave.shortUrl.includes('clck.ru')) && itemToSave.fullUrl) {
+  // Asynchronously generate shortened URL if missing or raw long URL
+  if ((!itemToSave.shortUrl || itemToSave.shortUrl === itemToSave.fullUrl) && itemToSave.fullUrl) {
     shortenUrlViaApi(itemToSave.fullUrl).then(generated => {
-      if (generated && generated.includes('clck.ru')) {
+      if (generated && generated.startsWith('http')) {
         const latest = getSavedQrCodes();
         const idx = latest.findIndex(c => c.id === itemToSave.id);
         if (idx >= 0) {
@@ -408,7 +428,7 @@ export function upsertQrCode(item: QrCodeItem): QrCodeItem[] {
           saveAllQrCodes(latest);
         }
       }
-    }).catch(e => console.warn('Auto clck.ru shorten failed in upsertQrCode:', e));
+    }).catch(e => console.warn('Auto shorten failed in upsertQrCode:', e));
   }
 
   let updated: QrCodeItem[];

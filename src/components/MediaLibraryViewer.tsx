@@ -86,6 +86,8 @@ export const MediaLibraryViewer: React.FC = () => {
         filename = uploadForm.file.name;
         const formData = new FormData();
         formData.append('file', uploadForm.file);
+        formData.append('pdfFile', uploadForm.file);
+        formData.append('title', uploadForm.name || filename);
 
         try {
           const res = await fetch('/api/upload-file', {
@@ -94,11 +96,13 @@ export const MediaLibraryViewer: React.FC = () => {
           });
           if (res.ok) {
             const data = await res.json();
-            finalUrl = data.url;
-          } else {
-            finalUrl = URL.createObjectURL(uploadForm.file);
+            finalUrl = data.url || data.file?.url || '';
           }
-        } catch {
+        } catch (err) {
+          console.warn('Upload endpoint error:', err);
+        }
+
+        if (!finalUrl) {
           finalUrl = URL.createObjectURL(uploadForm.file);
         }
       } else {

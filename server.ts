@@ -503,15 +503,25 @@ const handleFileUpload = async (req: express.Request, res: express.Response) => 
       }
     }
 
-    res.json({ success: true, file: fileRecord, github: githubSyncResult });
+    res.json({ success: true, url: fileRecord.url, file: fileRecord, github: githubSyncResult });
   } catch (err: any) {
     console.error('Upload error:', err);
     res.status(500).json({ error: err.message || 'Błąd podczas wgrywania pliku.' });
   }
 };
 
-app.post('/api/upload-pdf', upload.single('pdfFile'), handleFileUpload);
-app.post('/api/upload-file', upload.single('pdfFile'), handleFileUpload);
+const handleMulterUpload = (req: any, res: any, next: any) => {
+  upload.single('file')(req, res, (err: any) => {
+    if (err || !req.file) {
+      upload.single('pdfFile')(req, res, () => next());
+    } else {
+      next();
+    }
+  });
+};
+
+app.post('/api/upload-pdf', handleMulterUpload, handleFileUpload);
+app.post('/api/upload-file', handleMulterUpload, handleFileUpload);
 
 // Base64 file upload endpoint (converts base64 Data URIs to static files in /uploads/)
 app.post('/api/upload-base64', async (req, res) => {
