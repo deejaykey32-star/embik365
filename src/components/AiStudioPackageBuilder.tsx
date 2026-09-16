@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import JSZip from 'jszip';
 import { 
   Sparkles, 
   Code2, 
@@ -22,7 +23,10 @@ import {
   X,
   Save,
   CheckSquare,
-  Square
+  Square,
+  Archive,
+  UploadCloud,
+  FolderArchive
 } from 'lucide-react';
 import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
 
@@ -181,6 +185,7 @@ export const AiStudioPackageBuilder: React.FC = () => {
   const [rawImportText, setRawImportText] = useState('');
   const [copied, setCopied] = useState(false);
   const [isEditingMeta, setIsEditingMeta] = useState(false);
+  const [isUnzipping, setIsUnzipping] = useState(false);
 
   const activePkg = packages.find(p => p.id === activePkgId) || packages[0];
 
@@ -193,6 +198,136 @@ export const AiStudioPackageBuilder: React.FC = () => {
   const updateActivePkg = (fields: Partial<AiStudioPackage>) => {
     if (!activePkg) return;
     setPackages(prev => prev.map(p => p.id === activePkg.id ? { ...p, ...fields, updatedAt: new Date().toISOString() } : p));
+  };
+
+  // ZIP Archive Importer & Unzipper handler
+  const handleZipFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUnzipping(true);
+    try {
+      const zip = new JSZip();
+      const contents = await zip.loadAsync(file);
+
+      let html = '';
+      let css = '';
+      let js = '';
+      const libs: string[] = [];
+      const customCdns: string[] = [];
+      const assetMap: Record<string, string> = {};
+
+      const fileEntries = Object.entries(contents.files);
+
+      // 1. First pass: extract image/asset files into Data URLs
+      for (const [path, zipEntry] of fileEntries) {
+        if (zipEntry.dir) continue;
+        const lower = path.toLowerCase();
+        const filename = path.split('/').pop() || path;
+
+        if (/\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(lower)) {
+          const base64 = await zipEntry.async('base64');
+          let mime = 'image/png';
+          if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) mime = 'image/jpeg';
+          else if (lower.endsWith('.gif')) mime = 'image/gif';
+          else if (lower.endsWith('.webp')) mime = 'image/webp';
+          else if (lower.endsWith('.svg')) mime = 'image/svg+xml';
+
+          const dataUrl = `data:${mime};base64,${base64}`;
+          assetMap[filename] = dataUrl;
+          assetMap[path] = dataUrl;
+        }
+      }
+
+      // 2. Second pass: extract code files
+      for (const [path, zipEntry] of fileEntries) {
+        if (zipEntry.dir) continue;
+        const lower = path.toLowerCase();
+        const text = await zipEntry.async('text');
+
+        if (lower.endsWith('.html') || lower.endsWith('.htm')) {
+          if (!html || lower.includes('index.html')) {
+            html = text;
+          } else {
+            html += `\n\n<!-- Plik: ${path} -->\n${text}`;
+          }
+        } else if (lower.endsWith('.css')) {
+          css += `\n/* Plik: ${path} */\n${text}`;
+        } else if (lower.endsWith('.js') || lower.endsWith('.mjs') || lower.endsWith('.ts') || lower.endsWith('.jsx') || lower.endsWith('.tsx')) {
+          js += `\n// Plik: ${path}\n${text}`;
+        }
+      }
+
+      // 3. Replace relative asset references in HTML, CSS, JS with base64 Data URLs
+      Object.entries(assetMap).forEach(([fileName, dataUrl]) => {
+        const regex = new RegExp(fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+        html = html.replace(regex, dataUrl);
+        css = css.replace(regex, dataUrl);
+        js = js.replace(regex, dataUrl);
+      });
+
+      // 4. Detect CDN libraries in HTML / JS
+      const combinedCode = `${html}\n${js}`;
+      if (combinedCode.includes('tailwindcss')) libs.push('tailwindcss');
+      if (combinedCode.includes('three')) libs.push('threejs');
+      if (combinedCode.includes('react')) libs.push('react');
+      if (combinedCode.includes('chart')) libs.push('chartjs');
+      if (combinedCode.includes('lucide')) libs.push('lucide');
+      if (combinedCode.includes('katex')) libs.push('katex');
+
+      // 5. Extract inline <style> and <script> out of HTML if needed
+      const styleMatches = html.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+      if (styleMatches) {
+        css += '\n\n' + styleMatches.map(m => m.replace(/<style[^>]*>|<\/style>/gi, '').trim()).join('\n\n');
+        html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+      }
+
+      const scriptMatches = html.match(/<script[^>]*>([\s\S]*?)<\/script>/gi);
+      if (scriptMatches) {
+        scriptMatches.forEach(m => {
+          const srcMatch = m.match(/src=["'](.*?)["']/i);
+          if (srcMatch && srcMatch[1]) {
+            const src = srcMatch[1];
+            if (!src.startsWith('data:')) customCdns.push(src);
+          } else {
+            const scriptCode = m.replace(/<script[^>]*>|<\/script>/gi, '').trim();
+            if (scriptCode) js += '\n\n' + scriptCode;
+          }
+        });
+        html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+      }
+
+      // 6. Clean html wrapper tags if present
+      html = html
+        .replace(/<!DOCTYPE[^>]*>/gi, '')
+        .replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>/gi, '')
+        .trim();
+
+      const cleanPkgName = file.name.replace(/\.zip$/i, '').replace(/[^a-zA-Z0-9_-]/g, ' ');
+
+      const newPkg: AiStudioPackage = {
+        id: `pkg_zip_${Date.now()}`,
+        name: cleanPkgName || 'Paczka z Google AI Studio (ZIP)',
+        description: `Paczka rozpakowana z archiwum ZIP "${file.name}" (${fileEntries.length} plików).`,
+        category: 'Import z ZIP',
+        htmlContent: html || '<div>Brak treści HTML w archiwum ZIP</div>',
+        cssContent: css.trim(),
+        jsContent: js.trim(),
+        libraries: Array.from(new Set(libs)),
+        customCdnUrls: Array.from(new Set(customCdns)),
+        createdAt: new Date().toISOString()
+      };
+
+      setPackages(prev => [newPkg, ...prev]);
+      setActivePkgId(newPkg.id);
+      setActiveTab('run');
+      alert(`Pomyślnie rozpakowano i zaimportowano archiwum ZIP "${file.name}"!\nWczytano ${fileEntries.length} plików (HTML, CSS, JS, ilustracje i zasoby).`);
+    } catch (err: any) {
+      alert(`Błąd rozpakowywania archiwum ZIP: ${err.message || err}`);
+    } finally {
+      setIsUnzipping(false);
+      e.target.value = '';
+    }
   };
 
   const handleCreateNewPackage = () => {
@@ -694,34 +829,61 @@ export const AiStudioPackageBuilder: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 6: IMPORT FROM GOOGLE AI STUDIO */}
+      {/* TAB 6: IMPORT FROM GOOGLE AI STUDIO (TEXT OR ZIP ARCHIVE) */}
       {activeTab === 'import' && (
-        <div className="p-6 space-y-4">
-          <div>
-            <h4 className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1 flex items-center gap-2">
-              <Wand2 className="w-4 h-4 text-emerald-500" />
-              <span>Szybki Parser & Import z Google AI Studio (Gemini Canvas)</span>
-            </h4>
-            <p className="text-xs text-stone-500">
-              Skopiuj całą odpowiedź lub pliki wygenerowane w serwisie Google AI Studio (wraz z tagami &lt;script&gt;, &lt;style&gt; i bibliotekami) i wklej poniżej. System automatycznie wyodrębni HTML, CSS, JavaScript i zidentyfikuje biblioteki!
+        <div className="p-6 space-y-6">
+          
+          {/* METHOD 1: IMPORT ZIP ARCHIVE FILE */}
+          <div className="p-5 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-emerald-500/10 dark:from-[#131c2e] dark:to-[#0f172a] rounded-2xl border border-amber-500/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Archive className="w-5 h-5 text-amber-500" />
+              <h4 className="font-bold text-sm text-amber-950 dark:text-amber-300">
+                Opcja 1: Wgraj Archiwum ZIP z Plikami (.zip)
+              </h4>
+            </div>
+            <p className="text-xs text-stone-600 dark:text-stone-300 mb-4 leading-relaxed">
+              Wybierz spakowane archiwum ZIP pobrane z serwisu Google AI Studio, GitHub lub CodePen. System automatycznie rozpakuje całą strukturę plików (<code className="font-mono text-amber-500">index.html</code>, <code className="font-mono text-sky-400">styles.css</code>, <code className="font-mono text-yellow-400">app.js</code> oraz grafiki/ikony) i przekonwertuje je na uruchamialną aplikację.
             </p>
+
+            <label className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs cursor-pointer shadow-md transition-all hover:scale-[1.02]">
+              <UploadCloud className="w-4 h-4" />
+              <span>{isUnzipping ? 'Rozpakowywanie archiwum ZIP...' : 'Wybierz Plik Archiwum ZIP ze Swojego Komputera'}</span>
+              <input
+                type="file"
+                accept=".zip,application/zip,application/x-zip-compressed"
+                onChange={handleZipFileUpload}
+                disabled={isUnzipping}
+                className="hidden"
+              />
+            </label>
           </div>
 
-          <textarea
-            rows={12}
-            value={rawImportText}
-            onChange={e => setRawImportText(e.target.value)}
-            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500"
-            placeholder="Wklej surowy wyeksportowany kod z Google AI Studio..."
-          />
+          <div className="border-t border-stone-200 dark:border-stone-800 pt-4">
+            <h4 className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1 flex items-center gap-2">
+              <Wand2 className="w-4 h-4 text-emerald-500" />
+              <span>Opcja 2: Szybki Parser & Wklejanie Kodu z Google AI Studio (Gemini Canvas)</span>
+            </h4>
+            <p className="text-xs text-stone-500 mb-3">
+              Skopiuj całą odpowiedź lub pliki wygenerowane w serwisie Google AI Studio (wraz z tagami &lt;script&gt;, &lt;style&gt; i bibliotekami) i wklej poniżej. System automatycznie wyodrębni HTML, CSS, JavaScript i zidentyfikuje biblioteki!
+            </p>
 
-          <button
-            onClick={handleImportRawAiStudioOutput}
-            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
-          >
-            <Wand2 className="w-4 h-4" />
-            <span>Parsuj i Zaimportuj Paczkę Google AI Studio</span>
-          </button>
+            <textarea
+              rows={10}
+              value={rawImportText}
+              onChange={e => setRawImportText(e.target.value)}
+              className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500 mb-3"
+              placeholder="Wklej surowy wyeksportowany kod z Google AI Studio..."
+            />
+
+            <button
+              onClick={handleImportRawAiStudioOutput}
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
+            >
+              <Wand2 className="w-4 h-4" />
+              <span>Parsuj i Zaimportuj Wklejony Kod Google AI Studio</span>
+            </button>
+          </div>
+
         </div>
       )}
 
