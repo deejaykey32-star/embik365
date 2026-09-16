@@ -504,7 +504,9 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
 
       // Try clck.ru API (Direct 302 redirect, 0 ads, 0 preview pages)
       try {
-        const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`);
+        const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        });
         if (clckRes.ok) {
           const shortUrl = await clckRes.text();
           if (shortUrl && shortUrl.startsWith('http')) {

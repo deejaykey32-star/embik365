@@ -230,7 +230,9 @@ app.all('/api/shorten', async (req, res) => {
 
     // 1. Try clck.ru API server-side
     try {
-      const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`);
+      const clckRes = await fetch(`https://clck.ru/--?url=${encodeURIComponent(targetUrl)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+      });
       if (clckRes.ok) {
         const shortUrl = await clckRes.text();
         if (shortUrl && shortUrl.startsWith('http')) {

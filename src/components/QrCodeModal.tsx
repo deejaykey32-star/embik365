@@ -124,15 +124,26 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
     setEditingItem(null);
   };
 
-  const handleSaveNew = (e: React.FormEvent) => {
+  const handleSaveNew = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle || !newShortUrl || !newFullUrl) return;
+    if (!newTitle || !newFullUrl) return;
+
+    setIsShortening(true);
+    let finalShortUrl = newShortUrl.trim();
+    if (!finalShortUrl || !finalShortUrl.includes('clck.ru')) {
+      try {
+        finalShortUrl = await shortenUrlViaApi(newFullUrl);
+      } catch (err) {
+        console.warn('Auto clck.ru shorten error on save:', err);
+      }
+    }
+    setIsShortening(false);
 
     const newItem: QrCodeItem = {
       id: `qr_${Date.now()}`,
       title: newTitle,
       displayLabel: newDisplayLabel || 'Zeskanuj smartfonem',
-      shortUrl: newShortUrl,
+      shortUrl: finalShortUrl || newFullUrl,
       fullUrl: newFullUrl,
       category: newCategory,
       createdAt: new Date().toISOString()

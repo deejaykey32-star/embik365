@@ -5,12 +5,24 @@ import { getStoredGitHubConfig, syncStateToGitHub } from './githubSync';
 const STORAGE_KEY = 'drogowskazy_qr_database';
 let memoryQrCodes: QrCodeItem[] | null = null;
 
+export const DEFAULT_CLCK_MAP: Record<string, string> = {
+  info365: 'https://clck.ru/3Vnjrc',
+  wnr365: 'https://clck.ru/3Vnjri',
+  rhz365: 'https://clck.ru/3Vnjrj',
+  biblia365: 'https://clck.ru/3Vnjrd',
+  ebook_wnr: 'https://clck.ru/3Vnjrh',
+  ebook_rhz: 'https://clck.ru/3Vnjrf',
+  ebook_biblia: 'https://clck.ru/3Vnjrg',
+  bio365: 'https://clck.ru/3Vnjre',
+  grafika: 'https://clck.ru/3Vr8B8'
+};
+
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
   {
     id: 'qr_info365',
     title: 'Wprowadzenie Droga365',
     displayLabel: 'Zeskanuj, aby otworzyć przewodnik info365',
-    shortUrl: 'https://widokinaraj.pl/r/info365',
+    shortUrl: 'https://clck.ru/3Vnjrc',
     fullUrl: 'https://widokinaraj.pl/#info365',
     sectionId: 'info365',
     category: 'Przewodnik',
@@ -20,7 +32,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_wnr365',
     title: 'Widoki na Raj (WnR365)',
     displayLabel: 'Zeskanuj, aby czytać wpis dnia WnR365',
-    shortUrl: 'https://widokinaraj.pl/r/wnr365',
+    shortUrl: 'https://clck.ru/3Vnjri',
     fullUrl: 'https://widokinaraj.pl/#wnr365',
     sectionId: 'wnr365',
     category: 'Blog',
@@ -30,7 +42,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_rhz365',
     title: 'Różaniec Historii Zbawienia (RHZ365)',
     displayLabel: 'Zeskanuj, aby odmówić Różaniec IN-LOVE',
-    shortUrl: 'https://widokinaraj.pl/r/rhz365',
+    shortUrl: 'https://clck.ru/3Vnjrj',
     fullUrl: 'https://widokinaraj.pl/#rhz365',
     sectionId: 'rhz365',
     category: 'Modlitwa',
@@ -40,7 +52,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_biblia365',
     title: 'Biblia365 i Apokryfy',
     displayLabel: 'Zeskanuj, aby przeczytać dzisiejszy fragment Pisma',
-    shortUrl: 'https://widokinaraj.pl/r/biblia365',
+    shortUrl: 'https://clck.ru/3Vnjrd',
     fullUrl: 'https://widokinaraj.pl/#biblia365',
     sectionId: 'biblia365',
     category: 'Słowo Boże',
@@ -50,7 +62,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_wnr',
     title: 'E-book Księga Widoki na Raj',
     displayLabel: 'Zeskanuj, aby otworzyć e-book WnR365',
-    shortUrl: 'https://widokinaraj.pl/r/ebook_wnr',
+    shortUrl: 'https://clck.ru/3Vnjrh',
     fullUrl: 'https://widokinaraj.pl/#ebook_wnr',
     sectionId: 'ebook_wnr',
     category: 'E-book',
@@ -60,7 +72,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_rhz',
     title: 'E-book Modlitewnik RHZ365',
     displayLabel: 'Zeskanuj, aby otworzyć e-book różańcowy',
-    shortUrl: 'https://widokinaraj.pl/r/ebook_rhz',
+    shortUrl: 'https://clck.ru/3Vnjrf',
     fullUrl: 'https://widokinaraj.pl/#ebook_rhz',
     sectionId: 'ebook_rhz',
     category: 'E-book',
@@ -70,7 +82,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_ebook_biblia',
     title: 'E-book Księga Słowa i Apokryfów',
     displayLabel: 'Zeskanuj, aby otworzyć e-book Biblii365',
-    shortUrl: 'https://widokinaraj.pl/r/ebook_biblia',
+    shortUrl: 'https://clck.ru/3Vnjrg',
     fullUrl: 'https://widokinaraj.pl/#ebook_biblia',
     sectionId: 'ebook_biblia',
     category: 'E-book',
@@ -80,7 +92,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_bio365',
     title: 'Biografia: Ja i Moja Żona (Bio365)',
     displayLabel: 'Zeskanuj, aby czytać wspomnienia małżeńskie',
-    shortUrl: 'https://widokinaraj.pl/r/bio365',
+    shortUrl: 'https://clck.ru/3Vnjre',
     fullUrl: 'https://widokinaraj.pl/#bio365',
     sectionId: 'bio365',
     category: 'Biografia',
@@ -90,7 +102,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_grafika',
     title: 'Materiały Graficzne i Ilustracje (Droga365)',
     displayLabel: 'Zeskanuj, aby otworzyć galerię materiałów graficznych',
-    shortUrl: 'https://widokinaraj.pl/r/grafika',
+    shortUrl: 'https://clck.ru/3Vr8B8',
     fullUrl: 'https://widokinaraj.pl/#grafika',
     sectionId: 'grafika',
     category: 'Grafika',
@@ -99,11 +111,19 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
 ];
 
 export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'grafika', isShort = false): string {
-  const defaultBase = isShort ? 'https://widokinaraj.pl/r/' : 'https://widokinaraj.pl/#';
+  const defaultBase = isShort ? 'https://clck.ru/' : 'https://widokinaraj.pl/#';
   if (!url) {
-    return `${defaultBase}${fallbackSlug}`;
+    return DEFAULT_CLCK_MAP[fallbackSlug] || `${defaultBase}${fallbackSlug}`;
   }
   let clean = url.trim();
+
+  // Upgrade legacy /r/ URLs to clck.ru short URLs if short requested
+  if (isShort && clean.includes('widokinaraj.pl/r/')) {
+    const slug = clean.split('/r/')[1]?.toLowerCase() || fallbackSlug;
+    if (DEFAULT_CLCK_MAP[slug]) {
+      return DEFAULT_CLCK_MAP[slug];
+    }
+  }
 
   // Detect base64 Data URIs, blob URIs, SVG markup, raw base64 data strings, or abnormally long non-HTTP targets
   if (
@@ -115,7 +135,7 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'gr
     clean.startsWith('PHN2Zw') ||
     (clean.length > 300 && !clean.startsWith('http://') && !clean.startsWith('https://'))
   ) {
-    return `${defaultBase}${fallbackSlug}`;
+    return DEFAULT_CLCK_MAP[fallbackSlug] || `${defaultBase}${fallbackSlug}`;
   }
 
   // Remove duplicate slash in hash route e.g. widokinaraj.pl/#/ -> widokinaraj.pl/#
@@ -200,12 +220,13 @@ export function getQrCodeForSection(sectionId: string, sectionName?: string): Qr
   );
   if (defMatch) return defMatch;
 
-  // 3. Dynamic fallback
+  // 3. Dynamic fallback using clck.ru
+  const defaultShort = DEFAULT_CLCK_MAP[cleanId] || 'https://clck.ru/3Vr8B8';
   return {
     id: `qr_${cleanId}`,
     title: sectionName || `Sekcja ${sectionId}`,
     displayLabel: `Zeskanuj, aby otworzyć ${sectionName || sectionId}`,
-    shortUrl: `https://widokinaraj.pl/r/${cleanId}`,
+    shortUrl: defaultShort,
     fullUrl: `https://widokinaraj.pl/#${cleanId}`,
     sectionId: cleanId,
     category: 'Droga365',
@@ -271,11 +292,11 @@ export async function uploadBase64ImageToServer(dataUrl: string, filename?: stri
 }
 
 /**
- * Shorten URL via direct free API (clck.ru / is.gd) with 0 ads and instant 301/302 redirection.
+ * Shorten URL via clck.ru API (with backend proxy and direct client fallbacks)
  */
 export async function shortenUrlViaApi(longUrl: string): Promise<string> {
   let cleanUrl = (longUrl || '').trim();
-  if (!cleanUrl) return 'https://widokinaraj.pl';
+  if (!cleanUrl) return 'https://clck.ru/3Vr8B8';
 
   // If longUrl is a raw base64 Data URI or blob, convert it to a static file URL first!
   if (cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) {
@@ -284,10 +305,10 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
       if (staticUrl && (staticUrl.startsWith('http://') || staticUrl.startsWith('https://') || staticUrl.startsWith('/'))) {
         cleanUrl = staticUrl;
       } else {
-        return 'https://widokinaraj.pl';
+        return 'https://clck.ru/3Vr8B8';
       }
     } catch {
-      return 'https://widokinaraj.pl';
+      return 'https://clck.ru/3Vr8B8';
     }
   }
 
@@ -301,20 +322,7 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     cleanUrl = `https://${cleanUrl}`;
   }
 
-  // 1. Direct clck.ru API call (fastest)
-  try {
-    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text.trim().startsWith('http')) {
-        return text.trim();
-      }
-    }
-  } catch (err) {
-    console.warn('Direct clck.ru API fetch failed, trying backend /api/shorten:', err);
-  }
-
-  // 2. Try backend API (/api/shorten - Server-side fetch with NO CORS restrictions!)
+  // 1. Try backend API (/api/shorten - Server-side fetch to clck.ru with 0 CORS issues)
   try {
     const res = await fetch(`/api/shorten?url=${encodeURIComponent(cleanUrl)}`);
     if (res.ok) {
@@ -324,7 +332,20 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
       }
     }
   } catch (err) {
-    console.warn('/api/shorten endpoint failed, trying client fallbacks:', err);
+    console.warn('/api/shorten endpoint failed, trying direct clck.ru:', err);
+  }
+
+  // 2. Direct clck.ru API call
+  try {
+    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.trim().startsWith('http')) {
+        return text.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('Direct clck.ru API fetch failed, trying is.gd:', err);
   }
 
   // 3. Fallback: is.gd API call
@@ -345,7 +366,7 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
 }
 
 /**
- * Batch shorten all QR codes in the database using the free ad-free API.
+ * Batch shorten all QR codes in the database using clck.ru API.
  */
 export async function batchShortenAllQrCodes(): Promise<QrCodeItem[]> {
   const current = getSavedQrCodes();
@@ -369,20 +390,37 @@ export async function batchShortenAllQrCodes(): Promise<QrCodeItem[]> {
   return updatedList;
 }
 
-// Add or update a QR code
+// Add or update a QR code and ensure clck.ru shortened URL is automatically generated
 export function upsertQrCode(item: QrCodeItem): QrCodeItem[] {
   const current = getSavedQrCodes();
   const existingIdx = current.findIndex(c => c.id === item.id);
+  
+  let itemToSave = { ...item };
+  
+  // Asynchronously generate clck.ru shortUrl if missing or legacy /r/ link
+  if ((!itemToSave.shortUrl || !itemToSave.shortUrl.includes('clck.ru')) && itemToSave.fullUrl) {
+    shortenUrlViaApi(itemToSave.fullUrl).then(generated => {
+      if (generated && generated.includes('clck.ru')) {
+        const latest = getSavedQrCodes();
+        const idx = latest.findIndex(c => c.id === itemToSave.id);
+        if (idx >= 0) {
+          latest[idx] = { ...latest[idx], shortUrl: generated, updatedAt: new Date().toISOString() };
+          saveAllQrCodes(latest);
+        }
+      }
+    }).catch(e => console.warn('Auto clck.ru shorten failed in upsertQrCode:', e));
+  }
+
   let updated: QrCodeItem[];
   if (existingIdx >= 0) {
     updated = [...current];
     updated[existingIdx] = {
       ...updated[existingIdx],
-      ...item,
+      ...itemToSave,
       updatedAt: new Date().toISOString()
     };
   } else {
-    updated = [item, ...current];
+    updated = [itemToSave, ...current];
   }
   saveAllQrCodes(updated);
   return updated;

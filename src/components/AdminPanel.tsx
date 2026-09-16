@@ -1582,21 +1582,30 @@ export const AdminPanel: React.FC<Props> = ({
                 <div className="flex justify-end pt-1">
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       const titleEl = document.getElementById('new-qr-title') as HTMLInputElement;
                       const labelEl = document.getElementById('new-qr-label') as HTMLInputElement;
                       const shortEl = document.getElementById('new-qr-short') as HTMLInputElement;
                       const fullEl = document.getElementById('new-qr-full') as HTMLInputElement;
-                      if (!titleEl.value || !shortEl.value) {
-                        alert('Podaj przynajmniej tytuł i krótki adres URL');
+                      if (!titleEl.value || (!shortEl.value && !fullEl.value)) {
+                        alert('Podaj przynajmniej tytuł oraz adres docelowy lub skrócony URL.');
                         return;
+                      }
+                      let finalShort = shortEl.value.trim();
+                      const targetFull = fullEl.value.trim() || `https://${finalShort}`;
+                      if (!finalShort || !finalShort.includes('clck.ru')) {
+                        try {
+                          finalShort = await shortenUrlViaApi(targetFull);
+                        } catch (err) {
+                          console.warn('Auto clck.ru shorten error in AdminPanel:', err);
+                        }
                       }
                       const newItem: QrCodeItem = {
                         id: `qr-${Date.now()}`,
                         title: titleEl.value,
                         displayLabel: labelEl.value || titleEl.value,
-                        shortUrl: shortEl.value,
-                        fullUrl: fullEl.value || `https://${shortEl.value}`,
+                        shortUrl: finalShort || targetFull,
+                        fullUrl: targetFull,
                         createdAt: new Date().toISOString()
                       };
                       upsertQrCode(newItem);
