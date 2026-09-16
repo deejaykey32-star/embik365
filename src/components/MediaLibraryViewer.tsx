@@ -678,12 +678,15 @@ export const MediaLibraryViewer: React.FC = () => {
         ? `${window.location.origin}${item.url}`
         : item.url;
       const shortUrl = await shortenUrlViaApi(fullUrl);
+      if (shortUrl) {
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, shortUrl } : i));
+      }
       await navigator.clipboard.writeText(shortUrl);
       setCopiedUrl(shortUrl);
-      alert(`Skopiowano skrócony link clck.ru do schowka:\n${shortUrl}`);
+      alert(`Skopiowano unikalny skrócony link do schowka:\n${shortUrl}`);
       setTimeout(() => setCopiedUrl(null), 2500);
     } catch (err: any) {
-      alert(err.message || 'Błąd generowania linku clck.ru');
+      alert(err.message || 'Błąd generowania linku');
     }
   };
 
@@ -705,8 +708,13 @@ export const MediaLibraryViewer: React.FC = () => {
         : rawUrl;
 
       const shortUrl = await shortenUrlViaApi(fullUrl);
+      if (shortUrl) {
+        setItems(prev => prev.map(i => i.id === item.id ? { ...i, shortUrl } : i));
+      }
+
+      const fileSlug = item.filename || item.id;
       const newItem = {
-        id: `qr_file_${Date.now()}`,
+        id: `qr_file_${fileSlug.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
         title: item.name,
         displayLabel: `Zeskanuj, aby zobaczyć plik ${item.name}`,
         shortUrl,
@@ -715,7 +723,7 @@ export const MediaLibraryViewer: React.FC = () => {
         createdAt: new Date().toISOString()
       };
       upsertQrCode(newItem);
-      alert(`Pomyślnie dodano kod QR dla pliku "${item.name}" z linkiem clck.ru:\n${shortUrl}`);
+      alert(`Pomyślnie dodano kod QR dla pliku "${item.name}" z unikalnym skróconym linkiem:\n${shortUrl}`);
     } catch (err: any) {
       alert(err.message || 'Błąd tworzenia kodu QR');
     }

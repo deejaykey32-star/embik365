@@ -223,9 +223,16 @@ app.get('/r/:slug?', (req, res) => {
 // URL Shortening API endpoint (clck.ru / is.gd with 0 ads, server-side fetch)
 app.all('/api/shorten', async (req, res) => {
   try {
-    const targetUrl = (req.query.url || req.body?.url || '').toString().trim();
+    let targetUrl = (req.query.url || req.body?.url || '').toString().trim();
     if (!targetUrl) {
       return res.status(400).json({ error: 'Brak parametru url' });
+    }
+
+    // Normalize targetUrl for shortening services
+    if (targetUrl.startsWith('/')) {
+      targetUrl = `https://widokinaraj.pl${targetUrl}`;
+    } else if (targetUrl.includes('localhost') || targetUrl.includes('127.0.0.1')) {
+      targetUrl = targetUrl.replace(/^https?:\/\/[^\/]+/, 'https://widokinaraj.pl');
     }
 
     // 1. Try clck.ru API server-side
@@ -256,8 +263,8 @@ app.all('/api/shorten', async (req, res) => {
       console.warn('is.gd server fetch failed:', e);
     }
 
-    // Fallback: internal clean short redirect
-    const slug = targetUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 15);
+    // Fallback: internal clean unique short redirect
+    const slug = targetUrl.split('/').pop()?.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) || 'material';
     const fallbackShort = `https://widokinaraj.pl/r/${slug}`;
     return res.json({ success: true, shortUrl: fallbackShort, provider: 'internal-fallback' });
   } catch (err: any) {

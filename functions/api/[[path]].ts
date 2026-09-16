@@ -494,12 +494,20 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
         const body = await request.json() as { url?: string };
         targetUrl = body.url || '';
       }
+      targetUrl = targetUrl.trim();
 
       if (!targetUrl) {
         return new Response(
           JSON.stringify({ error: 'Brak parametru url' }),
           { status: 400, headers: corsHeaders }
         );
+      }
+
+      // Normalize targetUrl for external shortening services
+      if (targetUrl.startsWith('/')) {
+        targetUrl = `https://widokinaraj.pl${targetUrl}`;
+      } else if (targetUrl.includes('localhost') || targetUrl.includes('127.0.0.1')) {
+        targetUrl = targetUrl.replace(/^https?:\/\/[^\/]+/, 'https://widokinaraj.pl');
       }
 
       // Try clck.ru API (Direct 302 redirect, 0 ads, 0 preview pages)
@@ -534,7 +542,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
         }
       } catch {}
 
-      const slug = targetUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+      const slug = targetUrl.split('/').pop()?.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) || 'material';
       const fallbackShort = `https://widokinaraj.pl/r/${slug}`;
       return new Response(
         JSON.stringify({ success: true, shortUrl: fallbackShort, provider: 'internal-fallback' }),

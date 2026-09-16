@@ -110,12 +110,17 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
   }
 ];
 
-export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'grafika', isShort = false): string {
+export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'general', isShort = false): string {
   if (!url) {
     if (isShort) {
-      return DEFAULT_CLCK_MAP[fallbackSlug] || `https://widokinaraj.pl/r/${fallbackSlug}`;
+      if (fallbackSlug && DEFAULT_CLCK_MAP[fallbackSlug]) {
+        return DEFAULT_CLCK_MAP[fallbackSlug];
+      }
+      const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
+      return `https://widokinaraj.pl/r/${cleanSlug}`;
     }
-    return `https://widokinaraj.pl/#${fallbackSlug}`;
+    const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `https://widokinaraj.pl/#${cleanSlug}`;
   }
   let clean = url.trim();
 
@@ -138,9 +143,14 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'gr
     (clean.length > 300 && !clean.startsWith('http://') && !clean.startsWith('https://'))
   ) {
     if (isShort) {
-      return DEFAULT_CLCK_MAP[fallbackSlug] || `https://widokinaraj.pl/r/${fallbackSlug}`;
+      if (fallbackSlug && DEFAULT_CLCK_MAP[fallbackSlug]) {
+        return DEFAULT_CLCK_MAP[fallbackSlug];
+      }
+      const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
+      return `https://widokinaraj.pl/r/${cleanSlug}`;
     }
-    return `https://widokinaraj.pl/#${fallbackSlug}`;
+    const cleanSlug = (fallbackSlug || 'zasoby').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `https://widokinaraj.pl/#${cleanSlug}`;
   }
 
   // Remove duplicate slash in hash route e.g. widokinaraj.pl/#/ -> widokinaraj.pl/#
@@ -162,7 +172,7 @@ export function sanitizeQrUrl(url: string | undefined | null, fallbackSlug = 'gr
 }
 
 export function sanitizeQrItem(item: QrCodeItem): QrCodeItem {
-  const fallbackSlug = item.sectionId || item.id.replace(/^qr_/, '') || 'grafika';
+  const fallbackSlug = item.sectionId || item.id.replace(/^qr_/, '') || 'general';
 
   // Automatically repair items that erroneously inherited the main 'grafika' shortUrl (3Vr8B8) despite having a specific custom fullUrl
   let currentShort = item.shortUrl;
@@ -330,19 +340,19 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     }
   }
 
-  // Normalize relative paths (e.g. /uploads/ying_yang.jpg) to full URLs for clck.ru API
-  if (cleanUrl.startsWith('/')) {
-    const origin = typeof window !== 'undefined' && window.location?.origin 
-      ? window.location.origin 
-      : 'https://widokinaraj.pl';
-    cleanUrl = `${origin}${cleanUrl}`;
-  } else if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-    cleanUrl = `https://${cleanUrl}`;
+  // Normalize relative paths or localhost URLs to a public widokinaraj.pl target for external shorteners like clck.ru
+  let publicUrl = cleanUrl;
+  if (publicUrl.startsWith('/')) {
+    publicUrl = `https://widokinaraj.pl${publicUrl}`;
+  } else if (publicUrl.includes('localhost') || publicUrl.includes('127.0.0.1')) {
+    publicUrl = publicUrl.replace(/^https?:\/\/[^\/]+/, 'https://widokinaraj.pl');
+  } else if (!publicUrl.startsWith('http://') && !publicUrl.startsWith('https://')) {
+    publicUrl = `https://${publicUrl}`;
   }
 
   // 1. Try backend API (/api/shorten - Server-side fetch to clck.ru with 0 CORS issues)
   try {
-    const res = await fetch(`/api/shorten?url=${encodeURIComponent(cleanUrl)}`);
+    const res = await fetch(`/api/shorten?url=${encodeURIComponent(publicUrl)}`);
     if (res.ok) {
       const data = await res.json();
       if (data.shortUrl && data.shortUrl.startsWith('http')) {
@@ -353,9 +363,9 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     console.warn('/api/shorten endpoint failed, trying direct clck.ru:', err);
   }
 
-  // 2. Direct clck.ru API call
+  // 2. Direct clck.ru API call with publicUrl
   try {
-    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(cleanUrl)}`);
+    const res = await fetch(`https://clck.ru/--?url=${encodeURIComponent(publicUrl)}`);
     if (res.ok) {
       const text = await res.text();
       if (text && text.trim().startsWith('http')) {
@@ -368,7 +378,7 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
 
   // 3. Fallback: is.gd API call
   try {
-    const cleanNoHash = cleanUrl.replace(/#.*$/, '');
+    const cleanNoHash = publicUrl.replace(/#.*$/, '');
     const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(cleanNoHash)}`);
     if (res.ok) {
       const data = await res.json();
@@ -380,8 +390,8 @@ export async function shortenUrlViaApi(longUrl: string): Promise<string> {
     console.warn('Direct is.gd API fetch failed:', err);
   }
 
-  // 4. Clean internal redirect fallback
-  const slug = cleanUrl.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+  // 4. Clean internal redirect fallback: unique slug derived from file name / URL target
+  const slug = publicUrl.split('/').pop()?.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30) || 'material';
   return `https://widokinaraj.pl/r/${slug}`;
 }
 
