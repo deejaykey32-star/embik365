@@ -252,24 +252,19 @@ export const stripTypeScriptTypes = (code: string): string => {
     }
 
     processed = processed
-      .replace(/^\s*export\s+default\s+function\s+([A-Za-z0-9_]+)/g, 'function $1\nwindow.App = $1;')
-      .replace(/^\s*export\s+default\s+class\s+([A-Za-z0-9_]+)/g, 'class $1\nwindow.App = $1;')
+      .replace(/^\s*export\s+default\s+function\b/g, 'function')
+      .replace(/^\s*export\s+default\s+class\b/g, 'class')
       .replace(/^\s*export\s+default\s+/g, 'window.App = ')
-      .replace(/^\s*export\s+const\s+App\b/g, 'const App')
       .replace(/^\s*export\s+const\s+/g, 'const ')
       .replace(/^\s*export\s+let\s+/g, 'let ')
       .replace(/^\s*export\s+var\s+/g, 'var ')
-      .replace(/^\s*export\s+function\s+/g, 'function ')
-      .replace(/^\s*export\s+class\s+/g, 'class ');
-
-    if (/^\s*(const|function|class)\s+App\b/.test(processed) && !processed.includes('window.App')) {
-      cleanLines.push(processed);
-      cleanLines.push('if (typeof App !== "undefined") window.App = App;');
-      continue;
-    }
+      .replace(/^\s*export\s+function\b/g, 'function')
+      .replace(/^\s*export\s+class\b/g, 'class');
 
     cleanLines.push(processed);
   }
+
+  cleanLines.push('\nif (typeof App !== "undefined") window.App = App;');
 
   let result = cleanLines.join('\n');
 
