@@ -190,10 +190,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// Short URL Direct Redirect Endpoint /r/* (Instant 301 Redirect without ads)
+// Short URL Direct Redirect Endpoint /r/* (Dynamic 302 Redirect via entries.json database)
 app.get('/r/:slug?', (req, res) => {
-  const slug = (req.params.slug || req.query.to || '').toString().trim().toLowerCase();
-  const redirectsMap: Record<string, string> = {
+  const slug = decodeURIComponent((req.params.slug || req.query.to || '').toString().trim()).toLowerCase();
+  const staticMap: Record<string, string> = {
     'info': 'https://widokinaraj.pl/#info365',
     'info365': 'https://widokinaraj.pl/#info365',
     'wnr': 'https://widokinaraj.pl/#wnr365',
@@ -215,11 +215,32 @@ app.get('/r/:slug?', (req, res) => {
     'zasoby': 'https://widokinaraj.pl/#grafika',
     'uploads': 'https://widokinaraj.pl/#grafika',
     'galeria': 'https://widokinaraj.pl/#grafika',
-    'materialy': 'https://widokinaraj.pl/#grafika'
+    'materialy': 'https://widokinaraj.pl/#grafika',
+    'farby': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
+    'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png'
   };
 
-  const target = redirectsMap[slug] || (req.query.to ? req.query.to.toString() : 'https://widokinaraj.pl/#wnr365');
-  return res.redirect(301, target);
+  let target = staticMap[slug] || (req.query.to ? req.query.to.toString() : '');
+
+  if (!target && slug) {
+    const data = getStoredData();
+    if (Array.isArray(data.qrCodes)) {
+      const match = data.qrCodes.find((q: any) =>
+        (q.id && q.id.toLowerCase() === slug) ||
+        (q.id && q.id.toLowerCase() === `qr_${slug}`) ||
+        (q.sectionId && q.sectionId.toLowerCase() === slug)
+      );
+      if (match && match.fullUrl) {
+        target = match.fullUrl;
+      }
+    }
+  }
+
+  if (!target) {
+    target = 'https://widokinaraj.pl/#wnr365';
+  }
+
+  return res.redirect(302, target);
 });
 
 // URL Shortening API endpoint (clck.ru / is.gd with 0 ads, server-side fetch)

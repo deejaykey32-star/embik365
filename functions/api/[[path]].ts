@@ -452,10 +452,12 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
   }
 
 
-  // Short URL Direct Redirect Endpoint /r/* (Instant 301 Redirect without ads)
+  // Short URL Direct Redirect Endpoint /r/* (Dynamic 302 Redirect via entries.json database)
   if (pathname.startsWith('/r/') || pathname === '/r') {
-    const slug = pathname.replace(/^\/r\/?/i, '').trim().toLowerCase();
-    const redirectsMap: Record<string, string> = {
+    const slug = decodeURIComponent(pathname.replace(/^\/r\/?/i, '').trim()).toLowerCase();
+    
+    // 1. Predefined static aliases
+    const staticMap: Record<string, string> = {
       'info': 'https://widokinaraj.pl/#info365',
       'info365': 'https://widokinaraj.pl/#info365',
       'wnr': 'https://widokinaraj.pl/#wnr365',
@@ -477,11 +479,42 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       'zasoby': 'https://widokinaraj.pl/#grafika',
       'uploads': 'https://widokinaraj.pl/#grafika',
       'galeria': 'https://widokinaraj.pl/#grafika',
-      'materialy': 'https://widokinaraj.pl/#grafika'
+      'materialy': 'https://widokinaraj.pl/#grafika',
+      'farby': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
+      'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png'
     };
 
-    const target = redirectsMap[slug] || url.searchParams.get('to') || 'https://widokinaraj.pl/#wnr365';
-    return Response.redirect(target, 301);
+    let target = staticMap[slug] || url.searchParams.get('to');
+
+    // 2. Dynamic lookup in public/data/entries.json qrCodes array
+    if (!target && slug) {
+      try {
+        const owner = env.GITHUB_OWNER || 'deejaykey32-star';
+        const repo = env.GITHUB_REPO || 'embik365';
+        const branch = env.GITHUB_BRANCH || 'main';
+        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/public/data/entries.json`;
+        const dataRes = await fetch(`${rawUrl}?t=${Date.now()}`);
+        if (dataRes.ok) {
+          const dbData = await dataRes.json() as any;
+          if (Array.isArray(dbData.qrCodes)) {
+            const match = dbData.qrCodes.find((q: any) => 
+              (q.id && q.id.toLowerCase() === slug) ||
+              (q.id && q.id.toLowerCase() === `qr_${slug}`) ||
+              (q.sectionId && q.sectionId.toLowerCase() === slug)
+            );
+            if (match && match.fullUrl) {
+              target = match.fullUrl;
+            }
+          }
+        }
+      } catch {}
+    }
+
+    if (!target) {
+      target = 'https://widokinaraj.pl/#wnr365';
+    }
+
+    return Response.redirect(target, 302);
   }
 
   // URL Shortening API endpoint (clck.ru - Free, instant direct redirect, 100% ad-free)
