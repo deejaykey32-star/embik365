@@ -75,6 +75,8 @@ export default function App() {
     initialRoute.subview === 'panel' || 
     initialRoute.subview === 'kody-qr' || 
     initialRoute.subview === 'qr' ||
+    initialRoute.subview === 'aistudio' ||
+    initialRoute.subview === 'ai-studio' ||
     initialRoute.subview === 'grafika' ||
     initialRoute.subview === 'media' ||
     initialRoute.subview === 'zasoby' ||
@@ -138,7 +140,8 @@ export default function App() {
   // 7. Entries and Uploads state
   const [customEntries, setCustomEntries] = useState<Record<string, Partial<SectionEntry>>>({});
   const [uploads, setUploads] = useState<UploadedPdf[]>(DEFAULT_SYSTEM_UPLOADS);
-  const [adminTab, setAdminTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage'>(() => {
+  const [adminTab, setAdminTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio'>(() => {
+    if (initialRoute.subview === 'aistudio' || initialRoute.subview === 'ai-studio') return 'aistudio';
     if (initialRoute.subview === 'grafika' || initialRoute.subview === 'media' || initialRoute.subview === 'zasoby' || initialRoute.subview === 'uploads' || initialRoute.subview === 'galeria' || initialRoute.subview === 'materialy') return 'media_library';
     if (initialRoute.subview === 'kody-qr' || initialRoute.subview === 'qr') return 'qrcodes';
     return 'upload';
@@ -236,7 +239,7 @@ export default function App() {
     else if (isDownloadModalOpen) subview = 'pobierz';
     else if (isLectorModalOpen) subview = 'lektor';
     else if (isAdminOpen) {
-      subview = adminTab === 'media_library' ? 'grafika' : adminTab === 'qrcodes' ? 'kody-qr' : 'admin';
+      subview = adminTab === 'aistudio' ? 'aistudio' : adminTab === 'media_library' ? 'grafika' : adminTab === 'qrcodes' ? 'kody-qr' : 'admin';
     }
 
     updateBrowserUrlSlug({
@@ -257,7 +260,10 @@ export default function App() {
       if (route.subview === 'pobierz' || route.subview === 'download') setIsDownloadModalOpen(true);
       if (route.subview === 'lektor' || route.subview === 'lector') setIsLectorModalOpen(true);
       
-      if (route.subview === 'grafika' || route.subview === 'media' || route.subview === 'zasoby' || route.subview === 'uploads' || route.subview === 'galeria' || route.subview === 'materialy') {
+      if (route.subview === 'aistudio' || route.subview === 'ai-studio') {
+        setIsAdminOpen(true);
+        setAdminTab('aistudio');
+      } else if (route.subview === 'grafika' || route.subview === 'media' || route.subview === 'zasoby' || route.subview === 'uploads' || route.subview === 'galeria' || route.subview === 'materialy') {
         setIsAdminOpen(true);
         setAdminTab('media_library');
       } else if (route.subview === 'kody-qr' || route.subview === 'qr') {

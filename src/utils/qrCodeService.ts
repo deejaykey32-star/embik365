@@ -60,10 +60,22 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   ebook_biblia: 'https://clck.ru/3Vnjrg',
   bio365: 'https://clck.ru/3Vnjre',
   grafika: 'https://clck.ru/3Vr8B8',
+  aistudio: 'https://clck.ru/3VsH9M',
+  'ai-studio': 'https://clck.ru/3VsH9M',
+  pkg_gemini_solar_system: 'https://clck.ru/3VsH9M',
   ...FILE_CLCK_MAP
 };
 
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
+  {
+    id: 'qr_aistudio_solar_system',
+    title: 'Interaktywne Paczki i Symulacje Google AI Studio (3D / HTML)',
+    displayLabel: 'Zeskanuj, aby otworzyć symulację Układu Słonecznego 3D / HTML z Google AI Studio',
+    shortUrl: 'https://clck.ru/3VsH9M',
+    fullUrl: 'https://widokinaraj.pl/#aistudio',
+    category: 'Google AI Studio App',
+    createdAt: '2026-09-17'
+  },
   {
     id: 'qr_info365',
     title: 'Wprowadzenie Droga365',

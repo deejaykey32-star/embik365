@@ -256,6 +256,8 @@ export function parseUrlRoute(): ParsedRoute {
         subview = 'pobierz';
       } else if (parts[0] === 'kody-qr' || parts[0] === 'qr') {
         subview = 'kody-qr';
+      } else if (parts[0] === 'aistudio' || parts[0] === 'ai-studio' || parts[0] === 'paczkai' || parts[0] === 'symulacje' || parts[0] === 'symulacja') {
+        subview = 'aistudio';
       } else if (parts[0] === 'grafika' || parts[0] === 'media' || parts[0] === 'zasoby' || parts[0] === 'uploads' || parts[0] === 'galeria' || parts[0] === 'materialy') {
         subview = 'grafika';
       }
