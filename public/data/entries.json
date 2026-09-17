@@ -3,6 +3,15 @@
   "uploads": [],
   "qrCodes": [
     {
+      "id": "qr_paczka_pkg_ai_1789612747841",
+      "title": "Nowa Paczka Google AI Studio",
+      "displayLabel": "Dedykowana Paczka: Nowa Paczka Google AI Studio",
+      "shortUrl": "https://clck.ru/3VsLrb",
+      "fullUrl": "https://widokinaraj.pl/#paczka/pkg_ai_1789612747841",
+      "category": "Kolekcja Paczek",
+      "createdAt": "2026-09-17T03:26:27.684Z"
+    },
+    {
       "id": "qr_aistudio_pkg_ai_1789597375413",
       "title": "Nowa Paczka Google AI Studio",
       "displayLabel": "Google AI Studio: Nowa Paczka Google AI Studio",
@@ -462,6 +471,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-17T02:37:34.430Z",
+  "lastUpdated": "2026-09-17T03:26:27.686Z",
   "updatedBy": "Admin Dominik Kuta"
 }
