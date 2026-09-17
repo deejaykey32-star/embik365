@@ -26,6 +26,7 @@ import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
 import { getRhzEntryForDay } from '../data/rhz365Data';
+import { getWnrEntryForDay } from '../data/wnr365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -102,17 +103,27 @@ function splitContentIntoFourChunks(content: string, prayer?: string): { chunk1:
     return { chunk1, chunk2, chunk3, chunk4 };
   }
 
-  if (paragraphs.length === 3) {
-    return { chunk1: paragraphs[0], chunk2: paragraphs[1], chunk3: paragraphs[2], chunk4: '' };
-  }
+  if (paragraphs.length === 3 || paragraphs.length === 2) {
+    const sentences = fullText
+      .replace(/<[^>]*>/g, '')
+      .split(/(?<=[.!?])\s+/)
+      .map(s => s.trim())
+      .filter(Boolean);
 
-  if (paragraphs.length === 2) {
-    return { chunk1: paragraphs[0], chunk2: paragraphs[1], chunk3: '', chunk4: '' };
+    if (sentences.length >= 4) {
+      const q = Math.ceil(sentences.length / 4);
+      return {
+        chunk1: sentences.slice(0, q).join(' '),
+        chunk2: sentences.slice(q, q * 2).join(' '),
+        chunk3: sentences.slice(q * 2, q * 3).join(' '),
+        chunk4: sentences.slice(q * 3).join(' ')
+      };
+    }
   }
 
   const text = fullText.replace(/<[^>]*>/g, '').trim();
-  if (text.length < 400) {
-    return { chunk1: text, chunk2: '', chunk3: '', chunk4: '' };
+  if (text.length < 200) {
+    return { chunk1: text, chunk2: text, chunk3: text, chunk4: text };
   }
 
   const len = text.length;
@@ -153,6 +164,61 @@ function getPdfPageData(
   const subPage = ((safeP - 1) % 4) + 1; // 1, 2, 3, or 4
 
   const dateObj = getCycleDateByDayNumber(dayNum);
+
+  // 1. Direct handling for RHZ365 / ebook_rhz:
+  if (sectionId === 'ebook_rhz' || sectionId === 'rhz365') {
+    const rhz = getRhzEntryForDay(dayNum);
+    let chunk = '';
+    if (subPage === 1) chunk = rhz.page1;
+    else if (subPage === 2) chunk = rhz.page2;
+    else if (subPage === 3) chunk = rhz.page3;
+    else chunk = rhz.page4;
+
+    return {
+      pdfPageNumber: safeP,
+      dayNumber: dayNum,
+      subPage,
+      dateKey: dateObj.dateKey,
+      displayDate: dateObj.displayDate,
+      season: dateObj.season,
+      title: rhz.stageTitle || `RHZ365 • Dzień ${dayNum}`,
+      subtitle: `${dateObj.displayDate} • ${rhz.cycle} (Tajemnica ${rhz.mysteryIndex} z 175)`,
+      chunk,
+      prayer: `${rhz.gloryBe}\n\n${rhz.fatimaPrayer}`,
+      mystery: rhz.stageTitle,
+      intention: `Tajemnica ${rhz.mysteryIndex} Różańca Historii Zbawienia`,
+      fullContent: rhz.fullText
+    };
+  }
+
+  // 2. Direct handling for WnR365 / ebook_wnr:
+  if (sectionId === 'ebook_wnr' || sectionId === 'wnr365' || sectionId === 'wnr366') {
+    const wnr = getWnrEntryForDay(dayNum);
+    const { chunk1, chunk2, chunk3, chunk4 } = splitContentIntoFourChunks(wnr.content);
+    let chunk = '';
+    if (subPage === 1) chunk = chunk1;
+    else if (subPage === 2) chunk = chunk2;
+    else if (subPage === 3) chunk = chunk3;
+    else chunk = chunk4;
+
+    return {
+      pdfPageNumber: safeP,
+      dayNumber: dayNum,
+      subPage,
+      dateKey: dateObj.dateKey,
+      displayDate: dateObj.displayDate,
+      season: dateObj.season,
+      title: wnr.title || `Widoki na Raj • Dzień ${dayNum}`,
+      subtitle: `${dateObj.displayDate} • Dzień ${dayNum} z 365`,
+      chunk,
+      prayer: '',
+      mystery: '',
+      intention: '',
+      fullContent: wnr.content
+    };
+  }
+
+  // 3. Fallback for other sections (ebook_biblia, bio365, info365):
   const entryObj = (dayNum === currentDate.dayNumber)
     ? currentEntry
     : getEntryForSectionAndDate(sectionId as any, dateObj, customEntries);
@@ -243,15 +309,28 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const defaultWnrPdf: UploadedPdf = {
     id: 'pdf-wnr365-full',
-    filename: '1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-    originalName: '_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+    filename: '!WnR365 - całość poprawiana 17.09.2026.pdf',
+    originalName: '!WnR365 - całość poprawiana 17.09.2026.pdf',
     format: 'pdf',
-    url: '/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-    size: 4358441,
+    url: '/pdf/!WnR365 - całość poprawiana 17.09.2026.pdf',
+    size: 5655100,
     sectionId: 'ebook_wnr',
     title: 'Księga Widoki na Raj (WnR365) - Pełny PDF 1:1',
-    description: 'Zaimportowany przez administratora pełny plik PDF książki.',
-    uploadedAt: '2026-09-13T12:00:00.000Z'
+    description: 'Najnowszy plik PDF książki z dnia 17.09.2026.',
+    uploadedAt: '2026-09-17T12:00:00.000Z'
+  };
+
+  const defaultRhzPdf: UploadedPdf = {
+    id: 'pdf-rhz365-full',
+    filename: '!RHZ365 - gotowy i poprawiony 17.09.2026.pdf',
+    originalName: '!RHZ365 - gotowy i poprawiony 17.09.2026.pdf',
+    format: 'pdf',
+    url: '/pdf/!RHZ365 - gotowy i poprawiony 17.09.2026.pdf',
+    size: 2123083,
+    sectionId: 'ebook_rhz',
+    title: 'Księga Różaniec Historii Zbawienia (RHZ365) - Pełny PDF 1:1',
+    description: 'Najnowszy plik PDF książki z dnia 17.09.2026.',
+    uploadedAt: '2026-09-17T12:00:00.000Z'
   };
 
   // Find PDFs attached to this specific section (ebook_wnr, ebook_rhz, ebook_biblia, bio365)
@@ -263,7 +342,13 @@ export const FlipbookReader: React.FC<Props> = ({
          (section.id === 'bio365' && (p.sectionId === 'bio365' || p.sectionId === 'ebook_bio'))
   );
 
-  const activePdf = matchingPdfs[0] || (section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366' ? defaultWnrPdf : null);
+  const activePdf = matchingPdfs[0] || (
+    section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366'
+      ? defaultWnrPdf
+      : (section.id === 'ebook_rhz' || section.id === 'rhz365')
+      ? defaultRhzPdf
+      : null
+  );
 
 
 
@@ -576,8 +661,8 @@ export const FlipbookReader: React.FC<Props> = ({
           {data.chunk ? (
             <div className="whitespace-pre-line">{data.chunk}</div>
           ) : (
-            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/10 italic text-xs leading-relaxed text-center my-auto text-[#30261e] dark:text-white">
-              "W ciszy modlitwy odnajdujemy siłę na każdy dzień. Boże obietnice są niewzruszone jak fundamenty niebios."
+            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 text-xs sm:text-sm font-serif-book leading-relaxed text-justify my-auto text-[#30261e] dark:text-[#f1f5f9]">
+              {data.fullContent || data.title}
             </div>
           )}
         </div>

@@ -36,32 +36,43 @@ export interface RosaryModelDefinition {
 
 export const COMMON_PRAYERS = {
   cross: {
-    name: 'Znak Krzyża & Wierzę w Boga (Credo)',
-    text: 'W imię Ojca i Syna, i Ducha Świętego. Amen. • Wierzę w Boga, Ojca Wszechmogącego, Stworzyciela nieba i ziemi. I w Jezusa Chrystusa, Syna Jego Jedynego, Pana naszego, który się począł z Ducha Świętego, narodził się z Maryi Panny, umęczon pod Ponckim Piłatem, ukrzyżowan, umarł i pogrzebion. Zstąpił do piekieł, trzeciego dnia zmartwychwstał. Wstąpił na niebiosa, siedzi po prawicy Boga Ojca Wszechmogącego. Stamtąd przyjdzie sądzić żywych i umarłych. Wierzę w Ducha Świętego, święty Kościół powszechny, świętych obcowanie, grzechów odpuszczenie, ciała zmartwychwstanie, żywot wieczny. Amen.'
+    name: 'Znak Krzyża & Wierzę w Boga (Skład Apostolski)',
+    text: 'W imię Ojca i Syna, i Ducha Świętego. Amen.\n\nWierzę w Boga, Ojca wszechmogącego, Stworzyciela nieba i ziemi. I w Jezusa Chrystusa, Syna Jego jedynego, Pana naszego, który się począł z Ducha Świętego, narodził się z Maryi Panny, umęczon pod Ponckim Piłatem, ukrzyżowan, umarł i pogrzebion. Zstąpił do piekieł, trzeciego dnia zmartwychwstał. Wstąpił na niebiosa, siedzi po prawicy Boga Ojca wszechmogącego. Stamtąd przyjdzie sądzić żywych i umarłych. Wierzę w Ducha Świętego, święty Kościół powszechny, świętych obcowanie, grzechów odpuszczenie, ciała zmartwychwstanie, żywot wieczny. Amen.'
   },
   ourFather: {
-    name: 'Ojcze Nasz (Modlitwa Pańska)',
-    text: 'Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.'
+    name: 'Modlitwa Pańska (Ojcze Nasz)',
+    text: 'Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.'
   },
   hailMaryFaith: {
-    name: 'Zdrowaś Maryjo — O pomnożenie Wiary',
-    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus. Święta Maryjo, Matko Boża, módl się za nami grzesznymi teraz i w godzinę śmierci naszej. Amen.'
+    name: 'Zdrowaś Maryjo — O wiarę (Paciorek Niebieski - Blue)',
+    dopowiedzenie: 'który niech pomnaża naszą wiarę',
+    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech pomnaża naszą wiarę. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryHope: {
-    name: 'Zdrowaś Maryjo — O umocnienie Nadziei',
-    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus. Święta Maryjo, Matko Boża, módl się za nami grzesznymi teraz i w godzinę śmierci naszej. Amen.'
+    name: 'Zdrowaś Maryjo — O nadzieję (Paciorek Zielony - Green)',
+    dopowiedzenie: 'który niech umacnia naszą nadzieję',
+    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech umacnia naszą nadzieję. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryLove: {
-    name: 'Zdrowaś Maryjo — O rozpalenie Miłości',
-    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus. Święta Maryjo, Matko Boża, módl się za nami grzesznymi teraz i w godzinę śmierci naszej. Amen.'
+    name: 'Zdrowaś Maryjo — O miłość (Paciorek Czerwony - Red)',
+    dopowiedzenie: 'który niech rozpala naszą miłość',
+    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech rozpala naszą miłość. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   gloryBe: {
-    name: 'Chwała Ojcu & Modlitwa Fatimska',
-    text: 'Chwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen. • O mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.'
+    name: 'Modlitwa Uwielbienia (Chwała Ojcu)',
+    text: 'Chwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen.'
+  },
+  fatimaPrayer: {
+    name: 'Modlitwa Fatimska (O mój Jezu)',
+    text: 'O mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.'
   },
   chalice: {
     name: 'Łącznik: Kielich z Hostią (Eucharystia)',
     text: 'Dzięki Ci czynimy, Panie Jezu Chryste, za dar Twojego Ciała i Krwi w Najświętszym Sakramencie Ołtarza. Otwieramy serca na rozważenie Tajemnic Twojego Odkupienia.'
+  },
+  concludingPrayer: {
+    name: 'Modlitwa na zakończenie różańca świętego (Pod Twoją obronę)',
+    text: 'Pod Twoją obronę uciekamy się, święta Boża Rodzicielko, naszymi prośbami racz nie gardzić w potrzebach naszych, ale od wszelakich złych przygód racz nas zawsze wybawiać, Panno chwalebna i błogosławiona. O Pani nasza, Orędowniczko nasza, Pośredniczko nasza, Pocieszycielko nasza. Z Synem swoim nas pojednaj, Synowi swojemu nas polecaj, swojemu Synowi nas oddawaj. Amen.'
   },
   decadeBead: (num: number, mysteryTitle?: string) => ({
     name: `Zdrowaś Maryjo (${num}/10) — ${mysteryTitle || 'Tajemnica Różańca'}`,
@@ -1319,17 +1330,88 @@ export function getRosaryModel(variant: RosaryVariant, mysteryTitle?: string, rh
       break;
   }
 
+  // 1. Ensure Pendant RGB beads ALWAYS have Faith, Hope, Love with their specific theological dopowiedzenia
+  model.beads = model.beads.map((bead) => {
+    // Cross
+    if (bead.type === 'cross') {
+      return {
+        ...bead,
+        label: 'Krzyżyk',
+        subLabel: 'Znak Krzyża & Wierzę w Boga',
+        prayerName: COMMON_PRAYERS.cross.name,
+        prayerText: COMMON_PRAYERS.cross.text
+      };
+    }
+    // Pendant Large "I"
+    if (bead.id === 'pendant_large_i' || bead.id === 'line_rgba_bead_1' || bead.id === 'line_cmyk_bead_1' || bead.id === 'circle_rgba_bead_1' || bead.id === 'circle_cmyk_bead_1') {
+      return {
+        ...bead,
+        label: 'Koralik przezroczysty "I"',
+        subLabel: 'Modlitwa Pańska (Ojcze Nasz)',
+        prayerName: COMMON_PRAYERS.ourFather.name,
+        prayerText: COMMON_PRAYERS.ourFather.text
+      };
+    }
+    // Blue - Wiara
+    if (bead.id === 'pendant_blue' || bead.id === 'line_rgba_bead_4' || bead.id === 'line_cmyk_bead_4' || bead.id === 'circle_rgba_bead_4' || bead.id === 'circle_cmyk_bead_4') {
+      return {
+        ...bead,
+        label: 'Koralik Niebieski (Blue)',
+        subLabel: 'Zdrowaś Maryjo — O wiarę',
+        prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+        prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+        dopowiedzenie: COMMON_PRAYERS.hailMaryFaith.dopowiedzenie
+      };
+    }
+    // Green - Nadzieja
+    if (bead.id === 'pendant_green' || bead.id === 'line_rgba_bead_3' || bead.id === 'line_cmyk_bead_3' || bead.id === 'circle_rgba_bead_3' || bead.id === 'circle_cmyk_bead_3') {
+      return {
+        ...bead,
+        label: 'Koralik Zielony (Green)',
+        subLabel: 'Zdrowaś Maryjo — O nadzieję',
+        prayerName: COMMON_PRAYERS.hailMaryHope.name,
+        prayerText: COMMON_PRAYERS.hailMaryHope.text,
+        dopowiedzenie: COMMON_PRAYERS.hailMaryHope.dopowiedzenie
+      };
+    }
+    // Red - Miłość
+    if (bead.id === 'pendant_red' || bead.id === 'line_rgba_bead_2' || bead.id === 'line_cmyk_bead_2' || bead.id === 'circle_rgba_bead_2' || bead.id === 'circle_cmyk_bead_2') {
+      return {
+        ...bead,
+        label: 'Koralik Czerwony (Red)',
+        subLabel: 'Zdrowaś Maryjo — O miłość',
+        prayerName: COMMON_PRAYERS.hailMaryLove.name,
+        prayerText: COMMON_PRAYERS.hailMaryLove.text,
+        dopowiedzenie: COMMON_PRAYERS.hailMaryLove.dopowiedzenie
+      };
+    }
+    // Pendant Large "N"
+    if (bead.id === 'pendant_large_n' || bead.id === 'line_rgba_bead_5' || bead.id === 'line_cmyk_bead_5' || bead.id === 'circle_rgba_bead_5' || bead.id === 'circle_cmyk_bead_5') {
+      return {
+        ...bead,
+        label: 'Koralik przezroczysty "N"',
+        subLabel: 'Chwała Ojcu & O mój Jezu',
+        prayerName: `${COMMON_PRAYERS.gloryBe.name} & ${COMMON_PRAYERS.fatimaPrayer.name}`,
+        prayerText: `${COMMON_PRAYERS.gloryBe.text}\n\n${COMMON_PRAYERS.fatimaPrayer.text}`
+      };
+    }
+    return bead;
+  });
+
+  // 2. Map the 10 DECADE beads to the day's specific RHZ mystery
   if (rhzEntry && rhzEntry.smallBeads && rhzEntry.smallBeads.length > 0) {
-    let smallBeadCounter = 0;
+    let decadeCounter = 0;
     model.beads = model.beads.map((bead) => {
-      if (bead.type === 'small' && smallBeadCounter < 10) {
-        const rhzBead = rhzEntry.smallBeads[smallBeadCounter];
-        smallBeadCounter++;
+      const isDecadeBead = bead.id.includes('decade') || bead.id.startsWith('bead_d1_');
+      if (isDecadeBead && decadeCounter < 10) {
+        const rhzBead = rhzEntry.smallBeads[decadeCounter];
+        decadeCounter++;
         if (rhzBead) {
           return {
             ...bead,
+            subLabel: `Paciorek ${rhzBead.beadNumber}/10 dziesiątka`,
             prayerName: `Zdrowaś Maryjo #${rhzBead.beadNumber} — ${rhzEntry.stageTitle}`,
-            prayerText: rhzBead.text || bead.prayerText,
+            prayerText: rhzBead.text,
             dopowiedzenie: rhzBead.dopowiedzenie
           };
         }

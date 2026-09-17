@@ -21,6 +21,7 @@ import {
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
+import { RhzPrayerGuide } from './RhzPrayerGuide';
 import { getRhzEntryForDay } from '../data/rhz365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
@@ -289,14 +290,20 @@ export const StandardReader: React.FC<Props> = ({
         )}
       </div>
 
-      {/* RHZ365 Special: Digital Rosary Visualizer with 6 User Variants */}
+      {/* RHZ365 Special: Digital Rosary Visualizer with 6 User Variants & Dedicated Prayer Guide */}
       {section.id === 'rhz365' && (
-        <div className="mb-8">
+        <div className="mb-8 space-y-8">
           <DigitalRosary
             mysteryTitle={entry.mystery}
             intention={entry.intention}
             rhzEntry={getRhzEntryForDay(currentDate.dayNumber)}
             theme={theme}
+          />
+          <RhzPrayerGuide
+            rhzEntry={getRhzEntryForDay(currentDate.dayNumber)}
+            fontSize={fontSize}
+            theme={theme}
+            currentLang={currentLang}
           />
         </div>
       )}
@@ -330,47 +337,53 @@ export const StandardReader: React.FC<Props> = ({
         </div>
       )}
 
-      {/* Main Reading Card */}
-      <article className="bg-white dark:bg-[#111722] rounded-3xl p-6 sm:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
-        {/* Main Content */}
-        <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed text-justify ${
-          fontSize === 'normal' ? 'text-base sm:text-lg leading-7 sm:leading-8' :
-          fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
-          'text-xl sm:text-2xl leading-9 sm:leading-10'
-        }`}>
-          {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
-            <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
-          ) : (
-            <div className="whitespace-pre-line">{entry.content}</div>
+      {/* Main Reading Card (for non-RHZ sections, or additional notes) */}
+      {section.id !== 'rhz365' && (
+        <article className="bg-white dark:bg-[#111722] rounded-3xl p-6 sm:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
+          {/* Main Content */}
+          <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed text-justify ${
+            fontSize === 'normal' ? 'text-base sm:text-lg leading-7 sm:leading-8' :
+            fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
+            'text-xl sm:text-2xl leading-9 sm:leading-10'
+          }`}>
+            {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
+              <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
+            ) : (
+              <div className="whitespace-pre-line">{entry.content}</div>
+            )}
+          </div>
+
+          {/* Quote if present */}
+          {entry.quote && (
+            <div className="p-6 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border-l-4 border-[#8c572b] dark:border-amber-500 my-6 space-y-2 transition-colors">
+              <Quote className="w-6 h-6 text-[#8c572b] dark:text-amber-400" />
+              <p className="font-serif-book italic text-base sm:text-lg text-[#473729] dark:text-amber-100">
+                {entry.quote}
+              </p>
+            </div>
           )}
-        </div>
 
-        {/* Quote if present */}
-        {entry.quote && (
-          <div className="p-6 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border-l-4 border-[#8c572b] dark:border-amber-500 my-6 space-y-2 transition-colors">
-            <Quote className="w-6 h-6 text-[#8c572b] dark:text-amber-400" />
-            <p className="font-serif-book italic text-base sm:text-lg text-[#473729] dark:text-amber-100">
-              {entry.quote}
-            </p>
-          </div>
-        )}
+          {/* Prayer if present */}
+          {entry.prayer && (
+            <div className="p-6 rounded-2xl bg-[#fdf9f4] dark:bg-[#161f2c] border border-[#e8ded4] dark:border-[#243042] space-y-2 transition-colors">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8c572b] dark:text-amber-400 font-sans-ui">
+                <Heart className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                <span>Modlitwa Końcowa</span>
+              </div>
+              <div className="font-serif-book italic text-base sm:text-lg text-[#3f3125] dark:text-[#cbd5e1] leading-relaxed">
+                {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
+                  <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
+                ) : (
+                  <div className="whitespace-pre-line">{entry.prayer}</div>
+                )}
+              </div>
+            </div>
+          )}
+        </article>
+      )}
 
-        {/* Prayer if present */}
-        {entry.prayer && (
-          <div className="p-6 rounded-2xl bg-[#fdf9f4] dark:bg-[#161f2c] border border-[#e8ded4] dark:border-[#243042] space-y-2 transition-colors">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8c572b] dark:text-amber-400 font-sans-ui">
-              <Heart className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-              <span>Modlitwa Końcowa</span>
-            </div>
-            <div className="font-serif-book italic text-base sm:text-lg text-[#3f3125] dark:text-[#cbd5e1] leading-relaxed">
-              {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
-                <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
-              ) : (
-                <div className="whitespace-pre-line">{entry.prayer}</div>
-              )}
-            </div>
-          </div>
-        )}
+      {/* Official QR Code Badge Box */}
+      <div className="mt-8">
 
         {/* Official QR Code Badge Box for sharing and printing */}
         {(() => {
@@ -429,7 +442,7 @@ export const StandardReader: React.FC<Props> = ({
             </div>
           );
         })()}
-      </article>
+      </div>
 
       {/* Bottom Nav between days */}
       <div className="mt-8 flex items-center justify-between gap-4">
