@@ -26,7 +26,8 @@ import {
   Sparkles,
   RotateCcw,
   Image as ImageIcon,
-  Package
+  Package,
+  Lock
 } from 'lucide-react';
 import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig, QrCodeItem, HomePageConfig, SectionShowcaseConfig } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -174,27 +175,92 @@ export const AdminPanel: React.FC<Props> = ({
     setSaveEntryStatus(null);
   }, [editSectionId, editDateKey, allEntriesData, currentDate]);
 
+  const [passwordInput, setPasswordInput] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput.trim() === 'Alexs1973!') {
+      const user: AdminUser = {
+        email: 'kuta.dominik@gmail.com',
+        name: 'Dominik Kuta',
+        role: 'ADMIN',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+      };
+      onLogin(user);
+      try {
+        localStorage.setItem('drogowskazy_admin', JSON.stringify(user));
+      } catch {}
+      setPasswordInput('');
+      setLoginError(null);
+    } else {
+      setLoginError('Nieprawidłowe hasło administratora!');
+    }
+  };
+
   if (!isOpen) return null;
 
-  // Google Login for Dominik Kuta (Requires Admin Password)
-  const handleGoogleLogin = (emailChoice: string = 'kuta.dominik@gmail.com') => {
-    const pwd = prompt('Podaj hasło administratora:', '');
-    if (!pwd) return;
-    if (pwd.trim() !== 'Alexs1973!') {
-      alert('Nieprawidłowe hasło administratora!');
-      return;
-    }
-    const user: AdminUser = {
-      email: emailChoice,
-      name: 'Dominik Kuta',
-      role: 'ADMIN',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-    };
-    onLogin(user);
-    try {
-      localStorage.setItem('drogowskazy_admin', JSON.stringify(user));
-    } catch {}
-  };
+  if (!adminUser) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fade-in">
+        <div 
+          className="bg-[#faf7f2] dark:bg-[#0d121c] rounded-3xl border border-amber-500/30 shadow-2xl w-full max-w-md p-6 sm:p-8 flex flex-col space-y-6 text-[#2d2218] dark:text-[#f3e8d2] relative"
+          onClick={e => e.stopPropagation()}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-xl text-[#786757] dark:text-[#94a3b8] hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          <div className="text-center space-y-3 pt-2">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-sm">
+              <Lock className="w-7 h-7" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold font-heading-cinzel text-[#2d2218] dark:text-[#f3e8d2]">
+              Logowanie Administratora
+            </h2>
+            <p className="text-xs text-[#7d6c5d] dark:text-[#94a3b8] max-w-xs mx-auto">
+              Wprowadź hasło administratora, aby uzyskać dostęp do panelu zarządczego.
+            </p>
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#574737] dark:text-[#cbd5e1] mb-1.5">
+                Hasło Administratora
+              </label>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={e => {
+                  setPasswordInput(e.target.value);
+                  setLoginError(null);
+                }}
+                placeholder="Wpisz hasło..."
+                className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#161c28] border border-[#d6c7b5] dark:border-[#2b394e] text-sm text-[#2d2218] dark:text-[#f1f5f9] focus:outline-none focus:ring-2 focus:ring-amber-500"
+                autoFocus
+              />
+              {loginError && (
+                <p className="text-xs text-red-500 mt-1.5 font-semibold">
+                  {loginError}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Zaloguj jako Administrator</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
