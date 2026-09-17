@@ -868,9 +868,44 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
     });
   };
 
-  const getPackageShortUrl = (pkg: AiStudioPackage) => {
-    return pkg.shortUrl || getPackageFullUrl(pkg);
+  const getPackageFullUrl = (pkg: AiStudioPackage) => {
+    if (!pkg) return 'https://widokinaraj.pl';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
+    return `${origin}/#paczka/${pkg.id}`;
   };
+
+  const getPackageShortUrl = (pkg: AiStudioPackage) => {
+    if (!pkg) return 'https://widokinaraj.pl';
+    if (pkg.shortUrl) return pkg.shortUrl;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
+    return `${origin}/r/${pkg.id}`;
+  };
+
+  useEffect(() => {
+    if (!activePkg) return;
+    if (!activePkg.shortUrl) {
+      let isMounted = true;
+      const targetUrl = getPackageFullUrl(activePkg);
+      shortenUrlViaApi(targetUrl).then(shortUrl => {
+        if (isMounted && shortUrl && shortUrl !== activePkg.shortUrl) {
+          updateActivePkg({ shortUrl });
+          upsertQrCode({
+            id: `qr_paczka_${activePkg.id}`,
+            title: activePkg.name,
+            displayLabel: `Dedykowana Paczka: ${activePkg.name}`,
+            shortUrl,
+            fullUrl: targetUrl,
+            category: 'Kolekcja Paczek',
+            createdAt: new Date().toISOString()
+          });
+        }
+      }).catch(() => {});
+
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [activePkgId]);
 
   if (!activePkg) return null;
 
