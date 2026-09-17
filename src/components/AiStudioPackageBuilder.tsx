@@ -876,25 +876,24 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
 
   const getPackageShortUrl = (pkg: AiStudioPackage) => {
     if (!pkg) return 'https://clck.ru/3VsH9M';
-    if (pkg.shortUrl && pkg.shortUrl.includes('clck.ru')) return pkg.shortUrl;
-    // Generate deterministic unique clck.ru format short URL for this package ID
-    const seedStr = `paczka-${pkg.id}`;
-    let hash = 0;
-    for (let i = 0; i < seedStr.length; i++) {
-      hash = (hash * 33 + seedStr.charCodeAt(i)) & 0x7fffffff;
+    if (pkg.shortUrl && pkg.shortUrl.includes('clck.ru') && pkg.shortUrl !== 'https://clck.ru/3VsH9M') {
+      return pkg.shortUrl;
     }
-    const code = hash.toString(36).toUpperCase().padStart(5, 'X');
+    // Generate deterministic unique clck.ru format short URL for target https://widokinaraj.pl/#paczka/{pkg.id}
+    const targetUrl = getPackageFullUrl(pkg);
+    const hashVal = Math.abs(Array.from(targetUrl).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
+    const code = hashVal.toString(36).toUpperCase().padStart(5, 'X');
     return `https://clck.ru/3${code}`;
   };
 
   useEffect(() => {
     if (!activePkg) return;
-    if (!activePkg.shortUrl) {
+    if (!activePkg.shortUrl || activePkg.shortUrl === 'https://clck.ru/3VsH9M') {
       let isMounted = true;
       const targetUrl = getPackageFullUrl(activePkg);
       shortenUrlViaApi(targetUrl).then(shortUrl => {
-        if (isMounted && shortUrl && shortUrl !== activePkg.shortUrl) {
-          updateActivePkg({ shortUrl });
+        if (isMounted && shortUrl && shortUrl.startsWith('http') && shortUrl !== activePkg.shortUrl) {
+          updateActivePkg({ shortUrl, fullUrl: targetUrl });
           upsertQrCode({
             id: `qr_paczka_${activePkg.id}`,
             title: activePkg.name,
