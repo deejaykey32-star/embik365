@@ -639,40 +639,22 @@ export const AdminPanel: React.FC<Props> = ({
 
         {/* Authentication Bar */}
         <div className="px-4 sm:px-6 py-3 bg-[#efe4d6] dark:bg-[#111723] border-b border-[#e5d8c8] dark:border-[#212b3c] flex flex-wrap items-center justify-between gap-3 text-xs">
-          {adminUser ? (
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[#4b3c2d] dark:text-[#e2e8f0]">
-                Zalogowano jako: <strong className="text-[#2a2016] dark:text-amber-300">{adminUser.name}</strong> ({adminUser.email})
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span>Zaloguj się kontem Google, aby odblokować uprawnienia administratora.</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[#4b3c2d] dark:text-[#e2e8f0]">
+              Zalogowano jako: <strong className="text-[#2a2016] dark:text-amber-300">{adminUser.name}</strong> ({adminUser.email})
+            </span>
+          </div>
 
           <div className="flex items-center gap-2">
-            {adminUser ? (
-              <button
-                onClick={onLogout}
-                id="btn-admin-logout"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a2230] hover:bg-[#fbf7f1] dark:hover:bg-[#253042] text-[#4d3d2e] dark:text-[#e2e8f0] font-medium border border-[#dac7b4] dark:border-[#2d3a4e] transition-colors cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                <span>Wyloguj</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => handleGoogleLogin('kuta.dominik@gmail.com')}
-                id="btn-admin-login-google"
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#2e261f] dark:bg-amber-600 text-white font-semibold shadow-xs hover:bg-[#42372d] dark:hover:bg-amber-500 transition-colors cursor-pointer"
-              >
-                <LogIn className="w-4 h-4 text-amber-300 dark:text-white" />
-                <span>Zaloguj przez Google (Dominik Kuta)</span>
-              </button>
-            )}
+            <button
+              onClick={onLogout}
+              id="btn-admin-logout"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a2230] hover:bg-[#fbf7f1] dark:hover:bg-[#253042] text-[#4d3d2e] dark:text-[#e2e8f0] font-medium border border-[#dac7b4] dark:border-[#2d3a4e] transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+              <span>Wyloguj</span>
+            </button>
           </div>
         </div>
 
