@@ -27,7 +27,8 @@ import {
   FileText,
   Link2,
   QrCode,
-  Package
+  Package,
+  Lock
 } from 'lucide-react';
 import { SectionId } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -953,17 +954,19 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
             <span>Odtwarzacz Filmów Wideo ({items.filter(i => i.type === 'video').length})</span>
           </button>
 
-          <button
-            onClick={() => setActiveMediaTab('html')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              activeMediaTab === 'html'
-                ? 'bg-[#8c572b] dark:bg-amber-600 text-white shadow-sm'
-                : 'bg-[#f4ebe1] dark:bg-[#1a2333] text-[#6b5847] dark:text-[#cbd5e1] hover:bg-[#e8decb]'
-            }`}
-          >
-            <CodeIcon className="w-4 h-4" />
-            <span>Podgląd Kodu HTML (Sandbox Live)</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setActiveMediaTab('html')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeMediaTab === 'html'
+                  ? 'bg-[#8c572b] dark:bg-amber-600 text-white shadow-sm'
+                  : 'bg-[#f4ebe1] dark:bg-[#1a2333] text-[#6b5847] dark:text-[#cbd5e1] hover:bg-[#e8decb]'
+              }`}
+            >
+              <CodeIcon className="w-4 h-4" />
+              <span>Podgląd Kodu HTML (Sandbox Live)</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveMediaTab('3d')}
@@ -977,17 +980,19 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
             <span>Obiekty 2D & 3D WebGL</span>
           </button>
 
-          <button
-            onClick={() => setActiveMediaTab('aistudio')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              activeMediaTab === 'aistudio'
-                ? 'bg-[#8c572b] dark:bg-amber-600 text-white shadow-sm ring-2 ring-amber-400/40'
-                : 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-500/20 border border-amber-500/30'
-            }`}
-          >
-            <Package className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-            <span>Paczki Google AI Studio (Paczki z Bibliotekami)</span>
-          </button>
+          {!readOnly && (
+            <button
+              onClick={() => setActiveMediaTab('aistudio')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeMediaTab === 'aistudio'
+                  ? 'bg-[#8c572b] dark:bg-amber-600 text-white shadow-sm ring-2 ring-amber-400/40'
+                  : 'bg-amber-500/10 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-500/20 border border-amber-500/30'
+              }`}
+            >
+              <Package className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span>Paczki Google AI Studio (Paczki z Bibliotekami)</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -1136,16 +1141,18 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
                     <p className="text-[11px] text-[#786756] dark:text-[#94a3b8] mt-0.5 font-mono truncate">
                       {item.filename || item.name}
                     </p>
-                    <div 
-                      onClick={() => copyClckRuLink(item)}
-                      className="mt-1.5 flex items-center justify-between gap-1 px-2 py-1 rounded bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/80 transition-colors"
-                      title="Kliknij, aby skopiować skrócony link clck.ru"
-                    >
-                      <span className="font-mono text-[11px] font-bold text-amber-800 dark:text-amber-300 truncate">
-                        {getItemClckRuUrl(item)}
-                      </span>
-                      <Copy className="w-3 h-3 text-amber-700 dark:text-amber-400 shrink-0" />
-                    </div>
+                    {!readOnly && (
+                      <div 
+                        onClick={() => copyClckRuLink(item)}
+                        className="mt-1.5 flex items-center justify-between gap-1 px-2 py-1 rounded bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/80 transition-colors"
+                        title="Kliknij, aby skopiować skrócony link clck.ru"
+                      >
+                        <span className="font-mono text-[11px] font-bold text-amber-800 dark:text-amber-300 truncate">
+                          {getItemClckRuUrl(item)}
+                        </span>
+                        <Copy className="w-3 h-3 text-amber-700 dark:text-amber-400 shrink-0" />
+                      </div>
+                    )}
                     {item.description && (
                       <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 italic">
                         {item.description}
@@ -1153,49 +1160,51 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
                     )}
                   </div>
 
-                  <div className="mt-3 flex flex-col gap-2 pt-2 border-t border-gray-100 dark:border-[#1e293b]">
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => copyClckRuLink(item)}
-                        className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
-                        title="Skróć ten plik przez clck.ru i skopiuj"
-                      >
-                        <Link2 className="w-3.5 h-3.5" />
-                        <span>Kopiuj clck.ru</span>
-                      </button>
+                  {!readOnly && (
+                    <div className="mt-3 flex flex-col gap-2 pt-2 border-t border-gray-100 dark:border-[#1e293b]">
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={() => copyClckRuLink(item)}
+                          className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                          title="Skróć ten plik przez clck.ru i skopiuj"
+                        >
+                          <Link2 className="w-3.5 h-3.5" />
+                          <span>Kopiuj clck.ru</span>
+                        </button>
 
-                      <button
-                        onClick={() => createQrCodeForFile(item)}
-                        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
-                        title="Dodaj ten plik do Bazy Kodów QR"
-                      >
-                        <QrCode className="w-3.5 h-3.5" />
-                        <span>Kod QR</span>
-                      </button>
+                        <button
+                          onClick={() => createQrCodeForFile(item)}
+                          className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                          title="Dodaj ten plik do Bazy Kodów QR"
+                        >
+                          <QrCode className="w-3.5 h-3.5" />
+                          <span>Kod QR</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between opacity-80 pt-1 border-t border-dashed border-gray-200 dark:border-gray-800">
+                        <button
+                          onClick={() => {
+                            setSelectedTextureUrl(item.url);
+                            setActiveMediaTab('3d');
+                          }}
+                          className="text-[10px] font-medium text-stone-600 dark:text-stone-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <Box className="w-3 h-3" />
+                          <span>Użyj w 3D</span>
+                        </button>
+
+                        <a
+                          href={item.url}
+                          download={item.name}
+                          className="text-[10px] font-medium text-stone-600 dark:text-stone-400 hover:underline flex items-center gap-1"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Pobierz</span>
+                        </a>
+                      </div>
                     </div>
-
-                    <div className="flex items-center justify-between opacity-80 pt-1 border-t border-dashed border-gray-200 dark:border-gray-800">
-                      <button
-                        onClick={() => {
-                          setSelectedTextureUrl(item.url);
-                          setActiveMediaTab('3d');
-                        }}
-                        className="text-[10px] font-medium text-stone-600 dark:text-stone-400 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <Box className="w-3 h-3" />
-                        <span>Użyj w 3D</span>
-                      </button>
-
-                      <a
-                        href={item.url}
-                        download={item.name}
-                        className="text-[10px] font-medium text-stone-600 dark:text-stone-400 hover:underline flex items-center gap-1"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Pobierz</span>
-                      </a>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -1299,10 +1308,21 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MEDIA TAB 4: HTML CODE & LIVE SANDBOX PREVIEW                 */}
-      {/* ------------------------------------------------------------- */}
-      {activeMediaTab === 'html' && (
+      {activeMediaTab === 'html' && readOnly && (
+        <div className="p-8 sm:p-12 text-center bg-white dark:bg-[#151c28] rounded-3xl border border-amber-500/30 space-y-4 shadow-xl">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h3 className="font-heading-cinzel font-bold text-xl text-[#2e2318] dark:text-[#f8fafc]">
+            Dostęp Zastrzeżony dla Administratora
+          </h3>
+          <p className="text-sm text-[#786756] dark:text-[#94a3b8] max-w-md mx-auto leading-relaxed">
+            Edycja i podgląd kodu HTML/CSS są dostępne wyłącznie dla zalogowanego administratora serwisu. Zaloguj się w Panelu Administratora, aby uzyskać dostęp.
+          </p>
+        </div>
+      )}
+
+      {activeMediaTab === 'html' && !readOnly && (
         <div className="space-y-4">
           <div className="bg-white dark:bg-[#151c28] p-4 rounded-2xl border border-[#e2d5c7] dark:border-[#2b394e] flex flex-wrap items-center justify-between gap-3">
             <div>

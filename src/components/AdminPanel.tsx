@@ -176,8 +176,14 @@ export const AdminPanel: React.FC<Props> = ({
 
   if (!isOpen) return null;
 
-  // Google Login for Dominik Kuta
+  // Google Login for Dominik Kuta (Requires Admin Password)
   const handleGoogleLogin = (emailChoice: string = 'kuta.dominik@gmail.com') => {
+    const pwd = prompt('Podaj hasło administratora (domyślne: admin):', '');
+    if (!pwd) return;
+    if (pwd.trim() !== 'admin' && pwd.trim() !== 'admin365' && pwd.trim() !== 'dominik365') {
+      alert('Nieprawidłowe hasło administratora!');
+      return;
+    }
     const user: AdminUser = {
       email: emailChoice,
       name: 'Dominik Kuta',
@@ -726,7 +732,7 @@ export const AdminPanel: React.FC<Props> = ({
           {/* TAB: GOOGLE AI STUDIO PACKAGES */}
           {activeTab === 'aistudio' && (
             <div className="space-y-4">
-              <AiStudioPackageBuilder />
+              <AiStudioPackageBuilder readOnly={!adminUser} />
             </div>
           )}
           {/* TAB 1: UPLOAD PDF */}
@@ -1647,7 +1653,7 @@ export const AdminPanel: React.FC<Props> = ({
           )}
 
           {/* TAB 6: MEDIA LIBRARY (src/pliki), VIDEO, HTML LIVE & 2D/3D */}
-          {activeTab === 'media_library' && <MediaLibraryViewer />}
+          {activeTab === 'media_library' && <MediaLibraryViewer readOnly={!adminUser} />}
 
           {/* TAB 7: STRONA STARTOWA (INFO365) & ILUSTRACJE */}
           {activeTab === 'homepage' && (

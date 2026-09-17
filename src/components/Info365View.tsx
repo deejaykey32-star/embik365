@@ -215,24 +215,8 @@ export const Info365View: React.FC<Info365ViewProps> = ({
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8 animate-fade-in text-[#2c2219] dark:text-[#f1f5f9]">
       
-      {/* AUTHOR / ADMIN PROMINENT CONTROL TOOLBAR */}
-      {!adminUser ? (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xs">
-          <div className="flex items-center gap-2 text-amber-950 dark:text-amber-200">
-            <Sparkles className="w-5 h-5 text-amber-600 shrink-0" />
-            <span className="font-medium">
-              Chcesz edytować tytuły, opisy lub zdjęcia na stronie domowej? Aktywuj tryb edycji autora jednym kliknięciem:
-            </span>
-          </div>
-          <button
-            onClick={handleQuickLoginAuthor}
-            className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-2 cursor-pointer shadow-md transition-all active:scale-95 shrink-0"
-          >
-            <Unlock className="w-4 h-4" />
-            <span>Włącz Tryb Edycji Autora (Dominik Kuta)</span>
-          </button>
-        </div>
-      ) : (
+      {/* AUTHOR / ADMIN PROMINENT CONTROL TOOLBAR - ONLY VISIBLE TO LOGGED IN ADMIN */}
+      {adminUser && (
         <div className="mb-6 p-4 rounded-2xl bg-emerald-600/15 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
           <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-200 font-bold">
             <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -351,7 +335,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
           </p>
         </div>
 
-        {onOpenQrModal && (
+        {adminUser && onOpenQrModal && (
           <button
             onClick={onOpenQrModal}
             className="px-4 py-2 rounded-xl bg-stone-200 dark:bg-[#1a2538] hover:bg-amber-500/20 text-stone-800 dark:text-stone-200 text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer border border-stone-300 dark:border-stone-700"

@@ -26,7 +26,8 @@ import {
   Square,
   Archive,
   UploadCloud,
-  FolderArchive
+  FolderArchive,
+  Lock
 } from 'lucide-react';
 import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
 
@@ -1071,50 +1072,74 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
 
       {/* TAB 2: INDEX.HTML EDITOR */}
       {activeTab === 'html' && (
-        <div className="p-4 space-y-2">
-          <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
-            Kod HTML (index.html):
-          </label>
-          <textarea
-            rows={18}
-            value={activePkg.htmlContent}
-            onChange={e => updateActivePkg({ htmlContent: e.target.value })}
-            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
-            placeholder="Wklej lub edytuj tagi HTML..."
-          />
-        </div>
+        readOnly ? (
+          <div className="p-8 text-center bg-[#090d16] rounded-2xl border border-amber-500/30 space-y-3 m-4">
+            <Lock className="w-8 h-8 text-amber-500 mx-auto" />
+            <h4 className="font-bold text-base text-white">Dostęp Zastrzeżony dla Administratora</h4>
+            <p className="text-xs text-stone-400 max-w-md mx-auto">Edycja i podgląd źródłowego kodu HTML są dostępne wyłącznie dla administratora.</p>
+          </div>
+        ) : (
+          <div className="p-4 space-y-2">
+            <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+              Kod HTML (index.html):
+            </label>
+            <textarea
+              rows={18}
+              value={activePkg.htmlContent}
+              onChange={e => updateActivePkg({ htmlContent: e.target.value })}
+              className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
+              placeholder="Wklej lub edytuj tagi HTML..."
+            />
+          </div>
+        )
       )}
 
       {/* TAB 3: STYLES.CSS EDITOR */}
       {activeTab === 'css' && (
-        <div className="p-4 space-y-2">
-          <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
-            Kaskadowe Arkusze Stylów (styles.css):
-          </label>
-          <textarea
-            rows={18}
-            value={activePkg.cssContent}
-            onChange={e => updateActivePkg({ cssContent: e.target.value })}
-            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-sky-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
-            placeholder="Wklej lub edytuj reguły CSS..."
-          />
-        </div>
+        readOnly ? (
+          <div className="p-8 text-center bg-[#090d16] rounded-2xl border border-amber-500/30 space-y-3 m-4">
+            <Lock className="w-8 h-8 text-amber-500 mx-auto" />
+            <h4 className="font-bold text-base text-white">Dostęp Zastrzeżony dla Administratora</h4>
+            <p className="text-xs text-stone-400 max-w-md mx-auto">Edycja i podgląd kodu stylów CSS są dostępne wyłącznie dla administratora.</p>
+          </div>
+        ) : (
+          <div className="p-4 space-y-2">
+            <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+              Kaskadowe Arkusze Stylów (styles.css):
+            </label>
+            <textarea
+              rows={18}
+              value={activePkg.cssContent}
+              onChange={e => updateActivePkg({ cssContent: e.target.value })}
+              className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-sky-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
+              placeholder="Wklej lub edytuj reguły CSS..."
+            />
+          </div>
+        )
       )}
 
       {/* TAB 4: APP.JS EDITOR */}
       {activeTab === 'js' && (
-        <div className="p-4 space-y-2">
-          <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
-            Skrypt Logiki JavaScript (app.js):
-          </label>
-          <textarea
-            rows={18}
-            value={activePkg.jsContent}
-            onChange={e => updateActivePkg({ jsContent: e.target.value })}
-            className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-yellow-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
-            placeholder="Wklej lub edytuj kod JavaScript..."
-          />
-        </div>
+        readOnly ? (
+          <div className="p-8 text-center bg-[#090d16] rounded-2xl border border-amber-500/30 space-y-3 m-4">
+            <Lock className="w-8 h-8 text-amber-500 mx-auto" />
+            <h4 className="font-bold text-base text-white">Dostęp Zastrzeżony dla Administratora</h4>
+            <p className="text-xs text-stone-400 max-w-md mx-auto">Edycja i podgląd kodu JavaScript są dostępne wyłącznie dla administratora.</p>
+          </div>
+        ) : (
+          <div className="p-4 space-y-2">
+            <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
+              Skrypt Logiki JavaScript (app.js):
+            </label>
+            <textarea
+              rows={18}
+              value={activePkg.jsContent}
+              onChange={e => updateActivePkg({ jsContent: e.target.value })}
+              className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-yellow-300 focus:outline-hidden focus:border-amber-500 leading-relaxed"
+              placeholder="Wklej lub edytuj kod JavaScript..."
+            />
+          </div>
+        )
       )}
 
       {/* TAB 5: LIBRARIES SELECTOR */}

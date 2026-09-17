@@ -44,6 +44,7 @@ interface WysiwygEditorProps {
   minHeight?: string;
   className?: string;
   title?: string;
+  readOnly?: boolean;
 }
 
 export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
@@ -52,7 +53,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   placeholder = 'Wpisz treść...',
   minHeight = '280px',
   className = '',
-  title
+  title,
+  readOnly = false
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<'simple' | 'advanced' | 'html'>('simple');
@@ -87,6 +89,10 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   }, [mode]);
 
   const switchMode = (newMode: 'simple' | 'advanced' | 'html') => {
+    if (newMode === 'html' && readOnly) {
+      alert('Edycja i podgląd kodu HTML są dostępne wyłącznie dla zalogowanego administratora.');
+      return;
+    }
     if (mode !== 'html' && editorRef.current) {
       const currentContent = editorRef.current.innerHTML;
       setHtmlCode(currentContent);
@@ -737,7 +743,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         ) : (
           <div
             ref={editorRef}
-            contentEditable
+            contentEditable={!readOnly}
             onInput={handleInput}
             className="p-4 sm:p-6 focus:outline-none prose dark:prose-invert max-w-none text-left overflow-y-auto"
             style={{ minHeight }}

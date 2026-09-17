@@ -165,17 +165,19 @@ export const NavigationHeader: React.FC<Props> = ({
                 </kbd>
               </button>
             )}
-            {/* Download & Publish Button (KDP, Empik, Legimi, PDF, DOCX, ePUB) */}
-            <button
-              onClick={onOpenDownloadModal}
-              id="btn-header-download-pod"
-              className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-xl bg-linear-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all cursor-pointer"
-              title="Pobierz E-book (PDF, ePUB, Word DOCX) gotowe do druku POD (0 zł na start)"
-            >
-              <Download className="w-4 h-4 text-amber-200" />
-              <span className="hidden md:inline">Pobierz E-book / POD</span>
-              <span className="md:hidden">E-book</span>
-            </button>
+            {/* Download & Publish Button (Admin only) */}
+            {adminUser && (
+              <button
+                onClick={onOpenDownloadModal}
+                id="btn-header-download-pod"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-xl bg-linear-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all cursor-pointer"
+                title="Pobierz E-book (PDF, ePUB, Word DOCX) gotowe do druku POD"
+              >
+                <Download className="w-4 h-4 text-amber-200" />
+                <span className="hidden md:inline">Pobierz E-book / POD</span>
+                <span className="md:hidden">E-book</span>
+              </button>
+            )}
 
             {/* Language Selector Dropdown */}
             <div className="relative">

@@ -9,7 +9,9 @@ import {
   Upload, 
   QrCode, 
   Image as ImageIcon,
-  Save
+  Save,
+  Lock,
+  LogIn
 } from 'lucide-react';
 import { MediaLibraryViewer } from './MediaLibraryViewer';
 import { ElementEditorModal } from './ElementEditorModal';
@@ -100,24 +102,8 @@ export const MediaGallerySectionView: React.FC<MediaGallerySectionViewProps> = (
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 animate-fade-in text-[#2c2219] dark:text-[#f1f5f9]">
       
-      {/* ADMIN CONTROL TOOLBAR */}
-      {!adminUser ? (
-        <div className="mb-6 p-4 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xs">
-          <div className="flex items-center gap-2 text-fuchsia-950 dark:text-fuchsia-200">
-            <Sparkles className="w-5 h-5 text-fuchsia-600 shrink-0" />
-            <span className="font-medium">
-              Chcesz edytować opis wprowadzenia tej sekcji za pomocą edytora WYSIWYG? Włącz tryb autora jednym kliknięciem:
-            </span>
-          </div>
-          <button
-            onClick={handleQuickLoginAuthor}
-            className="px-4 py-2.5 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold flex items-center gap-2 cursor-pointer shadow-md transition-all active:scale-95 shrink-0"
-          >
-            <Unlock className="w-4 h-4" />
-            <span>Włącz Tryb Edycji Autora (WYSIWYG)</span>
-          </button>
-        </div>
-      ) : (
+      {/* ADMIN CONTROL TOOLBAR - ONLY VISIBLE TO LOGGED IN ADMIN */}
+      {adminUser && (
         <div className="mb-6 p-4 rounded-2xl bg-emerald-600/15 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
           <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-200 font-bold">
             <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -182,7 +168,7 @@ export const MediaGallerySectionView: React.FC<MediaGallerySectionViewProps> = (
 
       {/* Embedded Full Interactive Media Gallery Viewer */}
       <div className="mt-6">
-        <MediaLibraryViewer />
+        <MediaLibraryViewer initialTab="grid" readOnly={!adminUser} />
       </div>
 
       {/* WYSIWYG Modal for editing intro */}
