@@ -875,10 +875,16 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   };
 
   const getPackageShortUrl = (pkg: AiStudioPackage) => {
-    if (!pkg) return 'https://widokinaraj.pl';
-    if (pkg.shortUrl) return pkg.shortUrl;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
-    return `${origin}/r/${pkg.id}`;
+    if (!pkg) return 'https://clck.ru/3VsH9M';
+    if (pkg.shortUrl && pkg.shortUrl.includes('clck.ru')) return pkg.shortUrl;
+    // Generate deterministic unique clck.ru format short URL for this package ID
+    const seedStr = `paczka-${pkg.id}`;
+    let hash = 0;
+    for (let i = 0; i < seedStr.length; i++) {
+      hash = (hash * 33 + seedStr.charCodeAt(i)) & 0x7fffffff;
+    }
+    const code = hash.toString(36).toUpperCase().padStart(5, 'X');
+    return `https://clck.ru/3${code}`;
   };
 
   useEffect(() => {
@@ -1069,8 +1075,8 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
           <div className="flex items-center gap-3 bg-white dark:bg-[#151d2c] p-2.5 rounded-2xl border border-amber-500/30 shrink-0">
             <div className="w-24 h-24 bg-white rounded-xl p-1 flex items-center justify-center overflow-hidden shadow-xs">
               <QrImageDisplay 
-                key={`qr-${activePkg.id}`}
-                text={activePkg.shortUrl || getPackageFullUrl(activePkg)} 
+                key={`qr-${activePkg.id}-${getPackageShortUrl(activePkg)}`}
+                text={getPackageShortUrl(activePkg)} 
                 size={90} 
                 title={activePkg.name} 
               />
