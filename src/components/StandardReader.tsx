@@ -227,7 +227,7 @@ export const StandardReader: React.FC<Props> = ({
         {matchingPdfs.length > 0 && (
           <div className="mt-6 p-4 rounded-2xl bg-[#fbf2e9] dark:bg-amber-950/20 border border-[#e4ccb5] dark:border-amber-900/40 space-y-2">
             <div className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
-              Pliki źródłowe wgrane przez Autora ({matchingPdfs.length})
+              Załączone pliki źródłowe ({matchingPdfs.length})
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {matchingPdfs.map(f => {

@@ -553,15 +553,8 @@ export default function App() {
             Droga365 • info365 • WnR365 • RHZ365 • Biblia365 • Bio365 • Grafika365
           </p>
           <p>
-            Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span> • Administrator: Dominik Kuta
+            Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span>
           </p>
-          <div className="flex items-center justify-center gap-3 pt-1 text-[11px] text-[#8a7969] dark:text-[#7d8590]">
-            <span>Statyczna aplikacja Cloudflare Pages</span>
-            <span>•</span>
-            <span>Źródło prawdy: GitHub ({githubConfig.owner}/{githubConfig.repo})</span>
-            <span>•</span>
-            <span>Google Antigravity Ready</span>
-          </div>
         </div>
       </footer>
 

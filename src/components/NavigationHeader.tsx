@@ -252,7 +252,7 @@ export const NavigationHeader: React.FC<Props> = ({
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                 <div className="text-left hidden xl:block">
                   <div className="text-xs font-semibold leading-tight text-white">Dominik Kuta</div>
-                  <div className="text-[10px] text-[#c7b9ab] dark:text-[#94a3b8] leading-none">Admin & Autor</div>
+                  <div className="text-[10px] text-[#c7b9ab] dark:text-[#94a3b8] leading-none">Admin</div>
                 </div>
                 <span className="xl:hidden text-xs font-bold text-amber-300">Admin</span>
               </button>
@@ -263,8 +263,7 @@ export const NavigationHeader: React.FC<Props> = ({
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-[#161f2e] hover:bg-[#fbf7f1] dark:hover:bg-[#212d42] border border-[#d6c7b5] dark:border-[#2a374f] text-[#2c221a] dark:text-[#e2e8f0] text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-95 cursor-pointer"
               >
                 <LogIn className="w-4 h-4 text-[#8a5327] dark:text-amber-400 shrink-0" />
-                <span className="hidden sm:inline">Panel Autora</span>
-                <span className="sm:hidden">Zaloguj</span>
+                <span>Zaloguj</span>
               </button>
             )}
           </div>
