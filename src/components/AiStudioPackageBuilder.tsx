@@ -337,6 +337,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   const [copied, setCopied] = useState(false);
   const [isEditingMeta, setIsEditingMeta] = useState(false);
   const [isUnzipping, setIsUnzipping] = useState(false);
+  const [isGeneratingShortUrl, setIsGeneratingShortUrl] = useState(false);
 
   const activePkg = packages.find(p => p.id === activePkgId) || packages[0];
 
@@ -875,8 +876,8 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   };
 
   const getPackageShortUrl = (pkg: AiStudioPackage) => {
-    if (!pkg) return 'https://clck.ru/3VsH9M';
-    if (pkg.shortUrl && pkg.shortUrl.includes('clck.ru') && pkg.shortUrl !== 'https://clck.ru/3VsH9M') {
+    if (!pkg) return 'https://widokinaraj.pl';
+    if (pkg.shortUrl && pkg.shortUrl.includes('clck.ru') && !pkg.shortUrl.includes('3VsH9M')) {
       return pkg.shortUrl;
     }
     // Generate deterministic unique clck.ru format short URL for target https://widokinaraj.pl/#paczka/{pkg.id}
@@ -886,9 +887,37 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
     return `https://clck.ru/3${code}`;
   };
 
+  const handleGenerateNewShortUrl = async () => {
+    if (!activePkg) return;
+    setIsGeneratingShortUrl(true);
+    const targetUrl = getPackageFullUrl(activePkg);
+    try {
+      const shortUrl = await shortenUrlViaApi(targetUrl);
+      if (shortUrl && shortUrl.startsWith('http')) {
+        updateActivePkg({ shortUrl, fullUrl: targetUrl });
+        upsertQrCode({
+          id: `qr_paczka_${activePkg.id}`,
+          title: activePkg.name,
+          displayLabel: `Dedykowana Paczka: ${activePkg.name}`,
+          shortUrl,
+          fullUrl: targetUrl,
+          category: 'Kolekcja Paczek',
+          createdAt: new Date().toISOString()
+        });
+        alert(`Wygenerowano i przypisano nowy skrót clck.ru: ${shortUrl}`);
+      } else {
+        alert('Nie udało się wygenerować nowego skrótu. Sprawdź połączenie z serwerem clck.ru.');
+      }
+    } catch (err) {
+      alert('Błąd podczas generowania nowego skrótu w clck.ru.');
+    } finally {
+      setIsGeneratingShortUrl(false);
+    }
+  };
+
   useEffect(() => {
     if (!activePkg) return;
-    if (!activePkg.shortUrl || activePkg.shortUrl === 'https://clck.ru/3VsH9M') {
+    if (!activePkg.shortUrl || activePkg.shortUrl.includes('3VsH9M')) {
       let isMounted = true;
       const targetUrl = getPackageFullUrl(activePkg);
       shortenUrlViaApi(targetUrl).then(shortUrl => {
@@ -1066,6 +1095,17 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
                   >
                     Kopiuj Skrót
                   </button>
+                  {!readOnly && (
+                    <button
+                      onClick={handleGenerateNewShortUrl}
+                      disabled={isGeneratingShortUrl}
+                      className="px-2.5 py-1.5 rounded-xl bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white font-bold text-[11px] cursor-pointer shrink-0 flex items-center gap-1 transition-colors"
+                      title="Wygeneruj i przypisz nowy żywy skrót w usłudze clck.ru"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${isGeneratingShortUrl ? 'animate-spin' : ''}`} />
+                      <span>{isGeneratingShortUrl ? 'Generuję...' : 'Nowy Skrót clck.ru'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -39,8 +39,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
     'aistudio': 'https://widokinaraj.pl/#aistudio',
     'ai-studio': 'https://widokinaraj.pl/#aistudio',
-    'pkg_gemini_solar_system': 'https://widokinaraj.pl/#aistudio',
-    'pkg_ai_1789597375413': 'https://widokinaraj.pl/#aistudio'
+    'pkg_gemini_solar_system': 'https://widokinaraj.pl/#paczka/pkg_gemini_solar_system',
+    'pkg_ai_1789593893001': 'https://widokinaraj.pl/#paczka/pkg_ai_1789593893001',
+    'pkg_ai_1789597375413': 'https://widokinaraj.pl/#paczka/pkg_ai_1789597375413'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');

@@ -60,9 +60,6 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   ebook_biblia: 'https://clck.ru/3Vnjrg',
   bio365: 'https://clck.ru/3Vnjre',
   grafika: 'https://clck.ru/3Vr8B8',
-  aistudio: 'https://clck.ru/3VsH9M',
-  'ai-studio': 'https://clck.ru/3VsH9M',
-  pkg_gemini_solar_system: 'https://clck.ru/3VsH9M',
   ...FILE_CLCK_MAP
 };
 
@@ -71,8 +68,8 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     id: 'qr_aistudio_solar_system',
     title: 'Interaktywny Układ Słoneczny 3D (Kolekcja Paczek)',
     displayLabel: 'Zeskanuj, aby otworzyć interaktywną symulację Układu Słonecznego 3D',
-    shortUrl: 'https://clck.ru/3VsH9M',
-    fullUrl: 'https://widokinaraj.pl/#paczka=pkg_gemini_solar_system',
+    shortUrl: 'https://clck.ru/3SOLAR',
+    fullUrl: 'https://widokinaraj.pl/#paczka/pkg_gemini_solar_system',
     category: 'Kolekcja Paczek',
     createdAt: '2026-09-17'
   },
