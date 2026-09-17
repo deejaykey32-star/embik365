@@ -1087,13 +1087,15 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
                 <span>Kod QR Paczki</span>
               </div>
               <div className="text-[10px] text-stone-500 max-w-[140px] leading-tight">Zeskanuj, aby otworzyć tę paczkę na telefonie.</div>
-              <button
-                onClick={handleDownloadQrImage}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 font-bold text-[10px] transition-colors cursor-pointer border border-amber-500/30"
-              >
-                <Download className="w-3 h-3 text-amber-600" />
-                <span>Pobierz PNG</span>
-              </button>
+              {!readOnly && (
+                <button
+                  onClick={handleDownloadQrImage}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 font-bold text-[10px] transition-colors cursor-pointer border border-amber-500/30"
+                >
+                  <Download className="w-3 h-3 text-amber-600" />
+                  <span>Pobierz PNG</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
