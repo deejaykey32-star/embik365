@@ -79,6 +79,7 @@ export default function App() {
   const [isPublicMediaViewerOpen, setIsPublicMediaViewerOpen] = useState(
     initialRoute.subview === 'aistudio' ||
     initialRoute.subview === 'ai-studio' ||
+    Boolean(initialRoute.packageId) ||
     initialRoute.subview === 'grafika' ||
     initialRoute.subview === 'media' ||
     initialRoute.subview === 'zasoby' ||
@@ -87,7 +88,7 @@ export default function App() {
     initialRoute.subview === 'materialy'
   );
   const [publicMediaTab, setPublicMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'>(() => {
-    if (initialRoute.subview === 'aistudio' || initialRoute.subview === 'ai-studio') return 'aistudio';
+    if (initialRoute.subview === 'aistudio' || initialRoute.subview === 'ai-studio' || Boolean(initialRoute.packageId)) return 'aistudio';
     return 'grid';
   });
   const [viewingPdf, setViewingPdf] = useState<UploadedPdf | null>(null);

@@ -482,11 +482,11 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       'materialy': 'https://widokinaraj.pl/#grafika',
       'farby': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
       'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
-      'aistudio': 'https://widokinaraj.pl/#aistudio',
-      'ai-studio': 'https://widokinaraj.pl/#aistudio',
-      'pkg_gemini_solar_system': 'https://widokinaraj.pl/#paczka/pkg_gemini_solar_system',
-      'pkg_ai_1789593893001': 'https://widokinaraj.pl/#paczka/pkg_ai_1789593893001',
-      'pkg_ai_1789597375413': 'https://widokinaraj.pl/#paczka/pkg_ai_1789597375413'
+      'aistudio': 'https://widokinaraj.pl/grafika/aistudio',
+      'ai-studio': 'https://widokinaraj.pl/grafika/aistudio',
+      'pkg_gemini_solar_system': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_gemini_solar_system',
+      'pkg_ai_1789593893001': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789593893001',
+      'pkg_ai_1789597375413': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789597375413'
     };
 
     let target = staticMap[slug] || url.searchParams.get('to');
@@ -517,7 +517,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     }
 
     if (!target || target.includes('/r/pkg_ai_') || target.includes('/r/')) {
-      target = 'https://widokinaraj.pl/#aistudio';
+      target = 'https://widokinaraj.pl/grafika/aistudio';
     }
 
     return Response.redirect(target, 302);

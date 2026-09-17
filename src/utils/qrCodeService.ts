@@ -69,7 +69,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Interaktywny Układ Słoneczny 3D (Kolekcja Paczek)',
     displayLabel: 'Zeskanuj, aby otworzyć interaktywną symulację Układu Słonecznego 3D',
     shortUrl: 'https://clck.ru/3SOLAR',
-    fullUrl: 'https://widokinaraj.pl/#paczka/pkg_gemini_solar_system',
+    fullUrl: 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_gemini_solar_system',
     category: 'Kolekcja Paczek',
     createdAt: '2026-09-17'
   },

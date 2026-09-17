@@ -339,6 +339,10 @@ export function buildUrlSlug(route: {
   pdfId?: string;
   flipbookPage?: number;
 }): string {
+  if (route.sectionId === 'grafika' && (route.subview === 'aistudio' || route.subview === 'ai-studio')) {
+    return '/grafika/aistudio';
+  }
+
   const parts: string[] = [route.sectionId];
 
   if (route.date && route.sectionId !== 'info365') {
@@ -368,17 +372,21 @@ export function updateBrowserUrlSlug(route: {
   subview?: string;
   pdfId?: string;
   flipbookPage?: number;
+  packageId?: string;
 }): void {
   if (typeof window === 'undefined') return;
   const path = buildUrlSlug(route);
-  if (window.location.hash && window.location.hash.startsWith('#')) {
+  let targetUrl = path;
+  if (route.subview === 'aistudio' && route.packageId) {
+    targetUrl = `${path}#paczka/${route.packageId}`;
+  } else if (window.location.hash && window.location.hash.startsWith('#')) {
     const cleanHash = window.location.hash.replace(/^#\/?/, '').split('/')[0];
     if (cleanHash === route.sectionId || (route.subview && cleanHash === route.subview)) {
       return;
     }
   }
-  if (window.location.pathname !== path) {
-    window.history.replaceState(null, '', path);
+  if (window.location.pathname !== path || (route.packageId && !window.location.hash.includes(route.packageId))) {
+    window.history.replaceState(null, '', targetUrl);
   }
 }
 

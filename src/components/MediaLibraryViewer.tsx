@@ -94,10 +94,11 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
   // Active main tab in Media Viewer: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'
   const [activeMediaTab, setActiveMediaTab] = useState<'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio'>(() => {
     if (initialTab) return initialTab;
+    if (initialPackageId) return 'aistudio';
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       const path = window.location.pathname.toLowerCase();
-      if (hash.includes('aistudio') || hash.includes('ai-studio') || hash.includes('symulacj') || path.includes('aistudio')) {
+      if (hash.includes('aistudio') || hash.includes('ai-studio') || hash.includes('symulacj') || hash.includes('paczka') || hash.includes('pkg_') || path.includes('aistudio') || path.includes('paczka')) {
         return 'aistudio';
       }
     }

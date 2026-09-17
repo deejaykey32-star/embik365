@@ -870,9 +870,9 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   };
 
   const getPackageFullUrl = (pkg: AiStudioPackage) => {
-    if (!pkg) return 'https://widokinaraj.pl';
+    if (!pkg) return 'https://widokinaraj.pl/grafika/aistudio';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
-    return `${origin}/#paczka/${pkg.id}`;
+    return `${origin}/grafika/aistudio#paczka/${pkg.id}`;
   };
 
   const getPackageShortUrl = (pkg: AiStudioPackage) => {
