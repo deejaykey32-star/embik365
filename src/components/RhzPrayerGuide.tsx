@@ -180,7 +180,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   <span>Znak Krzyża Świętego</span>
                 </span>
                 <button
-                  onClick={() => speakText('intro_cross', COMMON_PRAYERS.cross)}
+                  onClick={() => speakText('intro_cross', 'W imię Ojca i Syna, i Ducha Świętego. Amen.')}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                   title="Odsłuchaj lektorem"
                 >
@@ -201,14 +201,14 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                 </span>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => copyText('credo', COMMON_PRAYERS.cross)}
+                    onClick={() => copyText('credo', COMMON_PRAYERS.cross.text)}
                     className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                     title="Kopiuj modlitwę"
                   >
                     {copiedId === 'credo' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </button>
                   <button
-                    onClick={() => speakText('credo', COMMON_PRAYERS.cross)}
+                    onClick={() => speakText('credo', COMMON_PRAYERS.cross.text)}
                     className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                     title="Odsłuchaj lektorem"
                   >
@@ -217,7 +217,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                 </div>
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                Wierzę w Boga, Ojca Wszechmogącego, Stworzyciela nieba i ziemi. I w Jezusa Chrystusa, Syna Jego Jedynego, Pana naszego, który się począł z Ducha Świętego, narodził się z Maryi Panny, umęczon pod Ponckim Piłatem, ukrzyżowan, umarł i pogrzebion, zstąpił do piekieł, trzeciego dnia zmartwychwstał, wstąpił na niebiosa, siedzi po prawicy Boga Ojca Wszechmogącego, stamtąd przyjdzie sądzić żywych i umarłych. Wierzę w Ducha Świętego, święty Kościół powszechny, świętych obcowanie, grzechów odpuszczenie, ciała zmartwychwstanie, żywot wieczny. Amen.
+                {COMMON_PRAYERS.cross.text}
               </p>
             </div>
 
@@ -228,7 +228,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   Duży Paciorek (Litera "I") — Modlitwa Pańska (Ojcze Nasz)
                 </span>
                 <button
-                  onClick={() => speakText('intro_pater', COMMON_PRAYERS.ourFather)}
+                  onClick={() => speakText('intro_pater', COMMON_PRAYERS.ourFather.text)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                   title="Odsłuchaj lektorem"
                 >
@@ -236,7 +236,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                 </button>
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                {COMMON_PRAYERS.ourFather}
+                {COMMON_PRAYERS.ourFather.text}
               </p>
             </div>
 
@@ -256,7 +256,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                     </span>
                   </div>
                   <button
-                    onClick={() => speakText('faith', COMMON_PRAYERS.hailMaryFaith)}
+                    onClick={() => speakText('faith', COMMON_PRAYERS.hailMaryFaith.text)}
                     className="p-1.5 rounded-lg hover:bg-blue-600/20 text-blue-800 dark:text-blue-300 transition-colors"
                   >
                     {activeSpeechId === 'faith' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -281,7 +281,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                     </span>
                   </div>
                   <button
-                    onClick={() => speakText('hope', COMMON_PRAYERS.hailMaryHope)}
+                    onClick={() => speakText('hope', COMMON_PRAYERS.hailMaryHope.text)}
                     className="p-1.5 rounded-lg hover:bg-emerald-600/20 text-emerald-800 dark:text-emerald-300 transition-colors"
                   >
                     {activeSpeechId === 'hope' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -306,7 +306,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                     </span>
                   </div>
                   <button
-                    onClick={() => speakText('love', COMMON_PRAYERS.hailMaryLove)}
+                    onClick={() => speakText('love', COMMON_PRAYERS.hailMaryLove.text)}
                     className="p-1.5 rounded-lg hover:bg-rose-600/20 text-rose-800 dark:text-rose-300 transition-colors"
                   >
                     {activeSpeechId === 'love' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
@@ -329,14 +329,14 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   Chwała Ojcu i Synowi
                 </span>
                 <button
-                  onClick={() => speakText('intro_glory', COMMON_PRAYERS.gloryBe)}
+                  onClick={() => speakText('intro_glory', COMMON_PRAYERS.gloryBe.text)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                 >
                   {activeSpeechId === 'intro_glory' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                {COMMON_PRAYERS.gloryBe}
+                {COMMON_PRAYERS.gloryBe.text}
               </p>
             </div>
           </div>
@@ -440,14 +440,14 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   Duży Paciorek Tajemnicy (Litera "N") — Modlitwa Pańska (Ojcze Nasz)
                 </span>
                 <button
-                  onClick={() => speakText('mystery_pater', rhzEntry.ourFather || COMMON_PRAYERS.ourFather)}
+                  onClick={() => speakText('mystery_pater', rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                 >
                   {activeSpeechId === 'mystery_pater' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                {rhzEntry.ourFather || COMMON_PRAYERS.ourFather}
+                {rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text}
               </p>
             </div>
           </div>
@@ -603,14 +603,14 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   Modlitwa Uwielbienia (Chwała Ojcu):
                 </span>
                 <button
-                  onClick={() => speakText('concl_glory', rhzEntry.gloryBe || COMMON_PRAYERS.gloryBe)}
+                  onClick={() => speakText('concl_glory', rhzEntry.gloryBe || COMMON_PRAYERS.gloryBe.text)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                 >
                   {activeSpeechId === 'concl_glory' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                {rhzEntry.gloryBe || COMMON_PRAYERS.gloryBe}
+                {rhzEntry.gloryBe || COMMON_PRAYERS.gloryBe.text}
               </p>
             </div>
 
@@ -622,14 +622,14 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   <span>Modlitwa Fatimska (O mój Jezu):</span>
                 </span>
                 <button
-                  onClick={() => speakText('concl_fatima', rhzEntry.fatimaPrayer || COMMON_PRAYERS.fatimaPrayer)}
+                  onClick={() => speakText('concl_fatima', rhzEntry.fatimaPrayer || COMMON_PRAYERS.fatimaPrayer.text)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                 >
                   {activeSpeechId === 'concl_fatima' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
               <p className={`font-serif-book italic text-[#3a2e22] dark:text-[#f8fafc] text-justify ${fontClass}`}>
-                {rhzEntry.fatimaPrayer || COMMON_PRAYERS.fatimaPrayer}
+                {rhzEntry.fatimaPrayer || COMMON_PRAYERS.fatimaPrayer.text}
               </p>
             </div>
 
@@ -641,14 +641,14 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   <span>Modlitwa na zakończenie różańca:</span>
                 </span>
                 <button
-                  onClick={() => speakText('concl_defense', COMMON_PRAYERS.concludingPrayer)}
+                  onClick={() => speakText('concl_defense', COMMON_PRAYERS.concludingPrayer.text)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                 >
                   {activeSpeechId === 'concl_defense' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                {COMMON_PRAYERS.concludingPrayer}
+                {COMMON_PRAYERS.concludingPrayer.text}
               </p>
             </div>
 
