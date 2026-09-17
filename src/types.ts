@@ -48,6 +48,7 @@ export interface SectionShowcaseConfig {
   color?: string;
   bgGradient?: string;
   qrId?: string;
+  hidden?: boolean;
 }
 
 export interface HomePageConfig {

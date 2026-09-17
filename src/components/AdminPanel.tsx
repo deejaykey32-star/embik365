@@ -27,7 +27,9 @@ import {
   RotateCcw,
   Image as ImageIcon,
   Package,
-  Lock
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, GitHubConfig, QrCodeItem, HomePageConfig, SectionShowcaseConfig } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -75,7 +77,7 @@ interface Props {
   onSaveGitHubConfig: (config: GitHubConfig) => void;
   onSyncAllToGitHub: () => Promise<{ success: boolean; message: string }>;
   allEntriesData: { entries: Record<string, Partial<SectionEntry>>; uploads: UploadedPdf[] };
-  initialTab?: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage';
+  initialTab?: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio' | 'visibility';
 }
 
 export const AdminPanel: React.FC<Props> = ({
@@ -100,8 +102,8 @@ export const AdminPanel: React.FC<Props> = ({
   allEntriesData,
   initialTab
 }) => {
-  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio'
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio'>(initialTab || 'upload');
+  // Active subtab inside admin panel: 'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio' | 'visibility'
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'files' | 'editor' | 'qrcodes' | 'media_library' | 'homepage' | 'aistudio' | 'visibility'>(initialTab || 'upload');
 
   // Home Page (Info365) Configuration state
   const [homeConfig, setHomeConfig] = useState<HomePageConfig>(() => getHomePageConfig());
@@ -771,6 +773,27 @@ export const AdminPanel: React.FC<Props> = ({
           >
             <Package className="w-4 h-4 text-amber-500" />
             <span>Kolekcja Paczek</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setHomeConfig(getHomePageConfig());
+              setActiveTab('visibility');
+            }}
+            id="tab-admin-visibility"
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'visibility'
+                ? 'border-rose-600 dark:border-rose-400 text-rose-700 dark:text-rose-300 bg-rose-50/60 dark:bg-rose-950/20 font-bold'
+                : 'border-transparent text-[#6e5d4d] dark:text-[#94a3b8] hover:text-[#382b20] dark:hover:text-white'
+            }`}
+          >
+            <Eye className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            <span>Ukrywanie & Widoczność Sekcji</span>
+            {homeConfig.showcases.filter(s => s.hidden).length > 0 && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white">
+                {homeConfig.showcases.filter(s => s.hidden).length} ukryte
+              </span>
+            )}
           </button>
 
         </div>
@@ -1815,11 +1838,43 @@ export const AdminPanel: React.FC<Props> = ({
                       key={sc.id}
                       className="p-5 rounded-3xl bg-white dark:bg-[#111723] border border-[#e5d8c8] dark:border-[#212b3c] shadow-sm space-y-4"
                     >
-                      <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
-                        <span className="font-heading-cinzel font-bold text-sm text-amber-800 dark:text-amber-400">
-                          #{idx + 1} Sekcja: {sc.name} ({sc.id})
-                        </span>
-                        <span className="text-[11px] font-mono text-stone-400">ID: {sc.id}</span>
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 dark:border-stone-800 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-heading-cinzel font-bold text-sm text-amber-800 dark:text-amber-400">
+                            #{idx + 1} Sekcja: {sc.name} ({sc.id})
+                          </span>
+                          {sc.hidden ? (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white flex items-center gap-1">
+                              <EyeOff className="w-3 h-3" />
+                              Ukryta
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              Widoczna
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, hidden: !s.hidden } : s);
+                              setHomeConfig({ ...homeConfig, showcases: updated });
+                            }}
+                            className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                              sc.hidden
+                                ? 'bg-rose-700 hover:bg-rose-600 text-white'
+                                : 'bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 text-stone-800 dark:text-stone-200'
+                            }`}
+                            title={sc.hidden ? 'Odkryj sekcję na stronie głównej' : 'Ukryj sekcję dla odwiedzających na stronie głównej'}
+                          >
+                            {sc.hidden ? <EyeOff className="w-3.5 h-3.5 text-rose-200" /> : <Eye className="w-3.5 h-3.5 text-emerald-500" />}
+                            <span>{sc.hidden ? 'Ukryta (Kliknij aby odkryć)' : 'Widoczna (Kliknij aby ukryć)'}</span>
+                          </button>
+                          <span className="text-[11px] font-mono text-stone-400">ID: {sc.id}</span>
+                        </div>
                       </div>
 
                       {/* Image Preview & Upload / Input */}
@@ -1969,6 +2024,157 @@ export const AdminPanel: React.FC<Props> = ({
                 </button>
               </div>
 
+            </div>
+          )}
+
+          {/* TAB 9: SECTIONS VISIBILITY CONTROL (DEDICATED SECTION) */}
+          {activeTab === 'visibility' && (
+            <div className="p-4 sm:p-6 space-y-6 overflow-y-auto">
+              {/* Header Box */}
+              <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-3xl bg-linear-to-r from-rose-500/10 via-amber-500/10 to-violet-500/10 border border-rose-500/30">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-heading-cinzel font-bold text-amber-900 dark:text-amber-300 flex items-center gap-2">
+                    <Eye className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                    <span>Zarządzanie Widocznością Sekcji (Ukrywanie & Odkrywanie)</span>
+                  </h3>
+                  <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 max-w-2xl">
+                    Dedykowana sekcja dla administratora: Ukryj wybrane dzieła i sekcje przed odwiedzającymi. Ukryta sekcja nie wyświetla się na stronie głównej ani w górnym paseczku nawigacji dla zwykłych gości. Dla administratora pozostaje zawsze dostępna z plakietką statusu.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      const updated = homeConfig.showcases.map(s => ({ ...s, hidden: false }));
+                      const newCfg = { ...homeConfig, showcases: updated };
+                      setHomeConfig(newCfg);
+                      await saveHomePageConfig(newCfg);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-colors"
+                  >
+                    <Eye className="w-4 h-4 text-emerald-200" />
+                    <span>Odkryj Wszystkie Sekcje</span>
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      const updated = homeConfig.showcases.map(s => ({ ...s, hidden: true }));
+                      const newCfg = { ...homeConfig, showcases: updated };
+                      setHomeConfig(newCfg);
+                      await saveHomePageConfig(newCfg);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-colors"
+                  >
+                    <EyeOff className="w-4 h-4 text-rose-200" />
+                    <span>Ukryj Wszystkie Sekcje</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status summary banner */}
+              <div className="flex items-center justify-between px-4 py-3 bg-stone-100 dark:bg-[#151c29] rounded-2xl border border-stone-200 dark:border-stone-800 text-xs">
+                <span className="font-bold text-stone-800 dark:text-stone-200">
+                  Łączna liczba sekcji: {homeConfig.showcases.length}
+                </span>
+                <div className="flex items-center gap-3 font-semibold">
+                  <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5" />
+                    Widoczne: {homeConfig.showcases.filter(s => !s.hidden).length}
+                  </span>
+                  <span className="text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                    <EyeOff className="w-3.5 h-3.5" />
+                    Ukryte: {homeConfig.showcases.filter(s => s.hidden).length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Grid of Sections */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {homeConfig.showcases.map((sc, idx) => {
+                  const isHidden = Boolean(sc.hidden);
+                  return (
+                    <div
+                      key={sc.id}
+                      className={`p-5 rounded-3xl border transition-all flex flex-col justify-between space-y-4 ${
+                        isHidden
+                          ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-500/50 shadow-sm ring-1 ring-rose-500/30'
+                          : 'bg-white dark:bg-[#111723] border-[#e5d8c8] dark:border-[#212b3c] shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-14 h-14 rounded-2xl overflow-hidden bg-stone-800 shrink-0 border border-amber-500/30 shadow-xs">
+                            <img
+                              src={sc.imageUrl}
+                              alt={sc.name}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-heading-cinzel font-bold text-base text-amber-900 dark:text-amber-200">
+                                {sc.name}
+                              </h4>
+                              {isHidden ? (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white flex items-center gap-1 shadow-xs">
+                                  <EyeOff className="w-3 h-3" />
+                                  Ukryta
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white flex items-center gap-1 shadow-xs">
+                                  <Eye className="w-3 h-3" />
+                                  Widoczna
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-stone-500 dark:text-stone-400 font-semibold mt-0.5">
+                              {sc.badge} • ID: <span className="font-mono">{sc.id}</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-stone-600 dark:text-stone-300 font-serif-book leading-relaxed">
+                        {sc.shortDesc}
+                      </p>
+
+                      <div className="pt-3 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-medium text-stone-500 dark:text-stone-400">
+                          {isHidden ? 'Status: Ukryta dla odwiedzających' : 'Status: Widoczna publicznie'}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const updated = homeConfig.showcases.map(s => s.id === sc.id ? { ...s, hidden: !s.hidden } : s);
+                            const newCfg = { ...homeConfig, showcases: updated };
+                            setHomeConfig(newCfg);
+                            await saveHomePageConfig(newCfg);
+                          }}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                            isHidden
+                              ? 'bg-emerald-700 hover:bg-emerald-600 text-white'
+                              : 'bg-rose-700 hover:bg-rose-600 text-white'
+                          }`}
+                        >
+                          {isHidden ? (
+                            <>
+                              <Eye className="w-4 h-4 text-emerald-200" />
+                              <span>Odkryj sekcję</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="w-4 h-4 text-rose-200" />
+                              <span>Ukryj sekcję</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

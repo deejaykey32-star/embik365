@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, AppTheme, GitHubConfig } from './types';
+import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, AppTheme, GitHubConfig, HomePageConfig } from './types';
 import { SECTIONS, getSectionById } from './data/defaultSections';
 import { getTodayCycleDate, getCycleDateByDayNumber } from './utils/dateCycle';
 import { getEntryForSectionAndDate } from './data/sampleEntries';
@@ -9,7 +9,7 @@ import { FlipbookReader } from './components/FlipbookReader';
 import { StandardReader } from './components/StandardReader';
 import { Info365View } from './components/Info365View';
 import { MediaGallerySectionView } from './components/MediaGallerySectionView';
-import { saveHomePageConfig } from './utils/homePageConfig';
+import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
@@ -154,7 +154,26 @@ export default function App() {
     return 'upload';
   });
 
-  // 8. Translation cache and active translated entry
+  // 8. Home Page Config & Hidden Sections state
+  const [homeConfig, setHomeConfig] = useState<HomePageConfig>(() => getHomePageConfig());
+
+  useEffect(() => {
+    const handleConfigUpdate = (e: any) => {
+      if (e.detail) {
+        setHomeConfig(e.detail);
+      } else {
+        setHomeConfig(getHomePageConfig());
+      }
+    };
+    window.addEventListener('drogowskazy_home_config_updated', handleConfigUpdate);
+    return () => window.removeEventListener('drogowskazy_home_config_updated', handleConfigUpdate);
+  }, []);
+
+  const hiddenSectionIds = (homeConfig.showcases || [])
+    .filter(s => s.hidden)
+    .map(s => s.id);
+
+  // 9. Translation cache and active translated entry
   const [translatedEntry, setTranslatedEntry] = useState<SectionEntry | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
 
@@ -475,12 +494,14 @@ export default function App() {
         onOpenLectorModal={() => setIsLectorModalOpen(true)}
       />
 
-      {/* 2. Horizontal Section Tabs (7 sections) */}
+      {/* 2. Horizontal Section Tabs */}
       <SectionNav
         activeSection={activeSectionId}
         onSelectSection={setActiveSectionId}
         pdfCounts={pdfCounts}
         currentLang={currentLang}
+        adminUser={adminUser}
+        hiddenSectionIds={hiddenSectionIds}
       />
 
       {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader */}

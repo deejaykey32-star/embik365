@@ -25,6 +25,7 @@ import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES 
 import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
+import { getRhzEntryForDay } from '../data/rhz365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -1401,6 +1402,7 @@ export const FlipbookReader: React.FC<Props> = ({
             <DigitalRosary
               mysteryTitle={entry.mystery}
               intention={entry.intention}
+              rhzEntry={getRhzEntryForDay(singlePageData.dayNumber)}
               theme={theme === 'dark' ? 'dark' : 'light'}
             />
           </div>

@@ -1,4 +1,5 @@
 import { RosaryVariant } from '../types';
+import { RhzDayEntry } from './rhz365Data';
 
 export interface RosaryBeadItem {
   id: string;
@@ -10,6 +11,7 @@ export interface RosaryBeadItem {
   letter?: 'I' | 'N' | 'L' | 'O' | 'V' | 'E';
   prayerName: string;
   prayerText: string;
+  dopowiedzenie?: string;
   colorSymbolism: string;
   x: number;
   y: number;
@@ -1291,21 +1293,50 @@ export function generateCircle13Cmyk(mysteryTitle?: string): RosaryModelDefiniti
   };
 }
 
-export function getRosaryModel(variant: RosaryVariant, mysteryTitle?: string): RosaryModelDefinition {
+export function getRosaryModel(variant: RosaryVariant, mysteryTitle?: string, rhzEntry?: RhzDayEntry): RosaryModelDefinition {
+  let model: RosaryModelDefinition;
   switch (variant) {
     case 'full_50_rgba':
-      return generateFull50Rgba(mysteryTitle);
+      model = generateFull50Rgba(mysteryTitle);
+      break;
     case 'full_50_cmyk':
-      return generateFull50Cmyk(mysteryTitle);
+      model = generateFull50Cmyk(mysteryTitle);
+      break;
     case 'line_13_rgba':
-      return generateLine13Rgba(mysteryTitle);
+      model = generateLine13Rgba(mysteryTitle);
+      break;
     case 'line_13_cmyk':
-      return generateLine13Cmyk(mysteryTitle);
+      model = generateLine13Cmyk(mysteryTitle);
+      break;
     case 'circle_13_rgba':
-      return generateCircle13Rgba(mysteryTitle);
+      model = generateCircle13Rgba(mysteryTitle);
+      break;
     case 'circle_13_cmyk':
-      return generateCircle13Cmyk(mysteryTitle);
+      model = generateCircle13Cmyk(mysteryTitle);
+      break;
     default:
-      return generateFull50Rgba(mysteryTitle);
+      model = generateFull50Rgba(mysteryTitle);
+      break;
   }
+
+  if (rhzEntry && rhzEntry.smallBeads && rhzEntry.smallBeads.length > 0) {
+    let smallBeadCounter = 0;
+    model.beads = model.beads.map((bead) => {
+      if (bead.type === 'small' && smallBeadCounter < 10) {
+        const rhzBead = rhzEntry.smallBeads[smallBeadCounter];
+        smallBeadCounter++;
+        if (rhzBead) {
+          return {
+            ...bead,
+            prayerName: `Zdrowaś Maryjo #${rhzBead.beadNumber} — ${rhzEntry.stageTitle}`,
+            prayerText: rhzBead.text || bead.prayerText,
+            dopowiedzenie: rhzBead.dopowiedzenie
+          };
+        }
+      }
+      return bead;
+    });
+  }
+
+  return model;
 }

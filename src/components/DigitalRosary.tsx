@@ -18,11 +18,14 @@ import {
   VolumeX
 } from 'lucide-react';
 
+import { RhzDayEntry } from '../data/rhz365Data';
+
 interface DigitalRosaryProps {
   mysteryTitle?: string;
   intention?: string;
   theme?: AppTheme;
   defaultVariant?: RosaryVariant;
+  rhzEntry?: RhzDayEntry;
   onBeadChange?: (bead: RosaryBeadItem) => void;
   className?: string;
 }
@@ -32,6 +35,7 @@ export const DigitalRosary: React.FC<DigitalRosaryProps> = ({
   intention,
   theme = 'light',
   defaultVariant = 'full_50_rgba',
+  rhzEntry,
   onBeadChange,
   className = ''
 }) => {
@@ -68,8 +72,8 @@ export const DigitalRosary: React.FC<DigitalRosaryProps> = ({
 
   // 3. Compute model for current variant
   const model: RosaryModelDefinition = useMemo(() => {
-    return getRosaryModel(activeVariant, mysteryTitle);
-  }, [activeVariant, mysteryTitle]);
+    return getRosaryModel(activeVariant, mysteryTitle || rhzEntry?.stageTitle, rhzEntry);
+  }, [activeVariant, mysteryTitle, rhzEntry]);
 
   const activeBead: RosaryBeadItem = model.beads[activeStep] || model.beads[0];
 
@@ -760,9 +764,21 @@ export const DigitalRosary: React.FC<DigitalRosaryProps> = ({
                 </h5>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-white/5 border border-amber-500/20 text-xs sm:text-sm font-serif-book leading-relaxed italic">
+              <div className="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-white/5 border border-amber-500/20 text-xs sm:text-sm font-serif-book leading-relaxed italic text-justify">
                 {activeBead.prayerText}
               </div>
+
+              {/* Dopowiedzenie po słowie Jezus */}
+              {activeBead.dopowiedzenie && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-xs sm:text-sm shadow-xs">
+                  <span className="font-bold text-amber-900 dark:text-amber-300 block text-[10px] uppercase tracking-wider mb-1 font-sans-ui">
+                    Dopowiedzenie po słowie „Jezus” dla tej tajemnicy:
+                  </span>
+                  <p className="font-serif-book italic text-stone-900 dark:text-amber-100 text-justify">
+                    „...owoc żywota Twojego Jezus, <strong className="underline decoration-amber-500 text-amber-950 dark:text-amber-300">{activeBead.dopowiedzenie}</strong> Święta Maryjo...”
+                  </p>
+                </div>
+              )}
 
               {/* Mystery Context for RHZ365 if available */}
               {mysteryTitle && (

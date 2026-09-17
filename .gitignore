@@ -8,4 +8,5 @@ coverage/
 bun.lock*
 .env*
 !.env.example
+.wrangler/
 

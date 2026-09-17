@@ -25,7 +25,9 @@ import {
   ShieldCheck,
   Globe,
   Lock,
-  Unlock
+  Unlock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { generateAndDownloadQrBadgePng, getSavedQrCodes, getQrCodeForSection } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -171,6 +173,15 @@ export const Info365View: React.FC<Info365ViewProps> = ({
     setConfig(updated);
     await saveHomePageConfig(updated);
     setEditingShowcase(null);
+  };
+
+  const handleToggleSectionVisibility = async (id: SectionId) => {
+    const updatedShowcases = config.showcases.map(item => 
+      item.id === id ? { ...item, hidden: !item.hidden } : item
+    );
+    const updated = { ...config, showcases: updatedShowcases };
+    setConfig(updated);
+    await saveHomePageConfig(updated);
   };
 
   const handleResetToDefaults = () => {
@@ -346,28 +357,59 @@ export const Info365View: React.FC<Info365ViewProps> = ({
         )}
       </div>
 
-      {/* Grid of 7 Sections */}
+      {/* Grid of Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {activeConfig.showcases.map((section) => {
+        {activeConfig.showcases.filter(s => adminUser ? true : !s.hidden).map((section) => {
           const IconComponent = SECTION_ICONS_MAP[section.id] || Compass;
+          const isHidden = Boolean(section.hidden);
           return (
             <div
               key={section.id}
-              className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#0c121e] border border-stone-200 dark:border-[#1e2a40] shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 overflow-hidden relative"
+              className={`group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#0c121e] border shadow-sm hover:shadow-xl hover:border-amber-500/50 transition-all duration-300 overflow-hidden relative ${
+                isHidden 
+                  ? 'border-rose-500/40 dark:border-rose-500/40 bg-rose-50/20 dark:bg-rose-950/10 ring-1 ring-rose-500/30' 
+                  : 'border-stone-200 dark:border-[#1e2a40]'
+              }`}
             >
-              {/* Admin direct edit button for this showcase card */}
+              {/* Admin direct controls for this showcase card */}
               {adminUser && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingShowcase(section);
-                  }}
-                  className="absolute top-3 right-3 z-30 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-                  title="Edytuj treść i opisy oraz podmień ilustrację tej sekcji"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edytuj Kartę</span>
-                </button>
+                <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleSectionVisibility(section.id);
+                    }}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold shadow-lg flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95 ${
+                      isHidden
+                        ? 'bg-rose-700 hover:bg-rose-600 text-white border border-rose-400/40'
+                        : 'bg-emerald-700/90 hover:bg-emerald-600 text-white border border-emerald-400/40'
+                    }`}
+                    title={isHidden ? 'Odkryj sekcję na stronie głównej' : 'Ukryj sekcję dla odwiedzających na stronie głównej'}
+                  >
+                    {isHidden ? (
+                      <>
+                        <EyeOff className="w-3.5 h-3.5 text-rose-200" />
+                        <span>Ukryta</span>
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3.5 h-3.5 text-emerald-200" />
+                        <span>Widoczna</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingShowcase(section);
+                    }}
+                    className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-lg flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                    title="Edytuj treść i opisy oraz podmień ilustrację tej sekcji"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edytuj</span>
+                  </button>
+                </div>
               )}
 
               {/* Top illustration - Clickable to open section */}
@@ -571,6 +613,7 @@ const ShowcaseEditModal: React.FC<{
   const [fullDesc, setFullDesc] = useState(item.fullDesc);
   const [imageUrl, setImageUrl] = useState(item.imageUrl);
   const [imageAlt, setImageAlt] = useState(item.imageAlt);
+  const [hidden, setHidden] = useState(Boolean(item.hidden));
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleLocalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -596,7 +639,8 @@ const ShowcaseEditModal: React.FC<{
       shortDesc,
       fullDesc,
       imageUrl,
-      imageAlt
+      imageAlt,
+      hidden
     });
   };
 
@@ -620,6 +664,30 @@ const ShowcaseEditModal: React.FC<{
 
         <form onSubmit={handleFormSubmit} className="space-y-4 text-xs">
           
+          {/* Visibility switch */}
+          <div className="p-3.5 bg-stone-100 dark:bg-[#131c2e] rounded-2xl border border-stone-200 dark:border-stone-700 flex items-center justify-between gap-3">
+            <div>
+              <span className="font-bold text-stone-900 dark:text-stone-100 block">
+                Widoczność sekcji na stronie głównej
+              </span>
+              <span className="text-[11px] text-stone-500 dark:text-stone-400">
+                {hidden ? 'Sekcja jest ukryta dla odwiedzających (widoczna tylko w trybie admina)' : 'Sekcja jest widoczna dla wszystkich odwiedzających'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setHidden(!hidden)}
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+                hidden
+                  ? 'bg-rose-700 text-white hover:bg-rose-600'
+                  : 'bg-emerald-700 text-white hover:bg-emerald-600'
+              }`}
+            >
+              {hidden ? <EyeOff className="w-4 h-4 text-rose-200" /> : <Eye className="w-4 h-4 text-emerald-200" />}
+              <span>{hidden ? 'Ukryta (Odkryj)' : 'Widoczna (Ukryj)'}</span>
+            </button>
+          </div>
+
           {/* Image Preview Box */}
           <div className="p-3 bg-stone-100 dark:bg-[#131c2e] rounded-2xl border border-stone-200 dark:border-stone-700 flex flex-col sm:flex-row items-center gap-4">
             <div className="w-full sm:w-48 h-28 rounded-xl overflow-hidden bg-stone-800 shrink-0 border border-amber-500/30">

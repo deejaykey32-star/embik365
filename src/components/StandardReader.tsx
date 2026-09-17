@@ -21,6 +21,7 @@ import {
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
+import { getRhzEntryForDay } from '../data/rhz365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -294,6 +295,7 @@ export const StandardReader: React.FC<Props> = ({
           <DigitalRosary
             mysteryTitle={entry.mystery}
             intention={entry.intention}
+            rhzEntry={getRhzEntryForDay(currentDate.dayNumber)}
             theme={theme}
           />
         </div>

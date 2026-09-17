@@ -1,9 +1,8 @@
 import { SectionEntry, SectionId, CycleDate } from '../types';
-import { WNR365_FULL_ENTRIES } from './wnr365Data';
+import { getWnrEntryForDay } from './wnr365Data';
+import { getRhzEntryForDay } from './rhz365Data';
 
 export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
-  ...WNR365_FULL_ENTRIES,
-
   // info365 - Guide Day 1
   'info365-12-25': {
     title: 'Wprowadzenie: Narodzenie Pańskie i Początek Cyklu',
@@ -12,90 +11,6 @@ export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
     quote: '"Początek Ewangelii Jezusa Chrystusa, Syna Bożego." (Mk 1, 1)',
     prayer: 'Błogosław, Panie, wszystkim czytelnikom i pielgrzymom tej drogi.'
   },
-
-  // WnR365 - Day 1 (25 XII)
-  'wnr365-12-25': {
-    title: 'Bierzcie Darmo – Spożywajcie i dzielcie się pokarmem z innymi',
-    subtitle: 'Widoki na Raj (WnR365) • Dzień 1 cyklu rocznego',
-    content: `To, co duchowe, powinno być przekazywane bezinteresownie. Jezus posłał swoich uczniów ze słowami: „Darmo otrzymaliście, darmo dawajcie” (Mt 10,8). Dobra duchowe nie są towarem. Ewangelii nie można sprzedać ani kupić, ponieważ jest ona darem Boga dla każdego człowieka.
-
-Świat coraz bardziej uzależnia się od pieniądza. Nierzadko wartość człowieka mierzy się jego majątkiem, a nie prawdą, dobrem czy miłością bliźniego. Taka pokusa przenika również do życia religijnego. Tymczasem Jezus nauczał bez pobierania opłat, uzdrawiał bez wynagrodzenia i troszczył się o tych, którzy Go słuchali. Gdy ludzie byli głodni, nie odprawił ich, lecz rozmnożył chleby i ryby, pokazując, że miłość poprzedza rachunek zysków i strat.
-
-Prawdziwy Kościół rodzi się tam, gdzie ludzie jednoczą się w wierze, nadziei i miłości. Świątynie są miejscami modlitwy i spotkania, lecz same mury nie stanowią istoty Kościoła. Świętymi kamieniami są wierzący, którzy tworzą wspólnotę żywego Boga. Najpiękniejszą świątynią jest serce człowieka, otwarte na obecność Ducha Świętego. Bóg nie potrzebuje naszych dóbr materialnych. Pragnie przede wszystkim naszego serca, naszej miłości i zaufania.
-
-Ofiara ma wartość wtedy, gdy wypływa z wdzięczności i miłości, a nie z przymusu czy przekonania, że można za nią „kupić” Bożą łaskę. Przypowieść o talentach przypomina, że wszystko, co otrzymaliśmy od Boga, powinno przynosić owoce. Talentami są zarówno zdolności, czas, możliwości, jak i dobra materialne. Pieniądz sam w sobie nie jest złem, lecz narzędziem. Staje się błogosławieństwem wtedy, gdy służy dobru i pomocy potrzebującym, a nie wtedy, gdy staje się naszym panem.
-
-Jezus przestrzegał przed służeniem „mamonie”. Chrześcijanin powinien pomnażać otrzymane dary, rozwijać swoje zdolności i uczciwie pracować. Owoce tej pracy mają jednak prowadzić nie tylko do własnego dobrobytu, lecz także do dzielenia się z ubogimi i budowania dobra wspólnego. Historia świata jest również historią dojrzewania ludzkiego ducha. Bóg nieustannie prowadzi człowieka ku pełni życia. Celem nie jest jedynie rozwój materialny, lecz przemiana serca, tak aby wszyscy stali się jednym w Chrystusie. To właśnie jest największe bogactwo, które nie przemija i prowadzi do życia wiecznego.`
-  },
-  'wnr366-12-25': {
-    title: 'Bierzcie Darmo – Spożywajcie i dzielcie się pokarmem z innymi',
-    subtitle: 'Widoki na Raj (WnR365) • Dzień 1 cyklu rocznego',
-    content: `To, co duchowe, powinno być przekazywane bezinteresownie. Jezus posłał swoich uczniów ze słowami: „Darmo otrzymaliście, darmo dawajcie” (Mt 10,8). Dobra duchowe nie są towarem. Ewangelii nie można sprzedać ani kupić, ponieważ jest ona darem Boga dla każdego człowieka.
-
-Świat coraz bardziej uzależnia się od pieniądza. Nierzadko wartość człowieka mierzy się jego majątkiem, a nie prawdą, dobrem czy miłością bliźniego. Taka pokusa przenika również do życia religijnego. Tymczasem Jezus nauczał bez pobierania opłat, uzdrawiał bez wynagrodzenia i troszczył się o tych, którzy Go słuchali. Gdy ludzie byli głodni, nie odprawił ich, lecz rozmnożył chleby i ryby, pokazując, że miłość poprzedza rachunek zysków i strat.
-
-Prawdziwy Kościół rodzi się tam, gdzie ludzie jednoczą się w wierze, nadziei i miłości. Świątynie są miejscami modlitwy i spotkania, lecz same mury nie stanowią istoty Kościoła. Świętymi kamieniami są wierzący, którzy tworzą wspólnotę żywego Boga. Najpiękniejszą świątynią jest serce człowieka, otwarte na obecność Ducha Świętego. Bóg nie potrzebuje naszych dóbr materialnych. Pragnie przede wszystkim naszego serca, naszej miłości i zaufania.
-
-Ofiara ma wartość wtedy, gdy wypływa z wdzięczności i miłości, a nie z przymusu czy przekonania, że można za nią „kupić” Bożą łaskę. Przypowieść o talentach przypomina, że wszystko, co otrzymaliśmy od Boga, powinno przynosić owoce. Talentami są zarówno zdolności, czas, możliwości, jak i dobra materialne. Pieniądz sam w sobie nie jest złem, lecz narzędziem. Staje się błogosławieństwem wtedy, gdy służy dobru i pomocy potrzebującym, a nie wtedy, gdy staje się naszym panem.
-
-Jezus przestrzegał przed służeniem „mamonie”. Chrześcijanin powinien pomnażać otrzymane dary, rozwijać swoje zdolności i uczciwie pracować. Owoce tej pracy mają jednak prowadzić nie tylko do własnego dobrobytu, lecz także do dzielenia się z ubogimi i budowania dobra wspólnego. Historia świata jest również historią dojrzewania ludzkiego ducha. Bóg nieustannie prowadzi człowieka ku pełni życia. Celem nie jest jedynie rozwój materialny, lecz przemiana serca, tak aby wszyscy stali się jednym w Chrystusie. To właśnie jest największe bogactwo, które nie przemija i prowadzi do życia wiecznego.`
-  },
-
-  // RHZ365 - Day 1 (25 XII)
-  'rhz365-12-25': {
-    title: 'Narodzenie Pana Jezusa w Betlejem',
-    subtitle: 'Różaniec Historii Zbawienia • Tajemnica Radosna III',
-    mystery: 'Tajemnica III Radosna: Narodzenie Pana Jezusa',
-    decade: 'Dziesiątek: 1x Ojcze Nasz, 10x Zdrowaś Maryjo, 1x Chwała Ojcu',
-    intention: 'Modlimy się za wszystkie rodziny, małżeństwa, dzieci nienarodzone oraz o dar pokoju w ludzkich sercach.',
-    content: `Historia Zbawienia osiąga swój punkt kulminacyjny. Wszystkie obietnice dane Abrahamowi, proroctwa Izajasza o Pannie rodzącej Emmanuela, pieśni Dawida – znajdują swoje wypełnienie w cichą noc w Judzie.
-
-Maryja z Józefem nie znajdują miejsca w gospodzie. W ubóstwie betlejemskim objawia się Boża mądrość: Bóg nie szuka pałaców z marmuru, lecz czystego, otwartego serca. Przesuwając paciorki różańca, wchodzimy wraz z pasterzami do wnętrza groty, by złożyć u stóp Nowonarodzonego Króla nasze zmęczenie, nadzieje i dziękczynienie za dar życia.`,
-    prayer: 'Matko Boża z Betlejem, naucz nas przyjmować Jezusa w cichości, pokorze i zaufaniu, które pokonuje każdy lęk.'
-  },
-
-  // Biblia365 - Day 1 (25 XII)
-  'biblia365-12-25': {
-    title: 'Prolog św. Jana, Księga Rodzaju i Protoewangelia Jakuba',
-    subtitle: 'Biblia365 • Dzień 1 (25 grudnia)',
-    passage: 'Stary Testament: Rdz 1, 1-31 (Stworzenie świata) • Nowy Testament: J 1, 1-18 (Prolog św. Jana) • Psalm: Ps 96 (Śpiewajcie Panu pieśń nową)',
-    apocryphaPassage: 'Apokryf: Protoewangelia Jakuba (rozdz. XVII-XIX – Narodziny w Grocie)',
-    content: `CZYTANIE Z EWANGELII ŚW. JANA (J 1, 1-5):
-"Na początku było Słowo, a Słowo było u Boga, i Bogiem było Słowo. Ono było na początku u Boga. Wszystko przez Nie się stało, a bez Niego nic się nie stało, co się stało. W Nim było życie, a życie było światłością ludzi, a światłość w ciemności świeci i ciemność jej nie ogarnęła."
-
-FRAGMENT APOKRYFU (Protoewangelia Jakuba rozdz. XVIII-XIX):
-"I rzekł Józef do Maryi: Dokąd mam cię zaprowadzić? I znalazł grotę, i wprowadził ją tam... I stał się wielki znak: chmura świetlista ocieniła grotę, a potem chmura odeszła, i zajaśniało światło w grocie tak wielkie, że oczy znieść go nie mogły. I zaraz światło to ustąpiło, aż ukazało się Dziecię, i poszło, i wzięło pierś matki swojej Maryi. I zawołała niewiasta: Jakże wielki jest dzień dzisiejszy, żem widziała to niezwykłe zjawisko!"
-
-KOMENTARZ EGZEGETYCZNY:
-Rozpoczynamy roczny szlak lektury od dwóch "Początków": początku stworzenia w Księdze Rodzaju i odwiecznego początku Słowa w Ewangelii Jana. Apokryficzna Protoewangelia Jakuba (pochodząca z II wieku) zachowuje czułą, wczesnochrześcijańską pobożność, ukazując grotę narodzenia zalaną boską światłością.`
-  },
-
-  // ebook_wnr - Book Intro & Chapters
-  'ebook_wnr-12-25': {
-    title: 'Widoki na Raj • Tom I: Od Wcielenia do Przemienienia',
-    subtitle: 'Wydanie Książkowe Flipbook • Strona 1-2',
-    content: `PRZEDMOWA AUTORA
-Książka ta nie powstała przy biurku teologa, lecz na ścieżkach codziennego zmagania, modlitwy i zachwytu nad światem, który pomimo swoich ran wciąż nosi na sobie odcisk palców Dobrego Boga.
-
-Tytułowe "Widoki na Raj" to nie ucieczka od rzeczywistości w marzenia. Wręcz przeciwnie – to wezwanie do zakorzenienia się w prawdzie o tym, kim jesteśmy. Jesteśmy pielgrzymami powołanymi do Domu Ojca. 
-
-Gdy przewracasz te stronice, dzień po dniu, życzę Ci, Drogi Czytelniku, by Twoje serce odnalazło ukojenie w Słowie, które nigdy nie przemija.`
-  },
-
-  // ebook_rhz - Prayer Book
-  'ebook_rhz-12-25': {
-    title: 'Księga Różańca Historii Zbawienia',
-    subtitle: 'Interaktywny Modlitewnik • Wprowadzenie i Tajemnica I',
-    content: `JAK ROZWAŻAĆ RÓŻANIEC HISTORII ZBAWIENIA:
-
-1. Znak Krzyża Świętego i Wierzę w Boga.
-2. 1x Ojcze nasz w intencjach Ojca Świętego i Kościoła.
-3. 3x Zdrowaś Maryjo o przymnożenie Wiary, Nadziei i Miłości.
-4. Chwała Ojcu i o mój Jezu.
-
-Różaniec Historii Zbawienia to podróż w głąb wieków: od pierwszego tchnienia życia w człowieku, poprzez potop, wierność Abrahama, wyzwolenie z niewoli egipskiej, aż po Golgotę i pusty grób Chrystusa. Każda cząstka modlitwy to krok ku zjednoczeniu z Bogiem.`
-  },
-
   // ebook_biblia - Scripture Volume
   'ebook_biblia-12-25': {
     title: 'Biblia Sacra & Scripta Apocrypha',
@@ -106,18 +21,13 @@ Różaniec Historii Zbawienia to podróż w głąb wieków: od pierwszego tchnie
 EVANGELIUM SECUNDUM JOANNEM (Ewangelia wg św. Jana I):
 "W Nim było życie, a życie było światłością ludzi... Wszystkim tym jednak, którzy Je przyjęli, dało moc, aby się stali dziećmi Bożymi, tym, którzy wierzą w imię Jego."`
   },
-
   // bio365 - Biography
   'bio365-12-25': {
     title: 'Rozdział 1: Dar Miłości i Bożonarodzeniowy Początek',
     subtitle: 'Bio365 • Kronika Życia Naszego Małżeństwa',
     content: `Nie ma w życiu przypadków – są tylko znaki, które Bóg stawia na naszych ścieżkach, czekając cierpliwie, aż nauczymy się je odczytywać.
 
-Rozpoczynając tę biografię w dniu Bożego Narodzenia, 25 grudnia, pragnę złożyć hołd Bogu za największy ziemski dar, jaki otrzymałem: za moją ukochaną Żonę. To przy Jej boku nauczyłem się, czym jest prawdziwa cierpliwość, bezinteresowne oddanie i ciepło domowego ogniska.
-
-Pamiętam nasze pierwsze wspólne święta, zapach choinki, dźwięk łamanego opłatka i spojrzenie pełne wzajemnej obietnicy, że cokolwiek przyniesie przyszłość – radości czy krzyże – przejdziemy przez nią razem, trzymając się za ręce i ufając Temu, który nas połączył.
-
-Ta biografia to nasz wspólny pamiętnik na każdy dzień roku – opowieść o spotkaniach, rozmowach, małych i wielkich cudach naszej codzienności.`
+Rozpoczynając tę biografię w dniu Bożego Narodzenia, 25 grudnia, pragnę złożyć hołd Bogu za największy ziemski dar, jaki otrzymałem: za moją ukochaną Żonę. To przy Jej boku nauczyłem się, czym jest prawdziwa cierpliwość, bezinteresowne oddanie i ciepło domowego ogniska.`
   }
 };
 
