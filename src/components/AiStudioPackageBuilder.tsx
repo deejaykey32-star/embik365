@@ -285,9 +285,15 @@ export const stripTypeScriptTypes = (code: string): string => {
 
 export interface AiStudioPackageBuilderProps {
   readOnly?: boolean;
+  initialPackageId?: string;
 }
 
-export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ readOnly = false }) => {
+export const getPackageFullUrl = (pkg: { id: string; fullUrl?: string }): string => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
+  return `${origin}/#paczka/${pkg.id}`;
+};
+
+export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ readOnly = false, initialPackageId }) => {
   const [packages, setPackages] = useState<AiStudioPackage[]>(() => {
     try {
       const saved = localStorage.getItem('drogowskazy_ai_studio_packages');
@@ -307,7 +313,23 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
     }));
   });
 
-  const [activePkgId, setActivePkgId] = useState<string>(packages[0]?.id || '');
+  const [activePkgId, setActivePkgId] = useState<string>(() => {
+    if (initialPackageId && packages.some(p => p.id === initialPackageId)) {
+      return initialPackageId;
+    }
+    // Check window location hash or query param for package ID
+    try {
+      const rawHash = window.location.hash.replace(/^#\/?/, '').trim();
+      if (rawHash.startsWith('paczka/') || rawHash.startsWith('paczka-') || rawHash.startsWith('paczka=')) {
+        const idFromHash = rawHash.replace(/^(?:paczka|aistudio|paczki)[/\-=]/i, '').trim();
+        if (idFromHash && packages.some(p => p.id === idFromHash)) return idFromHash;
+      } else if (rawHash.startsWith('pkg_') && packages.some(p => p.id === rawHash)) {
+        return rawHash;
+      }
+    } catch {}
+    return packages[0]?.id || '';
+  });
+
   const [activeTab, setActiveTab] = useState<'run' | 'html' | 'css' | 'js' | 'libraries' | 'import'>('run');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [rawImportText, setRawImportText] = useState('');
@@ -322,6 +344,15 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
       localStorage.setItem('drogowskazy_ai_studio_packages', JSON.stringify(packages));
     } catch {}
   }, [packages]);
+
+  useEffect(() => {
+    if (activePkgId && typeof window !== 'undefined') {
+      const targetHash = `#paczka/${activePkgId}`;
+      if (window.location.hash !== targetHash) {
+        history.replaceState(null, '', targetHash);
+      }
+    }
+  }, [activePkgId]);
 
   const updateActivePkg = (fields: Partial<AiStudioPackage>) => {
     if (!activePkg) return;
@@ -787,22 +818,21 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   const handleGenerateQr = async () => {
     if (!activePkg) return;
     try {
-      const htmlDoc = buildFullDocumentHtml(activePkg);
-      const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlDoc)}`;
-      const shortUrl = await shortenUrlViaApi(`https://widokinaraj.pl/r/${activePkg.id}`);
+      const fullUrl = getPackageFullUrl(activePkg);
+      const shortUrl = await shortenUrlViaApi(fullUrl);
 
       upsertQrCode({
-        id: `qr_aistudio_${activePkg.id}`,
+        id: `qr_paczka_${activePkg.id}`,
         title: activePkg.name,
-        displayLabel: `Google AI Studio: ${activePkg.name}`,
+        displayLabel: `Dedykowana Paczka: ${activePkg.name}`,
         shortUrl,
-        fullUrl: `https://widokinaraj.pl/r/${activePkg.id}`,
-        category: 'Google AI Studio App',
+        fullUrl,
+        category: 'Kolekcja Paczek',
         createdAt: new Date().toISOString()
       });
 
-      updateActivePkg({ shortUrl, fullUrl: `https://widokinaraj.pl/r/${activePkg.id}` });
-      alert(`Pomyślnie utworzono kod QR dla paczki "${activePkg.name}" z adresem clck.ru:\n${shortUrl}`);
+      updateActivePkg({ shortUrl, fullUrl });
+      alert(`Pomyślnie utworzono kod QR dla paczki "${activePkg.name}" z adresem docelowym:\n${fullUrl}\nOraz skrótem clck.ru:\n${shortUrl}`);
     } catch (err: any) {
       alert(err.message || 'Błąd generowania kodu QR');
     }
@@ -815,17 +845,11 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${(activePkg.name || 'aistudio_package').replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
+    a.download = `${(activePkg.name || 'paczka_projektowa').replace(/[^a-zA-Z0-9_-]/g, '_')}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
-
-  const getPackageFullUrl = (pkg: AiStudioPackage) => {
-    if (pkg.fullUrl) return pkg.fullUrl;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
-    return `${origin}/?paczka=${pkg.id}`;
   };
 
   const getPackageShortUrl = (pkg: AiStudioPackage) => {

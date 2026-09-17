@@ -68,10 +68,11 @@ export function getItemClckRuUrl(item: PlikItem): string {
 
 export interface MediaLibraryViewerProps {
   initialTab?: 'grid' | 'images' | 'video' | 'html' | '3d' | 'aistudio';
+  initialPackageId?: string;
   readOnly?: boolean;
 }
 
-export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialTab, readOnly = false }) => {
+export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialTab, initialPackageId, readOnly = false }) => {
   // 1. Prepare items list from src/pliki & user uploaded materials
   const [items, setItems] = useState<PlikItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -998,7 +999,7 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
       {/* GOOGLE AI STUDIO MULTI-FILE PACKAGES & LIBRARIES SANDBOX     */}
       {/* ------------------------------------------------------------- */}
       {activeMediaTab === 'aistudio' && (
-        <AiStudioPackageBuilder readOnly={readOnly} />
+        <AiStudioPackageBuilder readOnly={readOnly} initialPackageId={initialPackageId} />
       )}
 
       {/* ------------------------------------------------------------- */}

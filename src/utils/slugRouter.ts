@@ -166,6 +166,7 @@ export interface ParsedRoute {
   sectionId: SectionId;
   date: CycleDate;
   subview?: 'kalendarz' | 'pobierz' | 'lektor' | 'admin' | 'kody-qr' | 'rozaniec' | 'pdf' | string;
+  packageId?: string;
   pdfId?: string;
   flipbookPage?: number;
 }
@@ -175,17 +176,20 @@ export interface ParsedRoute {
  */
 export function parseUrlRoute(): ParsedRoute {
   let pathStr = '';
-  
-  // 1. Inspect pathname e.g. /wnr365/25-grudnia or /rhz365/13-wrzesnia
-  if (window.location.pathname && window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
-    pathStr = window.location.pathname.replace(/^\//, '');
-  }
-  
-  // 2. Fallback to hash route e.g. #/wnr365/25-grudnia or #wnr365/12-25
-  if (!pathStr && window.location.hash) {
-    pathStr = window.location.hash.replace(/^#\/?/, '');
-  } else if (!pathStr && window.location.search) {
+
+  // 0. Check search params for paczka query parameter e.g. ?paczka=pkg_gemini_solar_system
+  if (window.location.search) {
     const params = new URLSearchParams(window.location.search);
+    const pkgParam = params.get('paczka') || params.get('pkg') || params.get('paczka-id');
+    if (pkgParam) {
+      return {
+        sectionId: 'grafika',
+        date: getTodayCycleDate(),
+        subview: 'aistudio',
+        packageId: pkgParam
+      };
+    }
+
     const sec = params.get('section') || params.get('s');
     const day = params.get('day') || params.get('date') || params.get('d');
     const sub = params.get('view') || params.get('v');
@@ -205,6 +209,37 @@ export function parseUrlRoute(): ParsedRoute {
     }
   }
 
+  // 1. Inspect hash for package routes e.g. #paczka/pkg_gemini_solar_system or #paczka-pkg_gemini_solar_system
+  const rawHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+  if (rawHash) {
+    if (rawHash.startsWith('paczka/') || rawHash.startsWith('paczka-') || rawHash.startsWith('paczka=') || rawHash.startsWith('aistudio/')) {
+      const pkgId = rawHash.replace(/^(?:paczka|aistudio|paczki)[/\-=]/i, '').trim();
+      return {
+        sectionId: 'grafika',
+        date: getTodayCycleDate(),
+        subview: 'aistudio',
+        packageId: pkgId || undefined
+      };
+    } else if (rawHash.startsWith('pkg_')) {
+      return {
+        sectionId: 'grafika',
+        date: getTodayCycleDate(),
+        subview: 'aistudio',
+        packageId: rawHash
+      };
+    }
+  }
+  
+  // 2. Inspect pathname e.g. /wnr365/25-grudnia or /paczka/pkg_id
+  if (window.location.pathname && window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+    pathStr = window.location.pathname.replace(/^\//, '');
+  }
+  
+  // 3. Fallback to hash route e.g. #/wnr365/25-grudnia
+  if (!pathStr && window.location.hash) {
+    pathStr = window.location.hash.replace(/^#\/?/, '');
+  }
+
   const parts = pathStr.split('/').map(p => p.trim()).filter(Boolean);
 
   let sectionId: SectionId = 'info365';
@@ -216,8 +251,9 @@ export function parseUrlRoute(): ParsedRoute {
   if (parts.length > 0) {
     if (parts[0] === 'r') {
       const slug = parts[1] ? parts[1].toLowerCase() : '';
-      if (!slug || slug === 'aistudio' || slug === 'ai-studio' || slug.includes('pkg_') || slug.includes('aistudio')) {
-        return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'aistudio' };
+      if (!slug || slug === 'aistudio' || slug === 'ai-studio' || slug.includes('pkg_') || slug.includes('aistudio') || slug.includes('paczka')) {
+        const pkgId = slug.startsWith('pkg_') ? parts[1] : undefined;
+        return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId: pkgId };
       }
       const mappedSec = parseSectionSlug(slug);
       if (mappedSec) {
@@ -229,7 +265,12 @@ export function parseUrlRoute(): ParsedRoute {
       if (slug === 'kody-qr' || slug === 'qr') {
         return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'kody-qr' };
       }
-      return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'aistudio' };
+      return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId: slug };
+    }
+
+    if (parts[0] === 'paczka' || parts[0] === 'paczki' || parts[0] === 'aistudio' || parts[0] === 'ai-studio') {
+      const packageId = parts[1] || (parts[0].startsWith('pkg_') ? parts[0] : undefined);
+      return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId };
     }
 
     const firstSec = parseSectionSlug(parts[0]);
@@ -276,6 +317,8 @@ export function parseUrlRoute(): ParsedRoute {
         subview = 'kody-qr';
       } else if (parts[0] === 'aistudio' || parts[0] === 'ai-studio' || parts[0] === 'paczkai' || parts[0] === 'symulacje' || parts[0] === 'symulacja' || parts[0].includes('pkg_') || parts[0].includes('aistudio')) {
         subview = 'aistudio';
+        const pkgId = parts[0].startsWith('pkg_') ? parts[0] : parts[1];
+        return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId: pkgId };
       } else if (parts[0] === 'grafika' || parts[0] === 'media' || parts[0] === 'zasoby' || parts[0] === 'uploads' || parts[0] === 'galeria' || parts[0] === 'materialy') {
         subview = 'grafika';
       }
