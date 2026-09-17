@@ -3,16 +3,6 @@
   "uploads": [],
   "qrCodes": [
     {
-      "id": "qr_paczka_pkg_ai_1789593893001",
-      "title": "Symulacja zmian barw RGB",
-      "displayLabel": "Dedykowana Paczka: Symulacja zmian barw RGB",
-      "shortUrl": "https://clck.ru/3Vr9kK",
-      "fullUrl": "https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789593893001",
-      "category": "Kolekcja Paczek",
-      "createdAt": "2026-09-17T03:32:00.729Z",
-      "updatedAt": "2026-09-17T03:32:00.729Z"
-    },
-    {
       "id": "qr_file_farby__wiat_o_png",
       "title": "farby+światło.png",
       "displayLabel": "Zeskanuj, aby zobaczyć plik farby+światło.png",
@@ -462,6 +452,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-17T03:47:24.135Z",
+  "lastUpdated": "2026-09-17T03:59:46.040Z",
   "updatedBy": "Admin Dominik Kuta"
 }
