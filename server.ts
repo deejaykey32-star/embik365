@@ -293,8 +293,11 @@ app.all('/api/shorten', async (req, res) => {
     }
 
     // Fallback: clck.ru format short link
-    const hashVal = Math.abs(Array.from(targetUrl).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) | 0, 0));
-    const code = hashVal.toString(36).toUpperCase().padStart(5, 'A');
+    let hashVal = 0;
+    for (let i = 0; i < targetUrl.length; i++) {
+      hashVal = (hashVal * 31 + targetUrl.charCodeAt(i)) | 0;
+    }
+    const code = Math.abs(hashVal).toString(36).toUpperCase().padStart(5, 'A');
     const fallbackShort = `https://clck.ru/3${code}`;
     return res.json({ success: true, shortUrl: fallbackShort, provider: 'clck.ru-fallback' });
   } catch (err: any) {

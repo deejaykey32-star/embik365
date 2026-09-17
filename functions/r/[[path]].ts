@@ -4,7 +4,10 @@ interface Env {
   GITHUB_BRANCH?: string;
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+type PagesFunctionContext<E = any> = { request: Request; env: E };
+type LocalPagesFunction<E = any> = (context: PagesFunctionContext<E>) => Promise<Response> | Response;
+
+export const onRequest: LocalPagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
 
