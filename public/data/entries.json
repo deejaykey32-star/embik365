@@ -3,6 +3,15 @@
   "uploads": [],
   "qrCodes": [
     {
+      "id": "qr_paczka_pkg_ai_1789616185615",
+      "title": "Nowa Paczka Projektowa",
+      "displayLabel": "Dedykowana Paczka: Nowa Paczka Projektowa",
+      "shortUrl": "https://clck.ru/3VsM36",
+      "fullUrl": "https://widokinaraj.pl/#paczka/pkg_ai_1789616185615",
+      "category": "Kolekcja Paczek",
+      "createdAt": "2026-09-17T03:36:27.766Z"
+    },
+    {
       "id": "qr_paczka_pkg_ai_1789593893001",
       "title": "Symulacja zmian barw RGB",
       "displayLabel": "Dedykowana Paczka: Symulacja zmian barw RGB",
@@ -472,6 +481,6 @@
       "createdAt": "2026-01-01"
     }
   ],
-  "lastUpdated": "2026-09-17T03:32:00.731Z",
+  "lastUpdated": "2026-09-17T03:36:27.768Z",
   "updatedBy": "Admin Dominik Kuta"
 }
