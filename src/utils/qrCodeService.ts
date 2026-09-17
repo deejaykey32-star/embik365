@@ -69,11 +69,11 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
   {
     id: 'qr_aistudio_solar_system',
-    title: 'Interaktywne Paczki i Symulacje Google AI Studio (3D / HTML)',
-    displayLabel: 'Zeskanuj, aby otworzyć symulację Układu Słonecznego 3D / HTML z Google AI Studio',
+    title: 'Interaktywny Układ Słoneczny 3D (Kolekcja Paczek)',
+    displayLabel: 'Zeskanuj, aby otworzyć interaktywną symulację Układu Słonecznego 3D',
     shortUrl: 'https://clck.ru/3VsH9M',
-    fullUrl: 'https://widokinaraj.pl/#aistudio',
-    category: 'Google AI Studio App',
+    fullUrl: 'https://widokinaraj.pl/#paczka=pkg_gemini_solar_system',
+    category: 'Kolekcja Paczek',
     createdAt: '2026-09-17'
   },
   {

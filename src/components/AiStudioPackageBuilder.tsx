@@ -30,6 +30,7 @@ import {
   Lock
 } from 'lucide-react';
 import { shortenUrlViaApi, upsertQrCode } from '../utils/qrCodeService';
+import { QrImageDisplay } from './QrImageDisplay';
 
 export interface AiStudioPackage {
   id: string;
@@ -62,12 +63,12 @@ export const PRESET_LIBRARIES = [
 export const SAMPLE_AI_STUDIO_PACKAGES: AiStudioPackage[] = [
   {
     id: 'pkg_gemini_solar_system',
-    name: 'Interaktywny Układ Słoneczny 3D (Google AI Studio)',
-    description: 'Paczka 3D WebGL z wygenerowaną symulacją Układu Słonecznego w Three.js zawierająca skrypty, modele i animacje orbitalne.',
+    name: 'Interaktywny Układ Słoneczny 3D',
+    description: 'Paczka 3D WebGL z symulacją Układu Słonecznego w Three.js zawierająca skrypty, modele i animacje orbitalne.',
     category: 'Symulacje 3D',
     htmlContent: `<div id="app-container">
   <div className="ui-overlay">
-    <h2>🌌 Układ Słoneczny 3D (Google AI Studio)</h2>
+    <h2>🌌 Układ Słoneczny 3D</h2>
     <p>Przeciągaj myszą, aby obracać widok 360°. Kółko myszy przybliża planety.</p>
   </div>
   <canvas id="solar-canvas"></canvas>
@@ -464,7 +465,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
 
       const newPkg: AiStudioPackage = {
         id: `pkg_zip_${Date.now()}`,
-        name: cleanPkgName || 'Paczka z Google AI Studio (ZIP)',
+        name: cleanPkgName || 'Paczka z Archiwum ZIP',
         description: `Paczka rozpakowana z archiwum ZIP "${file.name}" (${fileEntries.length} plików).`,
         category: 'Import z ZIP',
         htmlContent: html || '<div>Brak treści HTML w archiwum ZIP</div>',
@@ -490,12 +491,12 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   const handleCreateNewPackage = () => {
     const newPkg: AiStudioPackage = {
       id: `pkg_ai_${Date.now()}`,
-      name: 'Nowa Paczka Google AI Studio',
-      description: 'Stworzona w edytorze paczek Google AI Studio dla aplikacji Droga365',
+      name: 'Nowa Paczka Projektowa',
+      description: 'Stworzona w edytorze paczek dla aplikacji Droga365',
       category: 'Aplikacje Interaktywne',
-      htmlContent: `<div className="container">\n  <h1>Witaj w nowej paczce Google AI Studio!</h1>\n  <p>Dodaj kod HTML, CSS, JavaScript oraz zaznacz potrzebne biblioteki w zakładkach powyżej.</p>\n</div>`,
+      htmlContent: `<div className="container">\n  <h1>Witaj w nowej paczce projektowej!</h1>\n  <p>Dodaj kod HTML, CSS, JavaScript oraz zaznacz potrzebne biblioteki w zakładkach powyżej.</p>\n</div>`,
       cssContent: `body { font-family: system-ui, sans-serif; padding: 24px; background: #0f172a; color: #f8fafc; }\n.container { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.05); padding: 32px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }`,
-      jsContent: `console.log('Paczka Google AI Studio zainicjalizowana pomyślnie!');`,
+      jsContent: `console.log('Paczka projektowa zainicjalizowana pomyślnie!');`,
       libraries: ['tailwindcss'],
       customCdnUrls: [],
       createdAt: new Date().toISOString()
@@ -506,17 +507,17 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
   };
 
   const handleDeletePackage = (id: string) => {
-    if (confirm('Czy na pewno chcesz usunąć tę paczkę Google AI Studio?')) {
+    if (confirm('Czy na pewno chcesz usunąć tę paczkę?')) {
       const filtered = packages.filter(p => p.id !== id);
       setPackages(filtered);
       if (filtered.length > 0) setActivePkgId(filtered[0].id);
     }
   };
 
-  // Smart Parser for pasting raw outputs from Google AI Studio / Gemini Canvas
+  // Smart Parser for pasting raw code outputs
   const handleImportRawAiStudioOutput = () => {
     if (!rawImportText.trim()) {
-      alert('Wklej kod wyeksportowany z Google AI Studio!');
+      alert('Wklej kod do zaimportowania!');
       return;
     }
 
@@ -821,6 +822,16 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
     URL.revokeObjectURL(url);
   };
 
+  const getPackageFullUrl = (pkg: AiStudioPackage) => {
+    if (pkg.fullUrl) return pkg.fullUrl;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://widokinaraj.pl';
+    return `${origin}/?paczka=${pkg.id}`;
+  };
+
+  const getPackageShortUrl = (pkg: AiStudioPackage) => {
+    return pkg.shortUrl || 'https://clck.ru/3VsH9M';
+  };
+
   if (!activePkg) return null;
 
   return (
@@ -831,16 +842,21 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 text-xs font-bold mb-1">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-            <span>Kolekcja Paczek Google AI Studio</span>
+            <span>Kolekcja Paczek</span>
           </div>
           <h3 className="text-xl font-heading-cinzel font-bold text-amber-950 dark:text-amber-300 flex items-center gap-2">
             <Package className="w-5 h-5 text-amber-600" />
             <span>{activePkg.name}</span>
           </h3>
+          {activePkg.description && (
+            <p className="text-xs text-stone-600 dark:text-stone-400 mt-1 max-w-xl">
+              {activePkg.description}
+            </p>
+          )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          {!readOnly && (
+        {!readOnly && (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <button
               onClick={() => setIsEditingMeta(prev => !prev)}
               className="px-3 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-900 dark:text-amber-200 border border-amber-500/30 font-bold flex items-center gap-1.5 cursor-pointer"
@@ -848,27 +864,23 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
               <Edit3 className="w-3.5 h-3.5" />
               <span>{isEditingMeta ? 'Zamknij Edycję Tytułu' : 'Edytuj Tytuł Paczki'}</span>
             </button>
-          )}
 
-          {!readOnly && (
             <button
               onClick={handleGenerateQr}
               className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <QrCode className="w-3.5 h-3.5" />
-              <span>Kod QR & clck.ru</span>
+              <span>Generuj Skrót clck.ru</span>
             </button>
-          )}
 
-          <button
-            onClick={handleDownloadPackageHtml}
-            className="px-3 py-2 rounded-xl bg-stone-800 dark:bg-stone-700 hover:bg-stone-700 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Pobierz Plik Paczki (.HTML)</span>
-          </button>
+            <button
+              onClick={handleDownloadPackageHtml}
+              className="px-3 py-2 rounded-xl bg-stone-800 dark:bg-stone-700 hover:bg-stone-700 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Pobierz Plik Paczki (.HTML)</span>
+            </button>
 
-          {!readOnly && (
             <button
               onClick={handleFixTypeScriptInActivePkg}
               className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
@@ -877,22 +889,20 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
               <Wand2 className="w-3.5 h-3.5" />
               <span>Napraw Kod Paczki (Usuń Typy TS)</span>
             </button>
-          )}
 
-          {!readOnly && (
             <button
               onClick={handleCreateNewPackage}
               className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Nowa Paczka AI</span>
+              <span>Nowa Paczka</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* PACKAGE METADATA EDITABLE FORM */}
-      {isEditingMeta && (
+      {!readOnly && isEditingMeta && (
         <div className="p-4 bg-amber-500/10 border-b border-amber-500/30 space-y-3 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -926,13 +936,83 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
         </div>
       )}
 
+      {/* DEDICATED LINK, SHORTCUT & QR CODE BOX FOR EACH PACKAGE */}
+      <div className="p-4 bg-amber-500/10 dark:bg-[#121927] border-b border-amber-500/20 text-xs">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div className="flex-1 space-y-2.5 w-full">
+            <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold">
+              <QrCode className="w-4 h-4 text-amber-600" />
+              <span>Dedykowane Łącze, Skrót i Kod QR Paczki:</span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-mono">{activePkg.category}</span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1 uppercase">Dedykowany Link Bezpośredni:</label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getPackageFullUrl(activePkg)}
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-white dark:bg-[#192233] border border-stone-300 dark:border-stone-700 font-mono text-[11px] select-all text-amber-900 dark:text-amber-200"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(getPackageFullUrl(activePkg));
+                      alert('Skopiowano dedykowany link do schowka!');
+                    }}
+                    className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] cursor-pointer shrink-0"
+                  >
+                    Kopiuj Link
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-stone-500 dark:text-stone-400 mb-1 uppercase">Dedykowany Skrót URL:</label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getPackageShortUrl(activePkg)}
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-white dark:bg-[#192233] border border-stone-300 dark:border-stone-700 font-mono text-[11px] select-all text-amber-900 dark:text-amber-200"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(getPackageShortUrl(activePkg));
+                      alert('Skopiowano dedykowany skrót URL do schowka!');
+                    }}
+                    className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] cursor-pointer shrink-0"
+                  >
+                    Kopiuj Skrót
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 bg-white dark:bg-[#151d2c] p-2.5 rounded-2xl border border-amber-500/30 shrink-0">
+            <div className="w-24 h-24 bg-white rounded-xl p-1 flex items-center justify-center overflow-hidden">
+              <QrImageDisplay text={getPackageShortUrl(activePkg) || getPackageFullUrl(activePkg)} size={90} title={activePkg.name} />
+            </div>
+            <div className="text-left space-y-1">
+              <div className="font-bold text-[11px] text-amber-950 dark:text-amber-300">Zeskanuj Kod QR</div>
+              <div className="text-[10px] text-stone-500 max-w-[140px] leading-tight">Otwórz tę paczkę na telefonie lub tablecie</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* SELECTOR FOR ACTIVE PACKAGE */}
       <div className="p-3 bg-stone-100 dark:bg-[#111827] border-b border-stone-200 dark:border-stone-800 flex items-center gap-2 overflow-x-auto text-xs scrollbar-thin">
         <span className="font-bold text-stone-500 shrink-0">Wybierz Paczkę:</span>
         {packages.map(p => (
           <div key={p.id} className="flex items-center shrink-0">
             <button
-              onClick={() => setActivePkgId(p.id)}
+              onClick={() => {
+                setActivePkgId(p.id);
+                if (readOnly) setActiveTab('run');
+              }}
               className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition-colors cursor-pointer ${
                 p.id === activePkgId
                   ? 'bg-amber-600 text-white shadow-xs'
@@ -955,69 +1035,69 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
         ))}
       </div>
 
-      {/* NAVIGATION TABS: RUN LIVE, HTML, CSS, JS, LIBRARIES, IMPORT */}
-      <div className="flex items-center gap-1 p-2 bg-stone-50 dark:bg-[#090d16] border-b border-stone-200 dark:border-stone-800 text-xs font-bold overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('run')}
-          className={`px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
-            activeTab === 'run'
-              ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm'
-              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
-          }`}
-        >
-          <Play className="w-4 h-4 fill-white" />
-          <span>Uruchom Paczkę Aplikacji (Live Sandbox)</span>
-        </button>
+      {/* NAVIGATION TABS: RUN LIVE, HTML, CSS, JS, LIBRARIES, IMPORT (Only for Admin) */}
+      {!readOnly && (
+        <div className="flex items-center gap-1 p-2 bg-stone-50 dark:bg-[#090d16] border-b border-stone-200 dark:border-stone-800 text-xs font-bold overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('run')}
+            className={`px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+              activeTab === 'run'
+                ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-sm'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+            }`}
+          >
+            <Play className="w-4 h-4 fill-white" />
+            <span>Uruchom Paczkę Aplikacji (Live Sandbox)</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('html')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
-            activeTab === 'html'
-              ? 'bg-amber-600 text-white'
-              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
-          }`}
-        >
-          <FileCode className="w-3.5 h-3.5 text-amber-500" />
-          <span>index.html ({activePkg.htmlContent.length} zn)</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('html')}
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+              activeTab === 'html'
+                ? 'bg-amber-600 text-white'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+            }`}
+          >
+            <FileCode className="w-3.5 h-3.5 text-amber-500" />
+            <span>index.html ({activePkg.htmlContent.length} zn)</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('css')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
-            activeTab === 'css'
-              ? 'bg-amber-600 text-white'
-              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
-          }`}
-        >
-          <FileCode className="w-3.5 h-3.5 text-sky-400" />
-          <span>styles.css ({activePkg.cssContent.length} zn)</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('css')}
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+              activeTab === 'css'
+                ? 'bg-amber-600 text-white'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+            }`}
+          >
+            <FileCode className="w-3.5 h-3.5 text-sky-400" />
+            <span>styles.css ({activePkg.cssContent.length} zn)</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('js')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
-            activeTab === 'js'
-              ? 'bg-amber-600 text-white'
-              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
-          }`}
-        >
-          <FileCode className="w-3.5 h-3.5 text-yellow-400" />
-          <span>app.js ({activePkg.jsContent.length} zn)</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('js')}
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+              activeTab === 'js'
+                ? 'bg-amber-600 text-white'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+            }`}
+          >
+            <FileCode className="w-3.5 h-3.5 text-yellow-400" />
+            <span>app.js ({activePkg.jsContent.length} zn)</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('libraries')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
-            activeTab === 'libraries'
-              ? 'bg-amber-600 text-white'
-              : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5 text-purple-400" />
-          <span>Biblioteki CDN ({activePkg.libraries?.length || 0})</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('libraries')}
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
+              activeTab === 'libraries'
+                ? 'bg-amber-600 text-white'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-[#151e2e]'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 text-purple-400" />
+            <span>Biblioteki CDN ({activePkg.libraries?.length || 0})</span>
+          </button>
 
-        {!readOnly && (
           <button
             onClick={() => setActiveTab('import')}
             className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors ${
@@ -1027,10 +1107,10 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
             }`}
           >
             <Wand2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Importuj z Google AI Studio</span>
+            <span>Importuj Kod / Archiwum ZIP</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* TAB CONTENT AREAS */}
 
@@ -1150,7 +1230,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
               Wybierz Biblioteki CDN Dołączane Do Paczki
             </h4>
             <p className="text-xs text-stone-500">
-              Zaznacz biblioteki wygenerowane przez Google AI Studio. Zostaną one automatycznie dołączone przed wykonaniem Twojego kodu.
+              Zaznacz biblioteki wymagane przez aplikację. Zostaną one automatycznie dołączone przed wykonaniem kodu.
             </p>
           </div>
 
@@ -1187,7 +1267,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
         </div>
       )}
 
-      {/* TAB 6: IMPORT FROM GOOGLE AI STUDIO (TEXT OR ZIP ARCHIVE) */}
+      {/* TAB 6: IMPORT CODE OR ZIP ARCHIVE */}
       {activeTab === 'import' && (
         <div className="p-6 space-y-6">
           
@@ -1200,7 +1280,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
               </h4>
             </div>
             <p className="text-xs text-stone-600 dark:text-stone-300 mb-4 leading-relaxed">
-              Wybierz spakowane archiwum ZIP pobrane z serwisu Google AI Studio, GitHub lub CodePen. System automatycznie rozpakuje całą strukturę plików (<code className="font-mono text-amber-500">index.html</code>, <code className="font-mono text-sky-400">styles.css</code>, <code className="font-mono text-yellow-400">app.js</code> oraz grafiki/ikony) i przekonwertuje je na uruchamialną aplikację.
+              Wybierz spakowane archiwum ZIP z projektem webowym. System automatycznie rozpakuje całą strukturę plików (<code className="font-mono text-amber-500">index.html</code>, <code className="font-mono text-sky-400">styles.css</code>, <code className="font-mono text-yellow-400">app.js</code> oraz grafiki/ikony) i przekonwertuje je na uruchamialną aplikację.
             </p>
 
             <label className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs cursor-pointer shadow-md transition-all hover:scale-[1.02]">
@@ -1219,10 +1299,10 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
           <div className="border-t border-stone-200 dark:border-stone-800 pt-4">
             <h4 className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1 flex items-center gap-2">
               <Wand2 className="w-4 h-4 text-emerald-500" />
-              <span>Opcja 2: Szybki Parser & Wklejanie Kodu z Google AI Studio (Gemini Canvas)</span>
+              <span>Opcja 2: Szybki Parser & Wklejanie Wyeksportowanego Kodu</span>
             </h4>
             <p className="text-xs text-stone-500 mb-3">
-              Skopiuj całą odpowiedź lub pliki wygenerowane w serwisie Google AI Studio (wraz z tagami &lt;script&gt;, &lt;style&gt; i bibliotekami) i wklej poniżej. System automatycznie wyodrębni HTML, CSS, JavaScript i zidentyfikuje biblioteki!
+              Skopiuj kod projektu (wraz z tagami &lt;script&gt;, &lt;style&gt; i bibliotekami) i wklej poniżej. System automatycznie wyodrębni HTML, CSS, JavaScript i zidentyfikuje biblioteki!
             </p>
 
             <textarea
@@ -1230,7 +1310,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
               value={rawImportText}
               onChange={e => setRawImportText(e.target.value)}
               className="w-full p-4 rounded-2xl bg-[#090d16] border border-amber-500/30 font-mono text-xs text-emerald-300 focus:outline-hidden focus:border-amber-500 mb-3"
-              placeholder="Wklej surowy wyeksportowany kod z Google AI Studio..."
+              placeholder="Wklej surowy kod HTML/CSS/JS do zaimportowania..."
             />
 
             <button
@@ -1238,7 +1318,7 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
               className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
             >
               <Wand2 className="w-4 h-4" />
-              <span>Parsuj i Zaimportuj Wklejony Kod Google AI Studio</span>
+              <span>Parsuj i Zaimportuj Wklejony Kod</span>
             </button>
           </div>
 

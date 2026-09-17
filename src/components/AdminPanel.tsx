@@ -770,7 +770,7 @@ export const AdminPanel: React.FC<Props> = ({
             }`}
           >
             <Package className="w-4 h-4 text-amber-500" />
-            <span>Paczki Google AI Studio</span>
+            <span>Kolekcja Paczek</span>
           </button>
 
         </div>
