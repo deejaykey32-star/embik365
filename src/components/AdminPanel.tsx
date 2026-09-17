@@ -178,9 +178,9 @@ export const AdminPanel: React.FC<Props> = ({
 
   // Google Login for Dominik Kuta (Requires Admin Password)
   const handleGoogleLogin = (emailChoice: string = 'kuta.dominik@gmail.com') => {
-    const pwd = prompt('Podaj hasło administratora (domyślne: admin):', '');
+    const pwd = prompt('Podaj hasło administratora:', '');
     if (!pwd) return;
-    if (pwd.trim() !== 'admin' && pwd.trim() !== 'admin365' && pwd.trim() !== 'dominik365') {
+    if (pwd.trim() !== 'Alexs1973!') {
       alert('Nieprawidłowe hasło administratora!');
       return;
     }
