@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import JSZip from 'jszip';
+import QRCode from 'qrcode';
 import { 
   Sparkles, 
   Code2, 
@@ -852,8 +853,23 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadQrImage = () => {
+    if (!activePkg) return;
+    const targetUrl = activePkg.shortUrl || getPackageFullUrl(activePkg);
+    QRCode.toDataURL(targetUrl, { width: 600, margin: 2 }).then(dataUrl => {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `kod_qr_${(activePkg.name || 'paczka').replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }).catch(() => {
+      alert('Błąd podczas generowania pliku PNG z kodem QR.');
+    });
+  };
+
   const getPackageShortUrl = (pkg: AiStudioPackage) => {
-    return pkg.shortUrl || 'https://clck.ru/3VsH9M';
+    return pkg.shortUrl || getPackageFullUrl(pkg);
   };
 
   if (!activePkg) return null;
@@ -1016,12 +1032,27 @@ export const AiStudioPackageBuilder: React.FC<AiStudioPackageBuilderProps> = ({ 
           </div>
 
           <div className="flex items-center gap-3 bg-white dark:bg-[#151d2c] p-2.5 rounded-2xl border border-amber-500/30 shrink-0">
-            <div className="w-24 h-24 bg-white rounded-xl p-1 flex items-center justify-center overflow-hidden">
-              <QrImageDisplay text={getPackageShortUrl(activePkg) || getPackageFullUrl(activePkg)} size={90} title={activePkg.name} />
+            <div className="w-24 h-24 bg-white rounded-xl p-1 flex items-center justify-center overflow-hidden shadow-xs">
+              <QrImageDisplay 
+                key={`qr-${activePkg.id}`}
+                text={activePkg.shortUrl || getPackageFullUrl(activePkg)} 
+                size={90} 
+                title={activePkg.name} 
+              />
             </div>
-            <div className="text-left space-y-1">
-              <div className="font-bold text-[11px] text-amber-950 dark:text-amber-300">Zeskanuj Kod QR</div>
-              <div className="text-[10px] text-stone-500 max-w-[140px] leading-tight">Otwórz tę paczkę na telefonie lub tablecie</div>
+            <div className="text-left space-y-1.5">
+              <div className="font-bold text-[11px] text-amber-950 dark:text-amber-300 flex items-center gap-1">
+                <QrCode className="w-3.5 h-3.5 text-amber-500" />
+                <span>Kod QR Paczki</span>
+              </div>
+              <div className="text-[10px] text-stone-500 max-w-[140px] leading-tight">Zeskanuj, aby otworzyć tę paczkę na telefonie.</div>
+              <button
+                onClick={handleDownloadQrImage}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 font-bold text-[10px] transition-colors cursor-pointer border border-amber-500/30"
+              >
+                <Download className="w-3 h-3 text-amber-600" />
+                <span>Pobierz PNG</span>
+              </button>
             </div>
           </div>
         </div>
