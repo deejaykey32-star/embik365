@@ -36,6 +36,8 @@ interface SearchModalProps {
   currentSectionId: SectionId;
   onSelectResult: (sectionId: SectionId, date: CycleDate) => void;
   customEntries?: Record<string, SectionEntry>;
+  adminUser?: AdminUser | null;
+  hiddenSectionIds?: string[];
 }
 
 // Popular suggested search keywords
@@ -99,7 +101,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   currentSectionId,
   onSelectResult,
-  customEntries
+  customEntries,
+  adminUser,
+  hiddenSectionIds = []
 }) => {
   const [query, setQuery] = useState('');
   const [searchScope, setSearchScope] = useState<'all' | 'current' | string>('all');
@@ -130,11 +134,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     const trimmed = query.trim();
     if (trimmed.length < 2) return [];
 
-    const targetSections = searchScope === 'all'
+    const rawSections = searchScope === 'all'
       ? SECTIONS.map(s => s.id)
       : searchScope === 'current'
         ? [currentSectionId]
         : [searchScope as SectionId];
+
+    const targetSections = rawSections.filter(secId => adminUser ? true : !hiddenSectionIds.includes(secId));
 
     const found: SearchResultItem[] = [];
     const qLower = trimmed.toLowerCase();
@@ -281,7 +287,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               title="Wybierz konkretny tom do przeszukania"
             >
               <option value="">Wybierz inny tom...</option>
-              {SECTIONS.map(s => (
+              {SECTIONS.filter(s => adminUser ? true : !hiddenSectionIds.includes(s.id)).map(s => (
                 <option key={s.id} value={s.id} className="dark:bg-[#182130] dark:text-white">
                   {s.name} ({s.shortTitle})
                 </option>

@@ -1,5 +1,7 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
 import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon } from 'lucide-react';
+import rhzMainImg from '../pliki/rhz-main.jpg';
+import wnrMainImg from '../pliki/wnr-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<SectionId, any> = {
   wnr365: Feather,
@@ -35,8 +37,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       badge: 'Blog Codzienny',
       shortDesc: 'Widoki na Raj – codzienne spojrzenie na świat oczami wiary, nadziei i perspektywy wieczności.',
       fullDesc: 'Codzienny zbiór głębokich rozważań, aforyzmów i medytacji. Każdego dnia nowy wpis pomagający odnaleźć Boga w codziennych situacjach i dostrzec horyzont Wieczności.',
-      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Horyzont nieba i morza – Widoki na Raj',
+      imageUrl: wnrMainImg,
+      imageAlt: 'Grafika Główna Widoki na Raj (WnR365)',
       color: '#b45309',
       bgGradient: 'from-amber-900/20 via-amber-800/10 to-transparent',
       qrId: 'qr_wnr365'
@@ -47,8 +49,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       badge: 'Modlitwa & Różaniec',
       shortDesc: 'Różaniec Historii Zbawienia – cyfrowa medytacja różańcowa w koncepcji "IN-LOVE".',
       fullDesc: 'Unikalna modlitwa różańcowa prowadząca przez całą Historię Zbawienia. Zawiera interaktywny różaniec w 6 modelach do wyboru (RGBA i CMYK, 50+6 oraz w linii i okręgu).',
-      imageUrl: 'https://images.unsplash.com/photo-1543807535-eceef0bc6599?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Różaniec i światło wiary',
+      imageUrl: rhzMainImg,
+      imageAlt: 'Grafika Główna Różaniec Historii Zbawienia (RHZ365)',
       color: '#0369a1',
       bgGradient: 'from-sky-900/20 via-sky-800/10 to-transparent',
       qrId: 'qr_rhz365'
@@ -63,16 +65,17 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       imageAlt: 'Pismo Święte – otwarta księga',
       color: '#15803d',
       bgGradient: 'from-emerald-900/20 via-emerald-800/10 to-transparent',
-      qrId: 'qr_biblia365'
+      qrId: 'qr_biblia365',
+      hidden: true
     },
     {
       id: 'ebook_wnr',
       name: 'ebook WnR365',
       badge: 'Wydanie Książkowe Flipbook',
       shortDesc: 'Księga Widoki na Raj w formie bibliofilskiego e-booka z realistycznym przewracaniem stron.',
-      fullDesc: 'Zbiór wpisów bloga WnR365 zebrany w elegancki tom z pergaminową fakturą kartek, spisem treści, zakładkami oraz opcją pobrania PDF/ePUB/docx do Amazon KDP i Empik.',
-      imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Otwarty e-book Widoki na Raj',
+      fullDesc: 'Zbiór wpisów bloga WnR365 zebrany w elegancki tom z pergaminową fakturą kartek, spiset treści, zakładkami oraz opcją pobrania PDF/ePUB/docx do Amazon KDP i Empik.',
+      imageUrl: wnrMainImg,
+      imageAlt: 'Otwarty e-book Widoki na Raj (WnR365)',
       color: '#92400e',
       bgGradient: 'from-amber-950/20 via-amber-900/10 to-transparent',
       qrId: 'qr_ebook_wnr'
@@ -83,8 +86,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       badge: 'Modlitewnik Flipbook',
       shortDesc: 'Różaniec Historii Zbawienia w formie oprawnego modlitewnika z kartkami.',
       fullDesc: 'Kompletny modlitewnik różańcowy w interfejsie książkowym. Umożliwia kontemplację tajemnic, czytanie rozważań i odmawianie różańca w skupieniu.',
-      imageUrl: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Modlitewnik różańcowy',
+      imageUrl: rhzMainImg,
+      imageAlt: 'Modlitewnik różańcowy Różaniec Historii Zbawienia (RHZ365)',
       color: '#1e40af',
       bgGradient: 'from-blue-950/20 via-blue-900/10 to-transparent',
       qrId: 'qr_ebook_rhz'
@@ -99,7 +102,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       imageAlt: 'Złote karty Biblii',
       color: '#166534',
       bgGradient: 'from-green-950/20 via-green-900/10 to-transparent',
-      qrId: 'qr_ebook_biblia'
+      qrId: 'qr_ebook_biblia',
+      hidden: true
     },
     {
       id: 'bio365',
@@ -111,7 +115,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       imageAlt: 'Dłonie z obrączkami – Biografia małżeńska',
       color: '#9f1239',
       bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent',
-      qrId: 'qr_bio365'
+      qrId: 'qr_bio365',
+      hidden: true
     },
     {
       id: 'grafika',
@@ -197,7 +202,9 @@ export function getHomePageConfig(): HomePageConfig {
       const parsed = JSON.parse(saved);
       const showcases = DEFAULT_HOME_PAGE_CONFIG.showcases.map(def => {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
-        return found ? { ...def, ...found } : def;
+        const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
+        const imageUrl = isOldUnsplash ? def.imageUrl : (found?.imageUrl || def.imageUrl);
+        return found ? { ...def, ...found, imageUrl, hidden: found.hidden !== undefined ? found.hidden : def.hidden } : def;
       });
       
       const oldIntro = localStorage.getItem('drogowskazy_info365_intro');

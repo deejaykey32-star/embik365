@@ -96,7 +96,7 @@ export const NavigationHeader: React.FC<Props> = ({
                 )}
               </div>
               <p className="text-xs text-[#7e6e5f] dark:text-[#94a3b8] font-sans-ui hidden sm:block">
-                WnR366 • RHZ365 • Biblia365 • Flipbooki • Bio365
+                {adminUser ? 'WnR365 • RHZ365 • Biblia365 • Flipbooki • Bio365' : 'WnR365 • RHZ365 • Flipbooki'}
               </p>
             </div>
           </div>

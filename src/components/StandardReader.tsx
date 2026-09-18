@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  Quote, 
-  Heart, 
-  FileText, 
-  Volume2, 
-  VolumeX, 
-  Copy, 
-  Check, 
-  Calendar, 
-  Scroll, 
+import {
+  BookOpen,
+  Quote,
+  Heart,
+  FileText,
+  Volume2,
+  VolumeX,
+  Copy,
+  Check,
+  Calendar,
+  Scroll,
   Cross,
   ChevronLeft,
   ChevronRight,
@@ -118,31 +118,28 @@ export const StandardReader: React.FC<Props> = ({
             <div className="flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-0.5 text-xs">
               <button
                 onClick={() => setFontSize('normal')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                  fontSize === 'normal' 
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs' 
+                className={`px-2 py-1 rounded-lg font-medium transition-all cursor-pointer ${fontSize === 'normal'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
                     : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
+                  }`}
               >
                 A
               </button>
               <button
                 onClick={() => setFontSize('large')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-sm cursor-pointer ${
-                  fontSize === 'large' 
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs' 
+                className={`px-2 py-1 rounded-lg font-medium transition-all text-sm cursor-pointer ${fontSize === 'large'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
                     : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
+                  }`}
               >
                 A+
               </button>
               <button
                 onClick={() => setFontSize('xlarge')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-base cursor-pointer ${
-                  fontSize === 'xlarge' 
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs' 
+                className={`px-2 py-1 rounded-lg font-medium transition-all text-base cursor-pointer ${fontSize === 'xlarge'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
                     : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
+                  }`}
               >
                 A++
               </button>
@@ -155,11 +152,10 @@ export const StandardReader: React.FC<Props> = ({
                 e.preventDefault();
                 toggleSpeech(e);
               }}
-              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer touch-manipulation ${
-                isSpeaking
+              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer touch-manipulation ${isSpeaking
                   ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
                   : 'bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#dccdc0] dark:border-[#29364b]'
-              }`}
+                }`}
               title={isSpeaking ? 'Zatrzymaj lektora' : 'Włącz czytanie na głos (Lektor)'}
             >
               {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#8a572c] dark:text-amber-400" />}
@@ -223,6 +219,22 @@ export const StandardReader: React.FC<Props> = ({
               {entry.subtitle}
             </p>
           )}
+
+          {/* Main Section Graphic Banner for WnR365 / RHZ365 */}
+          {(section.id === 'rhz365' || section.id === 'ebook_rhz' || section.id === 'wnr365' || section.id === 'ebook_wnr' || section.id === 'wnr366') && (
+            <div className="mt-4 overflow-hidden rounded-2xl border border-[#e4ccb5] dark:border-[#273448] shadow-md max-h-72 sm:max-h-80 w-full group relative">
+              <img
+                src={(section.id === 'rhz365' || section.id === 'ebook_rhz') ? rhzMainImg : wnrMainImg}
+                alt={section.name}
+                className="w-full h-full object-cover object-center transform group-hover:scale-102 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+                <span className="text-xs font-semibold text-white/90 font-heading-cinzel tracking-wider backdrop-blur-xs px-3 py-1 rounded-lg bg-black/40 border border-white/20">
+                  {(section.id === 'rhz365' || section.id === 'ebook_rhz') ? 'Grafika Główna: Różaniec Historii Zbawienia (RHZ365)' : 'Grafika Główna: Widoki na Raj (WnR365)'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Attached files notification banner if available (PDF, ePUB, DOCX) */}
@@ -236,15 +248,15 @@ export const StandardReader: React.FC<Props> = ({
                 const ext = (f.originalName.split('.').pop() || 'pdf').toLowerCase();
                 const format = (f.format || (ext === 'docx' || ext === 'doc' ? 'docx' : ext === 'epub' ? 'epub' : 'pdf')).toUpperCase();
                 const isPdf = format === 'PDF';
-                const badgeColor = format === 'EPUB' 
+                const badgeColor = format === 'EPUB'
                   ? 'bg-emerald-600/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/30'
                   : format === 'DOCX' || format === 'DOC'
-                  ? 'bg-blue-600/20 text-blue-800 dark:text-blue-300 border-blue-500/30'
-                  : 'bg-red-600/20 text-red-800 dark:text-red-300 border-red-500/30';
+                    ? 'bg-blue-600/20 text-blue-800 dark:text-blue-300 border-blue-500/30'
+                    : 'bg-red-600/20 text-red-800 dark:text-red-300 border-red-500/30';
 
                 return (
-                  <div 
-                    key={f.id} 
+                  <div
+                    key={f.id}
                     className="p-3 rounded-xl bg-white dark:bg-[#1a2333] border border-[#dacabb] dark:border-[#2d3a4f] flex items-center justify-between gap-2 shadow-xs"
                   >
                     <div className="flex items-center gap-2 overflow-hidden">
@@ -341,11 +353,10 @@ export const StandardReader: React.FC<Props> = ({
       {section.id !== 'rhz365' && (
         <article className="bg-white dark:bg-[#111722] rounded-3xl p-6 sm:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
           {/* Main Content */}
-          <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed text-justify ${
-            fontSize === 'normal' ? 'text-base sm:text-lg leading-7 sm:leading-8' :
-            fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
-            'text-xl sm:text-2xl leading-9 sm:leading-10'
-          }`}>
+          <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed text-justify ${fontSize === 'normal' ? 'text-base sm:text-lg leading-7 sm:leading-8' :
+              fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
+                'text-xl sm:text-2xl leading-9 sm:leading-10'
+            }`}>
             {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
               <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
             ) : (
