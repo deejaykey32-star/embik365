@@ -204,7 +204,9 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = isOldUnsplash ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        return found ? { ...def, ...found, imageUrl, hidden: found.hidden !== undefined ? found.hidden : def.hidden } : def;
+        const isPublicSection = ['wnr365', 'rhz365', 'ebook_wnr', 'ebook_rhz', 'info365', 'grafika'].includes(def.id);
+        const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
+        return found ? { ...def, ...found, imageUrl, hidden } : { ...def, hidden: isPublicSection ? false : Boolean(def.hidden) };
       });
       
       const oldIntro = localStorage.getItem('drogowskazy_info365_intro');

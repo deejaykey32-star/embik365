@@ -99,6 +99,14 @@ export const StandardReader: React.FC<Props> = ({
     });
   };
 
+  if (!entry || !section) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 text-center space-y-4">
+        <p className="text-stone-600 dark:text-stone-300 font-serif-book">Wczytywanie treści sekcji...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 transition-colors duration-300">
       {/* Top Banner & Date indicator */}

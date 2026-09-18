@@ -169,8 +169,9 @@ export default function App() {
     return () => window.removeEventListener('drogowskazy_home_config_updated', handleConfigUpdate);
   }, []);
 
+  const ALLOWED_HIDDEN_SECTIONS = ['bio365', 'ebook_biblia', 'biblia365'];
   const hiddenSectionIds = (homeConfig.showcases || [])
-    .filter(s => s.hidden)
+    .filter(s => s.hidden && ALLOWED_HIDDEN_SECTIONS.includes(s.id))
     .map(s => s.id);
 
   // Guard: if non-admin visitor attempts to view a hidden section, automatically fallback to 'info365'
