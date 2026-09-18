@@ -44,7 +44,7 @@ export const COMMON_PRAYERS = {
     text: 'Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.'
   },
   hailMaryFaith: {
-    name: 'Zdrowaś Maryjo — O wiarę (Paciorek Niebieski - Blue)',
+    name: 'Zdrowaś Maryjo — O wiarę (Paciorek Czerwony - Red)',
     dopowiedzenie: 'który niech pomnaża naszą wiarę',
     text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech pomnaża naszą wiarę. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
@@ -54,7 +54,7 @@ export const COMMON_PRAYERS = {
     text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech umacnia naszą nadzieję. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryLove: {
-    name: 'Zdrowaś Maryjo — O miłość (Paciorek Czerwony - Red)',
+    name: 'Zdrowaś Maryjo — O miłość (Paciorek Niebieski - Blue)',
     dopowiedzenie: 'który niech rozpala naszą miłość',
     text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech rozpala naszą miłość. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },

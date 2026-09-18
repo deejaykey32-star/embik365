@@ -30,6 +30,7 @@ import { getWnrEntryForDay } from '../data/wnr365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
+import { COMMON_PRAYERS } from '../data/rosaryData';
 
 interface Props {
   section: SectionMeta;
@@ -388,8 +389,8 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   // Calculate 1:1 PDF Page numbers for left and right pages in spread mode
-  const leftPdfPageNum = currentPageNum === 1 ? 1 : (currentPageNum % 2 === 1 ? currentPageNum - 1 : currentPageNum);
-  const rightPdfPageNum = currentPageNum === 1 ? 2 : leftPdfPageNum + 1;
+  const leftPdfPageNum = currentPageNum % 2 === 0 ? Math.max(1, currentPageNum - 1) : currentPageNum;
+  const rightPdfPageNum = leftPdfPageNum + 1;
 
   const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry, customEntries);
   const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry, customEntries);
@@ -469,7 +470,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const handleTurnNext = () => {
     if (currentPageNum >= 1460) return;
-    const step = layoutMode === 'single' ? 1 : (currentPageNum === 1 ? 1 : 2);
+    const step = layoutMode === 'single' ? 1 : 2;
     const nextPos = Math.min(1460, currentPageNum + step);
     setCurrentPageNum(nextPos);
     const newDayNum = Math.floor((nextPos - 1) / 4) + 1;
@@ -487,7 +488,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const handleTurnPrev = () => {
     if (currentPageNum <= 1) return;
-    const step = layoutMode === 'single' ? 1 : (currentPageNum <= 2 ? 1 : 2);
+    const step = layoutMode === 'single' ? 1 : 2;
     const prevPos = Math.max(1, currentPageNum - step);
     setCurrentPageNum(prevPos);
     const newDayNum = Math.floor((prevPos - 1) / 4) + 1;
@@ -614,6 +615,126 @@ export const FlipbookReader: React.FC<Props> = ({
     }
 
     if (pageNum === 1) {
+      if (section.id === 'ebook_rhz' || section.id === 'rhz365') {
+        const rhzDay1 = getRhzEntryForDay(1);
+        return (
+          <div className="flex flex-col h-full justify-between p-3 sm:p-4 bg-gradient-to-b from-amber-50/60 via-white to-amber-50/40 dark:from-[#161f2e] dark:via-[#111722] dark:to-[#161f2e] rounded-2xl border border-amber-600/30 shadow-inner overflow-y-auto text-left space-y-3.5 flex-1">
+            {/* Nagłówek Wstępu */}
+            <div className="border-b border-amber-600/20 pb-2 text-center shrink-0">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
+                Wstęp Różańca Świętego • Strona 1
+              </span>
+              <h2 className="font-heading-cinzel text-sm sm:text-base font-bold text-[#2d1f14] dark:text-[#f8fafc] mt-0.5">
+                Modlitwa Początkowa na Krzyżyku i Zawieszce
+              </h2>
+            </div>
+
+            {/* 1. Znak Krzyża */}
+            <div className="p-2.5 rounded-xl bg-amber-100/50 dark:bg-amber-950/40 border border-amber-500/30 space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                <span>✦ Znak Krzyża Świętego</span>
+              </div>
+              <p className="font-serif-book text-xs sm:text-sm font-semibold text-[#2d2217] dark:text-[#f1f5f9]">
+                W imię Ojca i Syna, i Ducha Świętego. Amen.
+              </p>
+            </div>
+
+            {/* 2. Skład Apostolski */}
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#141b29] border border-[#e5d9cc] dark:border-[#24334c] space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                🛡 Krzyżyk — Skład Apostolski (Wierzę w Boga)
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                {COMMON_PRAYERS.cross.text}
+              </p>
+            </div>
+
+            {/* 3. Ojcze Nasz */}
+            <div className="p-2.5 rounded-xl bg-[#fbf8f3] dark:bg-[#161e2d] border border-[#e8ded3] dark:border-[#223048] space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                Duży Paciorek — Modlitwa Pańska (Ojcze Nasz)
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                {COMMON_PRAYERS.ourFather.text}
+              </p>
+            </div>
+
+            {/* 4. Trzy Zdrowaś Maryjo z dopowiedzeniami */}
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                Trzy Małe Paciorki — Modlitwy o Cnoty Boskie z Dopowiedzeniami:
+              </div>
+
+              {/* Paciorek Czerwony - Wiara */}
+              <div className="p-2.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-900 dark:text-rose-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" />
+                  <span>Paciorek 1 (Czerwony) — Wezwanie do pomnożenia wiary</span>
+                </div>
+                <p className="font-serif-book text-xs text-[#3d1e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                  Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus,{' '}
+                  <strong className="underline decoration-rose-500 text-rose-950 dark:text-rose-200">
+                    który niech pomnaża naszą wiarę
+                  </strong>
+                  . Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.
+                </p>
+              </div>
+
+              {/* Paciorek Zielony - Nadzieja */}
+              <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-900 dark:text-emerald-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                  <span>Paciorek 2 (Zielony) — Wezwanie do umocnienia nadziei</span>
+                </div>
+                <p className="font-serif-book text-xs text-[#1b382b] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                  Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus,{' '}
+                  <strong className="underline decoration-emerald-500 text-emerald-950 dark:text-emerald-200">
+                    który niech umacnia naszą nadzieję
+                  </strong>
+                  . Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.
+                </p>
+              </div>
+
+              {/* Paciorek Niebieski - Miłość */}
+              <div className="p-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-900 dark:text-blue-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+                  <span>Paciorek 3 (Niebieski) — Wezwanie do rozpalenia miłości</span>
+                </div>
+                <p className="font-serif-book text-xs text-[#263238] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                  Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus,{' '}
+                  <strong className="underline decoration-blue-500 text-blue-950 dark:text-blue-200">
+                    który niech rozpala naszą miłość
+                  </strong>
+                  . Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.
+                </p>
+              </div>
+            </div>
+
+            {/* 5. Chwała Ojcu */}
+            <div className="p-2.5 rounded-xl bg-amber-100/50 dark:bg-amber-950/40 border border-amber-500/30 space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                Uwielbienie — Chwała Ojcu
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed">
+                {COMMON_PRAYERS.gloryBe.text}
+              </p>
+            </div>
+
+            {/* 6. Informacja o Etapie 1, Części 1, Tajemnicy 1 i Rozważanie */}
+            <div className="border-t-2 border-amber-600/30 pt-3 space-y-2">
+              <div className="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs font-bold font-sans-ui text-center shadow-xs">
+                {rhzDay1.stageTitle}
+              </div>
+
+              <div className="rich-text-content whitespace-pre-line text-xs font-serif-book leading-relaxed text-justify text-[#30261e] dark:text-[#f1f5f9]">
+                {rhzDay1.page1}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       // Elegant 1:1 Title Cover Page in Text View (Format A5)
       return (
         <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1">
