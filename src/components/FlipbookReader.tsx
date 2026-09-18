@@ -659,7 +659,11 @@ export const FlipbookReader: React.FC<Props> = ({
           'text-lg leading-8'
         }`}>
           {data.chunk ? (
-            <div className="whitespace-pre-line">{data.chunk}</div>
+            /<[a-z][\s\S]*>/i.test(data.chunk) ? (
+              <div className="rich-text-content whitespace-pre-line" dangerouslySetInnerHTML={{ __html: data.chunk }} />
+            ) : (
+              <div className="whitespace-pre-line">{data.chunk}</div>
+            )
           ) : (
             <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 text-xs sm:text-sm font-serif-book leading-relaxed text-justify my-auto text-[#30261e] dark:text-[#f1f5f9]">
               {data.fullContent || data.title}
