@@ -66,7 +66,7 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#15803d',
       bgGradient: 'from-emerald-900/20 via-emerald-800/10 to-transparent',
       qrId: 'qr_biblia365',
-      hidden: true
+      hidden: false
     },
     {
       id: 'ebook_wnr',
@@ -103,7 +103,7 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#166534',
       bgGradient: 'from-green-950/20 via-green-900/10 to-transparent',
       qrId: 'qr_ebook_biblia',
-      hidden: true
+      hidden: false
     },
     {
       id: 'bio365',
@@ -204,7 +204,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = isOldUnsplash ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'ebook_wnr', 'ebook_rhz', 'info365', 'grafika'].includes(def.id);
+        const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika'].includes(def.id);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         return found ? { ...def, ...found, imageUrl, hidden } : { ...def, hidden: isPublicSection ? false : Boolean(def.hidden) };
       });
