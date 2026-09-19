@@ -27,6 +27,7 @@ import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
 import { getRhzEntryForDay } from '../data/rhz365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
+import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -219,7 +220,35 @@ function getPdfPageData(
     };
   }
 
-  // 3. Fallback for other sections (ebook_biblia, bio365, info365):
+  // 3. Direct handling for ebook_biblia:
+  if (sectionId === 'ebook_biblia' || sectionId === 'biblia365') {
+    const bibliaEntry = getBibliaEntryForDayAndYear(dayNum, 1);
+    const fullRawText = `${bibliaEntry.title}\n\n${bibliaEntry.content}`;
+    const { chunk1, chunk2, chunk3, chunk4 } = splitContentIntoFourChunks(fullRawText);
+    let chunk = '';
+    if (subPage === 1) chunk = chunk1;
+    else if (subPage === 2) chunk = chunk2;
+    else if (subPage === 3) chunk = chunk3;
+    else chunk = chunk4;
+
+    return {
+      pdfPageNumber: safeP,
+      dayNumber: dayNum,
+      subPage,
+      dateKey: dateObj.dateKey,
+      displayDate: dateObj.displayDate,
+      season: dateObj.season,
+      title: bibliaEntry.title,
+      subtitle: `${dateObj.displayDate} • ${bibliaEntry.category} (${bibliaEntry.passage})`,
+      chunk,
+      prayer: '',
+      mystery: '',
+      intention: '',
+      fullContent: bibliaEntry.content
+    };
+  }
+
+  // 4. Fallback for other sections (bio365, info365):
   const entryObj = (dayNum === currentDate.dayNumber)
     ? currentEntry
     : getEntryForSectionAndDate(sectionId as any, dateObj, customEntries);

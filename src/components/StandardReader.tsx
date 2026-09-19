@@ -66,6 +66,14 @@ export const StandardReader: React.FC<Props> = ({
 
   const activeLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
+  const activeBibliaEntry = section.id === 'biblia365'
+    ? getBibliaEntryForDayAndYear(currentDate.dayNumber, selectedBibliaYear)
+    : null;
+
+  const displayedTitle = activeBibliaEntry ? activeBibliaEntry.title : entry.title;
+  const displayedSubtitle = activeBibliaEntry ? `${currentDate.displayDate} • ${activeBibliaEntry.category} (${activeBibliaEntry.passage})` : entry.subtitle;
+  const displayedContent = activeBibliaEntry ? activeBibliaEntry.content : entry.content;
+
   // Find PDFs/ebooks for this section and day
   const matchingPdfs = sectionPdfs.filter(
     p => p.sectionId === section.id && (!p.dateKey || p.dateKey === currentDate.dateKey)
@@ -224,11 +232,11 @@ export const StandardReader: React.FC<Props> = ({
             )}
           </div>
           <h1 className="font-heading-cinzel text-2xl sm:text-3xl lg:text-4xl font-bold text-[#2a2016] dark:text-[#f3e8d2] leading-tight">
-            {entry.title}
+            {displayedTitle}
           </h1>
-          {entry.subtitle && (
+          {displayedSubtitle && (
             <p className="font-serif-book italic text-base sm:text-lg text-[#715f50] dark:text-[#a0aec0]">
-              {entry.subtitle}
+              {displayedSubtitle}
             </p>
           )}
 
@@ -394,10 +402,10 @@ export const StandardReader: React.FC<Props> = ({
               fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
                 'text-xl sm:text-2xl leading-9 sm:leading-10'
             }`}>
-            {/<[a-z][\s\S]*>/i.test(entry.content || '') ? (
-              <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.content }} />
+            {/<[a-z][\s\S]*>/i.test(displayedContent || '') ? (
+              <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: displayedContent }} />
             ) : (
-              <div className="whitespace-pre-line">{entry.content}</div>
+              <div className="whitespace-pre-line">{displayedContent}</div>
             )}
           </div>
 
