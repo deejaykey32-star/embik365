@@ -13,10 +13,10 @@ import { getRhzEntryForDay } from '../data/rhz365Data';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  entry: SectionEntry;
-  meta: SectionMeta;
+  entry?: SectionEntry;
+  meta?: SectionMeta;
   uploadedFiles?: UploadedPdf[];
-  currentLang: string;
+  currentLang?: string;
   onLanguageChange?: (lang: string) => void;
 }
 
@@ -36,7 +36,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
   entry,
   meta,
   uploadedFiles = [],
-  currentLang,
+  currentLang = 'pl',
   onLanguageChange
 }) => {
   const [activeTab, setActiveTab] = useState<'download' | 'platforms' | 'uploaded'>('download');
@@ -52,9 +52,13 @@ export const DownloadPublishModal: React.FC<Props> = ({
 
   if (!isOpen) return null;
 
+  const metaId = meta?.id || 'general';
+  const metaName = meta?.name || 'Droga365';
+  const metaSubtitle = meta?.subtitle || '';
+
   // Filter uploaded files for this section
   const sectionUploads = uploadedFiles.filter(
-    f => f.sectionId === meta.id || f.sectionId === 'general'
+    f => f.sectionId === metaId || f.sectionId === 'general'
   );
 
   const selectedLangObj = SUPPORTED_LANGUAGES.find(l => l.code === exportLang) || SUPPORTED_LANGUAGES[0];
@@ -64,7 +68,14 @@ export const DownloadPublishModal: React.FC<Props> = ({
     setDownloadSuccess(null);
 
     try {
-      let entryToExport = entry;
+      const fallbackEntry: SectionEntry = entry || {
+        dayNumber: 1,
+        dateKey: '12-25',
+        title: metaName,
+        content: ''
+      };
+
+      let entryToExport: SectionEntry = fallbackEntry;
       let allYearEntries: SectionEntry[] = [];
 
       let startDay = 1;
@@ -93,7 +104,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         for (let day = startDay; day <= endDay; day++) {
           let dayEntry: SectionEntry;
 
-          if (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || meta.id === 'wnr366') {
+          if (metaId === 'wnr365' || metaId === 'ebook_wnr' || metaId === 'wnr366') {
             const wEntry = getWnrEntryForDay(day);
             const cleanContent = stripHtml(wEntry.content || (wEntry.page1 ? `${wEntry.page1}\n\n${wEntry.page2}` : ''));
             dayEntry = {
@@ -104,7 +115,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
               content: cleanContent,
               prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Widoki na Raj. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
             };
-          } else if (meta.id === 'rhz365' || meta.id === 'ebook_rhz') {
+          } else if (metaId === 'rhz365' || metaId === 'ebook_rhz') {
             const rEntry = getRhzEntryForDay(day);
             const cleanContent = stripHtml(rEntry.fullText || rEntry.explanation || '');
             dayEntry = {
@@ -133,7 +144,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
       }
 
       // If exporting in another language and single entry, translate if needed
-      if (exportLang !== 'pl' && exportScope === 'single') {
+      if (exportLang !== 'pl' && exportScope === 'single' && entry) {
         setIsTranslating(true);
         const translated = await translateEntry(entry, exportLang, selectedLangObj.name);
         entryToExport = {
@@ -147,7 +158,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         setIsTranslating(false);
       }
 
-      const safeSection = meta.id.replace(/[^a-zA-Z0-9]/g, '_');
+      const safeSection = metaId.replace(/[^a-zA-Z0-9]/g, '_');
       let safeScope = '';
       if (exportScope === 'year') {
         safeScope = `Rok_${selectedYear}_Caly_Tom_365_Dni`;
@@ -160,7 +171,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
         };
         safeScope = `Rok_${selectedYear}_${seasonNames[selectedSeason] || 'Sezon'}`;
       } else {
-        safeScope = (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
+        const key = fallbackEntry.dateKey || (fallbackEntry.dayNumber ? `Dzien_${fallbackEntry.dayNumber}` : '1');
+        safeScope = String(key).replace(/[^a-zA-Z0-9]/g, '_');
       }
 
       const baseFilename = `Droga365_${safeSection}_${safeScope}_${exportLang}`;
@@ -182,18 +194,20 @@ export const DownloadPublishModal: React.FC<Props> = ({
         ? `Rok ${selectedYear} (365 dni)`
         : 'pojedynczy rozdział';
 
+      const exportMeta: SectionMeta = meta || { id: metaId, name: metaName, subtitle: metaSubtitle };
+
       if (selectedFormat === 'pdf') {
-        const blob = await generatePodPdf(entryToExport, meta, options);
+        const blob = await generatePodPdf(entryToExport, exportMeta, options);
         triggerBrowserDownload(blob, `${baseFilename}_POD_${pageSize}.pdf`);
-        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla ${meta.name} – ${scopeLabel} w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla ${metaName} – ${scopeLabel} w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'docx') {
-        const blob = await generatePodDocx(entryToExport, meta, options);
+        const blob = await generatePodDocx(entryToExport, exportMeta, options);
         triggerBrowserDownload(blob, `${baseFilename}_KDP_Format.docx`);
-        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${meta.name} – ${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${metaName} – ${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'epub') {
-        const blob = await generateEpub(entryToExport, meta, options);
+        const blob = await generateEpub(entryToExport, exportMeta, options);
         triggerBrowserDownload(blob, `${baseFilename}_Ebook.epub`);
-        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spisem treści (${meta.name} – ${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spiset treści (${metaName} – ${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
       }
     } catch (err: any) {
       console.error('Błąd generowania pliku:', err);
@@ -224,7 +238,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                 </span>
               </h2>
               <p className="text-xs text-stone-500 dark:text-[#b49e89] truncate max-w-md">
-                Sekcja: <span className="font-semibold">{meta.name}</span> • Wpis: {entry.title}
+                Sekcja: <span className="font-semibold">{metaName}</span> • Wpis: {entry?.title || 'Podgląd rozdziału'}
               </p>
             </div>
           </div>
@@ -286,7 +300,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
                     <Calendar className="w-4 h-4" />
-                    Wybierz Zakres Czytań do Pobrania ({meta.name}):
+                    Wybierz Zakres Czytań do Pobrania ({metaName}):
                   </label>
                   <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
                     100% Czysty Tekst i Polskie Znaki
@@ -548,7 +562,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     <>
                       <Download className="w-5 h-5" />
                       <span>
-                        Pobierz {selectedFormat.toUpperCase()} ({meta.name} – {exportScope === 'season' ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : exportScope === 'year' ? `Tom Rok ${selectedYear}` : `Rozdział Dnia`})
+                        Pobierz {selectedFormat.toUpperCase()} ({metaName} – {exportScope === 'season' ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : exportScope === 'year' ? `Tom Rok ${selectedYear}` : `Rozdział Dnia`})
                       </span>
                     </>
                   )}
