@@ -2,6 +2,9 @@ name = "wnr365"
 compatibility_date = "2026-09-12"
 pages_build_output_dir = "dist"
 
+[build]
+command = "npm run pages:build"
+
 [vars]
 GITHUB_OWNER = "deejaykey32-star"
 GITHUB_REPO = "embik365"
