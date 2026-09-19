@@ -1,7 +1,7 @@
 # Przekierowania dla dynamicznych kodów QR (Biblia, WnR365, Różaniec)
-/b/*    https://youtube.com/@widokinaraj    301
-/w/*    https://youtube.com/@widokinaraj    301
-/r/*    https://youtube.com/@widokinaraj    301
+/b/* https://youtube.com/@widokinaraj 301
+/w/* https://youtube.com/@widokinaraj 301
+/r/* https://youtube.com/@widokinaraj 301
 
 # Przekierowania zasobów i obsługa SPA
 /src/pliki/* /pliki/:splat 301
