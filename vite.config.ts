@@ -50,6 +50,21 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      chunkSizeWarningLimit: 15000,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('bibliaYear1Data')) return 'biblia_yr1';
+            if (id.includes('bibliaYear2Data')) return 'biblia_yr2';
+            if (id.includes('bibliaYear3Data')) return 'biblia_yr3';
+            if (id.includes('bibliaYear4Data')) return 'biblia_yr4';
+            if (id.includes('wnr365Data')) return 'wnr365_data';
+            if (id.includes('rhz365Data')) return 'rhz365_data';
+          },
+        },
+      },
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
