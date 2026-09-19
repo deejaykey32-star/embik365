@@ -127,14 +127,14 @@ export async function generatePodPdf(
   };
   const getContentWidth = () => pageWidth - gutterMargin - outerMargin;
 
-  // Render Front Matter (Half-title, Title Page, Copyright)
   // PAGE 1: Strona Przedtytułowa
   doc.setFont('times', 'normal');
-  doc.setFontSize(13);
+  doc.setFontSize(12);
   doc.setTextColor(80, 80, 80);
-  doc.text(bookTitle.toUpperCase(), pageWidth / 2, 70, { align: 'center' });
+  const frontTitleLines = doc.splitTextToSize(bookTitle.toUpperCase(), getContentWidth());
+  doc.text(frontTitleLines, pageWidth / 2, 65, { align: 'center' });
   doc.setFontSize(10);
-  doc.text('BIBLIA365 * DROGA365', pageWidth / 2, 80, { align: 'center' });
+  doc.text('BIBLIA365 * DROGA365', pageWidth / 2, 85, { align: 'center' });
 
   // PAGE 2: Verso (dedykacja)
   doc.addPage();
@@ -143,7 +143,7 @@ export async function generatePodPdf(
   doc.setFont('times', 'italic');
   doc.setTextColor(100, 100, 100);
   const dedication = sanitizeTextForPdf('„Twoje slowo jest lampa dla moich stop i swiatlem na mojej sciezce.” (Ps 119, 105)');
-  doc.text(doc.splitTextToSize(dedication, 90), pageWidth / 2, 100, { align: 'center' });
+  doc.text(doc.splitTextToSize(dedication, getContentWidth() - 10), pageWidth / 2, 100, { align: 'center' });
 
   // PAGE 3: Strona Tytułowa
   doc.addPage();
@@ -151,18 +151,19 @@ export async function generatePodPdf(
   doc.setFont('times', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(50, 50, 50);
-  doc.text(author.toUpperCase(), pageWidth / 2, 50, { align: 'center' });
+  doc.text(author.toUpperCase(), pageWidth / 2, 45, { align: 'center' });
 
-  doc.setFontSize(20);
+  doc.setFontSize(18);
   doc.setTextColor(20, 20, 20);
   const titleLines = doc.splitTextToSize(bookTitle, getContentWidth());
-  doc.text(titleLines, pageWidth / 2, 75, { align: 'center' });
+  doc.text(titleLines, pageWidth / 2, 68, { align: 'center' });
 
   doc.setFont('times', 'italic');
   doc.setFontSize(11);
   doc.setTextColor(80, 80, 80);
   if (bookSubtitle) {
-    doc.text(doc.splitTextToSize(bookSubtitle, getContentWidth()), pageWidth / 2, 95, { align: 'center' });
+    const subLines = doc.splitTextToSize(bookSubtitle, getContentWidth());
+    doc.text(subLines, pageWidth / 2, 92, { align: 'center' });
   }
 
   doc.setFont('times', 'normal');
@@ -172,7 +173,7 @@ export async function generatePodPdf(
     : options.exportScope === 'year'
     ? `Wydanie Roczne: Rok ${yr} * 365 Czytan`
     : `Wpis Dnia Cyklu`;
-  doc.text(sanitizeTextForPdf(scopeDesc), pageWidth / 2, 120, { align: 'center' });
+  doc.text(sanitizeTextForPdf(scopeDesc), pageWidth / 2, 118, { align: 'center' });
 
   doc.setFontSize(9);
   doc.text('WYDANIE PRINT-ON-DEMAND (POD)', pageWidth / 2, pageHeight - 35, { align: 'center' });
@@ -206,8 +207,9 @@ export async function generatePodPdf(
   ];
   let curY = pageHeight - 110;
   copyrightText.forEach(line => {
-    doc.text(line, leftX4, curY);
-    curY += 4.2;
+    const cLines = doc.splitTextToSize(line, getContentWidth());
+    doc.text(cLines, leftX4, curY);
+    curY += cLines.length * 4.2;
   });
 
   // Determine list of entries to process
@@ -222,102 +224,154 @@ export async function generatePodPdf(
     doc.addPage();
     pageNumber++;
 
-    const leftX = getLeftMargin(pageNumber);
-    const chapterTitle = sanitizeTextForPdf(currentEntry.title || `Dzien ${currentEntry.dayNumber || idx + 1}`);
+    let curLeft = getLeftMargin(pageNumber);
+    const chapterTitleRaw = currentEntry.title || `Dzien ${currentEntry.dayNumber || idx + 1}`;
+    const sanitizedTitle = sanitizeTextForPdf(chapterTitleRaw);
 
     doc.setFont('times', 'bold');
-    doc.setFontSize(15);
+    doc.setFontSize(13.5);
     doc.setTextColor(20, 20, 20);
-    doc.text(chapterTitle, leftX, 38);
+
+    // Split Chapter Title so it NEVER overflows right margin
+    const titleLines = doc.splitTextToSize(sanitizedTitle, getContentWidth());
+    let currentY = 32;
+    for (const tLine of titleLines) {
+      doc.text(tLine, curLeft, currentY);
+      currentY += 5.5;
+    }
 
     doc.setLineWidth(0.3);
     doc.setDrawColor(180, 180, 180);
-    doc.line(leftX, 42, leftX + getContentWidth(), 42);
+    doc.line(curLeft, currentY + 1, curLeft + getContentWidth(), currentY + 1);
+    currentY += 8;
 
-    let currentY = 52;
-
+    // Passage
     if (currentEntry.passage || currentEntry.apocryphaPassage) {
       doc.setFont('times', 'italic');
-      doc.setFontSize(10);
+      doc.setFontSize(9.5);
       doc.setTextColor(70, 70, 70);
       const passText = sanitizeTextForPdf(`Fragment: ${currentEntry.passage || ''} ${currentEntry.apocryphaPassage ? `| Apokryf: ${currentEntry.apocryphaPassage}` : ''}`);
-      doc.text(doc.splitTextToSize(passText, getContentWidth()), leftX, currentY);
-      currentY += 10;
+      const passLines = doc.splitTextToSize(passText, getContentWidth());
+      for (const pLine of passLines) {
+        if (currentY + 4.8 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+          doc.addPage();
+          pageNumber++;
+          curLeft = getLeftMargin(pageNumber);
+          currentY = topMargin + 10;
+        }
+        doc.text(pLine, curLeft, currentY);
+        currentY += 4.8;
+      }
+      currentY += 4;
     }
 
-    if (currentEntry.mystery || currentEntry.intention) {
+    // Mystery
+    if (currentEntry.mystery) {
       doc.setFont('times', 'bold');
-      doc.setFontSize(10);
+      doc.setFontSize(9.5);
       doc.setTextColor(60, 60, 60);
-      if (currentEntry.mystery) {
-        doc.text(sanitizeTextForPdf(`Tajemnica: ${currentEntry.mystery}`), leftX, currentY);
-        currentY += 6;
+      const mystText = sanitizeTextForPdf(`Tajemnica: ${currentEntry.mystery}`);
+      const mystLines = doc.splitTextToSize(mystText, getContentWidth());
+      for (const mLine of mystLines) {
+        if (currentY + 4.8 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+          doc.addPage();
+          pageNumber++;
+          curLeft = getLeftMargin(pageNumber);
+          currentY = topMargin + 10;
+        }
+        doc.text(mLine, curLeft, currentY);
+        currentY += 4.8;
       }
-      if (currentEntry.intention) {
-        doc.setFont('times', 'italic');
-        doc.text(sanitizeTextForPdf(`Intencja: ${currentEntry.intention}`), leftX, currentY);
-        currentY += 8;
-      }
+      currentY += 2;
     }
 
-    // Paragraphs
+    // Intention
+    if (currentEntry.intention) {
+      doc.setFont('times', 'italic');
+      doc.setFontSize(9.5);
+      doc.setTextColor(60, 60, 60);
+      const intText = sanitizeTextForPdf(`Intencja: ${currentEntry.intention}`);
+      const intLines = doc.splitTextToSize(intText, getContentWidth());
+      for (const iLine of intLines) {
+        if (currentY + 4.8 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+          doc.addPage();
+          pageNumber++;
+          curLeft = getLeftMargin(pageNumber);
+          currentY = topMargin + 10;
+        }
+        doc.text(iLine, curLeft, currentY);
+        currentY += 4.8;
+      }
+      currentY += 4;
+    }
+
+    // Body Paragraphs Line-by-Line Pagination (100% margin safe)
     const rawParagraphs = (currentEntry.content || '').split('\n').filter(p => p.trim().length > 0);
 
     doc.setFont('times', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(9.8);
     doc.setTextColor(30, 30, 30);
-    const lineHeight = 5.0;
+    const lineHeight = 4.7;
 
     for (const rawPara of rawParagraphs) {
       const sanitizedPara = sanitizeTextForPdf(rawPara);
-      const lines = doc.splitTextToSize(sanitizedPara, getContentWidth());
-      const neededHeight = lines.length * lineHeight + 4;
+      const paraLines = doc.splitTextToSize(sanitizedPara, getContentWidth());
 
-      if (currentY + neededHeight > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, chapterTitle, pageWidth, pageHeight, topMargin, bottomMargin);
-        doc.addPage();
-        pageNumber++;
-        currentY = topMargin + 10;
+      for (const line of paraLines) {
+        if (currentY + lineHeight > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+          doc.addPage();
+          pageNumber++;
+          curLeft = getLeftMargin(pageNumber);
+          currentY = topMargin + 10;
+        }
+        doc.text(line, curLeft, currentY);
+        currentY += lineHeight;
       }
-
-      const curLeft = getLeftMargin(pageNumber);
-      doc.text(lines, curLeft, currentY);
-      currentY += lines.length * lineHeight + 3.5;
+      currentY += 2.8; // Spacing after paragraph
     }
 
-    // Prayer box
+    // Prayer Box (Strictly bounded inside margins)
     if (currentEntry.prayer && options.includePrayer !== false) {
       const sanitizedPrayer = sanitizeTextForPdf(currentEntry.prayer);
       const prayerLines = doc.splitTextToSize(sanitizedPrayer, getContentWidth() - 10);
-      const prayerBoxHeight = prayerLines.length * 4.8 + 18;
+      const prayerBoxHeight = prayerLines.length * 4.4 + 14;
 
       if (currentY + prayerBoxHeight > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, chapterTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
         doc.addPage();
         pageNumber++;
+        curLeft = getLeftMargin(pageNumber);
         currentY = topMargin + 10;
       }
 
-      const curLeft = getLeftMargin(pageNumber);
+      curLeft = getLeftMargin(pageNumber);
       doc.setDrawColor(190, 160, 110);
       doc.setLineWidth(0.4);
       doc.setFillColor(252, 250, 245);
       doc.roundedRect(curLeft, currentY, getContentWidth(), prayerBoxHeight, 2, 2, 'FD');
 
       doc.setFont('times', 'bold');
-      doc.setFontSize(9.5);
+      doc.setFontSize(9);
       doc.setTextColor(140, 90, 30);
-      doc.text('MODLITWA SERCA', curLeft + getContentWidth() / 2, currentY + 7, { align: 'center' });
+      doc.text('MODLITWA SERCA', curLeft + getContentWidth() / 2, currentY + 5.5, { align: 'center' });
 
       doc.setFont('times', 'italic');
-      doc.setFontSize(9.5);
+      doc.setFontSize(8.8);
       doc.setTextColor(40, 40, 40);
-      doc.text(prayerLines, curLeft + 5, currentY + 14);
+      let pY = currentY + 11;
+      for (const pLine of prayerLines) {
+        doc.text(pLine, curLeft + 5, pY);
+        pY += 4.3;
+      }
 
-      currentY += prayerBoxHeight + 8;
+      currentY += prayerBoxHeight + 6;
     }
 
-    addHeaderFooter(doc, pageNumber, bookTitle, chapterTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
   }
 
   return doc.output('blob');
@@ -341,11 +395,14 @@ function addHeaderFooter(
   // Footer: Page Number centered
   doc.text(String(pageNum), width / 2, height - bottomM + 8, { align: 'center' });
 
-  // Running header: only for page 5 and above
+  // Running header: page 5 and above
   if (pageNum >= 5) {
     const isOdd = pageNum % 2 !== 0;
-    const headerText = isOdd ? chapterTitle : bookTitle;
-    doc.text(headerText.toUpperCase().substring(0, 45), width / 2, topM - 6, { align: 'center' });
+    let headerText = isOdd ? chapterTitle : bookTitle;
+    if (headerText.length > 38) {
+      headerText = headerText.substring(0, 35) + '...';
+    }
+    doc.text(headerText.toUpperCase(), width / 2, topM - 6, { align: 'center' });
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.2);
     doc.line(18, topM - 3, width - 18, topM - 3);
@@ -412,6 +469,7 @@ export async function generatePodDocx(
     <w:pPrDefault>
       <w:pPr>
         <w:spacing w:line="276" w:lineRule="auto" w:after="160"/>
+        <w:wordWrap/>
         <w:jc w:val="both"/>
       </w:pPr>
     </w:pPrDefault>
@@ -433,37 +491,37 @@ export async function generatePodDocx(
       <w:p>
         <w:pPr>
           <w:ind w:firstLine="360"/>
-          <w:spacing w:line="300" w:after="140"/>
+          <w:spacing w:line="288" w:after="120"/>
           <w:jc w:val="both"/>
         </w:pPr>
         <w:r>
-          <w:rPr><w:sz w:val="22"/></w:rPr>
+          <w:rPr><w:sz w:val="21"/></w:rPr>
           <w:t>${escapeXml(p)}</w:t>
         </w:r>
       </w:p>`).join('');
 
     const prayerXml = curEntry.prayer ? `
       <w:p>
-        <w:pPr><w:spacing w:before="400" w:after="100"/><w:jc w:val="center"/></w:pPr>
+        <w:pPr><w:spacing w:before="360" w:after="100"/><w:jc w:val="center"/></w:pPr>
         <w:r><w:rPr><w:b/><w:sz w:val="20"/><w:color w:val="995511"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
       </w:p>
       <w:p>
-        <w:pPr><w:spacing w:after="300"/><w:jc w:val="center"/></w:pPr>
-        <w:r><w:rPr><w:i/><w:sz w:val="22"/><w:color w:val="333333"/></w:rPr><w:t>${escapeXml(curEntry.prayer)}</w:t></w:r>
+        <w:pPr><w:spacing w:after="280"/><w:jc w:val="center"/></w:pPr>
+        <w:r><w:rPr><w:i/><w:sz w:val="21"/><w:color w:val="333333"/></w:rPr><w:t>${escapeXml(curEntry.prayer)}</w:t></w:r>
       </w:p>` : '';
 
     chaptersXml += `
       ${idx > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : ''}
       <w:p>
-        <w:pPr><w:spacing w:before="400" w:after="300"/><w:jc w:val="left"/></w:pPr>
+        <w:pPr><w:spacing w:before="360" w:after="240"/><w:jc w:val="left"/></w:pPr>
         <w:r>
-          <w:rPr><w:b/><w:sz w:val="32"/><w:color w:val="995511"/></w:rPr>
+          <w:rPr><w:b/><w:sz w:val="28"/><w:color w:val="995511"/></w:rPr>
           <w:t>${chapterTitle}</w:t>
         </w:r>
       </w:p>
       ${curEntry.passage ? `
       <w:p>
-        <w:pPr><w:spacing w:after="200"/></w:pPr>
+        <w:pPr><w:spacing w:after="180"/></w:pPr>
         <w:r><w:rPr><w:i/><w:sz w:val="20"/><w:color w:val="555555"/></w:rPr><w:t>Fragment: ${escapeXml(curEntry.passage)}</w:t></w:r>
       </w:p>` : ''}
       ${paragraphsXml}
@@ -479,21 +537,21 @@ export async function generatePodDocx(
     <w:p>
       <w:pPr><w:spacing w:before="1800" w:after="300"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Georgia"/><w:sz w:val="28"/><w:color w:val="555555"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Georgia"/><w:sz w:val="26"/><w:color w:val="555555"/></w:rPr>
         <w:t>${author.toUpperCase()}</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:before="400" w:after="400"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Georgia"/><w:b/><w:sz w:val="44"/><w:color w:val="111111"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Georgia"/><w:b/><w:sz w:val="40"/><w:color w:val="111111"/></w:rPr>
         <w:t>${bookTitle}</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:after="2000"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Georgia"/><w:i/><w:sz w:val="24"/><w:color w:val="666666"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Georgia"/><w:i/><w:sz w:val="22"/><w:color w:val="666666"/></w:rPr>
         <w:t>${bookSubtitle}</w:t>
       </w:r>
     </w:p>
@@ -576,20 +634,26 @@ export async function generateEpub(
   </rootfiles>
 </container>`);
 
-  // 3. OEBPS/style.css
+  // 3. OEBPS/style.css with responsive margins and word wrap
   zip.file('OEBPS/style.css', `
 body {
   font-family: Georgia, 'Times New Roman', serif;
   line-height: 1.6;
-  margin: 5%;
+  margin: 4%;
+  padding: 0;
   color: #1a1a1a;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 h1 {
-  font-size: 1.6em;
+  font-size: 1.5em;
   color: #8c5310;
   text-align: center;
-  margin-top: 1.5em;
+  margin-top: 1.2em;
   margin-bottom: 0.5em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 h2 {
   font-size: 1.1em;
@@ -597,16 +661,23 @@ h2 {
   text-align: center;
   font-weight: normal;
   font-style: italic;
-  margin-bottom: 1.5em;
+  margin-bottom: 1.2em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 p {
   text-indent: 1.5em;
   margin-top: 0;
   margin-bottom: 0.4em;
   text-align: justify;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 p.first {
   text-indent: 0;
+}
+.chapter-content {
+  max-width: 100%;
 }
 .prayer-box {
   border: 1px solid #d4af37;
@@ -616,6 +687,10 @@ p.first {
   border-radius: 4px;
   text-align: center;
   font-style: italic;
+  box-sizing: border-box;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 .prayer-title {
   font-weight: bold;
