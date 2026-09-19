@@ -159,11 +159,14 @@ function getPdfPageData(
   sectionId: string,
   currentDate: CycleDate,
   currentEntry: SectionEntry,
-  customEntries?: Record<string, SectionEntry>
+  customEntries?: Record<string, SectionEntry>,
+  selectedYear: 1 | 2 | 3 | 4 = 1
 ) {
-  const safeP = Math.max(1, Math.min(1460, P));
-  const dayNum = Math.floor((safeP - 1) / 4) + 1; // 1 to 365
-  const subPage = ((safeP - 1) % 4) + 1; // 1, 2, 3, or 4
+  const isBiblia = sectionId === 'ebook_biblia' || sectionId === 'biblia365';
+  const maxP = isBiblia ? 365 : 1460;
+  const safeP = Math.max(1, Math.min(maxP, P));
+  const dayNum = isBiblia ? safeP : (Math.floor((safeP - 1) / 4) + 1); // 1 to 365
+  const subPage = isBiblia ? 1 : (((safeP - 1) % 4) + 1); // 1, 2, 3, or 4
 
   const dateObj = getCycleDateByDayNumber(dayNum);
 
@@ -222,25 +225,17 @@ function getPdfPageData(
 
   // 3. Direct handling for ebook_biblia:
   if (sectionId === 'ebook_biblia' || sectionId === 'biblia365') {
-    const bibliaEntry = getBibliaEntryForDayAndYear(dayNum, 1);
-    const fullRawText = `${bibliaEntry.title}\n\n${bibliaEntry.content}`;
-    const { chunk1, chunk2, chunk3, chunk4 } = splitContentIntoFourChunks(fullRawText);
-    let chunk = '';
-    if (subPage === 1) chunk = chunk1;
-    else if (subPage === 2) chunk = chunk2;
-    else if (subPage === 3) chunk = chunk3;
-    else chunk = chunk4;
-
+    const bibliaEntry = getBibliaEntryForDayAndYear(dayNum, selectedYear);
     return {
       pdfPageNumber: safeP,
       dayNumber: dayNum,
-      subPage,
+      subPage: 1,
       dateKey: dateObj.dateKey,
       displayDate: dateObj.displayDate,
       season: dateObj.season,
       title: bibliaEntry.title,
       subtitle: `${dateObj.displayDate} • ${bibliaEntry.category} (${bibliaEntry.passage})`,
-      chunk,
+      chunk: bibliaEntry.content,
       prayer: '',
       mystery: '',
       intention: '',
@@ -332,6 +327,7 @@ export const FlipbookReader: React.FC<Props> = ({
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isFullscreenZoom, setIsFullscreenZoom] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'pdf' | 'text'>('text');
+  const [selectedYear, setSelectedYear] = useState<1 | 2 | 3 | 4>(1);
 
   // Touch gesture state for horizontal page flipping
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -417,13 +413,16 @@ export const FlipbookReader: React.FC<Props> = ({
     setTouchEndX(null);
   };
 
+  const isBibliaSection = section.id === 'ebook_biblia' || section.id === 'biblia365';
+  const maxBookPages = isBibliaSection ? 365 : 1460;
+
   // Calculate 1:1 PDF Page numbers for left and right pages in spread mode
   const leftPdfPageNum = currentPageNum % 2 === 0 ? Math.max(1, currentPageNum - 1) : currentPageNum;
   const rightPdfPageNum = leftPdfPageNum + 1;
 
-  const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry, customEntries);
-  const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry, customEntries);
-  const singlePageData = getPdfPageData(currentPageNum, section.id, currentDate, entry, customEntries);
+  const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry, customEntries, selectedYear);
+  const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry, customEntries, selectedYear);
+  const singlePageData = getPdfPageData(currentPageNum, section.id, currentDate, entry, customEntries, selectedYear);
 
   const handleResetToTitlePage = () => {
     if (currentPageNum === 1 || isFlipping) return;
@@ -498,11 +497,11 @@ export const FlipbookReader: React.FC<Props> = ({
   const flipTimerRef = useRef<any>(null);
 
   const handleTurnNext = () => {
-    if (currentPageNum >= 1460) return;
+    if (currentPageNum >= maxBookPages) return;
     const step = layoutMode === 'single' ? 1 : 2;
-    const nextPos = Math.min(1460, currentPageNum + step);
+    const nextPos = Math.min(maxBookPages, currentPageNum + step);
     setCurrentPageNum(nextPos);
-    const newDayNum = Math.floor((nextPos - 1) / 4) + 1;
+    const newDayNum = isBibliaSection ? nextPos : (Math.floor((nextPos - 1) / 4) + 1);
     onSelectDate(getCycleDateByDayNumber(newDayNum));
 
     setFlipDirection('next');
@@ -520,7 +519,7 @@ export const FlipbookReader: React.FC<Props> = ({
     const step = layoutMode === 'single' ? 1 : 2;
     const prevPos = Math.max(1, currentPageNum - step);
     setCurrentPageNum(prevPos);
-    const newDayNum = Math.floor((prevPos - 1) / 4) + 1;
+    const newDayNum = isBibliaSection ? prevPos : (Math.floor((prevPos - 1) / 4) + 1);
     onSelectDate(getCycleDateByDayNumber(newDayNum));
 
     setFlipDirection('prev');
@@ -764,40 +763,42 @@ export const FlipbookReader: React.FC<Props> = ({
         );
       }
 
-      // Elegant 1:1 Title Cover Page in Text View (Format A5)
-      return (
-        <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1">
-          <div className="w-full pt-2 border-b border-amber-600/20 pb-2">
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
-              Format A5 (148 x 210 mm) • Tom 365 Dni
-            </span>
-          </div>
-
-          <div className="my-auto space-y-3 py-4">
-            <div className="w-14 h-14 mx-auto rounded-full bg-amber-600/15 border-2 border-amber-600/40 flex items-center justify-center text-amber-800 dark:text-amber-300 shadow-md">
-              <BookOpen className="w-7 h-7" />
+      if (section.id !== 'ebook_biblia' && section.id !== 'biblia365') {
+        // Elegant 1:1 Title Cover Page in Text View (Format A5)
+        return (
+          <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1">
+            <div className="w-full pt-2 border-b border-amber-600/20 pb-2">
+              <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
+                Format A5 (148 x 210 mm) • Tom 365 Dni
+              </span>
             </div>
 
-            <h1 className="font-heading-cinzel text-xl sm:text-2xl font-extrabold text-[#2c1e12] dark:text-[#f3e8d2] tracking-wide leading-tight">
-              {section.name}
-            </h1>
+            <div className="my-auto space-y-3 py-4">
+              <div className="w-14 h-14 mx-auto rounded-full bg-amber-600/15 border-2 border-amber-600/40 flex items-center justify-center text-amber-800 dark:text-amber-300 shadow-md">
+                <BookOpen className="w-7 h-7" />
+              </div>
 
-            <p className="font-serif-book italic text-xs sm:text-sm text-[#6b5543] dark:text-[#cbd5e1] max-w-md mx-auto">
-              {section.subtitle || section.description}
-            </p>
+              <h1 className="font-heading-cinzel text-xl sm:text-2xl font-extrabold text-[#2c1e12] dark:text-[#f3e8d2] tracking-wide leading-tight">
+                {section.name}
+              </h1>
 
-            <div className="w-20 h-0.5 mx-auto bg-gradient-to-r from-transparent via-amber-600 to-transparent my-2" />
+              <p className="font-serif-book italic text-xs sm:text-sm text-[#6b5543] dark:text-[#cbd5e1] max-w-md mx-auto">
+                {section.subtitle || section.description}
+              </p>
 
-            <div className="text-[11px] font-semibold text-[#8a725f] dark:text-[#94a3b8] font-sans-ui uppercase tracking-widest">
-              Autor: Dominik Kuta • Droga365
+              <div className="w-20 h-0.5 mx-auto bg-gradient-to-r from-transparent via-amber-600 to-transparent my-2" />
+
+              <div className="text-[11px] font-semibold text-[#8a725f] dark:text-[#94a3b8] font-sans-ui uppercase tracking-widest">
+                Autor: Dominik Kuta • Droga365
+              </div>
+            </div>
+
+            <div className="w-full pb-1 border-t border-amber-600/20 pt-2 text-[10px] text-[#7a6552] dark:text-[#94a3b8] font-serif-book italic">
+              Strona Tytułowa A5 1:1 • Pierwsza Kartka Księgi
             </div>
           </div>
-
-          <div className="w-full pb-1 border-t border-amber-600/20 pt-2 text-[10px] text-[#7a6552] dark:text-[#94a3b8] font-serif-book italic">
-            Strona Tytułowa A5 1:1 • Pierwsza Kartka Księgi
-          </div>
-        </div>
-      );
+        );
+      }
     }
 
     return (
@@ -898,6 +899,25 @@ export const FlipbookReader: React.FC<Props> = ({
 
         {/* Action controls */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          {/* 4-Year Selector for ebook_biblia / biblia365 */}
+          {(section.id === 'ebook_biblia' || section.id === 'biblia365') && (
+            <div className="flex items-center rounded-xl border border-emerald-600/40 p-0.5 bg-emerald-950/20 text-xs font-semibold">
+              {([1, 2, 3, 4] as const).map(yr => (
+                <button
+                  key={yr}
+                  onClick={() => setSelectedYear(yr)}
+                  className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    selectedYear === yr
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/20'
+                  }`}
+                >
+                  Rok {yr}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Layout Mode Toggle */}
           <div className="flex items-center rounded-xl border border-[#d8c8b6] dark:border-[#28354a] p-0.5 bg-[#f5ecdf] dark:bg-[#18202e]">
             <button
