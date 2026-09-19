@@ -7,6 +7,8 @@ import { SectionEntry, SectionMeta, SUPPORTED_LANGUAGES, UploadedPdf } from '../
 import { generatePodPdf, generatePodDocx, generateEpub, triggerBrowserDownload } from '../utils/ebookGenerators';
 import { translateEntry } from '../utils/translationService';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
+import { getWnrEntryForDay } from '../data/wnr365Data';
+import { getRhzEntryForDay } from '../data/rhz365Data';
 
 interface Props {
   isOpen: boolean;
@@ -16,6 +18,16 @@ interface Props {
   uploadedFiles?: UploadedPdf[];
   currentLang: string;
   onLanguageChange?: (lang: string) => void;
+}
+
+// Helper to strip HTML tags for clean PDF & Word exports
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<div class='qr-code-embed-card[\s\S]*?<div class='mt-2.5 font-bold[^>]*>([^<]+)<\/div>[\s\S]*?<div class='text-\[11px\][^>]*>([^<]+)<\/div>[\s\S]*?<\/div><\/div>/gi, '\n[Załączony Materiał Wideo / QR: $1 ($2)]\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
 }
 
 export const DownloadPublishModal: React.FC<Props> = ({
@@ -79,15 +91,44 @@ export const DownloadPublishModal: React.FC<Props> = ({
 
       if (exportScope === 'year' || exportScope === 'season') {
         for (let day = startDay; day <= endDay; day++) {
-          const bEntry = getBibliaEntryForDayAndYear(day, selectedYear);
-          allYearEntries.push({
-            dayNumber: day,
-            dateKey: `Dzień ${day}`,
-            title: bEntry.title || `${bEntry.bookTitle} – Rozdział ${bEntry.chapter}`,
-            passage: bEntry.passage,
-            content: bEntry.content,
-            prayer: `Panie Boże, dziękuję Ci za dar Twojego Słowa z księgi ${bEntry.bookTitle}. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
-          });
+          let dayEntry: SectionEntry;
+
+          if (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || meta.id === 'wnr366') {
+            const wEntry = getWnrEntryForDay(day);
+            const cleanContent = stripHtml(wEntry.content || (wEntry.page1 ? `${wEntry.page1}\n\n${wEntry.page2}` : ''));
+            dayEntry = {
+              dayNumber: day,
+              dateKey: `Dzień ${day}`,
+              title: wEntry.title || `WnR365 – Widoki na Raj – Dzień ${day}`,
+              subtitle: wEntry.displayDate ? `WnR365 • ${wEntry.displayDate}` : undefined,
+              content: cleanContent,
+              prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Widoki na Raj. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
+            };
+          } else if (meta.id === 'rhz365' || meta.id === 'ebook_rhz') {
+            const rEntry = getRhzEntryForDay(day);
+            const cleanContent = stripHtml(rEntry.fullText || rEntry.explanation || '');
+            dayEntry = {
+              dayNumber: day,
+              dateKey: `Dzień ${day}`,
+              title: rEntry.stageTitle || `RHZ365 – Dzień ${day}`,
+              passage: rEntry.passage,
+              content: cleanContent,
+              prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Różaniec Historii Zbawienia. Amen.`
+            };
+          } else {
+            // Biblia365 & ebook_biblia (4-year cycle)
+            const bEntry = getBibliaEntryForDayAndYear(day, selectedYear);
+            dayEntry = {
+              dayNumber: day,
+              dateKey: `Dzień ${day}`,
+              title: bEntry.title || `${bEntry.bookTitle} – Rozdział ${bEntry.chapter}`,
+              passage: bEntry.passage,
+              content: bEntry.content,
+              prayer: `Panie Boże, dziękuję Ci za dar Twojego Słowa z księgi ${bEntry.bookTitle}. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
+            };
+          }
+
+          allYearEntries.push(dayEntry);
         }
       }
 
@@ -100,7 +141,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
           title: translated.title,
           mystery: translated.mystery,
           intention: translated.intention,
-          content: translated.content,
+          content: stripHtml(translated.content),
           prayer: translated.prayer
         };
         setIsTranslating(false);
@@ -122,7 +163,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         safeScope = (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
       }
 
-      const baseFilename = `Biblia365_${safeSection}_${safeScope}_${exportLang}`;
+      const baseFilename = `Droga365_${safeSection}_${safeScope}_${exportLang}`;
 
       const options = {
         format: selectedFormat,
@@ -144,15 +185,15 @@ export const DownloadPublishModal: React.FC<Props> = ({
       if (selectedFormat === 'pdf') {
         const blob = await generatePodPdf(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_POD_${pageSize}.pdf`);
-        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla: ${scopeLabel} w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla ${meta.name} – ${scopeLabel} w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'docx') {
         const blob = await generatePodDocx(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_KDP_Format.docx`);
-        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${meta.name} – ${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'epub') {
         const blob = await generateEpub(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_Ebook.epub`);
-        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spisem treści (${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spisem treści (${meta.name} – ${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
       }
     } catch (err: any) {
       console.error('Błąd generowania pliku:', err);
@@ -245,7 +286,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
                     <Calendar className="w-4 h-4" />
-                    Wybierz Zakres Czytań do Pobrania:
+                    Wybierz Zakres Czytań do Pobrania ({meta.name}):
                   </label>
                   <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
                     100% Czysty Tekst i Polskie Znaki
@@ -507,7 +548,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     <>
                       <Download className="w-5 h-5" />
                       <span>
-                        Pobierz {selectedFormat.toUpperCase()} ({exportScope === 'season' ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : exportScope === 'year' ? `Tom Rok ${selectedYear}` : `Rozdział Dnia`})
+                        Pobierz {selectedFormat.toUpperCase()} ({meta.name} – {exportScope === 'season' ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : exportScope === 'year' ? `Tom Rok ${selectedYear}` : `Rozdział Dnia`})
                       </span>
                     </>
                   )}
