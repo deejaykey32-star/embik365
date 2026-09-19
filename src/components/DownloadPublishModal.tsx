@@ -29,7 +29,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'download' | 'platforms' | 'uploaded'>('download');
   const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'docx' | 'epub'>('pdf');
-  const [exportScope, setExportScope] = useState<'single' | 'year'>('year');
+  const [exportScope, setExportScope] = useState<'single' | 'season' | 'year'>('season');
+  const [selectedSeason, setSelectedSeason] = useState<'zima' | 'wiosna' | 'lato' | 'jesien'>('zima');
   const [selectedYear, setSelectedYear] = useState<1 | 2 | 3 | 4>(1);
   const [pageSize, setPageSize] = useState<'6x9' | 'a5'>('6x9');
   const [exportLang, setExportLang] = useState<string>(currentLang || 'pl');
@@ -54,8 +55,30 @@ export const DownloadPublishModal: React.FC<Props> = ({
       let entryToExport = entry;
       let allYearEntries: SectionEntry[] = [];
 
+      let startDay = 1;
+      let endDay = 365;
+
       if (exportScope === 'year') {
-        for (let day = 1; day <= 365; day++) {
+        startDay = 1;
+        endDay = 365;
+      } else if (exportScope === 'season') {
+        if (selectedSeason === 'zima') {
+          startDay = 1;
+          endDay = 91; // 91 days
+        } else if (selectedSeason === 'wiosna') {
+          startDay = 92;
+          endDay = 182; // 91 days
+        } else if (selectedSeason === 'lato') {
+          startDay = 183;
+          endDay = 273; // 91 days
+        } else if (selectedSeason === 'jesien') {
+          startDay = 274;
+          endDay = 365; // 92 days
+        }
+      }
+
+      if (exportScope === 'year' || exportScope === 'season') {
+        for (let day = startDay; day <= endDay; day++) {
           const bEntry = getBibliaEntryForDayAndYear(day, selectedYear);
           allYearEntries.push({
             dayNumber: day,
@@ -63,7 +86,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
             title: bEntry.title || `${bEntry.bookTitle} – Rozdział ${bEntry.chapter}`,
             passage: bEntry.passage,
             content: bEntry.content,
-            prayer: `Panie Boże, dziękuję Ci za dar Twojego Słowa z księgi ${bEntry.bookTitle}. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki. Amen.`
+            prayer: `Panie Boże, dziękuję Ci za dar Twojego Słowa z księgi ${bEntry.bookTitle}. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
           });
         }
       }
@@ -84,7 +107,21 @@ export const DownloadPublishModal: React.FC<Props> = ({
       }
 
       const safeSection = meta.id.replace(/[^a-zA-Z0-9]/g, '_');
-      const safeScope = exportScope === 'year' ? `Rok_${selectedYear}_Tom_365_Dni` : (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
+      let safeScope = '';
+      if (exportScope === 'year') {
+        safeScope = `Rok_${selectedYear}_Caly_Tom_365_Dni`;
+      } else if (exportScope === 'season') {
+        const seasonNames: Record<string, string> = {
+          zima: 'Tom_1_Zima_91_Dni',
+          wiosna: 'Tom_2_Wiosna_91_Dni',
+          lato: 'Tom_3_Lato_91_Dni',
+          jesien: 'Tom_4_Jesien_92_Dni'
+        };
+        safeScope = `Rok_${selectedYear}_${seasonNames[selectedSeason] || 'Sezon'}`;
+      } else {
+        safeScope = (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
+      }
+
       const baseFilename = `Biblia365_${safeSection}_${safeScope}_${exportLang}`;
 
       const options = {
@@ -93,22 +130,29 @@ export const DownloadPublishModal: React.FC<Props> = ({
         language: exportLang,
         languageName: selectedLangObj.name,
         exportScope,
+        selectedSeason,
         selectedYear,
-        allYearEntries: exportScope === 'year' ? allYearEntries : undefined
+        allYearEntries: (exportScope === 'year' || exportScope === 'season') ? allYearEntries : undefined
       };
+
+      const scopeLabel = exportScope === 'season'
+        ? `Rok ${selectedYear} (${selectedSeason.toUpperCase()}: ${allYearEntries.length} dni)`
+        : exportScope === 'year'
+        ? `Rok ${selectedYear} (365 dni)`
+        : 'pojedynczy rozdział';
 
       if (selectedFormat === 'pdf') {
         const blob = await generatePodPdf(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_POD_${pageSize}.pdf`);
-        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla ${exportScope === 'year' ? `Roku ${selectedYear} (365 dni)` : 'pojedynczego rozdziału'} w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla: ${scopeLabel} w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'docx') {
         const blob = await generatePodDocx(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_KDP_Format.docx`);
-        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${exportScope === 'year' ? `Rok ${selectedYear} - 365 dni` : 'pojedynczy rozdział'}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'epub') {
         const blob = await generateEpub(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_Ebook.epub`);
-        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spisem treści (${exportScope === 'year' ? `Rok ${selectedYear} - 365 dni` : 'pojedynczy rozdział'}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spisem treści (${scopeLabel}) w języku: ${selectedLangObj.nativeName}`);
       }
     } catch (err: any) {
       console.error('Błąd generowania pliku:', err);
@@ -201,14 +245,28 @@ export const DownloadPublishModal: React.FC<Props> = ({
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
                     <Calendar className="w-4 h-4" />
-                    Wybierz Zakres i Tom Cyklu do Pobrania:
+                    Wybierz Zakres Czytań do Pobrania:
                   </label>
                   <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
                     100% Czysty Tekst i Polskie Znaki
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {/* Seasonal Option */}
+                  <button
+                    type="button"
+                    onClick={() => setExportScope('season')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      exportScope === 'season'
+                        ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
+                        : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
+                    }`}
+                  >
+                    <div className="text-xs text-stone-900 dark:text-white font-bold">Tom Sezonowy (91/92 Dni)</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Zima (91d), Wiosna (91d), Lato (91d), Jesień (92d).</div>
+                  </button>
+
                   {/* Full Year Volume Option */}
                   <button
                     type="button"
@@ -219,8 +277,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
                         : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
                     }`}
                   >
-                    <div className="text-xs text-stone-900 dark:text-white font-bold">Pełny Tom Roczny (365 Czytań)</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pobiera cały rok czytań (365 rozdziałów) w jednym kompletnym e-booku/pliku do druku.</div>
+                    <div className="text-xs text-stone-900 dark:text-white font-bold">Pełny Tom Roczny (365 Dni)</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Cały rok czytań w jednym e-booku/pliku POD.</div>
                   </button>
 
                   {/* Single Chapter Option */}
@@ -234,14 +292,45 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     }`}
                   >
                     <div className="text-xs text-stone-900 dark:text-white font-bold">Pojedynczy Rozdział Dnia</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pobiera wyłącznie aktualnie otwarty rozdział/wpis z tego dnia.</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Wyłącznie dzisiejszy otwarty rozdział.</div>
                   </button>
                 </div>
 
-                {/* Year Selector */}
-                {exportScope === 'year' && (
+                {/* Season Selector */}
+                {exportScope === 'season' && (
+                  <div className="pt-2 space-y-2">
+                    <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Porę Roku (Tom Sezonowy):</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { key: 'zima', label: 'Zima', sub: '91 dni (Dni 1–91)' },
+                        { key: 'wiosna', label: 'Wiosna', sub: '91 dni (Dni 92–182)' },
+                        { key: 'lato', label: 'Lato', sub: '91 dni (Dni 183–273)' },
+                        { key: 'jesien', label: 'Jesień', sub: '92 dni (Dni 274–365)' }
+                      ].map(s => (
+                        <button
+                          key={s.key}
+                          type="button"
+                          onClick={() => setSelectedSeason(s.key as any)}
+                          className={`py-2 px-3 rounded-xl text-left border transition-all ${
+                            selectedSeason === s.key
+                              ? 'bg-amber-600 text-white border-amber-600 shadow-xs font-bold'
+                              : 'bg-white dark:bg-[#282119] border-stone-300 dark:border-[#423425] text-stone-700 dark:text-stone-300'
+                          }`}
+                        >
+                          <div className="text-xs font-bold">{s.label}</div>
+                          <div className={`text-[10px] ${selectedSeason === s.key ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
+                            {s.sub}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Year Selector (for season and year scopes) */}
+                {(exportScope === 'season' || exportScope === 'year') && (
                   <div className="pt-2 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Tom (Rok):</span>
+                    <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Rok Cyklu:</span>
                     <div className="grid grid-cols-4 gap-2 flex-1">
                       {([1, 2, 3, 4] as const).map(yr => (
                         <button
@@ -418,7 +507,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     <>
                       <Download className="w-5 h-5" />
                       <span>
-                        Pobierz {selectedFormat.toUpperCase()} ({exportScope === 'year' ? `Tom Rok ${selectedYear} - 365 Dni` : `Rozdział Dnia`})
+                        Pobierz {selectedFormat.toUpperCase()} ({exportScope === 'season' ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : exportScope === 'year' ? `Tom Rok ${selectedYear}` : `Rozdział Dnia`})
                       </span>
                     </>
                   )}

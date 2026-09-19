@@ -10,7 +10,8 @@ export interface ExportOptions {
   authorName?: string;
   includeCopyright?: boolean;
   includePrayer?: boolean;
-  exportScope?: 'single' | 'year';
+  exportScope?: 'single' | 'season' | 'year';
+  selectedSeason?: 'zima' | 'wiosna' | 'lato' | 'jesien';
   selectedYear?: 1 | 2 | 3 | 4;
   allYearEntries?: SectionEntry[];
 }
@@ -71,6 +72,13 @@ export function triggerBrowserDownload(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
+const SEASON_LABELS_PL: Record<string, string> = {
+  zima: 'Tom 1 – Zima (91 Dni)',
+  wiosna: 'Tom 2 – Wiosna (91 Dni)',
+  lato: 'Tom 3 – Lato (91 Dni)',
+  jesien: 'Tom 4 – Jesień (92 Dni)'
+};
+
 // -------------------------------------------------------------
 // 1. GENERATOR PDF DLA DRUKU NA ŻĄDANIE (POD) - AMAZON KDP & EMPIK
 // -------------------------------------------------------------
@@ -91,8 +99,19 @@ export async function generatePodPdf(
   });
 
   const author = sanitizeTextForPdf(options.authorName || 'Dominik Kuta');
-  const selectedYearText = options.selectedYear ? ` - Rok ${options.selectedYear}` : '';
-  const bookTitle = sanitizeTextForPdf((meta.name || 'Biblia365') + selectedYearText);
+  const yr = options.selectedYear || 1;
+  let rawTitle = meta.name || 'Biblia365';
+
+  if (options.exportScope === 'season' && options.selectedSeason) {
+    const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+    rawTitle += ` - Rok ${yr} - ${seasonStr}`;
+  } else if (options.exportScope === 'year') {
+    rawTitle += ` - Rok ${yr} (Tom Roczny 365 Dni)`;
+  } else {
+    rawTitle += ` - Rok ${yr}`;
+  }
+
+  const bookTitle = sanitizeTextForPdf(rawTitle);
   const bookSubtitle = sanitizeTextForPdf(meta.subtitle || 'Cykl Czytan Biblia365');
 
   // Margins for Print-On-Demand (POD)
@@ -111,7 +130,7 @@ export async function generatePodPdf(
   // Render Front Matter (Half-title, Title Page, Copyright)
   // PAGE 1: Strona Przedtytułowa
   doc.setFont('times', 'normal');
-  doc.setFontSize(14);
+  doc.setFontSize(13);
   doc.setTextColor(80, 80, 80);
   doc.text(bookTitle.toUpperCase(), pageWidth / 2, 70, { align: 'center' });
   doc.setFontSize(10);
@@ -134,7 +153,7 @@ export async function generatePodPdf(
   doc.setTextColor(50, 50, 50);
   doc.text(author.toUpperCase(), pageWidth / 2, 50, { align: 'center' });
 
-  doc.setFontSize(22);
+  doc.setFontSize(20);
   doc.setTextColor(20, 20, 20);
   const titleLines = doc.splitTextToSize(bookTitle, getContentWidth());
   doc.text(titleLines, pageWidth / 2, 75, { align: 'center' });
@@ -148,7 +167,12 @@ export async function generatePodPdf(
 
   doc.setFont('times', 'normal');
   doc.setFontSize(10);
-  doc.text(`Wydanie Roczne: Rok ${options.selectedYear || 1} * 365 Czytan`, pageWidth / 2, 120, { align: 'center' });
+  const scopeDesc = options.exportScope === 'season'
+    ? `Wydanie Sezonowe: Rok ${yr} * ${SEASON_LABELS_PL[options.selectedSeason || 'zima'] || ''}`
+    : options.exportScope === 'year'
+    ? `Wydanie Roczne: Rok ${yr} * 365 Czytan`
+    : `Wpis Dnia Cyklu`;
+  doc.text(sanitizeTextForPdf(scopeDesc), pageWidth / 2, 120, { align: 'center' });
 
   doc.setFontSize(9);
   doc.text('WYDANIE PRINT-ON-DEMAND (POD)', pageWidth / 2, pageHeight - 35, { align: 'center' });
@@ -199,7 +223,7 @@ export async function generatePodPdf(
     pageNumber++;
 
     const leftX = getLeftMargin(pageNumber);
-    const chapterTitle = sanitizeTextForPdf(currentEntry.title || `Dzien ${idx + 1}`);
+    const chapterTitle = sanitizeTextForPdf(currentEntry.title || `Dzien ${currentEntry.dayNumber || idx + 1}`);
 
     doc.setFont('times', 'bold');
     doc.setFontSize(15);
@@ -338,8 +362,19 @@ export async function generatePodDocx(
 ): Promise<Blob> {
   const zip = new JSZip();
   const author = escapeXml(options.authorName || 'Dominik Kuta');
-  const selectedYearText = options.selectedYear ? ` – Rok ${options.selectedYear}` : '';
-  const bookTitle = escapeXml((meta.name || 'Biblia365') + selectedYearText);
+  const yr = options.selectedYear || 1;
+  let rawTitle = meta.name || 'Biblia365';
+
+  if (options.exportScope === 'season' && options.selectedSeason) {
+    const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+    rawTitle += ` – Rok ${yr} – ${seasonStr}`;
+  } else if (options.exportScope === 'year') {
+    rawTitle += ` – Rok ${yr} (Tom Roczny 365 Czytań)`;
+  } else {
+    rawTitle += ` – Rok ${yr}`;
+  }
+
+  const bookTitle = escapeXml(rawTitle);
   const bookSubtitle = escapeXml(meta.subtitle || 'Kanoniczny Cykl Czytań Biblia365');
 
   // 1. [Content_Types].xml
@@ -391,7 +426,7 @@ export async function generatePodDocx(
 
   for (let idx = 0; idx < entriesToProcess.length; idx++) {
     const curEntry = entriesToProcess[idx];
-    const chapterTitle = escapeXml(curEntry.title || `Dzień ${idx + 1}`);
+    const chapterTitle = escapeXml(curEntry.title || `Dzień ${curEntry.dayNumber || idx + 1}`);
     const paragraphs = (curEntry.content || '').split('\n').filter(p => p.trim().length > 0);
 
     const paragraphsXml = paragraphs.map(p => `
@@ -478,7 +513,7 @@ export async function generatePodDocx(
       <w:pPr><w:spacing w:after="100"/><w:jc w:val="left"/></w:pPr>
       <w:r>
         <w:rPr><w:sz w:val="18"/><w:color w:val="777777"/></w:rPr>
-        <w:t>${bookTitle} – Wydanie Roczne POD & E-book.</w:t>
+        <w:t>${bookTitle} – Wydanie POD & E-book.</w:t>
       </w:r>
     </w:p>
 
@@ -510,10 +545,21 @@ export async function generateEpub(
 ): Promise<Blob> {
   const zip = new JSZip();
   const author = escapeXml(options.authorName || 'Dominik Kuta');
-  const selectedYearText = options.selectedYear ? ` – Rok ${options.selectedYear}` : '';
-  const bookTitle = escapeXml((meta.name || 'Biblia365') + selectedYearText);
+  const yr = options.selectedYear || 1;
+  let rawTitle = meta.name || 'Biblia365';
+
+  if (options.exportScope === 'season' && options.selectedSeason) {
+    const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+    rawTitle += ` – Rok ${yr} – ${seasonStr}`;
+  } else if (options.exportScope === 'year') {
+    rawTitle += ` – Rok ${yr} (Tom Roczny 365 Czytań)`;
+  } else {
+    rawTitle += ` – Rok ${yr}`;
+  }
+
+  const bookTitle = escapeXml(rawTitle);
   const bookSubtitle = escapeXml(meta.subtitle || 'Kanoniczny Cykl Czytań Biblia365');
-  const bookId = `urn:uuid:biblia365-year-${options.selectedYear || 1}-${Date.now()}`;
+  const bookId = `urn:uuid:biblia365-yr-${yr}-${options.selectedSeason || 'all'}-${Date.now()}`;
 
   const entriesToProcess: SectionEntry[] = (options.allYearEntries && options.allYearEntries.length > 0)
     ? options.allYearEntries
@@ -603,7 +649,7 @@ p.first {
     const curEntry = entriesToProcess[idx];
     const chapId = `chap_${idx + 1}`;
     const chapFileName = `chapter_${idx + 1}.xhtml`;
-    const chapTitle = escapeXml(curEntry.title || `Dzień ${idx + 1}`);
+    const chapTitle = escapeXml(curEntry.title || `Dzień ${curEntry.dayNumber || idx + 1}`);
 
     manifestItems.push(`<item id="${chapId}" href="${chapFileName}" media-type="application/xhtml+xml"/>`);
     spineItems.push(`<itemref idref="${chapId}"/>`);
