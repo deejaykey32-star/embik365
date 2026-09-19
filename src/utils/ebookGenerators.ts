@@ -16,10 +16,39 @@ export interface ExportOptions {
   allYearEntries?: SectionEntry[];
 }
 
-// Helper to sanitize text for PDF standard fonts (Times / Helvetica)
-// Translates Polish diacritics and special unicode quotes/dashes into clean Latin text
-// preventing WinAnsi encoding corruptions like [, B, D, | in jsPDF.
-export function sanitizeTextForPdf(text: string): string {
+// Helper to convert ArrayBuffer to Base64 for jsPDF font embedding
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+// Helper to sanitize text for XML (DOCX & ePUB)
+function escapeXml(unsafe: string): string {
+  return (unsafe || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+// Helper to clean HTML tags for text PDF & Word exports
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<div class='qr-code-embed-card[\s\S]*?<div class='mt-2.5 font-bold[^>]*>([^<]+)<\/div>[\s\S]*?<div class='text-\[11px\][^>]*>([^<]+)<\/div>[\s\S]*?<\/div><\/div>/gi, '\n[Załączony Materiał Wideo / QR: $1 ($2)]\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
+}
+
+// Fallback ASCII sanitizer if custom font cannot be loaded
+export function sanitizeTextForPdfFallback(text: string): string {
   if (!text) return '';
   return text
     .replace(/„/g, '"')
@@ -50,16 +79,6 @@ export function sanitizeTextForPdf(text: string): string {
     .replace(/Ź/g, 'Z');
 }
 
-// Helper to sanitize text for XML (DOCX & ePUB)
-function escapeXml(unsafe: string): string {
-  return (unsafe || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
 // Download file trigger helper in browser
 export function triggerBrowserDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -79,18 +98,50 @@ const SEASON_LABELS_PL: Record<string, string> = {
   jesien: 'Tom 4 – Jesień (92 Dni)'
 };
 
+// Cache for loaded TTF font Base64 strings in memory
+let fontCache: { reg?: string; bold?: string; ital?: string } | null = null;
+
+async function fetchPdfFonts(): Promise<{ reg?: string; bold?: string; ital?: string }> {
+  if (fontCache) return fontCache;
+  try {
+    const [regRes, boldRes, italRes] = await Promise.all([
+      fetch('/fonts/PTSerif-Regular.ttf'),
+      fetch('/fonts/PTSerif-Bold.ttf'),
+      fetch('/fonts/PTSerif-Italic.ttf')
+    ]);
+
+    if (regRes.ok && boldRes.ok && italRes.ok) {
+      const [regBuf, boldBuf, italBuf] = await Promise.all([
+        regRes.arrayBuffer(),
+        boldRes.arrayBuffer(),
+        italRes.arrayBuffer()
+      ]);
+      fontCache = {
+        reg: arrayBufferToBase64(regBuf),
+        bold: arrayBufferToBase64(boldBuf),
+        ital: arrayBufferToBase64(italBuf)
+      };
+      return fontCache;
+    }
+  } catch (e) {
+    console.warn('Could not fetch custom TTF fonts for jsPDF:', e);
+  }
+  return {};
+}
+
 // -------------------------------------------------------------
 // 1. GENERATOR PDF DLA DRUKU NA ŻĄDANIE (POD) - AMAZON KDP & EMPIK
+// Standard A5 (148x210 mm), Czcionka 12 pt Times New Roman, Kolor Czarny (#000000), Wyjustowanie
 // -------------------------------------------------------------
 export async function generatePodPdf(
   entry: SectionEntry,
   meta: SectionMeta,
   options: ExportOptions
 ): Promise<Blob> {
-  const isA5 = options.size === 'a5';
-  // 6x9 inches in mm: 152.4 x 228.6 | A5 in mm: 148 x 210
-  const pageWidth = isA5 ? 148 : 152.4;
-  const pageHeight = isA5 ? 210 : 228.6;
+  const is6x9 = options.size === '6x9';
+  // Default A5: 148 mm x 210 mm | 6x9 in: 152.4 mm x 228.6 mm
+  const pageWidth = is6x9 ? 152.4 : 148;
+  const pageHeight = is6x9 ? 228.6 : 210;
 
   const doc = new jsPDF({
     unit: 'mm',
@@ -98,27 +149,47 @@ export async function generatePodPdf(
     orientation: 'portrait'
   });
 
-  const author = sanitizeTextForPdf(options.authorName || 'Dominik Kuta');
+  // Try embedding custom Times New Roman (PT Serif) TTF fonts for 100% Polish UTF-8 diacritics
+  const fonts = await fetchPdfFonts();
+  let fontLoaded = false;
+
+  if (fonts.reg && fonts.bold && fonts.ital) {
+    doc.addFileToVFS('TimesNewRoman-Regular.ttf', fonts.reg);
+    doc.addFont('TimesNewRoman-Regular.ttf', 'TimesNewRoman', 'normal');
+
+    doc.addFileToVFS('TimesNewRoman-Bold.ttf', fonts.bold);
+    doc.addFont('TimesNewRoman-Bold.ttf', 'TimesNewRoman', 'bold');
+
+    doc.addFileToVFS('TimesNewRoman-Italic.ttf', fonts.ital);
+    doc.addFont('TimesNewRoman-Italic.ttf', 'TimesNewRoman', 'italic');
+
+    fontLoaded = true;
+  }
+
+  const fontFamily = fontLoaded ? 'TimesNewRoman' : 'times';
+  const processText = (str: string) => fontLoaded ? (str || '') : sanitizeTextForPdfFallback(str);
+
+  const author = processText(options.authorName || 'Dominik Kuta');
   const yr = options.selectedYear || 1;
   let rawTitle = meta.name || 'Biblia365';
 
   if (options.exportScope === 'season' && options.selectedSeason) {
     const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
-    rawTitle += ` - Rok ${yr} - ${seasonStr}`;
+    rawTitle += ` – Rok ${yr} – ${seasonStr}`;
   } else if (options.exportScope === 'year') {
-    rawTitle += ` - Rok ${yr} (Tom Roczny 365 Dni)`;
+    rawTitle += ` – Rok ${yr} (Tom Roczny 365 Dni)`;
   } else {
-    rawTitle += ` - Rok ${yr}`;
+    rawTitle += ` – Rok ${yr}`;
   }
 
-  const bookTitle = sanitizeTextForPdf(rawTitle);
-  const bookSubtitle = sanitizeTextForPdf(meta.subtitle || 'Cykl Czytan Biblia365');
+  const bookTitle = processText(rawTitle);
+  const bookSubtitle = processText(meta.subtitle || 'Kanoniczny Cykl Czytań Biblia365');
 
-  // Margins for Print-On-Demand (POD)
-  const gutterMargin = 20; // 0.8 in inside margin for book binding
-  const outerMargin = 14;  // 0.55 in outside margin
-  const topMargin = 20;    // top margin with running header
-  const bottomMargin = 18; // bottom margin with page number
+  // Margins for Print-On-Demand (POD KDP & Empik A5 Trade Paperback)
+  const gutterMargin = 18; // 18 mm inside margin for book binding
+  const outerMargin = 12;  // 12 mm outside margin
+  const topMargin = 18;    // 18 mm top margin with running header
+  const bottomMargin = 18; // 18 mm bottom margin with page number
 
   let pageNumber = 1;
 
@@ -127,87 +198,90 @@ export async function generatePodPdf(
   };
   const getContentWidth = () => pageWidth - gutterMargin - outerMargin;
 
+  // Set default text color to PURE BLACK (#000000)
+  doc.setTextColor(0, 0, 0);
+
   // PAGE 1: Strona Przedtytułowa
-  doc.setFont('times', 'normal');
+  doc.setFont(fontFamily, 'normal');
   doc.setFontSize(12);
-  doc.setTextColor(80, 80, 80);
+  doc.setTextColor(0, 0, 0);
   const frontTitleLines = doc.splitTextToSize(bookTitle.toUpperCase(), getContentWidth());
   doc.text(frontTitleLines, pageWidth / 2, 65, { align: 'center' });
   doc.setFontSize(10);
-  doc.text('BIBLIA365 * DROGA365', pageWidth / 2, 85, { align: 'center' });
+  doc.text('BIBLIA365 • DROGA365', pageWidth / 2, 85, { align: 'center' });
 
   // PAGE 2: Verso (dedykacja)
   doc.addPage();
   pageNumber++;
-  doc.setFontSize(9);
-  doc.setFont('times', 'italic');
-  doc.setTextColor(100, 100, 100);
-  const dedication = sanitizeTextForPdf('„Twoje slowo jest lampa dla moich stop i swiatlem na mojej sciezce.” (Ps 119, 105)');
+  doc.setFontSize(10);
+  doc.setFont(fontFamily, 'italic');
+  doc.setTextColor(0, 0, 0);
+  const dedication = processText('„Twoje słowo jest lampą dla moich stóp i światłem na mojej ścieżce.” (Ps 119, 105)');
   doc.text(doc.splitTextToSize(dedication, getContentWidth() - 10), pageWidth / 2, 100, { align: 'center' });
 
   // PAGE 3: Strona Tytułowa
   doc.addPage();
   pageNumber++;
-  doc.setFont('times', 'bold');
+  doc.setFont(fontFamily, 'bold');
   doc.setFontSize(13);
-  doc.setTextColor(50, 50, 50);
+  doc.setTextColor(0, 0, 0);
   doc.text(author.toUpperCase(), pageWidth / 2, 45, { align: 'center' });
 
   doc.setFontSize(18);
-  doc.setTextColor(20, 20, 20);
+  doc.setTextColor(0, 0, 0);
   const titleLines = doc.splitTextToSize(bookTitle, getContentWidth());
   doc.text(titleLines, pageWidth / 2, 68, { align: 'center' });
 
-  doc.setFont('times', 'italic');
+  doc.setFont(fontFamily, 'italic');
   doc.setFontSize(11);
-  doc.setTextColor(80, 80, 80);
+  doc.setTextColor(0, 0, 0);
   if (bookSubtitle) {
     const subLines = doc.splitTextToSize(bookSubtitle, getContentWidth());
     doc.text(subLines, pageWidth / 2, 92, { align: 'center' });
   }
 
-  doc.setFont('times', 'normal');
+  doc.setFont(fontFamily, 'normal');
   doc.setFontSize(10);
   const scopeDesc = options.exportScope === 'season'
-    ? `Wydanie Sezonowe: Rok ${yr} * ${SEASON_LABELS_PL[options.selectedSeason || 'zima'] || ''}`
+    ? `Wydanie Sezonowe: Rok ${yr} • ${SEASON_LABELS_PL[options.selectedSeason || 'zima'] || ''}`
     : options.exportScope === 'year'
-    ? `Wydanie Roczne: Rok ${yr} * 365 Czytan`
+    ? `Wydanie Roczne: Rok ${yr} • 365 Czytań`
     : `Wpis Dnia Cyklu`;
-  doc.text(sanitizeTextForPdf(scopeDesc), pageWidth / 2, 118, { align: 'center' });
+  doc.text(processText(scopeDesc), pageWidth / 2, 118, { align: 'center' });
 
   doc.setFontSize(9);
-  doc.text('WYDANIE PRINT-ON-DEMAND (POD)', pageWidth / 2, pageHeight - 35, { align: 'center' });
+  doc.text('WYDANIE PRINT-ON-DEMAND (POD KDP & EMPIK)', pageWidth / 2, pageHeight - 35, { align: 'center' });
   doc.text('Przygotowane dla Amazon KDP, Empik Selfpublishing & Ridero', pageWidth / 2, pageHeight - 28, { align: 'center' });
 
   // PAGE 4: Strona Redakcyjna / Copyright
   doc.addPage();
   pageNumber++;
-  doc.setFont('times', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(90, 90, 90);
+  doc.setFont(fontFamily, 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(0, 0, 0);
   const leftX4 = getLeftMargin(pageNumber);
 
   const copyrightText = [
-    `Copyright (c) ${new Date().getFullYear()} by ${author}`,
-    'Wszelkie prawa zastrzezone.',
+    `Copyright © ${new Date().getFullYear()} by ${author}`,
+    'Wszelkie prawa zastrzeżone.',
     '',
-    'Tytul dziela: ' + bookTitle,
+    'Tytuł dzieła: ' + bookTitle,
     'Autor i opracowanie tekstu: ' + author,
-    'Projekt typograficzny i sklad POD: System Biblia365 / Droga365',
+    'Projekt typograficzny i skład POD: System Biblia365 / Droga365',
     '',
-    'Wydanie I - Druk na Zadaie (Print-On-Demand)',
+    'Wydanie I – Druk na Żądanie (Print-On-Demand)',
     'Dystrybucja i publikacja: Amazon KDP, Empik Selfpublishing, Legimi, Ridero.',
-    'Format publikacji: Paperback 6x9" / A5 Trade Paperback zgodny ze standardem POD.',
+    'Format publikacji: Format A5 / 6x9" Trade Paperback zgodny ze standardem POD 0 zł na start.',
     '',
-    'Numer ISBN (Paperback): [Przydzielany bezplatnie w panelu Amazon KDP lub Empik]',
-    'Numer ISBN (E-book ePUB): [Przydzielany bezplatnie w panelu wydawcy]',
+    'Numer ISBN (Paperback A5): [Przydzielany bezpłatnie w panelu Amazon KDP lub Empik]',
+    'Numer ISBN (E-book ePUB): [Przydzielany bezpłatnie w panelu wydawcy]',
     '',
-    'Zadna czesc tej publikacji nie moze byc powielana bez zgody autora,',
-    'z wyjatkiem krotkich cytatow w recenzjach lub rozważaniach modlitewnych.'
+    'Żadna część tej publikacji nie może być powielana bez zgody autora,',
+    'z wyjątkiem krótkich cytatów w recenzjach lub rozważaniach modlitewnych.'
   ];
   let curY = pageHeight - 110;
   copyrightText.forEach(line => {
-    const cLines = doc.splitTextToSize(line, getContentWidth());
+    const cLines = doc.splitTextToSize(processText(line), getContentWidth());
     doc.text(cLines, leftX4, curY);
     curY += cLines.length * 4.2;
   });
@@ -225,123 +299,142 @@ export async function generatePodPdf(
     pageNumber++;
 
     let curLeft = getLeftMargin(pageNumber);
-    const chapterTitleRaw = currentEntry.title || `Dzien ${currentEntry.dayNumber || idx + 1}`;
-    const sanitizedTitle = sanitizeTextForPdf(chapterTitleRaw);
+    const chapterTitleRaw = currentEntry.title || `Dzień ${currentEntry.dayNumber || idx + 1}`;
+    const sanitizedTitle = processText(chapterTitleRaw);
 
-    doc.setFont('times', 'bold');
-    doc.setFontSize(13.5);
-    doc.setTextColor(20, 20, 20);
+    doc.setFont(fontFamily, 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
 
     // Split Chapter Title so it NEVER overflows right margin
     const titleLines = doc.splitTextToSize(sanitizedTitle, getContentWidth());
-    let currentY = 32;
+    let currentY = 30;
     for (const tLine of titleLines) {
       doc.text(tLine, curLeft, currentY);
-      currentY += 5.5;
+      currentY += 5.8;
     }
 
     doc.setLineWidth(0.3);
-    doc.setDrawColor(180, 180, 180);
+    doc.setDrawColor(0, 0, 0);
     doc.line(curLeft, currentY + 1, curLeft + getContentWidth(), currentY + 1);
     currentY += 8;
 
     // Passage
     if (currentEntry.passage || currentEntry.apocryphaPassage) {
-      doc.setFont('times', 'italic');
-      doc.setFontSize(9.5);
-      doc.setTextColor(70, 70, 70);
-      const passText = sanitizeTextForPdf(`Fragment: ${currentEntry.passage || ''} ${currentEntry.apocryphaPassage ? `| Apokryf: ${currentEntry.apocryphaPassage}` : ''}`);
+      doc.setFont(fontFamily, 'italic');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      const passText = processText(`Fragment: ${currentEntry.passage || ''} ${currentEntry.apocryphaPassage ? `| Apokryf: ${currentEntry.apocryphaPassage}` : ''}`);
       const passLines = doc.splitTextToSize(passText, getContentWidth());
       for (const pLine of passLines) {
-        if (currentY + 4.8 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+        if (currentY + 5.2 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
           currentY = topMargin + 10;
         }
         doc.text(pLine, curLeft, currentY);
-        currentY += 4.8;
+        currentY += 5.2;
       }
       currentY += 4;
     }
 
     // Mystery
     if (currentEntry.mystery) {
-      doc.setFont('times', 'bold');
-      doc.setFontSize(9.5);
-      doc.setTextColor(60, 60, 60);
-      const mystText = sanitizeTextForPdf(`Tajemnica: ${currentEntry.mystery}`);
+      doc.setFont(fontFamily, 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      const mystText = processText(`Tajemnica: ${currentEntry.mystery}`);
       const mystLines = doc.splitTextToSize(mystText, getContentWidth());
       for (const mLine of mystLines) {
-        if (currentY + 4.8 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+        if (currentY + 5.2 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
           currentY = topMargin + 10;
         }
         doc.text(mLine, curLeft, currentY);
-        currentY += 4.8;
+        currentY += 5.2;
       }
       currentY += 2;
     }
 
     // Intention
     if (currentEntry.intention) {
-      doc.setFont('times', 'italic');
-      doc.setFontSize(9.5);
-      doc.setTextColor(60, 60, 60);
-      const intText = sanitizeTextForPdf(`Intencja: ${currentEntry.intention}`);
+      doc.setFont(fontFamily, 'italic');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      const intText = processText(`Intencja: ${currentEntry.intention}`);
       const intLines = doc.splitTextToSize(intText, getContentWidth());
       for (const iLine of intLines) {
-        if (currentY + 4.8 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+        if (currentY + 5.2 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
           currentY = topMargin + 10;
         }
         doc.text(iLine, curLeft, currentY);
-        currentY += 4.8;
+        currentY += 5.2;
       }
       currentY += 4;
     }
 
-    // Body Paragraphs Line-by-Line Pagination (100% margin safe)
-    const rawParagraphs = (currentEntry.content || '').split('\n').filter(p => p.trim().length > 0);
+    // Body Paragraphs: 12 pt Times New Roman, Pure Black (#000000), Wyjustowane obustronnie!
+    const rawParagraphs = stripHtml(currentEntry.content || '')
+      .split('\n')
+      .filter(p => p.trim().length > 0);
 
-    doc.setFont('times', 'normal');
-    doc.setFontSize(9.8);
-    doc.setTextColor(30, 30, 30);
-    const lineHeight = 4.7;
+    doc.setFont(fontFamily, 'normal');
+    doc.setFontSize(12); // Exact 12 pt specified by user
+    doc.setTextColor(0, 0, 0); // Pure black
+    const lineHeight = 5.8; // 5.8 mm leading for 12 pt font
 
     for (const rawPara of rawParagraphs) {
-      const sanitizedPara = sanitizeTextForPdf(rawPara);
-      const paraLines = doc.splitTextToSize(sanitizedPara, getContentWidth());
+      const sanitizedPara = processText(rawPara);
+      const paraLines: string[] = doc.splitTextToSize(sanitizedPara, getContentWidth());
 
-      for (const line of paraLines) {
+      for (let lIdx = 0; lIdx < paraLines.length; lIdx++) {
+        const line = paraLines[lIdx];
+        const isLastLine = lIdx === paraLines.length - 1;
+
         if (currentY + lineHeight > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
           currentY = topMargin + 10;
         }
-        doc.text(line, curLeft, currentY);
+
+        doc.setFont(fontFamily, 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+
+        if (!isLastLine && line.trim().indexOf(' ') !== -1) {
+          // Justify full lines left and right
+          doc.text(line, curLeft, currentY, { align: 'justify', maxWidth: getContentWidth() });
+        } else {
+          // Last line of paragraph rests naturally to the left
+          doc.text(line, curLeft, currentY);
+        }
+
         currentY += lineHeight;
       }
-      currentY += 2.8; // Spacing after paragraph
+      currentY += 3.2; // Spacing after paragraph
     }
 
-    // Prayer Box (Strictly bounded inside margins)
+    // Prayer Box (12 pt Italic, Pure Black text, Justified)
     if (currentEntry.prayer && options.includePrayer !== false) {
-      const sanitizedPrayer = sanitizeTextForPdf(currentEntry.prayer);
-      const prayerLines = doc.splitTextToSize(sanitizedPrayer, getContentWidth() - 10);
-      const prayerBoxHeight = prayerLines.length * 4.4 + 14;
+      doc.setFont(fontFamily, 'italic');
+      doc.setFontSize(11);
+      const sanitizedPrayer = processText(stripHtml(currentEntry.prayer));
+      const prayerLines: string[] = doc.splitTextToSize(sanitizedPrayer, getContentWidth() - 10);
+      const prayerBoxHeight = prayerLines.length * 5.2 + 16;
 
       if (currentY + prayerBoxHeight > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
         doc.addPage();
         pageNumber++;
         curLeft = getLeftMargin(pageNumber);
@@ -349,35 +442,41 @@ export async function generatePodPdf(
       }
 
       curLeft = getLeftMargin(pageNumber);
-      doc.setDrawColor(190, 160, 110);
+      doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.4);
       doc.setFillColor(252, 250, 245);
       doc.roundedRect(curLeft, currentY, getContentWidth(), prayerBoxHeight, 2, 2, 'FD');
 
-      doc.setFont('times', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(140, 90, 30);
-      doc.text('MODLITWA SERCA', curLeft + getContentWidth() / 2, currentY + 5.5, { align: 'center' });
+      doc.setFont(fontFamily, 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text('MODLITWA SERCA', curLeft + getContentWidth() / 2, currentY + 6, { align: 'center' });
 
-      doc.setFont('times', 'italic');
-      doc.setFontSize(8.8);
-      doc.setTextColor(40, 40, 40);
-      let pY = currentY + 11;
-      for (const pLine of prayerLines) {
-        doc.text(pLine, curLeft + 5, pY);
-        pY += 4.3;
+      doc.setFont(fontFamily, 'italic');
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      let pY = currentY + 12;
+      for (let pIdx = 0; pIdx < prayerLines.length; pIdx++) {
+        const pLine = prayerLines[pIdx];
+        const isLastPLine = pIdx === prayerLines.length - 1;
+        if (!isLastPLine && pLine.trim().indexOf(' ') !== -1) {
+          doc.text(pLine, curLeft + 5, pY, { align: 'justify', maxWidth: getContentWidth() - 10 });
+        } else {
+          doc.text(pLine, curLeft + 5, pY);
+        }
+        pY += 5.2;
       }
 
       currentY += prayerBoxHeight + 6;
     }
 
-    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin);
+    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
   }
 
   return doc.output('blob');
 }
 
-// Running headers and page numbers
+// Running headers and page numbers in pure black (#000000)
 function addHeaderFooter(
   doc: jsPDF,
   pageNum: number,
@@ -386,11 +485,12 @@ function addHeaderFooter(
   width: number,
   height: number,
   topM: number,
-  bottomM: number
+  bottomM: number,
+  fontFamily: string = 'TimesNewRoman'
 ) {
-  doc.setFont('times', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(130, 130, 130);
+  doc.setFont(fontFamily, 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0); // Pure black
 
   // Footer: Page Number centered
   doc.text(String(pageNum), width / 2, height - bottomM + 8, { align: 'center' });
@@ -403,14 +503,14 @@ function addHeaderFooter(
       headerText = headerText.substring(0, 35) + '...';
     }
     doc.text(headerText.toUpperCase(), width / 2, topM - 6, { align: 'center' });
-    doc.setDrawColor(220, 220, 220);
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    doc.line(18, topM - 3, width - 18, topM - 3);
+    doc.line(16, topM - 3, width - 16, topM - 3);
   }
 }
 
 // -------------------------------------------------------------
-// 2. GENERATOR MICROSOFT WORD (DOCX) - KDP & EMPIK POD FORMAT
+// 2. GENERATOR MICROSOFT WORD (DOCX) - KDP & EMPIK POD FORMAT (A5, 12 pt Times New Roman, Czarny #000000, Wyjustowanie)
 // -------------------------------------------------------------
 export async function generatePodDocx(
   entry: SectionEntry,
@@ -455,20 +555,21 @@ export async function generatePodDocx(
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>`);
 
-  // 4. word/styles.xml
+  // 4. word/styles.xml (Times New Roman, 12 pt = 24 half-pt, Pure Black #000000, Wyjustowanie obustronne)
   zip.file('word/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:docDefaults>
     <w:rPrDefault>
       <w:rPr>
-        <w:rFonts w:ascii="Georgia" w:hAnsi="Georgia" w:cs="Georgia"/>
-        <w:sz w:val="22"/>
+        <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+        <w:sz w:val="24"/>
+        <w:color w:val="000000"/>
         <w:lang w:val="pl-PL"/>
       </w:rPr>
     </w:rPrDefault>
     <w:pPrDefault>
       <w:pPr>
-        <w:spacing w:line="276" w:lineRule="auto" w:after="160"/>
+        <w:spacing w:line="288" w:lineRule="auto" w:after="140"/>
         <w:wordWrap/>
         <w:jc w:val="both"/>
       </w:pPr>
@@ -485,17 +586,17 @@ export async function generatePodDocx(
   for (let idx = 0; idx < entriesToProcess.length; idx++) {
     const curEntry = entriesToProcess[idx];
     const chapterTitle = escapeXml(curEntry.title || `Dzień ${curEntry.dayNumber || idx + 1}`);
-    const paragraphs = (curEntry.content || '').split('\n').filter(p => p.trim().length > 0);
+    const paragraphs = stripHtml(curEntry.content || '').split('\n').filter(p => p.trim().length > 0);
 
     const paragraphsXml = paragraphs.map(p => `
       <w:p>
         <w:pPr>
           <w:ind w:firstLine="360"/>
-          <w:spacing w:line="288" w:after="120"/>
+          <w:spacing w:line="288" w:after="140"/>
           <w:jc w:val="both"/>
         </w:pPr>
         <w:r>
-          <w:rPr><w:sz w:val="21"/></w:rPr>
+          <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="24"/><w:color w:val="000000"/></w:rPr>
           <w:t>${escapeXml(p)}</w:t>
         </w:r>
       </w:p>`).join('');
@@ -503,11 +604,11 @@ export async function generatePodDocx(
     const prayerXml = curEntry.prayer ? `
       <w:p>
         <w:pPr><w:spacing w:before="360" w:after="100"/><w:jc w:val="center"/></w:pPr>
-        <w:r><w:rPr><w:b/><w:sz w:val="20"/><w:color w:val="995511"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="22"/><w:color w:val="000000"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
       </w:p>
       <w:p>
-        <w:pPr><w:spacing w:after="280"/><w:jc w:val="center"/></w:pPr>
-        <w:r><w:rPr><w:i/><w:sz w:val="21"/><w:color w:val="333333"/></w:rPr><w:t>${escapeXml(curEntry.prayer)}</w:t></w:r>
+        <w:pPr><w:spacing w:after="280"/><w:jc w:val="both"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
       </w:p>` : '';
 
     chaptersXml += `
@@ -515,21 +616,21 @@ export async function generatePodDocx(
       <w:p>
         <w:pPr><w:spacing w:before="360" w:after="240"/><w:jc w:val="left"/></w:pPr>
         <w:r>
-          <w:rPr><w:b/><w:sz w:val="28"/><w:color w:val="995511"/></w:rPr>
+          <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="28"/><w:color w:val="000000"/></w:rPr>
           <w:t>${chapterTitle}</w:t>
         </w:r>
       </w:p>
       ${curEntry.passage ? `
       <w:p>
-        <w:pPr><w:spacing w:after="180"/></w:pPr>
-        <w:r><w:rPr><w:i/><w:sz w:val="20"/><w:color w:val="555555"/></w:rPr><w:t>Fragment: ${escapeXml(curEntry.passage)}</w:t></w:r>
+        <w:pPr><w:spacing w:after="180"/><w:jc w:val="left"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="20"/><w:color w:val="000000"/></w:rPr><w:t>Fragment: ${escapeXml(curEntry.passage)}</w:t></w:r>
       </w:p>` : ''}
       ${paragraphsXml}
       ${prayerXml}
     `;
   }
 
-  // 5. word/document.xml
+  // 5. word/document.xml (A5 dimensions: w=8390 dxa = 148 mm, h=11906 dxa = 210 mm)
   const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:body>
@@ -537,21 +638,21 @@ export async function generatePodDocx(
     <w:p>
       <w:pPr><w:spacing w:before="1800" w:after="300"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Georgia"/><w:sz w:val="26"/><w:color w:val="555555"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="26"/><w:color w:val="000000"/></w:rPr>
         <w:t>${author.toUpperCase()}</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:before="400" w:after="400"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Georgia"/><w:b/><w:sz w:val="40"/><w:color w:val="111111"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="38"/><w:color w:val="000000"/></w:rPr>
         <w:t>${bookTitle}</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:after="2000"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Georgia"/><w:i/><w:sz w:val="22"/><w:color w:val="666666"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="22"/><w:color w:val="000000"/></w:rPr>
         <w:t>${bookSubtitle}</w:t>
       </w:r>
     </w:p>
@@ -563,15 +664,15 @@ export async function generatePodDocx(
     <w:p>
       <w:pPr><w:spacing w:before="3000" w:after="100"/><w:jc w:val="left"/></w:pPr>
       <w:r>
-        <w:rPr><w:sz w:val="18"/><w:color w:val="777777"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="18"/><w:color w:val="000000"/></w:rPr>
         <w:t>Copyright © ${new Date().getFullYear()} by ${author}. Wszelkie prawa zastrzeżone.</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:after="100"/><w:jc w:val="left"/></w:pPr>
       <w:r>
-        <w:rPr><w:sz w:val="18"/><w:color w:val="777777"/></w:rPr>
-        <w:t>${bookTitle} – Wydanie POD & E-book.</w:t>
+        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="18"/><w:color w:val="000000"/></w:rPr>
+        <w:t>${bookTitle} – Wydanie Format A5 POD KDP & Empik.</w:t>
       </w:r>
     </w:p>
 
@@ -580,10 +681,10 @@ export async function generatePodDocx(
 
     ${chaptersXml}
 
-    <!-- 6x9 inch trade paperback page settings with POD mirror margins -->
+    <!-- Format A5 Paperback page settings (148x210 mm = 8390 x 11906 dxa) with POD mirror margins -->
     <w:sectPr>
-      <w:pgSz w:w="8640" w:h="12960"/>
-      <w:pgMar w:top="1152" w:bottom="1152" w:left="1440" w:right="1008" w:gutter="288" w:header="720" w:footer="720"/>
+      <w:pgSz w:w="8390" w:h="11906"/>
+      <w:pgMar w:top="1020" w:bottom="1020" w:left="1200" w:right="800" w:gutter="240" w:header="500" w:footer="500"/>
     </w:sectPr>
   </w:body>
 </w:document>`;
@@ -595,6 +696,7 @@ export async function generatePodDocx(
 
 // -------------------------------------------------------------
 // 3. GENERATOR STANDARDOWEGO EPUB 3 - LEGIMI, EMPIK GO, KINDLE
+// Format A5 layout, Czcionka 12 pt Times New Roman, Kolor Czarny (#000000), Wyjustowanie
 // -------------------------------------------------------------
 export async function generateEpub(
   entry: SectionEntry,
@@ -634,21 +736,22 @@ export async function generateEpub(
   </rootfiles>
 </container>`);
 
-  // 3. OEBPS/style.css with responsive margins and word wrap
+  // 3. OEBPS/style.css (12 pt Times New Roman, Pure Black #000000, Wyjustowane obustronnie)
   zip.file('OEBPS/style.css', `
 body {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-size: 12pt;
   line-height: 1.6;
   margin: 4%;
   padding: 0;
-  color: #1a1a1a;
+  color: #000000;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
 }
 h1 {
   font-size: 1.5em;
-  color: #8c5310;
+  color: #000000;
   text-align: center;
   margin-top: 1.2em;
   margin-bottom: 0.5em;
@@ -657,7 +760,7 @@ h1 {
 }
 h2 {
   font-size: 1.1em;
-  color: #555555;
+  color: #000000;
   text-align: center;
   font-weight: normal;
   font-style: italic;
@@ -666,6 +769,8 @@ h2 {
   overflow-wrap: break-word;
 }
 p {
+  font-size: 12pt;
+  color: #000000;
   text-indent: 1.5em;
   margin-top: 0;
   margin-bottom: 0.4em;
@@ -680,13 +785,14 @@ p.first {
   max-width: 100%;
 }
 .prayer-box {
-  border: 1px solid #d4af37;
+  border: 1px solid #000000;
   background-color: #fdfbf7;
   padding: 1.2em;
   margin: 2em 0;
   border-radius: 4px;
-  text-align: center;
+  text-align: justify;
   font-style: italic;
+  color: #000000;
   box-sizing: border-box;
   max-width: 100%;
   word-wrap: break-word;
@@ -695,17 +801,18 @@ p.first {
 .prayer-title {
   font-weight: bold;
   font-style: normal;
-  color: #8c5310;
+  color: #000000;
+  text-align: center;
   margin-bottom: 0.6em;
-  font-size: 0.9em;
+  font-size: 0.95em;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 .copyright {
-  font-size: 0.8em;
-  color: #666;
+  font-size: 0.85em;
+  color: #000000;
   margin-top: 3em;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #000000;
   padding-top: 1em;
 }
 `);
@@ -737,7 +844,7 @@ p.first {
 
     htmlNavItems.push(`<li><a href="${chapFileName}">${chapTitle}</a></li>`);
 
-    const paragraphsHtml = (curEntry.content || '')
+    const paragraphsHtml = stripHtml(curEntry.content || '')
       .split('\n')
       .filter(p => p.trim().length > 0)
       .map((p, pIdx) => `<p class="${pIdx === 0 ? 'first' : ''}">${escapeXml(p)}</p>`)
@@ -746,7 +853,7 @@ p.first {
     const prayerHtml = curEntry.prayer ? `
     <div class="prayer-box">
       <div class="prayer-title">Modlitwa Serca</div>
-      <p style="text-indent: 0;">${escapeXml(curEntry.prayer)}</p>
+      <p style="text-indent: 0;">${escapeXml(stripHtml(curEntry.prayer))}</p>
     </div>` : '';
 
     const chapterXhtml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -841,14 +948,14 @@ p.first {
 </head>
 <body>
   <div style="text-align: center; margin-top: 25%;">
-    <p style="text-indent: 0; font-size: 1.1em; color: #666;">${author}</p>
-    <h1 style="font-size: 2.2em; margin: 0.5em 0;">${bookTitle}</h1>
-    <h2>${bookSubtitle}</h2>
-    <p style="text-indent: 0; font-size: 0.9em; color: #888;">Liczba Rozdziałów / Czytań: ${entriesToProcess.length}</p>
+    <p style="text-indent: 0; font-size: 1.1em; color: #000000;">${author}</p>
+    <h1 style="font-size: 2.2em; margin: 0.5em 0; color: #000000;">${bookTitle}</h1>
+    <h2 style="color: #000000;">${bookSubtitle}</h2>
+    <p style="text-indent: 0; font-size: 0.9em; color: #000000;">Liczba Rozdziałów / Czytań: ${entriesToProcess.length}</p>
   </div>
   <div class="copyright">
     <p style="text-indent: 0;">Copyright © ${new Date().getFullYear()} by ${author}.</p>
-    <p style="text-indent: 0;">Przygotowane do publikacji: Legimi, Empik Go, Apple Books, Amazon KDP (0 zł na start).</p>
+    <p style="text-indent: 0;">Przygotowane do publikacji POD i E-book: Legimi, Empik Go, Apple Books, Amazon KDP (0 zł na start).</p>
   </div>
 </body>
 </html>`);
