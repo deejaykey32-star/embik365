@@ -69,6 +69,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
 
     try {
       const fallbackEntry: SectionEntry = entry || {
+        id: 'fallback-1',
+        sectionId: metaId,
         dayNumber: 1,
         dateKey: '12-25',
         title: metaName,
@@ -108,6 +110,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
             const wEntry = getWnrEntryForDay(day);
             const cleanContent = stripHtml(wEntry.content || (wEntry.page1 ? `${wEntry.page1}\n\n${wEntry.page2}` : ''));
             dayEntry = {
+              id: `wnr-day-${day}`,
+              sectionId: metaId,
               dayNumber: day,
               dateKey: `Dzień ${day}`,
               title: wEntry.title || `WnR365 – Widoki na Raj – Dzień ${day}`,
@@ -119,6 +123,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
             const rEntry = getRhzEntryForDay(day);
             const cleanContent = stripHtml(rEntry.fullText || rEntry.explanation || '');
             dayEntry = {
+              id: `rhz-day-${day}`,
+              sectionId: metaId,
               dayNumber: day,
               dateKey: `Dzień ${day}`,
               title: rEntry.stageTitle || `RHZ365 – Dzień ${day}`,
@@ -130,6 +136,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
             // Biblia365 & ebook_biblia (4-year cycle)
             const bEntry = getBibliaEntryForDayAndYear(day, selectedYear);
             dayEntry = {
+              id: `biblia-yr${selectedYear}-day-${day}`,
+              sectionId: metaId,
               dayNumber: day,
               dateKey: `Dzień ${day}`,
               title: bEntry.title || `${bEntry.bookTitle} – Rozdział ${bEntry.chapter}`,

@@ -117,8 +117,8 @@ export const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
 ];
 
 export interface SectionEntry {
-  id: string;
-  sectionId: SectionId;
+  id?: string;
+  sectionId?: SectionId | string;
   dateKey: string;
   dayNumber: number;
   title: string;
