@@ -1,11 +1,7 @@
 # Przekierowania dla dynamicznych kodów QR (Biblia, WnR365, Różaniec)
-/r/wstep https://www.youtube.com 301
-/grafika1 https://raw.githubusercontent.com/deejaykey32-star/embik365/main/public/vite.svg 301
-/b/start https://github.com/deejaykey32-star/embik365 301
-/w/demo https://pages.dev 301
-/b/* https://widokinaraj.pl 301
-/w/* https://widokinaraj.pl 301
-/r/* https://widokinaraj.pl 301
+/b/*    https://youtube.com/@widokinaraj    301
+/w/*    https://youtube.com/@widokinaraj    301
+/r/*    https://youtube.com/@widokinaraj    301
 
 # Przekierowania zasobów i obsługa SPA
 /src/pliki/* /pliki/:splat 301
