@@ -1,6 +1,7 @@
 import { SectionEntry, SectionId, CycleDate } from '../types';
 import { getWnrEntryForDay } from './wnr365Data';
 import { getRhzEntryForDay } from './rhz365Data';
+import { getBibliaEntryForDayAndYear } from './biblia365Data';
 
 export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
   // info365 - Guide Day 1
@@ -174,25 +175,20 @@ ${rhz?.fatimaPrayer || ''}`.trim();
     }
 
     case 'biblia365':
-    case 'ebook_biblia':
+    case 'ebook_biblia': {
+      const b1 = getBibliaEntryForDayAndYear(dayNumber, 1);
       return {
         id: `${sectionId}-${cycleDate.dateKey}`,
         sectionId,
         dateKey: cycleDate.dateKey,
         dayNumber,
-        title: `Lektura Pisma Świętego i Apokryfów • Dzień ${dayNumber}`,
-        subtitle: `${displayDate} • Roczny plan czytania Słowa`,
-        passage: `Stary Testament: Wybrane wersety mądrościowe i prorockie • Nowy Testament: Listy Apostolskie • Psalm Dnia: Ps ${(dayNumber % 150) + 1}`,
-        apocryphaPassage: `Apokryf: Didache (Nauka Dwunastu Apostołów) oraz fragmenty Ody Salomona`,
-        content: `SŁOWO BOŻE NA DZIŚ:
-"Błogosławiony człowiek, który nie idzie za radą występnych, nie wchodzi na drogę grzeszników i nie siada w kole szyderców, lecz ma upodobanie w Prawie Pana, nad Jego Prawem rozmyśla dniem i nocą. Jest on jak drzewo zasadzone nad płynącą wodą, które przynosi owoc w swoim czasie, a liście jego nie więdną." (Ps 1)
-
-ZE SKARBCZYKA APOKRYFÓW (Didache rozdz. 1):
-"Są dwie drogi: jedna droga życia, a druga droga śmierci, i wielka jest różnica między tymi dwiema drogami. Droga życia jest ta: po pierwsze będziesz miłował Boga, który cię stworzył; po drugie bliźniego swego jak siebie samego. Wszystkiego zaś, czego byś nie chciał, by tobie czyniono, i ty nie czyń drugiemu."
-
-ROZWAŻANIE:
-Słowo Boże jest żywe i skuteczne, ostrzejsze niż miecz obosieczny. Dziś, ${displayDate}, wsłuchaj się w wezwanie do radykalizmu miłości i wierności prostym Bożym przykazaniom.`
+        title: b1.title || `Lektura Pisma Świętego i Apokryfów • Dzień ${dayNumber}`,
+        subtitle: `${displayDate} • ${b1.category} (${b1.passage})`,
+        passage: b1.passage,
+        apocryphaPassage: b1.category.includes('Apokryf') ? b1.passage : undefined,
+        content: b1.content
       };
+    }
 
     case 'bio365':
       return {

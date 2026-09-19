@@ -26,6 +26,7 @@ import { getRhzEntryForDay } from '../data/rhz365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
+import { getBibliaFourYearsForDay } from '../data/biblia365Data';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 
@@ -61,6 +62,7 @@ export const StandardReader: React.FC<Props> = ({
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
+  const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
 
   const activeLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
@@ -330,34 +332,59 @@ export const StandardReader: React.FC<Props> = ({
         </div>
       )}
 
-      {/* Biblia365 Special: Scripture Readings & Apocrypha Box */}
-      {section.id === 'biblia365' && (
-        <div className="space-y-4 mb-8">
-          {entry.passage && (
-            <div className="bg-[#f0fdf4] dark:bg-[#071f16] rounded-2xl p-5 border border-[#bbf7d0] dark:border-[#0f4d36] transition-colors">
-              <div className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-1 flex items-center gap-1.5">
+      {/* Biblia365 Special: 4-Year Reading Program & Scripture / Apocrypha Selector */}
+      {section.id === 'biblia365' && (() => {
+        const bibliaFourYears = getBibliaFourYearsForDay(currentDate.dayNumber);
+        const currentYearEntry = bibliaFourYears[`year${selectedBibliaYear}`];
+
+        return (
+          <div className="space-y-6 mb-8">
+            {/* 4-Year Selector Bar */}
+            <div className="bg-[#f4ebe1] dark:bg-[#151d2a] p-2 rounded-2xl border border-[#e2d4c5] dark:border-[#222d3e]">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#735339] dark:text-amber-400 mb-2 px-2 flex items-center justify-between">
+                <span>4-Letni Cykl Czytań Biblia365 (od 25 XII do 24 XII)</span>
+                <span className="text-[11px] font-normal text-[#8c7664] dark:text-[#8b949e]">Wybierz rok lektury:</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {([1, 2, 3, 4] as const).map(yr => {
+                  const item = bibliaFourYears[`year${yr}`];
+                  const isSelected = selectedBibliaYear === yr;
+                  return (
+                    <button
+                      key={yr}
+                      onClick={() => setSelectedBibliaYear(yr)}
+                      className={`p-3 rounded-xl text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-400/50'
+                          : 'bg-white dark:bg-[#1a2332] hover:bg-[#eadecd] dark:hover:bg-[#212c3e] text-[#3d2f23] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#2b374a]'
+                      }`}
+                    >
+                      <div className="font-bold text-xs flex items-center justify-between">
+                        <span>Rok {yr}</span>
+                        {isSelected && <span className="text-[10px] bg-emerald-900/60 text-emerald-200 px-1.5 py-0.2 rounded font-sans-ui">Aktywny</span>}
+                      </div>
+                      <div className={`text-[11px] font-medium truncate mt-0.5 ${isSelected ? 'text-emerald-100' : 'text-[#7d6b5b] dark:text-[#94a3b8]'}`}>
+                        {item.bookTitle} {item.chapter}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Current Active Year Passage Card */}
+            <div className="bg-[#f0fdf4] dark:bg-[#071f16] rounded-2xl p-5 border border-[#bbf7d0] dark:border-[#0f4d36] transition-colors space-y-1">
+              <div className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                <span>Wyznaczone Fragmenty Pisma Świętego</span>
+                <span>ROK {selectedBibliaYear} — {currentYearEntry.category}: {currentYearEntry.passage}</span>
               </div>
               <p className="text-sm font-semibold text-emerald-950 dark:text-emerald-100 font-serif-book">
-                {entry.passage}
+                {currentYearEntry.title}
               </p>
             </div>
-          )}
-
-          {entry.apocryphaPassage && (
-            <div className="bg-[#fffbeb] dark:bg-[#1f1708] rounded-2xl p-5 border border-[#fde68a] dark:border-[#533910] transition-colors">
-              <div className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-1.5">
-                <Scroll className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                <span>Teksty Apokryficzne i Tradycja Ojców Kościoła</span>
-              </div>
-              <p className="text-sm font-semibold text-amber-950 dark:text-amber-100 font-serif-book">
-                {entry.apocryphaPassage}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        );
+      })()}
 
       {/* Main Reading Card (for non-RHZ sections, or additional notes) */}
       {section.id !== 'rhz365' && (
