@@ -71,89 +71,94 @@ export async function generatePodPdf(
     // Even pages: gutter on right
     return pNum % 2 !== 0 ? gutterMargin : outerMargin;
   };
-
   const getContentWidth = () => pageWidth - gutterMargin - outerMargin;
 
-  // PAGE 1: Strona Przedtytułowa (Half-title)
-  doc.setFont('times', 'normal');
-  doc.setFontSize(14);
-  doc.setTextColor(80, 80, 80);
-  doc.text(meta.name.toUpperCase(), pageWidth / 2, 70, { align: 'center' });
-  doc.setFontSize(10);
-  doc.text('DROGA365', pageWidth / 2, 80, { align: 'center' });
+  const isBiblia = meta.id === 'ebook_biblia' || meta.id === 'biblia365';
 
-  // PAGE 2: Verso (pusta / dedykacja)
-  doc.addPage();
-  pageNumber++;
-  doc.setFontSize(9);
-  doc.setFont('times', 'italic');
-  doc.setTextColor(100, 100, 100);
-  const dedication = '„Twoje słowo jest lampą dla moich stóp i światłem na mojej ścieżce.” (Ps 119, 105)';
-  doc.text(doc.splitTextToSize(dedication, 90), pageWidth / 2, 100, { align: 'center' });
+  if (!isBiblia) {
+    // PAGE 1: Strona Przedtytułowa (Half-title)
+    doc.setFont('times', 'normal');
+    doc.setFontSize(14);
+    doc.setTextColor(80, 80, 80);
+    doc.text(meta.name.toUpperCase(), pageWidth / 2, 70, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('DROGA365', pageWidth / 2, 80, { align: 'center' });
 
-  // PAGE 3: Strona Tytułowa (Title Page)
-  doc.addPage();
-  pageNumber++;
-  doc.setFont('times', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(50, 50, 50);
-  doc.text(author.toUpperCase(), pageWidth / 2, 50, { align: 'center' });
+    // PAGE 2: Verso (pusta / dedykacja)
+    doc.addPage();
+    pageNumber++;
+    doc.setFontSize(9);
+    doc.setFont('times', 'italic');
+    doc.setTextColor(100, 100, 100);
+    const dedication = '„Twoje słowo jest lampą dla moich stóp i światłem na mojej ścieżce.” (Ps 119, 105)';
+    doc.text(doc.splitTextToSize(dedication, 90), pageWidth / 2, 100, { align: 'center' });
 
-  doc.setFontSize(22);
-  doc.setTextColor(20, 20, 20);
-  const titleLines = doc.splitTextToSize(meta.name, getContentWidth());
-  doc.text(titleLines, pageWidth / 2, 75, { align: 'center' });
+    // PAGE 3: Strona Tytułowa (Title Page)
+    doc.addPage();
+    pageNumber++;
+    doc.setFont('times', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(50, 50, 50);
+    doc.text(author.toUpperCase(), pageWidth / 2, 50, { align: 'center' });
 
-  doc.setFont('times', 'italic');
-  doc.setFontSize(11);
-  doc.setTextColor(80, 80, 80);
-  if (subtitle) {
-    doc.text(doc.splitTextToSize(subtitle, getContentWidth()), pageWidth / 2, 95, { align: 'center' });
+    doc.setFontSize(22);
+    doc.setTextColor(20, 20, 20);
+    const titleLines = doc.splitTextToSize(meta.name, getContentWidth());
+    doc.text(titleLines, pageWidth / 2, 75, { align: 'center' });
+
+    doc.setFont('times', 'italic');
+    doc.setFontSize(11);
+    doc.setTextColor(80, 80, 80);
+    if (subtitle) {
+      doc.text(doc.splitTextToSize(subtitle, getContentWidth()), pageWidth / 2, 95, { align: 'center' });
+    }
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Wpis Dnia Cyklu: ${entry.dateKey || entry.dayNumber}`, pageWidth / 2, 120, { align: 'center' });
+
+    doc.setFontSize(9);
+    doc.text('WYDANIE PRINT-ON-DEMAND (POD)', pageWidth / 2, pageHeight - 35, { align: 'center' });
+    doc.text('Przygotowane dla Amazon KDP, Empik Selfpublishing & Ridero', pageWidth / 2, pageHeight - 28, { align: 'center' });
+
+    // PAGE 4: Strona Redakcyjna / Copyright (Gotowa pod platformy 0 zł)
+    doc.addPage();
+    pageNumber++;
+    doc.setFont('times', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(90, 90, 90);
+    const leftX4 = getLeftMargin(pageNumber);
+
+    const copyrightText = [
+      `Copyright © ${new Date().getFullYear()} by ${author}`,
+      'Wszelkie prawa zastrzeżone.',
+      '',
+      'Tytuł dzieła: Droga365 – ' + meta.name,
+      'Autor i opracowanie tekstu: ' + author,
+      'Projekt typograficzny i skład POD: System Droga365',
+      '',
+      'Wydanie I – Druk na Żądanie (Print-On-Demand)',
+      'Dystrybubucja i publikacja: Amazon KDP, Empik Selfpublishing, Legimi, Ridero.',
+      'Format publikacji: Paperback 6x9" / A5 Trade Paperback zgodny ze standardem POD 0 zł na start.',
+      '',
+      'Numer ISBN (Paperback): [Numer przydzielany bezpłatnie w panelu Amazon KDP lub Empik]',
+      'Numer ISBN (E-book ePUB): [Numer przydzielany bezpłatnie w panelu wydawcy]',
+      '',
+      'Żadna część tej publikacji nie może być powielana bez zgody autora,',
+      'z wyjątkiem krótkich cytatów w recenzjach lub rozważaniach modlitewnych.'
+    ];
+    let curY = pageHeight - 110;
+    copyrightText.forEach(line => {
+      doc.text(line, leftX4, curY);
+      curY += 4.2;
+    });
+
+    // Add page for content start
+    doc.addPage();
+    pageNumber++;
   }
 
-  doc.setFont('times', 'normal');
-  doc.setFontSize(10);
-  doc.text(`Wpis Dnia Cyklu: ${entry.dateKey || entry.dayNumber}`, pageWidth / 2, 120, { align: 'center' });
-
-  doc.setFontSize(9);
-  doc.text('WYDANIE PRINT-ON-DEMAND (POD)', pageWidth / 2, pageHeight - 35, { align: 'center' });
-  doc.text('Przygotowane dla Amazon KDP, Empik Selfpublishing & Ridero', pageWidth / 2, pageHeight - 28, { align: 'center' });
-
-  // PAGE 4: Strona Redakcyjna / Copyright (Gotowa pod platformy 0 zł)
-  doc.addPage();
-  pageNumber++;
-  doc.setFont('times', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(90, 90, 90);
-  const leftX4 = getLeftMargin(pageNumber);
-
-  const copyrightText = [
-    `Copyright © ${new Date().getFullYear()} by ${author}`,
-    'Wszelkie prawa zastrzeżone.',
-    '',
-    'Tytuł dzieła: Droga365 – ' + meta.name,
-    'Autor i opracowanie tekstu: ' + author,
-    'Projekt typograficzny i skład POD: System Droga365',
-    '',
-    'Wydanie I – Druk na Żądanie (Print-On-Demand)',
-    'Dystrybucja i publikacja: Amazon KDP, Empik Selfpublishing, Legimi, Ridero.',
-    'Format publikacji: Paperback 6x9" / A5 Trade Paperback zgodny ze standardem POD 0 zł na start.',
-    '',
-    'Numer ISBN (Paperback): [Numer przydzielany bezpłatnie w panelu Amazon KDP lub Empik]',
-    'Numer ISBN (E-book ePUB): [Numer przydzielany bezpłatnie w panelu wydawcy]',
-    '',
-    'Żadna część tej publikacji nie może być powielana bez zgody autora,',
-    'z wyjątkiem krótkich cytatów w recenzjach lub rozważaniach modlitewnych.'
-  ];
-  let curY = pageHeight - 110;
-  copyrightText.forEach(line => {
-    doc.text(line, leftX4, curY);
-    curY += 4.2;
-  });
-
-  // PAGE 5: Spis Treści / Wstęp do Rozdziału
-  doc.addPage();
-  pageNumber++;
+  // PAGE 1 (for Biblia365) or PAGE 5: Chapter Content starts here directly
   const leftX5 = getLeftMargin(pageNumber);
   doc.setFont('times', 'bold');
   doc.setFontSize(16);

@@ -628,18 +628,53 @@ export const FlipbookReader: React.FC<Props> = ({
   const renderPdfPageBody = (data: ReturnType<typeof getPdfPageData>, targetPageNum: number) => {
     const pageNum = targetPageNum;
 
-    if (viewMode === 'pdf' && activePdf) {
-      const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
-      return (
-        <iframe
-          key={`pdf-frame-${activePdf.id}-${pageNum}`}
-          src={pdfPageUrl}
-          title={`Strona PDF ${pageNum} z 1460 (Format A5 1:1)`}
-          scrolling="no"
-          className="w-full h-full border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
-          style={{ pointerEvents: 'none', border: 0, width: '100%', height: '100%' }}
-        />
-      );
+    if (viewMode === 'pdf') {
+      if (activePdf) {
+        const pdfPageUrl = `${activePdf.url}#page=${pageNum}&toolbar=0&navpanes=0&scrollbar=0&view=Fit`;
+        return (
+          <iframe
+            key={`pdf-frame-${activePdf.id}-${pageNum}`}
+            src={pdfPageUrl}
+            title={`Strona PDF ${pageNum} z ${maxBookPages} (Format A5 1:1)`}
+            scrolling="no"
+            className="w-full h-full border-0 rounded-xl bg-white dark:bg-black dark:invert dark:contrast-125 dark:hue-rotate-180 pointer-events-none transition-all duration-300 overflow-hidden"
+            style={{ pointerEvents: 'none', border: 0, width: '100%', height: '100%' }}
+          />
+        );
+      }
+
+      if (isBibliaSection) {
+        return (
+          <div className="flex flex-col h-full flex-1 justify-between p-4 sm:p-6 bg-white dark:bg-[#121620] text-stone-900 dark:text-stone-100 rounded-xl border border-amber-600/30 shadow-md font-serif-book text-justify overflow-y-auto">
+            {/* PDF A5 Running Header */}
+            <div className="border-b border-amber-800/20 pb-2 mb-3 flex items-center justify-between text-[11px] text-amber-900 dark:text-amber-400 font-sans-ui font-semibold shrink-0 uppercase tracking-wider">
+              <span>DROGA365 • ROK {selectedYear} • STRONA PDF {pageNum} Z 365</span>
+              <span>{data.displayDate}</span>
+            </div>
+
+            {/* Title & Passage */}
+            <div className="mb-4 shrink-0 border-b border-amber-500/20 pb-2">
+              <h2 className="font-heading-cinzel font-extrabold text-base sm:text-lg text-amber-950 dark:text-amber-200">
+                {data.title}
+              </h2>
+              <p className="text-xs italic text-amber-800 dark:text-amber-400">
+                {data.subtitle}
+              </p>
+            </div>
+
+            {/* Chapter Text Body */}
+            <div className="flex-1 whitespace-pre-line leading-relaxed text-xs sm:text-sm font-serif-book">
+              {data.chunk || data.fullContent}
+            </div>
+
+            {/* PDF Running Footer */}
+            <div className="border-t border-amber-800/20 pt-2 mt-3 flex items-center justify-between text-[10px] text-amber-800/70 dark:text-amber-400/70 font-sans-ui shrink-0">
+              <span>Biblia365 • 4-Letni Cykl Czytań</span>
+              <span className="font-bold font-mono">Strona {pageNum}</span>
+            </div>
+          </div>
+        );
+      }
     }
 
     if (pageNum === 1) {
