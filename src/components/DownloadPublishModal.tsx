@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
   X, Download, FileText, BookOpen, Layers, CheckCircle2, Sparkles, 
-  ExternalLink, Globe, HelpCircle, Loader2, ArrowRight, ShieldCheck, Printer
+  Globe, Loader2, Printer, Calendar
 } from 'lucide-react';
 import { SectionEntry, SectionMeta, SUPPORTED_LANGUAGES, UploadedPdf } from '../types';
 import { generatePodPdf, generatePodDocx, generateEpub, triggerBrowserDownload } from '../utils/ebookGenerators';
-import { translateEntry, getUIText } from '../utils/translationService';
+import { translateEntry } from '../utils/translationService';
+import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 
 interface Props {
   isOpen: boolean;
@@ -28,6 +29,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'download' | 'platforms' | 'uploaded'>('download');
   const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'docx' | 'epub'>('pdf');
+  const [exportScope, setExportScope] = useState<'single' | 'year'>('year');
+  const [selectedYear, setSelectedYear] = useState<1 | 2 | 3 | 4>(1);
   const [pageSize, setPageSize] = useState<'6x9' | 'a5'>('6x9');
   const [exportLang, setExportLang] = useState<string>(currentLang || 'pl');
   const [isTranslating, setIsTranslating] = useState(false);
@@ -49,9 +52,24 @@ export const DownloadPublishModal: React.FC<Props> = ({
 
     try {
       let entryToExport = entry;
+      let allYearEntries: SectionEntry[] = [];
 
-      // If exporting in another language, translate if needed
-      if (exportLang !== 'pl') {
+      if (exportScope === 'year') {
+        for (let day = 1; day <= 365; day++) {
+          const bEntry = getBibliaEntryForDayAndYear(day, selectedYear);
+          allYearEntries.push({
+            dayNumber: day,
+            dateKey: `Dzień ${day}`,
+            title: bEntry.title || `${bEntry.bookTitle} – Rozdział ${bEntry.chapter}`,
+            passage: bEntry.passage,
+            content: bEntry.content,
+            prayer: `Panie Boże, dziękuję Ci za dar Twojego Słowa z księgi ${bEntry.bookTitle}. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki. Amen.`
+          });
+        }
+      }
+
+      // If exporting in another language and single entry, translate if needed
+      if (exportLang !== 'pl' && exportScope === 'single') {
         setIsTranslating(true);
         const translated = await translateEntry(entry, exportLang, selectedLangObj.name);
         entryToExport = {
@@ -66,35 +84,31 @@ export const DownloadPublishModal: React.FC<Props> = ({
       }
 
       const safeSection = meta.id.replace(/[^a-zA-Z0-9]/g, '_');
-      const safeDate = (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
-      const baseFilename = `Droga365_${safeSection}_${safeDate}_${exportLang}`;
+      const safeScope = exportScope === 'year' ? `Rok_${selectedYear}_Tom_365_Dni` : (entry.dateKey || `${entry.dayNumber}`).replace(/[^a-zA-Z0-9]/g, '_');
+      const baseFilename = `Biblia365_${safeSection}_${safeScope}_${exportLang}`;
+
+      const options = {
+        format: selectedFormat,
+        size: pageSize,
+        language: exportLang,
+        languageName: selectedLangObj.name,
+        exportScope,
+        selectedYear,
+        allYearEntries: exportScope === 'year' ? allYearEntries : undefined
+      };
 
       if (selectedFormat === 'pdf') {
-        const blob = await generatePodPdf(entryToExport, meta, {
-          format: 'pdf',
-          size: pageSize,
-          language: exportLang,
-          languageName: selectedLangObj.name
-        });
+        const blob = await generatePodPdf(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_POD_${pageSize}.pdf`);
-        setDownloadSuccess(`Wygenerowano PDF do druku POD (${pageSize.toUpperCase()}) w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty plik PDF do druku POD (${pageSize.toUpperCase()}) dla ${exportScope === 'year' ? `Roku ${selectedYear} (365 dni)` : 'pojedynczego rozdziału'} w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'docx') {
-        const blob = await generatePodDocx(entryToExport, meta, {
-          format: 'docx',
-          size: pageSize,
-          language: exportLang,
-          languageName: selectedLangObj.name
-        });
+        const blob = await generatePodDocx(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_KDP_Format.docx`);
-        setDownloadSuccess(`Wygenerowano dokument DOCX dla KDP i Empik w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty dokument DOCX (Word UTF-8) dla KDP i Empik (${exportScope === 'year' ? `Rok ${selectedYear} - 365 dni` : 'pojedynczy rozdział'}) w języku: ${selectedLangObj.nativeName}`);
       } else if (selectedFormat === 'epub') {
-        const blob = await generateEpub(entryToExport, meta, {
-          format: 'epub',
-          language: exportLang,
-          languageName: selectedLangObj.name
-        });
+        const blob = await generateEpub(entryToExport, meta, options);
         triggerBrowserDownload(blob, `${baseFilename}_Ebook.epub`);
-        setDownloadSuccess(`Wygenerowano e-book ePUB dla Legimi i Empik w języku: ${selectedLangObj.nativeName}`);
+        setDownloadSuccess(`Wygenerowano czysty e-book ePUB 3 z pełnym spisem treści (${exportScope === 'year' ? `Rok ${selectedYear} - 365 dni` : 'pojedynczy rozdział'}) w języku: ${selectedLangObj.nativeName}`);
       }
     } catch (err: any) {
       console.error('Błąd generowania pliku:', err);
@@ -182,10 +196,76 @@ export const DownloadPublishModal: React.FC<Props> = ({
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
           {activeTab === 'download' && (
             <div className="space-y-6">
+              {/* Scope & Year Selection */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    Wybierz Zakres i Tom Cyklu do Pobrania:
+                  </label>
+                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    100% Czysty Tekst i Polskie Znaki
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Full Year Volume Option */}
+                  <button
+                    type="button"
+                    onClick={() => setExportScope('year')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      exportScope === 'year'
+                        ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
+                        : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
+                    }`}
+                  >
+                    <div className="text-xs text-stone-900 dark:text-white font-bold">Pełny Tom Roczny (365 Czytań)</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pobiera cały rok czytań (365 rozdziałów) w jednym kompletnym e-booku/pliku do druku.</div>
+                  </button>
+
+                  {/* Single Chapter Option */}
+                  <button
+                    type="button"
+                    onClick={() => setExportScope('single')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      exportScope === 'single'
+                        ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
+                        : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
+                    }`}
+                  >
+                    <div className="text-xs text-stone-900 dark:text-white font-bold">Pojedynczy Rozdział Dnia</div>
+                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Pobiera wyłącznie aktualnie otwarty rozdział/wpis z tego dnia.</div>
+                  </button>
+                </div>
+
+                {/* Year Selector */}
+                {exportScope === 'year' && (
+                  <div className="pt-2 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Tom (Rok):</span>
+                    <div className="grid grid-cols-4 gap-2 flex-1">
+                      {([1, 2, 3, 4] as const).map(yr => (
+                        <button
+                          key={yr}
+                          type="button"
+                          onClick={() => setSelectedYear(yr)}
+                          className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all border text-center ${
+                            selectedYear === yr
+                              ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                              : 'bg-white dark:bg-[#282119] border-stone-300 dark:border-[#423425] text-stone-700 dark:text-stone-300'
+                          }`}
+                        >
+                          Rok {yr}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Format selection cards */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-[#b49e89] mb-3">
-                  1. Wybierz Format Pliku do Publikacji i Druku:
+                  Wybierz Format Pliku do Publikacji i Druku:
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* PDF Card */}
@@ -206,7 +286,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     </div>
                     <div className="font-bold text-sm text-stone-900 dark:text-white">PDF do Druku POD</div>
                     <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-                      Lustrzane marginesy 0.8" na grzbiet, żywa pagina, numeracja stron, metryka praw autorskich. Gotowy do Amazon KDP i Empik.
+                      Naprawione kodowanie znaków, brak kwadratowych nawiasów. Marginesy 0.8", pagina, numeracja stron, metryka praw autorskich. Gotowy do Amazon KDP i Empik.
                     </p>
                   </button>
 
@@ -228,7 +308,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     </div>
                     <div className="font-bold text-sm text-stone-900 dark:text-white">Microsoft Word (.docx)</div>
                     <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-                      Czyste style nagłówków, spis treści, podziały stron. Amazon KDP i Empik automatycznie konwertują DOCX na druk i ebook.
+                      Pełne natywne polskie znaki UTF-8. Czyste style nagłówków, podziały stron. KDP i Empik automatycznie konwertują DOCX.
                     </p>
                   </button>
 
@@ -250,7 +330,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     </div>
                     <div className="font-bold text-sm text-stone-900 dark:text-white">ePUB 3 (E-book)</div>
                     <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-                      Format dla czytników: Legimi, Empik Go, Apple Books, Kobo, Kindle. Skalowalna typografia, spis treści ncx/nav.
+                      Pełne natywne polskie znaki UTF-8. Format dla czytników: Legimi, Empik Go, Apple Books, Kobo, Kindle. Skalowalna typografia, ncx/nav.
                     </p>
                   </button>
                 </div>
@@ -332,12 +412,14 @@ export const DownloadPublishModal: React.FC<Props> = ({
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>{isTranslating ? 'Tłumaczenie treści na wybrany język...' : 'Generowanie pliku POD...'}</span>
+                      <span>{isTranslating ? 'Tłumaczenie treści na wybrany język...' : 'Generowanie pliku...'}</span>
                     </>
                   ) : (
                     <>
                       <Download className="w-5 h-5" />
-                      <span>Pobierz {selectedFormat.toUpperCase()} ({selectedLangObj.flag} {selectedLangObj.nativeName})</span>
+                      <span>
+                        Pobierz {selectedFormat.toUpperCase()} ({exportScope === 'year' ? `Tom Rok ${selectedYear} - 365 Dni` : `Rozdział Dnia`})
+                      </span>
                     </>
                   )}
                 </button>
@@ -423,7 +505,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
           {activeTab === 'platforms' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs leading-relaxed flex items-start gap-2.5">
-                <ShieldCheck className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                <Sparkles className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
                 <div>
                   <strong className="block text-sm font-semibold mb-0.5">Platformy za 0 zł opłat wstępnych:</strong>
                   Wszystkie pliki wygenerowane przez aplikację (PDF POD 6x9"/A5, Word DOCX oraz ePUB) spełniają wytyczne techniczne największych bezpłatnych dystrybutorów książek papierowych i elektronicznych.
@@ -524,7 +606,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         <div className="p-4 bg-stone-50 dark:bg-[#1b1712] border-t border-stone-200 dark:border-[#33281c] flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Wszystkie formaty zgodne ze standardami POD 2026</span>
+            <span>Wszystkie formaty (PDF, DOCX, ePUB) 100% sprawne z polskimi znakami</span>
           </div>
           <button
             type="button"
