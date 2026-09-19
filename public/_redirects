@@ -21,7 +21,7 @@
 /z/20 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/lato2.png 301
 /z/21 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/jesien2.png 301
 /z/22 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/zima2.png 301
-/z/23 https://symulacja-rgb-zmiany.deejaykey32.workers.dev
+/z/23 https://symulacja-rgb-zmiany.deejaykey32.workers.dev 301
 
 # Przekierowania dla dynamicznych kodów QR (Biblia, WnR365, Różaniec, Zasoby)
 /b/* https://wnr365.pages.dev 301
