@@ -134,6 +134,16 @@ export interface SectionEntry {
   authorNotes?: string; // Especially for Bio365
   image?: string;
   pdfs?: UploadedPdf[];
+  qrBadges?: Array<{
+    id?: string;
+    title: string;
+    subtitle?: string;
+    link?: string;
+    url?: string;
+    shortUrl?: string;
+    image: string;
+    pdfPage?: number;
+  }>;
   updatedAt?: string;
   homeConfig?: HomePageConfig;
   translations?: Record<string, {

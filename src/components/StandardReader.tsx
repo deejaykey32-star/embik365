@@ -27,6 +27,7 @@ import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio 
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
+import { getWnrEntryForDay } from '../data/wnr365Data';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 
@@ -437,6 +438,43 @@ export const StandardReader: React.FC<Props> = ({
           )}
         </article>
       )}
+
+        {/* Day Specific QR Badges (Materiały Dodatkowe do wpisu) */}
+        {(() => {
+          if (section.id !== 'wnr365' && section.id !== 'ebook_wnr') return null;
+          const wnrEntry = getWnrEntryForDay(currentDate.dayNumber);
+          if (!wnrEntry.qrBadges || wnrEntry.qrBadges.length === 0) return null;
+          return (
+            <div className="mt-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-b from-[#faf6f0] to-[#f5eee4] dark:from-[#18202d] dark:to-[#121822] border-2 border-amber-600/30 dark:border-amber-700/40 shadow-lg space-y-4">
+              <div className="flex items-center justify-between border-b border-amber-600/20 pb-3">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 font-sans-ui">
+                  <QrCode className="w-4 h-4 text-amber-600" />
+                  <span>Materiały Dodatkowe i Kody QR do wpisu ({wnrEntry.qrBadges.length})</span>
+                </div>
+                <span className="text-[11px] font-mono text-amber-700 dark:text-amber-400">Dzień {currentDate.dayNumber} z 365</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {wnrEntry.qrBadges.map((badge, bIdx) => (
+                  <div key={bIdx} className="p-4 rounded-2xl bg-white dark:bg-[#151c27] border border-[#e2d4c5] dark:border-[#222e42] flex flex-col items-center text-center shadow-xs space-y-3">
+                    <a href={badge.url} target="_blank" rel="noopener noreferrer" className="block w-full max-w-[200px] group cursor-pointer" title={`Otwórz ${badge.title}`}>
+                      <img src={badge.image} alt={badge.title} className="w-full h-auto max-h-56 object-contain rounded-xl border border-amber-500/20 p-1 bg-white shadow-xs group-hover:scale-102 transition-transform" />
+                    </a>
+                    <div className="font-heading-cinzel font-bold text-sm text-[#2b2117] dark:text-[#f3e8d2]">{badge.title}</div>
+                    <div className="text-xs font-mono text-amber-700 dark:text-amber-400 break-all">{badge.shortUrl || badge.url}</div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <a href={badge.url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1 transition-colors shadow-xs">
+                        <span>Otwórz</span> <ExternalLink className="w-3 h-3" />
+                      </a>
+                      <a href={badge.image} download={`qr_${badge.id}.png`} className="px-3 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-medium flex items-center gap-1 transition-colors">
+                        <Download className="w-3 h-3" /> <span>Pobierz PNG</span>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
       {/* Official QR Code Badge Box */}
       <div className="mt-8">

@@ -117,7 +117,8 @@ export const DownloadPublishModal: React.FC<Props> = ({
               title: wEntry.title || `WnR365 – Widoki na Raj – Dzień ${day}`,
               subtitle: wEntry.displayDate ? `WnR365 • ${wEntry.displayDate}` : undefined,
               content: cleanContent,
-              prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Widoki na Raj. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
+              prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Widoki na Raj. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`,
+              qrBadges: wEntry.qrBadges
             };
           } else if (metaId === 'rhz365' || metaId === 'ebook_rhz') {
             const rEntry = getRhzEntryForDay(day);
@@ -181,6 +182,13 @@ export const DownloadPublishModal: React.FC<Props> = ({
       } else {
         const key = fallbackEntry.dateKey || (fallbackEntry.dayNumber ? `Dzien_${fallbackEntry.dayNumber}` : '1');
         safeScope = String(key).replace(/[^a-zA-Z0-9]/g, '_');
+      }
+
+      if (exportScope === 'single' && (metaId === 'wnr365' || metaId === 'ebook_wnr')) {
+        const wnr = getWnrEntryForDay(entryToExport.dayNumber);
+        if (wnr?.qrBadges) {
+          entryToExport = { ...entryToExport, qrBadges: wnr.qrBadges };
+        }
       }
 
       const baseFilename = `Droga365_${safeSection}_${safeScope}_${exportLang}`;

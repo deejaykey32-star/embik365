@@ -60,7 +60,13 @@ function splitContentIntoFourChunks(content: string, prayer?: string): { chunk1:
 
   const paragraphs = fullText
     .split(/\n\n+|<p[^>]*>|<\/p>/i)
-    .map(p => p.replace(/<[^>]*>/g, '').trim())
+    .map(p => {
+      const trimmed = p.trim();
+      if (/<(div|img|a|span|section)/i.test(trimmed)) {
+        return trimmed;
+      }
+      return trimmed.replace(/<[^>]*>/g, '').trim();
+    })
     .filter(Boolean);
 
   if (paragraphs.length >= 4) {
@@ -219,7 +225,8 @@ function getPdfPageData(
       prayer: '',
       mystery: '',
       intention: '',
-      fullContent: wnr.content
+      fullContent: wnr.content,
+      qrBadges: wnr.qrBadges
     };
   }
 
@@ -856,6 +863,45 @@ export const FlipbookReader: React.FC<Props> = ({
             </div>
           )}
         </div>
+
+        {data.subPage === 4 && data.qrBadges && data.qrBadges.length > 0 && (
+          <div className="mt-2 space-y-1.5 shrink-0">
+            {data.qrBadges.map((badge, bIdx) => (
+              <div key={bIdx} className="p-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 flex items-center justify-between gap-2.5 text-xs">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <img src={badge.image} alt={badge.title} className="w-10 h-10 object-contain rounded-lg border border-amber-500/20 bg-white shrink-0 p-0.5 shadow-xs" />
+                  <div className="overflow-hidden text-left">
+                    <div className="font-bold text-[10px] truncate text-[#2f271f] dark:text-white">
+                      {badge.title}
+                    </div>
+                    <div className="text-[9px] font-mono text-amber-800 dark:text-amber-300 truncate">
+                      {badge.shortUrl || badge.url}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <a
+                    href={badge.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold transition-colors"
+                  >
+                    Otwórz
+                  </a>
+                  <a
+                    href={badge.image}
+                    download={`qr_z${badge.id}.png`}
+                    onClick={e => e.stopPropagation()}
+                    className="px-2 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 text-[10px] font-medium transition-colors"
+                  >
+                    PNG
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {data.subPage === 4 && (
           <div className="mt-2 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between gap-3 text-xs shrink-0">

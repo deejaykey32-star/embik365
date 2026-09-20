@@ -1,6 +1,33 @@
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
+import QRCode from 'qrcode';
 import { SectionEntry, SectionMeta } from '../types';
+import { getWnrEntryForDay } from '../data/wnr365Data';
+
+// Memory cache for QR code card images to avoid repeated fetches
+const qrImageCache = new Map<string, string>();
+
+async function fetchQrImageBase64(imgPath: string): Promise<string | null> {
+  if (qrImageCache.has(imgPath)) return qrImageCache.get(imgPath)!;
+  try {
+    const res = await fetch(imgPath);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        qrImageCache.set(imgPath, dataUrl);
+        resolve(dataUrl);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn('Could not load QR image:', imgPath, err);
+    return null;
+  }
+}
 
 export interface ExportOptions {
   format: 'pdf' | 'docx' | 'epub';
@@ -470,6 +497,98 @@ export async function generatePodPdf(
       currentY += prayerBoxHeight + 6;
     }
 
+    // 1. Embed special video/audio/resource QR cards (Materiały Dodatkowe 1..27)
+    const wnrEntry = (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || currentEntry.sectionId === 'wnr365' || currentEntry.sectionId === 'ebook_wnr')
+      ? getWnrEntryForDay(currentEntry.dayNumber)
+      : null;
+    const badgesToEmbed = (currentEntry.qrBadges && currentEntry.qrBadges.length > 0)
+      ? currentEntry.qrBadges
+      : (wnrEntry?.qrBadges || []);
+
+    if (badgesToEmbed && badgesToEmbed.length > 0) {
+      for (const badge of badgesToEmbed) {
+        let badgeDataUrl: string | null = null;
+        if (badge.image) {
+          badgeDataUrl = await fetchQrImageBase64(badge.image);
+        }
+        const targetUrl = (badge as any).url || (badge as any).link || (badge as any).shortUrl || 'https://wnr365.pages.dev';
+        if (!badgeDataUrl) {
+          try {
+            badgeDataUrl = await QRCode.toDataURL(targetUrl, { width: 300, margin: 1 });
+          } catch (e) {}
+        }
+
+        if (badgeDataUrl) {
+          const cardW = 72; // mm
+          const cardH = 99; // mm (800x1100 ratio)
+          if (currentY + cardH + 10 > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+            doc.addPage();
+            pageNumber++;
+            curLeft = getLeftMargin(pageNumber);
+            currentY = topMargin + 10;
+          }
+
+          const cardX = curLeft + (getContentWidth() - cardW) / 2;
+          doc.addImage(badgeDataUrl, 'PNG', cardX, currentY, cardW, cardH);
+          if (targetUrl) {
+            doc.link(cardX, currentY, cardW, cardH, { url: targetUrl });
+          }
+          currentY += cardH + 6;
+        }
+      }
+    }
+
+    // 2. Official Day Online Reading QR Code Box for all entries
+    const dayUrl = (meta.id === 'rhz365' || currentEntry.sectionId === 'rhz365')
+      ? `https://wnr365.pages.dev/r/${currentEntry.dayNumber}`
+      : (meta.id === 'biblia365' || currentEntry.sectionId === 'biblia365')
+      ? `https://wnr365.pages.dev/b/${currentEntry.dayNumber}`
+      : `https://wnr365.pages.dev/w/${currentEntry.dayNumber}`;
+
+    let dayQrDataUrl: string | null = null;
+    try {
+      dayQrDataUrl = await QRCode.toDataURL(dayUrl, { width: 250, margin: 1 });
+    } catch (e) {}
+
+    if (dayQrDataUrl) {
+      const boxH = 26;
+      if (currentY + boxH + 6 > pageHeight - bottomMargin) {
+        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+        doc.addPage();
+        pageNumber++;
+        curLeft = getLeftMargin(pageNumber);
+        currentY = topMargin + 10;
+      }
+
+      curLeft = getLeftMargin(pageNumber);
+      doc.setDrawColor(180, 160, 140);
+      doc.setLineWidth(0.3);
+      doc.setFillColor(252, 250, 245);
+      doc.roundedRect(curLeft, currentY, getContentWidth(), boxH, 2, 2, 'FD');
+
+      doc.addImage(dayQrDataUrl, 'PNG', curLeft + 3, currentY + 3, 20, 20);
+      doc.link(curLeft + 3, currentY + 3, 20, 20, { url: dayUrl });
+
+      doc.setFont(fontFamily, 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text('KOD QR DO ROZWAŻANIA ONLINE', curLeft + 26, currentY + 7);
+
+      doc.setFont(fontFamily, 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      doc.text('Zeskanuj smartfonem lub kliknij, aby otworzyć wersję cyfrową:', curLeft + 26, currentY + 13);
+
+      doc.setFont(fontFamily, 'italic');
+      doc.setFontSize(8);
+      doc.setTextColor(180, 83, 9); // Amber-700
+      doc.text(dayUrl, curLeft + 26, currentY + 19);
+      doc.link(curLeft + 26, currentY + 15, getContentWidth() - 30, 6, { url: dayUrl });
+
+      currentY += boxH + 6;
+    }
+
     addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
   }
 
@@ -611,6 +730,42 @@ export async function generatePodDocx(
         <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
       </w:p>` : '';
 
+    const wnrDocx = (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || curEntry.sectionId === 'wnr365' || curEntry.sectionId === 'ebook_wnr')
+      ? getWnrEntryForDay(curEntry.dayNumber)
+      : null;
+    const docxBadges = (curEntry.qrBadges && curEntry.qrBadges.length > 0)
+      ? curEntry.qrBadges
+      : (wnrDocx?.qrBadges || []);
+
+    let qrXml = '';
+    if (docxBadges && docxBadges.length > 0) {
+      for (const badge of docxBadges) {
+        qrXml += `
+          <w:p>
+            <w:pPr><w:spacing w:before="240" w:after="80"/><w:jc w:val="left"/></w:pPr>
+            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="22"/><w:color w:val="B45309"/></w:rPr><w:t>[MATERIAŁ DODATKOWY - KOD QR: ${escapeXml(badge.title)}]</w:t></w:r>
+          </w:p>
+          <w:p>
+            <w:pPr><w:spacing w:after="160"/><w:jc w:val="left"/></w:pPr>
+            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="20"/><w:color w:val="1D4ED8"/></w:rPr><w:t>Odnośnik: ${escapeXml((badge as any).link || (badge as any).url || (badge as any).shortUrl || '')}</w:t></w:r>
+          </w:p>
+        `;
+      }
+    }
+
+    const docxDayUrl = (meta.id === 'rhz365' || curEntry.sectionId === 'rhz365')
+      ? `https://wnr365.pages.dev/r/${curEntry.dayNumber}`
+      : (meta.id === 'biblia365' || curEntry.sectionId === 'biblia365')
+      ? `https://wnr365.pages.dev/b/${curEntry.dayNumber}`
+      : `https://wnr365.pages.dev/w/${curEntry.dayNumber}`;
+
+    qrXml += `
+      <w:p>
+        <w:pPr><w:spacing w:before="200" w:after="140"/><w:jc w:val="left"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="18"/><w:color w:val="4B5563"/></w:rPr><w:t>[KOD QR DO ROZWAŻANIA ONLINE: ${escapeXml(docxDayUrl)}]</w:t></w:r>
+      </w:p>
+    `;
+
     chaptersXml += `
       ${idx > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : ''}
       <w:p>
@@ -627,6 +782,7 @@ export async function generatePodDocx(
       </w:p>` : ''}
       ${paragraphsXml}
       ${prayerXml}
+      ${qrXml}
     `;
   }
 
@@ -856,6 +1012,29 @@ p.first {
       <p style="text-indent: 0;">${escapeXml(stripHtml(curEntry.prayer))}</p>
     </div>` : '';
 
+    const dayNum = curEntry.dayNumber || (idx + 1);
+    const wnrEntry = getWnrEntryForDay(dayNum);
+    const badgesToEmbed = curEntry.qrBadges || wnrEntry?.qrBadges || [];
+    const dayUrl = `https://wnr365.pages.dev/wnr365?day=${dayNum}`;
+
+    const qrMaterialsHtml = badgesToEmbed.length > 0 ? `
+    <div style="margin-top: 2em; padding: 1em; border: 1px solid #d97706; background-color: #fffbeb; border-radius: 6px;">
+      <h3 style="color: #92400e; font-size: 1.1em; margin-bottom: 0.8em; text-align: center;">Materiały Dodatkowe i Kody QR (Wersja 1:1)</h3>
+      ${badgesToEmbed.map((b: any) => `
+        <div style="margin-bottom: 1em; padding-bottom: 0.8em; border-bottom: 1px dashed #fcd34d; text-align: center;">
+          <p style="font-weight: bold; margin-bottom: 0.2em;">${escapeXml(b.title)}</p>
+          ${b.subtitle ? `<p style="font-size: 0.85em; color: #4b5563; margin-bottom: 0.4em;">${escapeXml(b.subtitle)}</p>` : ''}
+          <p style="text-indent: 0;"><a href="${b.link || b.url || b.shortUrl || ''}" style="color: #b45309; font-weight: bold; text-decoration: underline;">Otwórz materiał: ${escapeXml(b.link || b.url || b.shortUrl || '')}</a></p>
+        </div>
+      `).join('')}
+    </div>` : '';
+
+    const onlineQrHtml = `
+    <div style="margin-top: 2em; border-top: 1px solid #e5e7eb; padding-top: 1em; text-align: center; font-size: 0.85em; color: #6b7280;">
+      <p style="text-indent: 0;">Pełne rozważanie i nagrania w serwisie:</p>
+      <p style="text-indent: 0;"><a href="${dayUrl}" style="color: #b45309; font-weight: bold;">${dayUrl}</a></p>
+    </div>`;
+
     const chapterXhtml = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -872,6 +1051,8 @@ p.first {
   </div>
 
   ${prayerHtml}
+  ${qrMaterialsHtml}
+  ${onlineQrHtml}
 </body>
 </html>`;
 
