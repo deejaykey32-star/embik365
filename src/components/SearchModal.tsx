@@ -12,7 +12,7 @@ import {
   Check,
   Layers
 } from 'lucide-react';
-import { SectionId, CycleDate, SectionEntry } from '../types';
+import { SectionId, CycleDate, SectionEntry, AdminUser } from '../types';
 import { SECTIONS, getSectionById } from '../data/defaultSections';
 import { CYCLE_DAYS } from '../utils/dateCycle';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
