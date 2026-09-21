@@ -12,7 +12,8 @@ import {
   Cpu, 
   Cloud,
   CheckCircle2,
-  Mic
+  Mic,
+  UserCheck
 } from 'lucide-react';
 import { SUPPORTED_LANGUAGES } from '../types';
 import { 
@@ -56,19 +57,22 @@ export const LectorSettingsModal: React.FC<Props> = ({
   const [isPlayingTest, setIsPlayingTest] = useState<boolean>(false);
   const [testStatus, setTestStatus] = useState<string | null>(null);
 
-  // Load available local Web Speech API voices with polling fallback for Chrome/Safari
+  // Load available local Web Speech API voices with continuous polling fallback
   useEffect(() => {
     const updateVoices = () => {
       const voices = getLocalVoices();
-      setLocalVoices(voices);
+      if (voices.length > 0) {
+        setLocalVoices(voices);
+      }
     };
 
     updateVoices();
-    const interval = setInterval(updateVoices, 300);
-    const timer = setTimeout(() => clearInterval(interval), 3000);
+    const interval = setInterval(updateVoices, 250);
+    const timer = setTimeout(() => clearInterval(interval), 4000);
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = updateVoices;
+      try { window.speechSynthesis.getVoices(); } catch {}
     }
 
     return () => {
@@ -187,24 +191,28 @@ export const LectorSettingsModal: React.FC<Props> = ({
     return items.filter(v => v.gender === genderFilter);
   };
 
+  // Online voices for active language & gender filter
+  const langOnlineVoices = ONLINE_VOICES.filter(v => v.lang === config.lang);
+  const filteredLangOnlineVoices = filterOnlineByGender(langOnlineVoices);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div 
-        className="w-full max-w-2xl bg-white dark:bg-[#0c121e] text-stone-900 dark:text-[#f1f5f9] rounded-3xl border border-amber-500/30 shadow-2xl p-5 sm:p-7 relative max-h-[92vh] flex flex-col overflow-hidden"
+        className="w-full max-w-3xl bg-[#faf8f5] dark:bg-[#0c121e] text-stone-900 dark:text-[#f1f5f9] rounded-3xl border-2 border-amber-500/40 shadow-2xl p-4 sm:p-7 relative max-h-[94vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b pb-4 border-amber-500/20">
+        <div className="flex items-center justify-between border-b pb-4 border-amber-500/30">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <Mic className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center shadow-lg border border-amber-300/40">
+              <Mic className="w-6 h-6" />
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-heading-cinzel font-bold text-stone-900 dark:text-white">
-                Ustawienia Lektora & Języka Mowy
+                Wybiór Głosów & Lektora Audio
               </h3>
-              <p className="text-xs text-stone-500 dark:text-[#94a3b8]">
-                Wybierz lektora w wersji <strong className="text-amber-700 dark:text-amber-300">Lokalnej (Systemowej)</strong> lub <strong className="text-amber-700 dark:text-amber-300">Online (AI Cloud)</strong>.
+              <p className="text-xs text-stone-600 dark:text-[#94a3b8]">
+                Wybierz lektora w wersji <strong className="text-amber-700 dark:text-amber-300">Lokalnej (Systemowej)</strong> lub <strong className="text-amber-700 dark:text-amber-300">Online (AI Cloud Neural)</strong>.
               </p>
             </div>
           </div>
@@ -214,17 +222,17 @@ export const LectorSettingsModal: React.FC<Props> = ({
               stopLectorSpeech();
               onClose();
             }}
-            className="w-9 h-9 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-full bg-stone-200 dark:bg-white/10 hover:bg-stone-300 dark:hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer text-stone-700 dark:text-white"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-6 text-xs">
+        <div className="flex-1 overflow-y-auto py-4 space-y-6 text-xs pr-1">
           
           {testStatus && (
-            <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-300 font-bold flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-950 dark:text-amber-200 font-bold flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-600" />
               <span>{testStatus}</span>
             </div>
@@ -232,8 +240,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
 
           {/* 1. SELEKCJA TRYBU: LOKALNY VS ONLINE */}
           <div>
-            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-2 uppercase tracking-wide">
-              1. Wybierz wersję i silnik syntezy lektora:
+            <label className="block font-bold text-stone-900 dark:text-stone-100 mb-2 uppercase tracking-wide text-[11px]">
+              1. Wybierz wersję silnika lektora:
             </label>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -243,19 +251,19 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 onClick={() => handleModeChange('local')}
                 className={`p-4 rounded-2xl border text-left cursor-pointer transition-all ${
                   config.mode === 'local'
-                    ? 'bg-amber-500/15 border-amber-500 text-amber-950 dark:text-amber-200 font-bold shadow-sm ring-1 ring-amber-500/40'
-                    : 'bg-stone-50 dark:bg-[#131c2e] border-stone-200 dark:border-stone-800 hover:border-amber-500/50'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-950 dark:text-amber-100 font-bold shadow-md ring-2 ring-amber-500/50'
+                    : 'bg-white dark:bg-[#131c2e] border-stone-300 dark:border-stone-800 hover:border-amber-500/50 text-stone-800 dark:text-stone-200'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="flex items-center gap-2 font-bold text-sm">
-                    <Cpu className="w-4 h-4 text-amber-600" />
+                  <span className="flex items-center gap-2 font-bold text-sm text-stone-900 dark:text-white">
+                    <Cpu className="w-5 h-5 text-amber-600" />
                     <span>Wersja Lokalna (Systemowa)</span>
                   </span>
-                  {config.mode === 'local' && <CheckCircle2 className="w-4 h-4 text-amber-600" />}
+                  {config.mode === 'local' && <CheckCircle2 className="w-5 h-5 text-amber-600" />}
                 </div>
-                <p className="text-[11px] opacity-80 leading-relaxed font-normal">
-                  Wykorzystuje natywne głosy syntezatora mowy (Web Speech API) zainstalowane w Twojej przeglądarce i systemie (np. Windows Speech, Android TTS, iOS). Działa offline!
+                <p className="text-[11px] opacity-90 leading-relaxed font-normal text-stone-600 dark:text-stone-300">
+                  Wykorzystuje lektorów zainstalowanych w Twojej przeglądarce i systemie (np. Windows Speech, Android TTS, iOS Siri). Działa offline!
                 </p>
               </button>
 
@@ -265,19 +273,19 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 onClick={() => handleModeChange('online')}
                 className={`p-4 rounded-2xl border text-left cursor-pointer transition-all ${
                   config.mode === 'online'
-                    ? 'bg-amber-500/15 border-amber-500 text-amber-950 dark:text-amber-200 font-bold shadow-sm ring-1 ring-amber-500/40'
-                    : 'bg-stone-50 dark:bg-[#131c2e] border-stone-200 dark:border-stone-800 hover:border-amber-500/50'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-950 dark:text-amber-100 font-bold shadow-md ring-2 ring-amber-500/50'
+                    : 'bg-white dark:bg-[#131c2e] border-stone-300 dark:border-stone-800 hover:border-amber-500/50 text-stone-800 dark:text-stone-200'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="flex items-center gap-2 font-bold text-sm">
-                    <Cloud className="w-4 h-4 text-amber-600" />
+                  <span className="flex items-center gap-2 font-bold text-sm text-stone-900 dark:text-white">
+                    <Cloud className="w-5 h-5 text-amber-600" />
                     <span>Wersja Online (AI Cloud Neural)</span>
                   </span>
-                  {config.mode === 'online' && <CheckCircle2 className="w-4 h-4 text-amber-600" />}
+                  {config.mode === 'online' && <CheckCircle2 className="w-5 h-5 text-amber-600" />}
                 </div>
-                <p className="text-[11px] opacity-80 leading-relaxed font-normal">
-                  Wysokiej jakości naturalne, chmurowe głosy konwersacyjne oparte na syntezie AI. Wymaga połączenia z internetem.
+                <p className="text-[11px] opacity-90 leading-relaxed font-normal text-stone-600 dark:text-stone-300">
+                  Wysokiej jakości lektorzy konwersacyjni AI (męscy i żeńscy). Naturalna intonacja medytacyjna i rozważaniowa.
                 </p>
               </button>
             </div>
@@ -285,8 +293,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
 
           {/* 2. WYBÓR JĘZYKA LEKTORA */}
           <div>
-            <label className="block font-bold text-stone-800 dark:text-stone-200 mb-2 uppercase tracking-wide">
-              2. Język lektora:
+            <label className="block font-bold text-stone-900 dark:text-stone-100 mb-2 uppercase tracking-wide text-[11px]">
+              2. Język czytania:
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {SUPPORTED_LANGUAGES.map((lang) => {
@@ -298,8 +306,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
                     onClick={() => handleLangChange(lang.code)}
                     className={`px-3 py-2 rounded-xl border text-left flex items-center gap-2 cursor-pointer transition-all ${
                       isSel
-                        ? 'bg-amber-600 text-white font-bold border-amber-600 shadow-xs'
-                        : 'bg-stone-50 dark:bg-[#131c2e] border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+                        ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold border-amber-500 shadow-md'
+                        : 'bg-white dark:bg-[#131c2e] border-stone-300 dark:border-stone-800 text-stone-800 dark:text-stone-200 hover:border-amber-500/40'
                     }`}
                   >
                     <span className="text-base">{lang.flag}</span>
@@ -310,45 +318,46 @@ export const LectorSettingsModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* 3. WYBÓR KONKRETNEGO GŁOSU (LOKALNEGO LUB ONLINE Z PODZIAŁEM NA MĘSKIE I ŻEŃSKIE) */}
-          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#131c2e] border border-stone-200 dark:border-stone-800 space-y-3">
+          {/* 3. SELEKCJA GŁOSÓW (MĘSKIE ♂ / ŻEŃSKIE ♀ / DROPDOWN + KARTY WIZUALNE) */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#131c2e] border-2 border-amber-500/30 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <label className="block font-bold text-stone-800 dark:text-stone-200 uppercase tracking-wide">
-                3. Wybór głosu lektora ({selectedLangObj.flag} {selectedLangObj.nativeName}):
+              <label className="block font-bold text-stone-900 dark:text-stone-100 uppercase tracking-wide text-[11px]">
+                3. Lista dostępnych lektorów ({selectedLangObj.flag} {selectedLangObj.nativeName}):
               </label>
 
-              {/* PODZIAŁ NA GŁOSY MĘSKIE I ŻEŃSKIE DLA OBU TRYBÓW */}
+              {/* FIlTR PŁCI: WSZYSTKIE / MĘSKI ♂ / ŻEŃSKI ♀ */}
               <div className="flex items-center gap-1.5 bg-stone-200 dark:bg-[#0c121e] p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => handleGenderFilterChange('all')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    genderFilter === 'all' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    genderFilter === 'all' ? 'bg-amber-600 text-white shadow-xs' : 'text-stone-700 dark:text-stone-300'
                   }`}
                 >
-                  Wszystkie Głosy
+                  Wszystkie
                 </button>
                 <button
                   type="button"
                   onClick={() => handleGenderFilterChange('male')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    genderFilter === 'male' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    genderFilter === 'male' ? 'bg-amber-600 text-white shadow-xs' : 'text-stone-700 dark:text-stone-300'
                   }`}
                 >
-                  Głos Męski ♂
+                  Męski ♂
                 </button>
                 <button
                   type="button"
                   onClick={() => handleGenderFilterChange('female')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    genderFilter === 'female' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    genderFilter === 'female' ? 'bg-amber-600 text-white shadow-xs' : 'text-stone-700 dark:text-stone-300'
                   }`}
                 >
-                  Głos Żeński ♀
+                  Żeński ♀
                 </button>
               </div>
             </div>
 
+            {/* A) DROPDOWN SELECT WITH EXPLICIT OPTION STYLING AND HIGH CONTRAST */}
             {config.mode === 'local' ? (
               <div className="space-y-3">
                 <select
@@ -358,21 +367,37 @@ export const LectorSettingsModal: React.FC<Props> = ({
                     setConfig(updated);
                     saveLectorConfig(updated);
                   }}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500 cursor-pointer"
+                  className="w-full px-3.5 py-3 rounded-xl bg-stone-100 dark:bg-[#080d16] border-2 border-amber-500/40 text-stone-900 dark:text-stone-100 font-bold focus:outline-hidden focus:border-amber-500 cursor-pointer text-xs"
+                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                 >
                   {(() => {
                     const filteredMatched = filterLocalByGender(matchedLangLocalVoices);
                     const filteredOther = filterLocalByGender(otherLocalVoices);
 
+                    if (filteredMatched.length === 0 && filteredOther.length === 0) {
+                      return (
+                        <option value="" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>
+                          🔊 Domyślny lektor systemowy ({selectedLangObj.nativeName})
+                        </option>
+                      );
+                    }
+
                     return (
                       <>
                         {filteredMatched.length > 0 && (
-                          <optgroup label={`--- Głosy w języku ${selectedLangObj.nativeName} (${selectedLangObj.flag}) ---`}>
+                          <optgroup 
+                            label={`--- Głosy w języku ${selectedLangObj.nativeName} (${selectedLangObj.flag}) ---`}
+                            style={{ backgroundColor: '#0f172a', color: '#f59e0b', fontWeight: 'bold' }}
+                          >
                             {filteredMatched.map((v) => {
                               const gender = detectVoiceGender(v.name);
                               const icon = gender === 'female' ? '👩' : '👨';
                               return (
-                                <option key={v.voiceURI} value={v.voiceURI}>
+                                <option 
+                                  key={v.voiceURI} 
+                                  value={v.voiceURI}
+                                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                                >
                                   {icon} {v.name} ({v.lang}) [{gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}]{v.default ? ' - Domyślny OS' : ''}
                                 </option>
                               );
@@ -381,12 +406,19 @@ export const LectorSettingsModal: React.FC<Props> = ({
                         )}
 
                         {filteredOther.length > 0 && (
-                          <optgroup label="--- Pozostałe zainstalowane głosy systemowe OS ---">
+                          <optgroup 
+                            label="--- Pozostałe zainstalowane głosy systemowe ---"
+                            style={{ backgroundColor: '#0f172a', color: '#f59e0b', fontWeight: 'bold' }}
+                          >
                             {filteredOther.map((v) => {
                               const gender = detectVoiceGender(v.name);
                               const icon = gender === 'female' ? '👩' : '👨';
                               return (
-                                <option key={v.voiceURI} value={v.voiceURI}>
+                                <option 
+                                  key={v.voiceURI} 
+                                  value={v.voiceURI}
+                                  style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                                >
                                   {icon} {v.name} ({v.lang}) [{gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}]
                                 </option>
                               );
@@ -398,29 +430,57 @@ export const LectorSettingsModal: React.FC<Props> = ({
                   })()}
                 </select>
 
-                {/* Selected Local Voice Detail Card */}
-                {(() => {
-                  const selVoice = allLocalVoicesList.find(v => v.voiceURI === config.localVoiceURI) || matchedLangLocalVoices[0] || allLocalVoicesList[0];
-                  if (!selVoice) return null;
-                  const gender = detectVoiceGender(selVoice.name);
-                  return (
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
-                          <span>{gender === 'female' ? '👩' : '👨'} {selVoice.name}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-600 text-white font-sans-ui">
-                            {gender === 'female' ? 'Żeński ♀' : 'Męski ♂'}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-0.5">
-                          Głos lokalny zainstalowany w Twojej przeglądarce/systemie ({selVoice.lang}). Działa w pełni offline.
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })()}
+                {/* B) VISUAL VOICE SELECTION CARDS FOR LOCAL MODE */}
+                <div className="mt-3">
+                  <span className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-2">
+                    Szybki wybór lektora lokalnego (Karty):
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
+                    {(filterLocalByGender(matchedLangLocalVoices).length > 0
+                      ? filterLocalByGender(matchedLangLocalVoices)
+                      : filterLocalByGender(allLocalVoicesList)
+                    ).map((v) => {
+                      const gender = detectVoiceGender(v.name);
+                      const isSelected = config.localVoiceURI === v.voiceURI;
+                      return (
+                        <button
+                          key={v.voiceURI}
+                          type="button"
+                          onClick={() => {
+                            const updated: LectorConfig = {
+                              ...config,
+                              localVoiceURI: v.voiceURI,
+                              gender: gender
+                            };
+                            setConfig(updated);
+                            saveLectorConfig(updated);
+                          }}
+                          className={`p-3 rounded-xl border text-left flex items-center justify-between cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-950 dark:text-amber-100 font-bold shadow-sm ring-1 ring-amber-500'
+                              : 'bg-stone-50 dark:bg-[#0c121e] border-stone-200 dark:border-stone-800 hover:border-amber-500/40 text-stone-800 dark:text-stone-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="text-lg">{gender === 'female' ? '👩' : '👨'}</span>
+                            <div className="min-w-0">
+                              <div className="font-bold truncate text-xs">{v.name}</div>
+                              <div className="text-[10px] opacity-75">
+                                {gender === 'female' ? 'Żeński ♀' : 'Męski ♂'} • {v.lang}
+                              </div>
+                            </div>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-5 h-5 text-amber-600 flex-shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
             ) : (
+              /* ONLINE MODE VOICE SELECT & CARDS */
               <div className="space-y-3">
                 <select
                   value={config.onlineVoiceId}
@@ -437,7 +497,8 @@ export const LectorSettingsModal: React.FC<Props> = ({
                       saveLectorConfig(updated);
                     }
                   }}
-                  className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500 cursor-pointer"
+                  className="w-full px-3.5 py-3 rounded-xl bg-stone-100 dark:bg-[#080d16] border-2 border-amber-500/40 text-stone-900 dark:text-stone-100 font-bold focus:outline-hidden focus:border-amber-500 cursor-pointer text-xs"
+                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                 >
                   {(() => {
                     const langOnlines = ONLINE_VOICES.filter(v => v.lang === config.lang);
@@ -448,17 +509,31 @@ export const LectorSettingsModal: React.FC<Props> = ({
 
                     return (
                       <>
-                        <optgroup label={`--- Głosy AI Cloud dla języka ${selectedLangObj.nativeName} (${selectedLangObj.flag}) ---`}>
+                        <optgroup 
+                          label={`--- Głosy AI Cloud dla języka ${selectedLangObj.nativeName} (${selectedLangObj.flag}) ---`}
+                          style={{ backgroundColor: '#0f172a', color: '#f59e0b', fontWeight: 'bold' }}
+                        >
                           {filteredLang.map((v) => (
-                            <option key={v.id} value={v.id}>
+                            <option 
+                              key={v.id} 
+                              value={v.id}
+                              style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                            >
                               {v.gender === 'female' ? '👩' : '👨'} {v.name} [{v.gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}] ({v.provider})
                             </option>
                           ))}
                         </optgroup>
 
-                        <optgroup label="--- Pozostałe głosy AI Cloud (Inne Języki) ---">
+                        <optgroup 
+                          label="--- Pozostałe głosy AI Cloud (Inne Języki) ---"
+                          style={{ backgroundColor: '#0f172a', color: '#f59e0b', fontWeight: 'bold' }}
+                        >
                           {filteredOther.map((v) => (
-                            <option key={v.id} value={v.id}>
+                            <option 
+                              key={v.id} 
+                              value={v.id}
+                              style={{ backgroundColor: '#1e293b', color: '#ffffff' }}
+                            >
                               {v.gender === 'female' ? '👩' : '👨'} {v.name} [{v.gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}] ({v.provider})
                             </option>
                           ))}
@@ -468,35 +543,65 @@ export const LectorSettingsModal: React.FC<Props> = ({
                   })()}
                 </select>
 
-                {/* Selected Online Voice Details Card */}
-                {(() => {
-                  const selectedVoiceObj = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
-                  if (!selectedVoiceObj) return null;
-                  return (
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
-                          <span>{selectedVoiceObj.gender === 'female' ? '👩' : '👨'} {selectedVoiceObj.name}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-600 text-white font-sans-ui">
-                            {selectedVoiceObj.gender === 'female' ? 'Żeński ♀' : 'Męski ♂'}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-0.5">
-                          {selectedVoiceObj.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })()}
+                {/* VISUAL VOICE SELECTION CARDS FOR ONLINE MODE */}
+                <div>
+                  <span className="block text-[11px] font-bold text-stone-700 dark:text-stone-300 mb-2">
+                    Szybki wybór lektora AI Cloud (Karty z opisem):
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {(filteredLangOnlineVoices.length > 0 ? filteredLangOnlineVoices : filterOnlineByGender(ONLINE_VOICES)).map((v) => {
+                      const isSelected = config.onlineVoiceId === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => {
+                            const updated: LectorConfig = {
+                              ...config,
+                              onlineVoiceId: v.id,
+                              gender: v.gender,
+                              lang: v.lang
+                            };
+                            setConfig(updated);
+                            saveLectorConfig(updated);
+                          }}
+                          className={`p-3 rounded-xl border text-left flex items-start justify-between cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-950 dark:text-amber-100 font-bold shadow-md ring-1 ring-amber-500'
+                              : 'bg-stone-50 dark:bg-[#0c121e] border-stone-200 dark:border-stone-800 hover:border-amber-500/40 text-stone-800 dark:text-stone-200'
+                          }`}
+                        >
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <span className="text-xl mt-0.5">{v.gender === 'female' ? '👩' : '👨'}</span>
+                            <div className="min-w-0">
+                              <div className="font-bold text-xs flex items-center gap-1.5 flex-wrap">
+                                <span>{v.name}</span>
+                                <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-amber-600 text-white font-sans-ui">
+                                  {v.gender === 'female' ? 'Żeński ♀' : 'Męski ♂'}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-stone-600 dark:text-stone-400 mt-1 leading-normal font-normal">
+                                {v.description}
+                              </p>
+                            </div>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
             )}
           </div>
 
-          {/* 5. TRYB SERYJNY (CZYTANIE CIĄGŁE W TLE I EKRAN BLOKADY) */}
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+          {/* 4. TRYB SERYJNY (CZYTANIE CIĄGŁE W TLE I EKRAN BLOKADY) */}
+          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-base">🎧</span>
+                <span className="text-lg">🎧</span>
                 <span className="font-bold text-stone-900 dark:text-amber-200 text-sm">
                   Czytanie Seryjne (Ciągłe Pętle & Praca w Tle)
                 </span>
@@ -516,16 +621,16 @@ export const LectorSettingsModal: React.FC<Props> = ({
               </label>
             </div>
             <p className="text-[11px] opacity-90 text-stone-700 dark:text-stone-300 leading-relaxed font-normal">
-              Po ukończeniu czytania danej strony, lektor automatycznie załaduje i odczyta kolejny dzień/rozważanie. Dzięki integracji z <strong>Media Session API</strong> oraz niewidzialną pętlą audio, lektor odczytuje tekst <strong>nawet po zablokowaniu ekranu smartfona lub zminimalizowaniu okna przeglądarki</strong> z możliwością sterowania na ekranie blokady!
+              Po ukończeniu czytania danej strony, lektor automatycznie załaduje i odczyta kolejny dzień. Dzięki integracji z <strong>Media Session API</strong>, lektor czyta <strong>nawet po uśpieniu smartfona lub zminimalizowaniu okna przeglądarki</strong>!
             </p>
           </div>
 
-          {/* 4. REGULACJA TEMPA, TONU I GŁOŚNOŚCI */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-stone-50 dark:bg-[#131c2e] border border-stone-200 dark:border-stone-800">
+          {/* 5. REGULACJA TEMPA, TONU I GŁOŚNOŚCI */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-white dark:bg-[#131c2e] border border-stone-200 dark:border-stone-800">
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center justify-between">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1 flex items-center justify-between">
                 <span>Prędkość Mowy</span>
-                <span className="font-mono text-amber-600">{config.rate}x</span>
+                <span className="font-mono text-amber-600 font-bold">{config.rate}x</span>
               </label>
               <input
                 type="range"
@@ -543,9 +648,9 @@ export const LectorSettingsModal: React.FC<Props> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center justify-between">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1 flex items-center justify-between">
                 <span>Ton Mowy (Pitch)</span>
-                <span className="font-mono text-amber-600">{config.pitch}</span>
+                <span className="font-mono text-amber-600 font-bold">{config.pitch}</span>
               </label>
               <input
                 type="range"
@@ -563,9 +668,9 @@ export const LectorSettingsModal: React.FC<Props> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1 flex items-center justify-between">
+              <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1 flex items-center justify-between">
                 <span>Głośność</span>
-                <span className="font-mono text-amber-600">{Math.round(config.volume * 100)}%</span>
+                <span className="font-mono text-amber-600 font-bold">{Math.round(config.volume * 100)}%</span>
               </label>
               <input
                 type="range"
@@ -598,9 +703,9 @@ export const LectorSettingsModal: React.FC<Props> = ({
               unlockMobileAudio();
               handleTestSpeech();
             }}
-            className="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-950 dark:text-amber-300 border border-amber-500/40 font-bold flex items-center gap-2 cursor-pointer transition-colors touch-manipulation"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 text-white font-bold flex items-center gap-2 cursor-pointer shadow-md transition-colors touch-manipulation hover:brightness-110"
           >
-            {isPlayingTest ? <Square className="w-4 h-4 fill-amber-600" /> : <Play className="w-4 h-4 fill-amber-600" />}
+            {isPlayingTest ? <Square className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white translate-x-0.5" />}
             <span>{isPlayingTest ? 'Zatrzymaj Odsłuch' : '🔊 Przetestuj Głos Lektora'}</span>
           </button>
 
@@ -611,7 +716,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 stopLectorSpeech();
                 onClose();
               }}
-              className="px-4 py-2 rounded-xl bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-bold cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold cursor-pointer"
             >
               Zamknij
             </button>
@@ -622,7 +727,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 stopLectorSpeech();
                 onClose();
               }}
-              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold flex items-center gap-1.5 shadow-lg cursor-pointer"
             >
               <Check className="w-4 h-4" />
               <span>Zapisz Ustawienia Lektora</span>
