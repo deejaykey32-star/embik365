@@ -157,7 +157,7 @@ export function detectVoiceGender(voiceName: string): LectorGender {
 
 export function findBestLocalVoice(
   langCode: string,
-  desiredGender: LectorGender,
+  desiredGender?: LectorGender,
   preferredURI?: string
 ): SpeechSynthesisVoice | undefined {
   const voices = getLocalVoices();
@@ -165,34 +165,34 @@ export function findBestLocalVoice(
 
   const targetLang = (langCode || 'pl').toLowerCase();
 
-  // 1. If preferredURI is specified, return matching voice directly
-  if (preferredURI) {
-    const match = voices.find(v => v.voiceURI === preferredURI);
-    if (match) {
-      return match;
-    }
-  }
-
-  // 2. Filter voices matching target language
+  // 1. Filter voices matching target language strictly
   const langVoices = voices.filter(v => {
     const vLang = v.lang.toLowerCase().replace('_', '-');
     return vLang.startsWith(targetLang) || vLang.includes(targetLang);
   });
 
-  if (langVoices.length === 0) {
-    return voices.find(v => v.lang.toLowerCase().startsWith(targetLang)) || voices[0];
+  // 2. If preferredURI is specified AND matches target language & gender, return it
+  if (preferredURI && langVoices.length > 0) {
+    const match = langVoices.find(v => v.voiceURI === preferredURI);
+    if (match) {
+      if (!desiredGender || detectVoiceGender(match.name) === desiredGender) {
+        return match;
+      }
+    }
   }
 
-  // 3. Match gender strictly
+  const pool = langVoices.length > 0 ? langVoices : voices;
+
+  // 3. Match gender strictly among language voices
   if (desiredGender === 'female') {
-    const femaleMatch = langVoices.find(v => FEMALE_VOICE_PATTERN.test(v.name) && !MALE_VOICE_PATTERN.test(v.name));
+    const femaleMatch = pool.find(v => FEMALE_VOICE_PATTERN.test(v.name) && !MALE_VOICE_PATTERN.test(v.name));
     if (femaleMatch) return femaleMatch;
-  } else {
-    const maleMatch = langVoices.find(v => MALE_VOICE_PATTERN.test(v.name) && !FEMALE_VOICE_PATTERN.test(v.name));
+  } else if (desiredGender === 'male') {
+    const maleMatch = pool.find(v => MALE_VOICE_PATTERN.test(v.name) && !FEMALE_VOICE_PATTERN.test(v.name));
     if (maleMatch) return maleMatch;
   }
 
-  return langVoices[0];
+  return langVoices[0] || voices[0];
 }
 
 let currentAudioElement: HTMLAudioElement | null = null;
@@ -471,8 +471,8 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
 
   // 1. Look up online profile by selected onlineVoiceId first
   let onlineProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
-  const targetLang = (overrideLang || onlineProfile?.lang || config.lang || 'pl').toLowerCase();
-  const targetGender: LectorGender = onlineProfile?.gender || config.gender || 'male';
+  const targetLang = (overrideLang || (config.mode === 'online' ? onlineProfile?.lang : config.lang) || 'pl').toLowerCase();
+  const targetGender: LectorGender = (config.mode === 'online' ? onlineProfile?.gender : config.gender) || 'male';
 
   if (!onlineProfile || (overrideLang && onlineProfile.lang !== overrideLang.toLowerCase())) {
     onlineProfile = ONLINE_VOICES.find(v => v.lang === targetLang && v.gender === targetGender)
@@ -498,15 +498,31 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
         await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, wrappedOnStart, wrappedOnEnd, wrappedOnError);
-      } else {
-        playLocalSpeechFallback({ ...options, overrideLang: targetLang, onStart: wrappedOnStart, onEnd: wrappedOnEnd, onError: wrappedOnError });
+        return;
       }
     } catch (err) {
-      console.warn('Online TTS error, falling back to local speech:', err);
-      playLocalSpeechFallback({ ...options, overrideLang: targetLang, onStart: wrappedOnStart, onEnd: wrappedOnEnd, onError: wrappedOnError });
+      console.warn('Online TTS endpoint unavailable, falling back to neural speech synthesis:', err);
     }
+
+    playLocalSpeechFallback({
+      ...options,
+      overrideLang: targetLang,
+      desiredGender: targetGender,
+      voiceProfile: onlineProfile,
+      onStart: wrappedOnStart,
+      onEnd: wrappedOnEnd,
+      onError: wrappedOnError
+    });
   } else {
-    playLocalSpeechFallback({ ...options, overrideLang: targetLang, onStart: wrappedOnStart, onEnd: wrappedOnEnd, onError: wrappedOnError });
+    playLocalSpeechFallback({
+      ...options,
+      overrideLang: targetLang,
+      desiredGender: targetGender,
+      preferredURI: config.localVoiceURI,
+      onStart: wrappedOnStart,
+      onEnd: wrappedOnEnd,
+      onError: wrappedOnError
+    });
   }
 }
 
@@ -618,15 +634,21 @@ async function playAudioBufferWithVoiceEffects(
   }
 }
 
-function playLocalSpeechFallback(options: PlayLectorOptions): void {
-  const { text, config, overrideLang, onStart, onEnd, onError } = options;
+export interface LocalSpeechOptions extends PlayLectorOptions {
+  desiredGender?: LectorGender;
+  voiceProfile?: OnlineVoiceOption;
+  preferredURI?: string;
+}
+
+function playLocalSpeechFallback(options: LocalSpeechOptions): void {
+  const { text, config, overrideLang, desiredGender, voiceProfile, preferredURI, onStart, onEnd, onError } = options;
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onError) onError('Speech Synthesis API unsupported in this browser.');
     return;
   }
 
-  const targetLang = (overrideLang || config.lang || 'pl').toLowerCase();
-  const targetGender: LectorGender = config.gender || 'male';
+  const targetLang = (overrideLang || (voiceProfile ? voiceProfile.lang : config.lang) || 'pl').toLowerCase();
+  const targetGender: LectorGender = desiredGender || (voiceProfile ? voiceProfile.gender : config.gender) || 'male';
 
   const cleanText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   if (!cleanText) {
@@ -652,16 +674,40 @@ function playLocalSpeechFallback(options: PlayLectorOptions): void {
     chunkIndex++;
 
     const utterance = new SpeechSynthesisUtterance(currentChunkText);
+
+    // Dynamic pitch modulation based on character & gender
+    let basePitch = config.pitch;
+    if (voiceProfile) {
+      if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
+        basePitch *= 0.78;
+      } else if (voiceProfile.gender === 'female' || voiceProfile.provider.includes('Female')) {
+        basePitch *= 1.35;
+      } else if (voiceProfile.gender === 'male') {
+        basePitch *= 0.88;
+      }
+    } else {
+      if (targetGender === 'female') {
+        basePitch *= 1.32;
+      } else if (targetGender === 'male') {
+        basePitch *= 0.85;
+      }
+    }
+
     utterance.rate = config.rate;
-    utterance.pitch = config.pitch * (targetGender === 'female' ? 1.15 : targetGender === 'male' ? 0.88 : 1.0);
+    utterance.pitch = Math.max(0.5, Math.min(2.0, basePitch));
     utterance.volume = config.volume;
 
-    const chosenVoice = findBestLocalVoice(targetLang, targetGender, config.localVoiceURI);
+    const chosenVoice = findBestLocalVoice(targetLang, targetGender, preferredURI);
     if (chosenVoice) {
       utterance.voice = chosenVoice;
       utterance.lang = chosenVoice.lang;
     } else {
-      utterance.lang = `${targetLang}-${targetLang.toUpperCase()}`;
+      const bcp47Map: Record<string, string> = {
+        pl: 'pl-PL', en: 'en-US', es: 'es-ES', it: 'it-IT', de: 'de-DE',
+        fr: 'fr-FR', pt: 'pt-PT', uk: 'uk-UA', la: 'la', cs: 'cs-CZ',
+        sk: 'sk-SK', hu: 'hu-HU', ro: 'ro-RO', lt: 'lt-LT', el: 'el-GR'
+      };
+      utterance.lang = bcp47Map[targetLang] || `${targetLang}-${targetLang.toUpperCase()}`;
     }
 
     if (chunkIndex === 1 && onStart) {

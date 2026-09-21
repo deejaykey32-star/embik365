@@ -149,7 +149,13 @@ export const LectorSettingsModal: React.FC<Props> = ({
       fr: 'Bienvenue sur Repères 365. Paix et bien. Ceci est un test de la voix du lecteur.',
       pt: 'Bem-vindo ao Faróis 365. Paz e bem. Este é um teste de voz do leitor.',
       uk: 'Ласкаво просимо до Вказівники 365. Мир та добро. Це тест голосу читця.',
-      la: 'Pax et bonum. Haec est probatio vocis lectoris.'
+      la: 'Pax et bonum. Haec est probatio vocis lectoris.',
+      cs: 'Vítejte v aplikaci Ukazatele 365. Mír a dobro. Toto je test hlasu lektora.',
+      sk: 'Vitajte v aplikácii Ukazovatele 365. Pokoj a dobro. Toto je test hlasu lektora.',
+      hu: 'Üdvözöljük a Útjelzők 365 alkalmazásban. Békesség és jóság. Ez a felolvasó hangtesztje.',
+      ro: 'Bine ați venit la Indicatoare 365. Pace și bine. Acesta este un test de voce al lectorului.',
+      lt: 'Sveiki atvykę į Rodikliai 365 programėlę. Ramybė ir gėris. Tai diktoriaus balso testas.',
+      el: 'Καλώς ορίσατε στο Δείκτες 365. Ειρήνη και αγαθό. Αυτή είναι μια δοκιμή φωνής αφηγητή.'
     };
 
     const textToSpeak = sampleTexts[config.lang] || sampleTexts.pl;
