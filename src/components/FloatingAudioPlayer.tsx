@@ -78,7 +78,6 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
     } else if (playbackState === 'paused') {
       resumeLectorSpeech();
     } else {
-      // Idle -> start reading current entry
       triggerPlayCurrentEntry();
     }
   };
@@ -154,7 +153,7 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
     saveSerialLectorState({ autoNext: updated });
   };
 
-  const activeTitle = serialState.lastTitle || displayedEntry.title || 'Mówca Droga365';
+  const activeTitle = serialState.lastTitle || displayedEntry.title || 'Odtwarzacz Lektora';
 
   if (isMinimized) {
     return (
@@ -176,122 +175,136 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
   }
 
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-xl animate-fade-in-up">
-      <div className="bg-[#1a1614]/95 dark:bg-[#0c121e]/95 backdrop-blur-xl border border-amber-500/30 text-amber-50 rounded-2xl shadow-2xl p-3 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Info Area */}
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[96%] max-w-2xl animate-fade-in-up">
+      <div className="bg-[#120e0b]/95 dark:bg-[#070c14]/95 backdrop-blur-2xl border-2 border-amber-500/40 text-amber-50 rounded-2xl shadow-2xl p-3 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        
+        {/* Track Title & Metadata Area */}
         <div className="flex items-center gap-3 w-full sm:w-auto min-w-0">
           <div className="relative flex-shrink-0">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-800 flex items-center justify-center shadow-inner border border-amber-300/30 ${playbackState === 'playing' ? 'animate-pulse' : ''}`}>
-              <Volume2 className={`w-5 h-5 text-white ${playbackState === 'playing' ? 'animate-bounce-short' : ''}`} />
+            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-amber-800 flex items-center justify-center shadow-lg border border-amber-300/40 ${playbackState === 'playing' ? 'animate-pulse' : ''}`}>
+              <Volume2 className={`w-6 h-6 text-white ${playbackState === 'playing' ? 'animate-bounce-short' : ''}`} />
             </div>
             {playbackState === 'playing' && (
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border border-black"></span>
               </span>
             )}
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="px-2 py-0.5 text-[10px] uppercase font-extrabold tracking-wider rounded-md bg-amber-500/30 text-amber-300 border border-amber-400/40">
                 {activeSection.name}
               </span>
-              <span className="text-[11px] text-amber-200/70 font-medium">
+              <span className="text-[11px] text-amber-200/80 font-medium">
                 Dzień {currentDate.dayNumber} z 366
               </span>
             </div>
-            <h4 className="text-xs sm:text-sm font-semibold truncate text-white mt-0.5">
+            <h4 className="text-xs sm:text-sm font-bold truncate text-white mt-0.5">
               {activeTitle}
             </h4>
           </div>
 
-          {/* Minimize button for mobile top-right */}
+          {/* Mobile Close / Minimize */}
           <button
             onClick={() => setIsMinimized(true)}
-            className="sm:hidden p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-white/10 transition-colors"
-            title="Zminimalizuj"
+            className="sm:hidden p-1.5 rounded-lg text-amber-300/60 hover:text-white hover:bg-white/10 transition-colors"
+            title="Zminimalizuj odtwarzacz"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Player Controls */}
-        <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto">
-          {/* Wstecz / Previous Day */}
+        {/* Player Controls Bar */}
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 w-full sm:w-auto flex-wrap">
+          
+          {/* Wstecz / Poprzedni Dzień */}
           <button
             onClick={handlePrev}
-            className="p-2 sm:p-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-200 hover:text-white transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-950/70 hover:bg-amber-900/80 text-amber-100 border border-amber-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
             title="Poprzedni dzień (Wstecz)"
           >
-            <SkipBack className="w-4 h-4" />
+            <SkipBack className="w-5 h-5 text-amber-300 flex-shrink-0" />
+            <span className="text-xs font-semibold hidden md:inline">Wstecz</span>
           </button>
 
-          {/* Play / Pause Toggle */}
+          {/* Odtwórz / Pauza (Play / Pause Toggle) */}
           <button
             onClick={handleTogglePlayPause}
-            className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white shadow-lg hover:brightness-110 transition-all active:scale-95 cursor-pointer flex items-center justify-center"
-            title={playbackState === 'playing' ? 'Wstrzymaj (Pause)' : 'Odtwórz (Play)'}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white shadow-xl shadow-amber-900/40 hover:brightness-110 border border-amber-300/50 transition-all active:scale-95 cursor-pointer"
+            title={playbackState === 'playing' ? 'Wstrzymaj czytanie (Pause)' : 'Rozpocznij/wznów czytanie (Play)'}
           >
             {playbackState === 'playing' ? (
-              <Pause className="w-5 h-5 fill-current" />
+              <>
+                <Pause className="w-5 h-5 text-white fill-current flex-shrink-0" />
+                <span className="text-xs font-bold text-white">Pauza</span>
+              </>
             ) : (
-              <Play className="w-5 h-5 fill-current translate-x-0.5" />
+              <>
+                <Play className="w-5 h-5 text-white fill-current translate-x-0.5 flex-shrink-0" />
+                <span className="text-xs font-bold text-white">Odtwórz</span>
+              </>
             )}
           </button>
 
           {/* Stop */}
           <button
             onClick={handleStop}
-            className="p-2 sm:p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-stone-200 hover:text-red-400 transition-all active:scale-95 cursor-pointer"
-            title="Zatrzymaj (Stop)"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 text-red-100 border border-red-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
+            title="Zatrzymaj czytanie (Stop)"
           >
-            <Square className="w-4 h-4 fill-current" />
+            <Square className="w-4 h-4 text-red-300 fill-red-400 flex-shrink-0" />
+            <span className="text-xs font-semibold text-red-200 hidden md:inline">Stop</span>
           </button>
 
-          {/* Przód / Next Day */}
+          {/* Przód / Następny Dzień */}
           <button
             onClick={handleNext}
-            className="p-2 sm:p-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-200 hover:text-white transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-950/70 hover:bg-amber-900/80 text-amber-100 border border-amber-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
             title="Następny dzień (Przód)"
           >
-            <SkipForward className="w-4 h-4" />
+            <span className="text-xs font-semibold hidden md:inline">Przód</span>
+            <SkipForward className="w-5 h-5 text-amber-300 flex-shrink-0" />
           </button>
 
-          {/* Divider */}
-          <div className="h-6 w-px bg-white/15 mx-1" />
+          {/* Separator */}
+          <div className="h-6 w-px bg-amber-500/30 mx-0.5 hidden sm:block" />
 
-          {/* Serial Lector Mode Toggle */}
+          {/* Tryb Seryjny Toggle */}
           <button
             onClick={toggleSerialMode}
-            className={`p-2 sm:p-2.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl transition-all active:scale-95 cursor-pointer border ${
               serialState.autoNext
-                ? 'bg-amber-500/30 text-amber-300 border border-amber-400/40 shadow-sm'
-                : 'bg-white/5 text-stone-400 hover:text-stone-200'
+                ? 'bg-amber-500/40 text-amber-200 border-amber-400/60 shadow-inner'
+                : 'bg-amber-950/40 text-amber-300/70 border-amber-500/20 hover:text-amber-200'
             }`}
-            title={serialState.autoNext ? 'Tryb seryjny włączony (Automatyczne odtwarzanie kolejnych dni)' : 'Włącz tryb seryjny'}
+            title={serialState.autoNext ? 'Tryb seryjny WŁĄCZONY (Czyta automatycznie dzień po dniu)' : 'Włącz ciągły tryb seryjny'}
           >
-            <Headphones className="w-4 h-4" />
+            <Headphones className="w-4 h-4 text-amber-300 flex-shrink-0" />
+            <span className="text-[11px] font-semibold hidden lg:inline">Seryjnie</span>
           </button>
 
-          {/* Settings */}
+          {/* Ustawienia Głosowe (Lektor Settings) */}
           <button
             onClick={onOpenLectorModal}
-            className="p-2 sm:p-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 hover:text-white transition-all active:scale-95 cursor-pointer"
-            title="Ustawienia głosu lektora"
+            className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-amber-950/40 hover:bg-amber-900/60 text-amber-200 border border-amber-500/30 transition-all active:scale-95 cursor-pointer"
+            title="Ustawienia lektora (Głosy męskie/żeńskie, szybkość, ton)"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4 text-amber-300 flex-shrink-0" />
+            <span className="text-[11px] font-semibold hidden lg:inline">Głos</span>
           </button>
 
           {/* Desktop Minimize Button */}
           <button
             onClick={() => setIsMinimized(true)}
-            className="hidden sm:block p-2 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 transition-colors ml-1"
+            className="hidden sm:block p-1.5 rounded-lg text-amber-300/60 hover:text-white hover:bg-white/10 transition-colors ml-0.5"
             title="Zminimalizuj odtwarzacz"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
+
       </div>
     </div>
   );
