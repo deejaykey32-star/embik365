@@ -367,7 +367,7 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
         id: filename,
         name: filename,
         filename,
-        url: `/pliki/${filename}`,
+        url: url || `/pliki/${filename}`,
         type,
         ext,
         sectionId: 'general',
