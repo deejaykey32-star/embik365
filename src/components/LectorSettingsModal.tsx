@@ -25,7 +25,9 @@ import {
   ONLINE_VOICES,
   playLectorSpeech,
   stopLectorSpeech,
-  unlockMobileAudio
+  unlockMobileAudio,
+  getSerialLectorState,
+  saveSerialLectorState
 } from '../utils/audioLectorService';
 
 interface Props {
@@ -394,6 +396,34 @@ export const LectorSettingsModal: React.FC<Props> = ({
                 })()}
               </div>
             )}
+          </div>
+
+          {/* 5. TRYB SERYJNY (CZYTANIE CIĄGŁE W TLE I EKRAN BLOKADY) */}
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🎧</span>
+                <span className="font-bold text-stone-900 dark:text-amber-200 text-sm">
+                  Czytanie Seryjne (Ciągłe Pętle & Praca w Tle)
+                </span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={getSerialLectorState().autoNext}
+                  onChange={(e) => {
+                    saveSerialLectorState({ autoNext: e.target.checked });
+                    setTestStatus(e.target.checked ? 'Włączono czytanie seryjne (automatyczne przechodzenie z dnia na dzień)' : 'Wyłączono czytanie seryjne');
+                    setTimeout(() => setTestStatus(null), 2500);
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-stone-300 dark:bg-stone-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+              </label>
+            </div>
+            <p className="text-[11px] opacity-90 text-stone-700 dark:text-stone-300 leading-relaxed font-normal">
+              Po ukończeniu czytania danej strony, lektor automatycznie załaduje i odczyta kolejny dzień/rozważanie. Dzięki integracji z <strong>Media Session API</strong> oraz niewidzialną pętlą audio, lektor odczytuje tekst <strong>nawet po zablokowaniu ekranu smartfona lub zminimalizowaniu okna przeglądarki</strong> z możliwością sterowania na ekranie blokady!
+            </p>
           </div>
 
           {/* 4. REGULACJA TEMPA, TONU I GŁOŚNOŚCI */}

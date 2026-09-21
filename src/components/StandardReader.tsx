@@ -23,7 +23,7 @@ import { getCycleDateByDayNumber } from '../utils/dateCycle';
 import { DigitalRosary } from './DigitalRosary';
 import { RhzPrayerGuide } from './RhzPrayerGuide';
 import { getRhzEntryForDay } from '../data/rhz365Data';
-import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
+import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio, getSerialLectorState, saveSerialLectorState } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
@@ -100,16 +100,52 @@ export const StandardReader: React.FC<Props> = ({
       return;
     }
 
-    const textToSpeak = `${entry.title}. ${entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
+    const textToSpeak = `${displayedTitle || entry.title}. ${displayedContent || entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
     const lectorCfg = getLectorConfig();
 
     await playLectorSpeech({
       text: textToSpeak,
       config: lectorCfg,
       overrideLang: currentLang,
-      onStart: () => setIsSpeaking(true),
-      onEnd: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false)
+      title: displayedTitle || entry.title,
+      sectionName: section.name,
+      artworkUrl: section.imageUrl,
+      onStart: () => {
+        setIsSpeaking(true);
+        saveSerialLectorState({
+          isActive: true,
+          currentSectionId: section.id,
+          currentDayNumber: currentDate.dayNumber,
+          lastTitle: displayedTitle || entry.title
+        });
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+        const serial = getSerialLectorState();
+        if (serial.autoNext && serial.isActive) {
+          const nextDayNum = (currentDate.dayNumber % 365) + 1;
+          const nextDate = getCycleDateByDayNumber(nextDayNum);
+          onSelectDate(nextDate);
+          setTimeout(() => {
+            const nextBtn = document.getElementById('btn-lector-read');
+            if (nextBtn) nextBtn.click();
+          }, 350);
+        } else {
+          saveSerialLectorState({ isActive: false });
+        }
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        saveSerialLectorState({ isActive: false });
+      },
+      onNext: () => {
+        const nextDayNum = (currentDate.dayNumber % 365) + 1;
+        onSelectDate(getCycleDateByDayNumber(nextDayNum));
+      },
+      onPrev: () => {
+        const prevDayNum = currentDate.dayNumber <= 1 ? 365 : currentDate.dayNumber - 1;
+        onSelectDate(getCycleDateByDayNumber(prevDayNum));
+      }
     });
   };
 
@@ -174,6 +210,7 @@ export const StandardReader: React.FC<Props> = ({
                 e.preventDefault();
                 toggleSpeech(e);
               }}
+              id="btn-lector-read"
               className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer touch-manipulation ${isSpeaking
                   ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
                   : 'bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#dccdc0] dark:border-[#29364b]'

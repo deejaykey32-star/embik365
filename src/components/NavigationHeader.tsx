@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   ChevronLeft, 
@@ -14,11 +14,16 @@ import {
   Globe,
   Link as LinkIcon,
   Check,
-  Search
+  Search,
+  Smartphone,
+  Headphones,
+  Play,
+  Pause
 } from 'lucide-react';
 import { CycleDate, AdminUser, AppTheme, SUPPORTED_LANGUAGES } from '../types';
 import { getUIText } from '../utils/translationService';
 import { copyCurrentPageUrl } from '../utils/slugRouter';
+import { getSerialLectorState, saveSerialLectorState, stopLectorSpeech } from '../utils/audioLectorService';
 
 interface Props {
   currentDate: CycleDate;
@@ -58,6 +63,51 @@ export const NavigationHeader: React.FC<Props> = ({
   onCopyLink
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstalledPwa, setIsInstalledPwa] = useState(false);
+  const [serialState, setSerialState] = useState(() => getSerialLectorState());
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalledPwa(true);
+      setDeferredPrompt(null);
+    };
+
+    const handleSerialUpdated = (e: CustomEvent) => {
+      if (e.detail) {
+        setSerialState(e.detail);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('drogowskazy_serial_lector_updated', handleSerialUpdated as EventListener);
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalledPwa(true);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('drogowskazy_serial_lector_updated', handleSerialUpdated as EventListener);
+    };
+  }, []);
+
+  const handleInstallPwa = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstalledPwa(true);
+    }
+    setDeferredPrompt(null);
+  };
 
   const handleCopy = async () => {
     if (onCopyLink) {
@@ -214,6 +264,19 @@ export const NavigationHeader: React.FC<Props> = ({
               {copiedLink ? <Check className="w-4 h-4 text-white" /> : <LinkIcon className="w-4 h-4 text-[#8a5327] dark:text-amber-400" />}
               <span className="hidden lg:inline">{copiedLink ? 'Skopiowano URL!' : 'Link'}</span>
             </button>
+
+            {/* PWA Install Button */}
+            {deferredPrompt && !isInstalledPwa && (
+              <button
+                onClick={handleInstallPwa}
+                id="btn-install-pwa"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer animate-pulse"
+                title="Zainstaluj aplikację Droga365 na pulpicie (PWA)"
+              >
+                <Smartphone className="w-4 h-4 text-amber-200" />
+                <span className="hidden sm:inline">Zainstaluj PWA</span>
+              </button>
+            )}
 
             {/* Audio Lector Settings Button (Local / Online Voices) */}
             {onOpenLectorModal && (

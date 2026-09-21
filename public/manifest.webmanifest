@@ -1,0 +1,32 @@
+{
+  "name": "Droga365 – Widoki na Raj & Biblia365",
+  "short_name": "Droga365",
+  "description": "Roczny cykl czytań duchowych od 25 grudnia do 24 grudnia: Widoki na Raj, Różaniec Historii Zbawienia oraz Biblia365 i Apokryfy.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fbf6f0",
+  "theme_color": "#b45309",
+  "categories": ["lifestyle", "books", "education"],
+  "icons": [
+    {
+      "src": "/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

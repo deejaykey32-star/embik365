@@ -28,7 +28,7 @@ import { DigitalRosary } from './DigitalRosary';
 import { getRhzEntryForDay } from '../data/rhz365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
-import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
+import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio, getSerialLectorState, saveSerialLectorState } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { COMMON_PRAYERS } from '../data/rosaryData';
@@ -462,9 +462,37 @@ export const FlipbookReader: React.FC<Props> = ({
       text: textToSpeak,
       config: lectorCfg,
       overrideLang: currentLang,
-      onStart: () => setIsSpeaking(true),
-      onEnd: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false)
+      title: entry.title,
+      sectionName: section.name,
+      artworkUrl: section.imageUrl,
+      onStart: () => {
+        setIsSpeaking(true);
+        saveSerialLectorState({
+          isActive: true,
+          currentSectionId: section.id,
+          currentDayNumber: currentDate.dayNumber,
+          lastTitle: entry.title
+        });
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+        const serial = getSerialLectorState();
+        if (serial.autoNext && serial.isActive) {
+          handleTurnNext();
+          setTimeout(() => {
+            const btn = document.getElementById('btn-flipbook-lector-play') || document.getElementById('btn-flipbook-lector-read');
+            if (btn) btn.click();
+          }, 400);
+        } else {
+          saveSerialLectorState({ isActive: false });
+        }
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        saveSerialLectorState({ isActive: false });
+      },
+      onNext: () => handleTurnNext(),
+      onPrev: () => handleTurnPrev()
     });
   };
 

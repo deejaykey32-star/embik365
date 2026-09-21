@@ -221,7 +221,112 @@ export function unlockMobileAudio(): AudioContext | null {
   }
 }
 
+export interface SerialLectorState {
+  isActive: boolean;
+  autoNext: boolean;
+  currentSectionId: string;
+  currentDayNumber: number;
+  currentYear?: number;
+  lastTitle?: string;
+  lastUpdated?: string;
+}
+
+const SERIAL_STORAGE_KEY = 'drogowskazy_serial_lector_state';
+
+export const DEFAULT_SERIAL_STATE: SerialLectorState = {
+  isActive: false,
+  autoNext: true,
+  currentSectionId: 'wnr365',
+  currentDayNumber: 1,
+  currentYear: 1,
+  lastTitle: '',
+  lastUpdated: ''
+};
+
+export function getSerialLectorState(): SerialLectorState {
+  try {
+    const saved = localStorage.getItem(SERIAL_STORAGE_KEY);
+    if (saved) {
+      return { ...DEFAULT_SERIAL_STATE, ...JSON.parse(saved) };
+    }
+  } catch {}
+  return DEFAULT_SERIAL_STATE;
+}
+
+export function saveSerialLectorState(state: Partial<SerialLectorState>): SerialLectorState {
+  try {
+    const current = getSerialLectorState();
+    const updated = { ...current, ...state, lastUpdated: new Date().toISOString() };
+    localStorage.setItem(SERIAL_STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('drogowskazy_serial_lector_updated', { detail: updated }));
+    return updated;
+  } catch {}
+  return DEFAULT_SERIAL_STATE;
+}
+
+let keepAliveAudio: HTMLAudioElement | null = null;
+
+export function startBackgroundAudioKeepAlive(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (!keepAliveAudio) {
+      const silentWavBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+      keepAliveAudio = new Audio(silentWavBase64);
+      keepAliveAudio.loop = true;
+      keepAliveAudio.volume = 0.01;
+    }
+    keepAliveAudio.play().catch(() => {});
+  } catch (e) {
+    console.warn('Keep-alive audio error:', e);
+  }
+}
+
+export function stopBackgroundAudioKeepAlive(): void {
+  if (keepAliveAudio) {
+    try {
+      keepAliveAudio.pause();
+    } catch {}
+  }
+}
+
+export interface MediaSessionHandlers {
+  onPlay?: () => void;
+  onPause?: () => void;
+  onPreviousTrack?: () => void;
+  onNextTrack?: () => void;
+  onStop?: () => void;
+}
+
+export function setupMediaSession(
+  title: string,
+  sectionName: string,
+  artworkUrl?: string,
+  handlers?: MediaSessionHandlers
+): void {
+  if (typeof window === 'undefined' || !('mediaSession' in navigator)) return;
+
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: title || 'Lektor Droga365',
+      artist: 'Droga365',
+      album: sectionName || 'Czytania Codzienne',
+      artwork: artworkUrl ? [
+        { src: artworkUrl, sizes: '512x512', type: 'image/jpeg' }
+      ] : []
+    });
+
+    if (handlers?.onPlay) navigator.mediaSession.setActionHandler('play', handlers.onPlay);
+    if (handlers?.onPause) navigator.mediaSession.setActionHandler('pause', handlers.onPause);
+    if (handlers?.onPreviousTrack) navigator.mediaSession.setActionHandler('previoustrack', handlers.onPreviousTrack);
+    if (handlers?.onNextTrack) navigator.mediaSession.setActionHandler('nexttrack', handlers.onNextTrack);
+    if (handlers?.onStop) navigator.mediaSession.setActionHandler('stop', handlers.onStop);
+  } catch (e) {
+    console.warn('MediaSession API setup error:', e);
+  }
+}
+
 export function stopLectorSpeech(): void {
+  stopBackgroundAudioKeepAlive();
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
@@ -243,17 +348,33 @@ export interface PlayLectorOptions {
   text: string;
   config: LectorConfig;
   overrideLang?: string;
+  title?: string;
+  sectionName?: string;
+  artworkUrl?: string;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (err: any) => void;
+  onNext?: () => void;
+  onPrev?: () => void;
 }
 
 export async function playLectorSpeech(options: PlayLectorOptions): Promise<void> {
-  const { text, config, overrideLang, onStart, onEnd, onError } = options;
+  const { text, config, overrideLang, title, sectionName, artworkUrl, onStart, onEnd, onError, onNext, onPrev } = options;
 
   // 0. Synchronously unlock AudioContext inside mobile user touch gesture
   unlockMobileAudio();
   stopLectorSpeech();
+  startBackgroundAudioKeepAlive();
+
+  if (title || sectionName) {
+    setupMediaSession(title || 'Droga365', sectionName || 'Lektor', artworkUrl, {
+      onPlay: () => {},
+      onPause: () => stopLectorSpeech(),
+      onNextTrack: onNext,
+      onPreviousTrack: onPrev,
+      onStop: () => stopLectorSpeech()
+    });
+  }
 
   if (!text || !text.trim()) {
     if (onError) onError('Brak tekstu');
