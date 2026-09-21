@@ -148,6 +148,13 @@ export function getLocalVoicesForLang(langCode: string): SpeechSynthesisVoice[] 
 const FEMALE_VOICE_PATTERN = /female|ewa|maria|paulina|zosia|ania|agata|zuzanna|monika|zora|zira|hazel|samantha|victoria|karen|catherine|helena|laura|monica|elsa|alice|lucia|hortense|julie|hedda|katja|marlene|vicki|olena|benedicta|soft|woman|girl|lady/i;
 const MALE_VOICE_PATTERN = /male|jan|piotr|adam|krzysztof|marek|leszek|david|george|paul|stefan|pablo|raul|jorge|diego|cosimo|paolo|thomas|bernard|hans|michael|oleksandr|marcus|guy|boy|man|deep/i;
 
+export function detectVoiceGender(voiceName: string): LectorGender {
+  if (FEMALE_VOICE_PATTERN.test(voiceName) && !MALE_VOICE_PATTERN.test(voiceName)) {
+    return 'female';
+  }
+  return 'male';
+}
+
 export function findBestLocalVoice(
   langCode: string,
   desiredGender: LectorGender,

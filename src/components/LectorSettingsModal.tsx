@@ -23,11 +23,13 @@ import {
   getLocalVoices, 
   getLocalVoicesForLang, 
   ONLINE_VOICES,
+  OnlineVoiceOption,
   playLectorSpeech,
   stopLectorSpeech,
   unlockMobileAudio,
   getSerialLectorState,
-  saveSerialLectorState
+  saveSerialLectorState,
+  detectVoiceGender
 } from '../utils/audioLectorService';
 
 interface Props {
@@ -54,7 +56,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
   const [isPlayingTest, setIsPlayingTest] = useState<boolean>(false);
   const [testStatus, setTestStatus] = useState<string | null>(null);
 
-  // Load available local Web Speech API voices
+  // Load available local Web Speech API voices with polling fallback for Chrome/Safari
   useEffect(() => {
     const updateVoices = () => {
       const voices = getLocalVoices();
@@ -62,26 +64,35 @@ export const LectorSettingsModal: React.FC<Props> = ({
     };
 
     updateVoices();
+    const interval = setInterval(updateVoices, 300);
+    const timer = setTimeout(() => clearInterval(interval), 3000);
+
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = updateVoices;
     }
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timer);
+    };
   }, []);
 
   const selectedLangObj = SUPPORTED_LANGUAGES.find(l => l.code === config.lang) || SUPPORTED_LANGUAGES[0];
-
-  // Voices matching currently selected language in modal
-  const matchingLocalVoices = getLocalVoicesForLang(config.lang);
-  const matchingOnlineVoices = ONLINE_VOICES.filter(v => v.lang === config.lang);
 
   const handleGenderFilterChange = (g: 'all' | 'male' | 'female') => {
     setGenderFilter(g);
     if (g === 'male' || g === 'female') {
       const langOnlines = ONLINE_VOICES.filter(v => v.lang === config.lang);
       const matchOnline = langOnlines.find(v => v.gender === g);
+
+      const langLocals = getLocalVoicesForLang(config.lang);
+      const matchLocal = langLocals.find(v => detectVoiceGender(v.name) === g);
+
       const updated: LectorConfig = {
         ...config,
         gender: g,
-        onlineVoiceId: matchOnline?.id || config.onlineVoiceId
+        onlineVoiceId: matchOnline?.id || config.onlineVoiceId,
+        localVoiceURI: matchLocal?.voiceURI || config.localVoiceURI
       };
       setConfig(updated);
       saveLectorConfig(updated);
@@ -102,7 +113,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
     const updated: LectorConfig = {
       ...config,
       lang,
-      localVoiceURI: langLocals[0]?.voiceURI || '',
+      localVoiceURI: langLocals[0]?.voiceURI || config.localVoiceURI,
       onlineVoiceId: matchOnline?.id || 'pl-AI-Jan'
     };
     setConfig(updated);
@@ -153,6 +164,27 @@ export const LectorSettingsModal: React.FC<Props> = ({
         setTestStatus('Błąd odtwarzania próby mowy.');
       }
     });
+  };
+
+  // Compute grouped local and online voices
+  const allLocalVoicesList = localVoices.length > 0 ? localVoices : getLocalVoices();
+  const lowerTargetLang = config.lang.toLowerCase();
+
+  const matchedLangLocalVoices = allLocalVoicesList.filter(v => {
+    const vLang = v.lang.toLowerCase().replace('_', '-');
+    return vLang.startsWith(lowerTargetLang) || vLang.includes(lowerTargetLang);
+  });
+
+  const otherLocalVoices = allLocalVoicesList.filter(v => !matchedLangLocalVoices.includes(v));
+
+  const filterLocalByGender = (items: SpeechSynthesisVoice[]) => {
+    if (genderFilter === 'all') return items;
+    return items.filter(v => detectVoiceGender(v.name) === genderFilter);
+  };
+
+  const filterOnlineByGender = (items: OnlineVoiceOption[]) => {
+    if (genderFilter === 'all') return items;
+    return items.filter(v => v.gender === genderFilter);
   };
 
   return (
@@ -278,69 +310,115 @@ export const LectorSettingsModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* 3. WYBÓR KONKRETNEGO GŁOSU (LOKALNEGO LUB ONLINE) */}
+          {/* 3. WYBÓR KONKRETNEGO GŁOSU (LOKALNEGO LUB ONLINE Z PODZIAŁEM NA MĘSKIE I ŻEŃSKIE) */}
           <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#131c2e] border border-stone-200 dark:border-stone-800 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="block font-bold text-stone-800 dark:text-stone-200 uppercase tracking-wide">
                 3. Wybór głosu lektora ({selectedLangObj.flag} {selectedLangObj.nativeName}):
               </label>
 
-              {config.mode === 'online' && (
-                <div className="flex items-center gap-1.5 bg-stone-200 dark:bg-[#0c121e] p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => handleGenderFilterChange('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      genderFilter === 'all' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
-                    }`}
-                  >
-                    Wszystkie Głosy
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleGenderFilterChange('male')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      genderFilter === 'male' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
-                    }`}
-                  >
-                    Głos Męski ♂
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleGenderFilterChange('female')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                      genderFilter === 'female' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
-                    }`}
-                  >
-                    Głos Żeński ♀
-                  </button>
-                </div>
-              )}
+              {/* PODZIAŁ NA GŁOSY MĘSKIE I ŻEŃSKIE DLA OBU TRYBÓW */}
+              <div className="flex items-center gap-1.5 bg-stone-200 dark:bg-[#0c121e] p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => handleGenderFilterChange('all')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    genderFilter === 'all' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
+                  }`}
+                >
+                  Wszystkie Głosy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGenderFilterChange('male')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    genderFilter === 'male' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
+                  }`}
+                >
+                  Głos Męski ♂
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGenderFilterChange('female')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    genderFilter === 'female' ? 'bg-amber-600 text-white' : 'text-stone-600 dark:text-stone-300'
+                  }`}
+                >
+                  Głos Żeński ♀
+                </button>
+              </div>
             </div>
 
             {config.mode === 'local' ? (
-              <div>
-                {matchingLocalVoices.length > 0 ? (
-                  <select
-                    value={config.localVoiceURI}
-                    onChange={(e) => {
-                      const updated = { ...config, localVoiceURI: e.target.value };
-                      setConfig(updated);
-                      saveLectorConfig(updated);
-                    }}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500 cursor-pointer"
-                  >
-                    {matchingLocalVoices.map((v) => (
-                      <option key={v.voiceURI} value={v.voiceURI}>
-                        {v.name} ({v.lang}) {v.default ? ' [Domyślny systemowy]' : ''}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="p-3 rounded-xl bg-amber-500/10 text-amber-900 dark:text-amber-300 font-medium">
-                    Brak bezpośrednio zarejestrowanych głosów systemowych dla języka {selectedLangObj.nativeName}. Przeglądarka użyje domyślnego syntezatora mowy lub możesz przełączyć na tryb <strong>Online (AI Cloud)</strong>!
-                  </div>
-                )}
+              <div className="space-y-3">
+                <select
+                  value={config.localVoiceURI}
+                  onChange={(e) => {
+                    const updated = { ...config, localVoiceURI: e.target.value };
+                    setConfig(updated);
+                    saveLectorConfig(updated);
+                  }}
+                  className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500 cursor-pointer"
+                >
+                  {(() => {
+                    const filteredMatched = filterLocalByGender(matchedLangLocalVoices);
+                    const filteredOther = filterLocalByGender(otherLocalVoices);
+
+                    return (
+                      <>
+                        {filteredMatched.length > 0 && (
+                          <optgroup label={`--- Głosy w języku ${selectedLangObj.nativeName} (${selectedLangObj.flag}) ---`}>
+                            {filteredMatched.map((v) => {
+                              const gender = detectVoiceGender(v.name);
+                              const icon = gender === 'female' ? '👩' : '👨';
+                              return (
+                                <option key={v.voiceURI} value={v.voiceURI}>
+                                  {icon} {v.name} ({v.lang}) [{gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}]{v.default ? ' - Domyślny OS' : ''}
+                                </option>
+                              );
+                            })}
+                          </optgroup>
+                        )}
+
+                        {filteredOther.length > 0 && (
+                          <optgroup label="--- Pozostałe zainstalowane głosy systemowe OS ---">
+                            {filteredOther.map((v) => {
+                              const gender = detectVoiceGender(v.name);
+                              const icon = gender === 'female' ? '👩' : '👨';
+                              return (
+                                <option key={v.voiceURI} value={v.voiceURI}>
+                                  {icon} {v.name} ({v.lang}) [{gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}]
+                                </option>
+                              );
+                            })}
+                          </optgroup>
+                        )}
+                      </>
+                    );
+                  })()}
+                </select>
+
+                {/* Selected Local Voice Detail Card */}
+                {(() => {
+                  const selVoice = allLocalVoicesList.find(v => v.voiceURI === config.localVoiceURI) || matchedLangLocalVoices[0] || allLocalVoicesList[0];
+                  if (!selVoice) return null;
+                  const gender = detectVoiceGender(selVoice.name);
+                  return (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                          <span>{gender === 'female' ? '👩' : '👨'} {selVoice.name}</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-600 text-white font-sans-ui">
+                            {gender === 'female' ? 'Żeński ♀' : 'Męski ♂'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-0.5">
+                          Głos lokalny zainstalowany w Twojej przeglądarce/systemie ({selVoice.lang}). Działa w pełni offline.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="space-y-3">
@@ -362,19 +440,35 @@ export const LectorSettingsModal: React.FC<Props> = ({
                   className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0c121e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-semibold focus:outline-hidden focus:border-amber-500 cursor-pointer"
                 >
                   {(() => {
-                    const currentSel = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
-                    const list = ONLINE_VOICES.filter(v => v.lang === config.lang || v.id === config.onlineVoiceId);
-                    const filtered = (list.length > 0 ? list : ONLINE_VOICES)
-                      .filter(v => genderFilter === 'all' || v.gender === genderFilter || v.id === config.onlineVoiceId);
-                    return filtered.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name} — {v.gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'} ({v.provider})
-                      </option>
-                    ));
+                    const langOnlines = ONLINE_VOICES.filter(v => v.lang === config.lang);
+                    const otherOnlines = ONLINE_VOICES.filter(v => v.lang !== config.lang);
+
+                    const filteredLang = filterOnlineByGender(langOnlines);
+                    const filteredOther = filterOnlineByGender(otherOnlines);
+
+                    return (
+                      <>
+                        <optgroup label={`--- Głosy AI Cloud dla języka ${selectedLangObj.nativeName} (${selectedLangObj.flag}) ---`}>
+                          {filteredLang.map((v) => (
+                            <option key={v.id} value={v.id}>
+                              {v.gender === 'female' ? '👩' : '👨'} {v.name} [{v.gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}] ({v.provider})
+                            </option>
+                          ))}
+                        </optgroup>
+
+                        <optgroup label="--- Pozostałe głosy AI Cloud (Inne Języki) ---">
+                          {filteredOther.map((v) => (
+                            <option key={v.id} value={v.id}>
+                              {v.gender === 'female' ? '👩' : '👨'} {v.name} [{v.gender === 'female' ? 'Głos Żeński ♀' : 'Głos Męski ♂'}] ({v.provider})
+                            </option>
+                          ))}
+                        </optgroup>
+                      </>
+                    );
                   })()}
                 </select>
 
-                {/* Selected Voice Details Card */}
+                {/* Selected Online Voice Details Card */}
                 {(() => {
                   const selectedVoiceObj = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
                   if (!selectedVoiceObj) return null;
@@ -382,7 +476,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
                     <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-center justify-between gap-3">
                       <div>
                         <div className="font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
-                          <span>{selectedVoiceObj.name}</span>
+                          <span>{selectedVoiceObj.gender === 'female' ? '👩' : '👨'} {selectedVoiceObj.name}</span>
                           <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-600 text-white font-sans-ui">
                             {selectedVoiceObj.gender === 'female' ? 'Żeński ♀' : 'Męski ♂'}
                           </span>
