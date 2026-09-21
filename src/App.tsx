@@ -15,6 +15,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { DownloadPublishModal } from './components/DownloadPublishModal';
 import { LectorSettingsModal } from './components/LectorSettingsModal';
+import { FloatingAudioPlayer } from './components/FloatingAudioPlayer';
 import { SearchModal } from './components/SearchModal';
 import { fetchEntriesFromGitHub, syncStateToGitHub, getStoredGitHubConfig } from './utils/githubSync';
 import { setSavedQrCodes, getSavedQrCodes } from './utils/qrCodeService';
@@ -689,6 +690,17 @@ export default function App() {
         customEntries={customEntries}
         adminUser={adminUser}
         hiddenSectionIds={hiddenSectionIds}
+      />
+
+      {/* 11. Floating Audio Player Sticky Control Bar */}
+      <FloatingAudioPlayer
+        currentDate={currentDate}
+        activeSection={activeSection}
+        displayedEntry={displayedEntry}
+        onNextDay={handleNextDay}
+        onPrevDay={handlePrevDay}
+        onOpenLectorModal={() => setIsLectorModalOpen(true)}
+        currentLang={currentLang}
       />
     </div>
   );

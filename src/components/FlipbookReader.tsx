@@ -336,6 +336,15 @@ export const FlipbookReader: React.FC<Props> = ({
   const [viewMode, setViewMode] = useState<'pdf' | 'text'>('text');
   const [selectedYear, setSelectedYear] = useState<1 | 2 | 3 | 4>(1);
 
+  useEffect(() => {
+    const handleStateChange = (e: any) => {
+      const state = e.detail?.state;
+      setIsSpeaking(state === 'playing');
+    };
+    window.addEventListener('drogowskazy_lector_state_changed', handleStateChange);
+    return () => window.removeEventListener('drogowskazy_lector_state_changed', handleStateChange);
+  }, []);
+
   // Touch gesture state for horizontal page flipping
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);

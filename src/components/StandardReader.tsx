@@ -66,6 +66,15 @@ export const StandardReader: React.FC<Props> = ({
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
   const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
 
+  React.useEffect(() => {
+    const handleStateChange = (e: any) => {
+      const state = e.detail?.state;
+      setIsSpeaking(state === 'playing');
+    };
+    window.addEventListener('drogowskazy_lector_state_changed', handleStateChange);
+    return () => window.removeEventListener('drogowskazy_lector_state_changed', handleStateChange);
+  }, []);
+
   const activeLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   const activeBibliaEntry = section.id === 'biblia365'

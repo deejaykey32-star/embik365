@@ -272,6 +272,20 @@ export function saveSerialLectorState(state: Partial<SerialLectorState>): Serial
 }
 
 let keepAliveAudio: HTMLAudioElement | null = null;
+export type LectorPlaybackState = 'idle' | 'playing' | 'paused';
+let lectorPlaybackState: LectorPlaybackState = 'idle';
+
+export function getLectorPlaybackState(): LectorPlaybackState {
+  return lectorPlaybackState;
+}
+
+export function notifyLectorStateChange(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('drogowskazy_lector_state_changed', {
+      detail: { state: lectorPlaybackState }
+    }));
+  }
+}
 
 export function startBackgroundAudioKeepAlive(): void {
   if (typeof window === 'undefined') return;
@@ -332,13 +346,48 @@ export function setupMediaSession(
   }
 }
 
+export function pauseLectorSpeech(): void {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking) {
+    try { window.speechSynthesis.pause(); } catch {}
+  }
+  if (currentAudioElement) {
+    try { currentAudioElement.pause(); } catch {}
+  }
+  if (currentAudioContext && currentAudioContext.state === 'running') {
+    try { currentAudioContext.suspend(); } catch {}
+  }
+  lectorPlaybackState = 'paused';
+  if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+    try { navigator.mediaSession.playbackState = 'paused'; } catch {}
+  }
+  notifyLectorStateChange();
+}
+
+export function resumeLectorSpeech(): void {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused) {
+    try { window.speechSynthesis.resume(); } catch {}
+  }
+  if (currentAudioElement && currentAudioElement.paused) {
+    try { currentAudioElement.play().catch(() => {}); } catch {}
+  }
+  if (currentAudioContext && currentAudioContext.state === 'suspended') {
+    try { currentAudioContext.resume(); } catch {}
+  }
+  startBackgroundAudioKeepAlive();
+  lectorPlaybackState = 'playing';
+  if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+    try { navigator.mediaSession.playbackState = 'playing'; } catch {}
+  }
+  notifyLectorStateChange();
+}
+
 export function stopLectorSpeech(): void {
   stopBackgroundAudioKeepAlive();
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+    try { window.speechSynthesis.cancel(); } catch {}
   }
   if (currentAudioElement) {
-    currentAudioElement.pause();
+    try { currentAudioElement.pause(); } catch {}
     currentAudioElement = null;
   }
   if (currentSourceNode) {
@@ -349,6 +398,11 @@ export function stopLectorSpeech(): void {
     try { currentAudioContext.close(); } catch {}
     currentAudioContext = null;
   }
+  lectorPlaybackState = 'idle';
+  if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+    try { navigator.mediaSession.playbackState = 'none'; } catch {}
+  }
+  notifyLectorStateChange();
 }
 
 export interface PlayLectorOptions {
@@ -373,10 +427,37 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   stopLectorSpeech();
   startBackgroundAudioKeepAlive();
 
+  const wrappedOnStart = () => {
+    lectorPlaybackState = 'playing';
+    if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+      try { navigator.mediaSession.playbackState = 'playing'; } catch {}
+    }
+    notifyLectorStateChange();
+    if (onStart) onStart();
+  };
+
+  const wrappedOnEnd = () => {
+    lectorPlaybackState = 'idle';
+    if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+      try { navigator.mediaSession.playbackState = 'none'; } catch {}
+    }
+    notifyLectorStateChange();
+    if (onEnd) onEnd();
+  };
+
+  const wrappedOnError = (err: any) => {
+    lectorPlaybackState = 'idle';
+    if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+      try { navigator.mediaSession.playbackState = 'none'; } catch {}
+    }
+    notifyLectorStateChange();
+    if (onError) onError(err);
+  };
+
   if (title || sectionName) {
     setupMediaSession(title || 'Droga365', sectionName || 'Lektor', artworkUrl, {
-      onPlay: () => {},
-      onPause: () => stopLectorSpeech(),
+      onPlay: () => resumeLectorSpeech(),
+      onPause: () => pauseLectorSpeech(),
       onNextTrack: onNext,
       onPreviousTrack: onPrev,
       onStop: () => stopLectorSpeech()
@@ -416,16 +497,16 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
 
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
-        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, onStart, onEnd, onError);
+        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, wrappedOnStart, wrappedOnEnd, wrappedOnError);
       } else {
-        playLocalSpeechFallback({ ...options, overrideLang: targetLang });
+        playLocalSpeechFallback({ ...options, overrideLang: targetLang, onStart: wrappedOnStart, onEnd: wrappedOnEnd, onError: wrappedOnError });
       }
     } catch (err) {
       console.warn('Online TTS error, falling back to local speech:', err);
-      playLocalSpeechFallback({ ...options, overrideLang: targetLang });
+      playLocalSpeechFallback({ ...options, overrideLang: targetLang, onStart: wrappedOnStart, onEnd: wrappedOnEnd, onError: wrappedOnError });
     }
   } else {
-    playLocalSpeechFallback({ ...options, overrideLang: targetLang });
+    playLocalSpeechFallback({ ...options, overrideLang: targetLang, onStart: wrappedOnStart, onEnd: wrappedOnEnd, onError: wrappedOnError });
   }
 }
 
