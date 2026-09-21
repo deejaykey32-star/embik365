@@ -44,17 +44,17 @@ export const COMMON_PRAYERS = {
     text: 'Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.'
   },
   hailMaryFaith: {
-    name: 'Zdrowaś Maryjo — O wiarę (Paciorek Czerwony - Red)',
+    name: 'Zdrowaś Maryjo — O wiarę (Paciorek #2 - módlmy się o wiarę)',
     dopowiedzenie: 'który niech pomnaża naszą wiarę',
     text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech pomnaża naszą wiarę. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryHope: {
-    name: 'Zdrowaś Maryjo — O nadzieję (Paciorek Zielony - Green)',
+    name: 'Zdrowaś Maryjo — O nadzieję (Paciorek #3 - módlmy się o nadzieję)',
     dopowiedzenie: 'który niech umacnia naszą nadzieję',
     text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech umacnia naszą nadzieję. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryLove: {
-    name: 'Zdrowaś Maryjo — O miłość (Paciorek Niebieski - Blue)',
+    name: 'Zdrowaś Maryjo — O miłość (Paciorek #4 - módlmy się o miłość)',
     dopowiedzenie: 'który niech rozpala naszą miłość',
     text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech rozpala naszą miłość. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
@@ -137,17 +137,17 @@ export function generateFull50Rgba(mysteryTitle?: string): RosaryModelDefinition
     badgeNumber: '#1'
   });
 
-  // 3. Small beads: Red, Green, Blue
+  // 3. Small beads: Blue (Wiara), Green (Nadzieja), Red (Miłość)
   beads.push({
-    id: 'pendant_red',
+    id: 'pendant_blue',
     stepIndex: step++,
     type: 'small',
-    colorType: 'red',
-    label: 'Koralik Czerwony (Red)',
-    subLabel: 'Zdrowaś Maryjo (Miłość)',
-    prayerName: COMMON_PRAYERS.hailMaryLove.name,
-    prayerText: COMMON_PRAYERS.hailMaryLove.text,
-    colorSymbolism: COLOR_SYMBOLISM.red,
+    colorType: 'blue',
+    label: 'Koralik Niebieski (Blue)',
+    subLabel: 'Zdrowaś Maryjo (Wiara)',
+    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+    colorSymbolism: COLOR_SYMBOLISM.blue,
     x: 300,
     y: 698,
     radius: 12,
@@ -173,15 +173,15 @@ export function generateFull50Rgba(mysteryTitle?: string): RosaryModelDefinition
   });
 
   beads.push({
-    id: 'pendant_blue',
+    id: 'pendant_red',
     stepIndex: step++,
     type: 'small',
-    colorType: 'blue',
-    label: 'Koralik Niebieski (Blue)',
-    subLabel: 'Zdrowaś Maryjo (Wiara)',
-    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
-    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
-    colorSymbolism: COLOR_SYMBOLISM.blue,
+    colorType: 'red',
+    label: 'Koralik Czerwony (Red)',
+    subLabel: 'Zdrowaś Maryjo (Miłość)',
+    prayerName: COMMON_PRAYERS.hailMaryLove.name,
+    prayerText: COMMON_PRAYERS.hailMaryLove.text,
+    colorSymbolism: COLOR_SYMBOLISM.red,
     x: 300,
     y: 618,
     radius: 12,
@@ -373,9 +373,9 @@ export function generateFull50Cmyk(mysteryTitle?: string): RosaryModelDefinition
     type: 'small',
     colorType: 'cyan',
     label: 'Koralik Cyjan (Cyan)',
-    subLabel: 'Zdrowaś Maryjo (Tchnienie Ducha)',
-    prayerName: COMMON_PRAYERS.hailMaryLove.name,
-    prayerText: COMMON_PRAYERS.hailMaryLove.text,
+    subLabel: 'Zdrowaś Maryjo (Wiara)',
+    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
     colorSymbolism: COLOR_SYMBOLISM.cyan,
     x: 300,
     y: 698,
@@ -390,7 +390,7 @@ export function generateFull50Cmyk(mysteryTitle?: string): RosaryModelDefinition
     type: 'small',
     colorType: 'magenta',
     label: 'Koralik Magenta (Magenta)',
-    subLabel: 'Zdrowaś Maryjo (Królewski Majestat)',
+    subLabel: 'Zdrowaś Maryjo (Nadzieja)',
     prayerName: COMMON_PRAYERS.hailMaryHope.name,
     prayerText: COMMON_PRAYERS.hailMaryHope.text,
     colorSymbolism: COLOR_SYMBOLISM.magenta,
@@ -407,9 +407,9 @@ export function generateFull50Cmyk(mysteryTitle?: string): RosaryModelDefinition
     type: 'small',
     colorType: 'yellow',
     label: 'Koralik Żółty (Yellow)',
-    subLabel: 'Zdrowaś Maryjo (Boska Mądrość)',
-    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
-    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+    subLabel: 'Zdrowaś Maryjo (Miłość)',
+    prayerName: COMMON_PRAYERS.hailMaryLove.name,
+    prayerText: COMMON_PRAYERS.hailMaryLove.text,
     colorSymbolism: COLOR_SYMBOLISM.yellow,
     x: 300,
     y: 618,
@@ -589,17 +589,17 @@ export function generateLine13Rgba(mysteryTitle?: string): RosaryModelDefinition
     badgeNumber: '#1'
   });
 
-  // #2: Czerwony (Red)
+  // #2: Niebieski (Blue) - Wiara
   beads.push({
     id: 'line_rgba_bead_2',
     stepIndex: step++,
     type: 'small',
-    colorType: 'red',
-    label: 'Koralik Czerwony (Red)',
-    subLabel: 'Zdrowaś Maryjo (Miłość)',
-    prayerName: COMMON_PRAYERS.hailMaryLove.name,
-    prayerText: COMMON_PRAYERS.hailMaryLove.text,
-    colorSymbolism: COLOR_SYMBOLISM.red,
+    colorType: 'blue',
+    label: 'Koralik Niebieski (Blue)',
+    subLabel: 'Zdrowaś Maryjo (Wiara)',
+    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+    colorSymbolism: COLOR_SYMBOLISM.blue,
     x: 220,
     y: 860,
     radius: 12,
@@ -607,7 +607,7 @@ export function generateLine13Rgba(mysteryTitle?: string): RosaryModelDefinition
     badgeNumber: '#2'
   });
 
-  // #3: Zielony (Green)
+  // #3: Zielony (Green) - Nadzieja
   beads.push({
     id: 'line_rgba_bead_3',
     stepIndex: step++,
@@ -625,17 +625,17 @@ export function generateLine13Rgba(mysteryTitle?: string): RosaryModelDefinition
     badgeNumber: '#3'
   });
 
-  // #4: Niebieski (Blue)
+  // #4: Czerwony (Red) - Miłość
   beads.push({
     id: 'line_rgba_bead_4',
     stepIndex: step++,
     type: 'small',
-    colorType: 'blue',
-    label: 'Koralik Niebieski (Blue)',
-    subLabel: 'Zdrowaś Maryjo (Wiara)',
-    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
-    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
-    colorSymbolism: COLOR_SYMBOLISM.blue,
+    colorType: 'red',
+    label: 'Koralik Czerwony (Red)',
+    subLabel: 'Zdrowaś Maryjo (Miłość)',
+    prayerName: COMMON_PRAYERS.hailMaryLove.name,
+    prayerText: COMMON_PRAYERS.hailMaryLove.text,
+    colorSymbolism: COLOR_SYMBOLISM.red,
     x: 220,
     y: 760,
     radius: 12,
@@ -787,9 +787,9 @@ export function generateLine13Cmyk(mysteryTitle?: string): RosaryModelDefinition
     type: 'small',
     colorType: 'cyan',
     label: 'Koralik Cyjan (Cyan)',
-    subLabel: 'Zdrowaś Maryjo (Tchnienie Ducha)',
-    prayerName: COMMON_PRAYERS.hailMaryLove.name,
-    prayerText: COMMON_PRAYERS.hailMaryLove.text,
+    subLabel: 'Zdrowaś Maryjo (Wiara)',
+    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
     colorSymbolism: COLOR_SYMBOLISM.cyan,
     x: 220,
     y: 860,
@@ -804,7 +804,7 @@ export function generateLine13Cmyk(mysteryTitle?: string): RosaryModelDefinition
     type: 'small',
     colorType: 'magenta',
     label: 'Koralik Magenta (Magenta)',
-    subLabel: 'Zdrowaś Maryjo (Królewski Majestat)',
+    subLabel: 'Zdrowaś Maryjo (Nadzieja)',
     prayerName: COMMON_PRAYERS.hailMaryHope.name,
     prayerText: COMMON_PRAYERS.hailMaryHope.text,
     colorSymbolism: COLOR_SYMBOLISM.magenta,
@@ -821,9 +821,9 @@ export function generateLine13Cmyk(mysteryTitle?: string): RosaryModelDefinition
     type: 'small',
     colorType: 'yellow',
     label: 'Koralik Żółty (Yellow)',
-    subLabel: 'Zdrowaś Maryjo (Boska Mądrość)',
-    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
-    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+    subLabel: 'Zdrowaś Maryjo (Miłość)',
+    prayerName: COMMON_PRAYERS.hailMaryLove.name,
+    prayerText: COMMON_PRAYERS.hailMaryLove.text,
     colorSymbolism: COLOR_SYMBOLISM.yellow,
     x: 220,
     y: 760,
@@ -969,15 +969,15 @@ export function generateCircle13Rgba(mysteryTitle?: string): RosaryModelDefiniti
   });
 
   beads.push({
-    id: 'circle_rgba_red',
+    id: 'circle_rgba_blue',
     stepIndex: step++,
     type: 'small',
-    colorType: 'red',
-    label: 'Koralik Czerwony (Red)',
-    subLabel: 'Zdrowaś Maryjo (Miłość)',
-    prayerName: COMMON_PRAYERS.hailMaryLove.name,
-    prayerText: COMMON_PRAYERS.hailMaryLove.text,
-    colorSymbolism: COLOR_SYMBOLISM.red,
+    colorType: 'blue',
+    label: 'Koralik Niebieski (Blue)',
+    subLabel: 'Zdrowaś Maryjo (Wiara)',
+    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+    colorSymbolism: COLOR_SYMBOLISM.blue,
     x: 300,
     y: 715,
     radius: 12,
@@ -1003,15 +1003,15 @@ export function generateCircle13Rgba(mysteryTitle?: string): RosaryModelDefiniti
   });
 
   beads.push({
-    id: 'circle_rgba_blue',
+    id: 'circle_rgba_red',
     stepIndex: step++,
     type: 'small',
-    colorType: 'blue',
-    label: 'Koralik Niebieski (Blue)',
-    subLabel: 'Zdrowaś Maryjo (Wiara)',
-    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
-    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
-    colorSymbolism: COLOR_SYMBOLISM.blue,
+    colorType: 'red',
+    label: 'Koralik Czerwony (Red)',
+    subLabel: 'Zdrowaś Maryjo (Miłość)',
+    prayerName: COMMON_PRAYERS.hailMaryLove.name,
+    prayerText: COMMON_PRAYERS.hailMaryLove.text,
+    colorSymbolism: COLOR_SYMBOLISM.red,
     x: 300,
     y: 620,
     radius: 12,
@@ -1158,9 +1158,9 @@ export function generateCircle13Cmyk(mysteryTitle?: string): RosaryModelDefiniti
     type: 'small',
     colorType: 'cyan',
     label: 'Koralik Cyjan (Cyan)',
-    subLabel: 'Zdrowaś Maryjo (Tchnienie Ducha)',
-    prayerName: COMMON_PRAYERS.hailMaryLove.name,
-    prayerText: COMMON_PRAYERS.hailMaryLove.text,
+    subLabel: 'Zdrowaś Maryjo (Wiara)',
+    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
+    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
     colorSymbolism: COLOR_SYMBOLISM.cyan,
     x: 300,
     y: 715,
@@ -1175,7 +1175,7 @@ export function generateCircle13Cmyk(mysteryTitle?: string): RosaryModelDefiniti
     type: 'small',
     colorType: 'magenta',
     label: 'Koralik Magenta (Magenta)',
-    subLabel: 'Zdrowaś Maryjo (Królewski Majestat)',
+    subLabel: 'Zdrowaś Maryjo (Nadzieja)',
     prayerName: COMMON_PRAYERS.hailMaryHope.name,
     prayerText: COMMON_PRAYERS.hailMaryHope.text,
     colorSymbolism: COLOR_SYMBOLISM.magenta,
@@ -1192,9 +1192,9 @@ export function generateCircle13Cmyk(mysteryTitle?: string): RosaryModelDefiniti
     type: 'small',
     colorType: 'yellow',
     label: 'Koralik Żółty (Yellow)',
-    subLabel: 'Zdrowaś Maryjo (Boska Mądrość)',
-    prayerName: COMMON_PRAYERS.hailMaryFaith.name,
-    prayerText: COMMON_PRAYERS.hailMaryFaith.text,
+    subLabel: 'Zdrowaś Maryjo (Miłość)',
+    prayerName: COMMON_PRAYERS.hailMaryLove.name,
+    prayerText: COMMON_PRAYERS.hailMaryLove.text,
     colorSymbolism: COLOR_SYMBOLISM.yellow,
     x: 300,
     y: 620,
