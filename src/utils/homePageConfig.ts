@@ -2,6 +2,7 @@ import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
 import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
+import bibliaMainImg from '../pliki/biblia-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<SectionId, any> = {
   wnr365: Feather,
@@ -61,8 +62,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       badge: 'Słowo Boże i Apokryfy',
       shortDesc: 'Roczny plan lektury Pisma Świętego wzbogacony o bezcenne wczesnochrześcijańskie apokryfy.',
       fullDesc: 'Codzienna porcja natchnionego Słowa Bożego wraz z komentarzami i tekstami wczesnej tradycji chrześcijańskiej, pozwalająca przeczytać Biblię w rocznym cyklu.',
-      imageUrl: 'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Pismo Święte – otwarta księga',
+      imageUrl: bibliaMainImg,
+      imageAlt: 'Grafika Główna Biblia365 i Apokryfy',
       color: '#15803d',
       bgGradient: 'from-emerald-900/20 via-emerald-800/10 to-transparent',
       qrId: 'qr_biblia365',
@@ -98,8 +99,8 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       badge: 'Księga Słowa Flipbook',
       shortDesc: 'Pismo Święte i Apokryfy w bibliofilskim wydaniu z przewracanymi kartami.',
       fullDesc: 'Monumentalna edycja czytań biblijnych w pergaminowym flipbooku. Czytaj Słowo Boże jak w wielkiej księdze klasztornej z zakładkami i notatkami.',
-      imageUrl: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Złote karty Biblii',
+      imageUrl: bibliaMainImg,
+      imageAlt: 'Grafika Główna ebook Biblia365',
       color: '#166534',
       bgGradient: 'from-green-950/20 via-green-900/10 to-transparent',
       qrId: 'qr_ebook_biblia',

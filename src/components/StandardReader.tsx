@@ -30,6 +30,7 @@ import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/b
 import { getWnrEntryForDay } from '../data/wnr365Data';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
+import bibliaMainImg from '../pliki/biblia-main.jpg';
 
 interface Props {
   section: SectionMeta;
@@ -241,17 +242,29 @@ export const StandardReader: React.FC<Props> = ({
             </p>
           )}
 
-          {/* Main Section Graphic Banner for WnR365 / RHZ365 */}
-          {(section.id === 'rhz365' || section.id === 'ebook_rhz' || section.id === 'wnr365' || section.id === 'ebook_wnr' || section.id === 'wnr366') && (
+          {/* Main Section Graphic Banner for WnR365 / RHZ365 / Biblia365 */}
+          {(section.id === 'rhz365' || section.id === 'ebook_rhz' || section.id === 'wnr365' || section.id === 'ebook_wnr' || section.id === 'wnr366' || section.id === 'biblia365' || section.id === 'ebook_biblia') && (
             <div className="mt-4 overflow-hidden rounded-2xl border border-[#e4ccb5] dark:border-[#273448] shadow-md max-h-72 sm:max-h-80 w-full group relative">
               <img
-                src={(section.id === 'rhz365' || section.id === 'ebook_rhz') ? rhzMainImg : wnrMainImg}
+                src={
+                  (section.id === 'rhz365' || section.id === 'ebook_rhz')
+                    ? rhzMainImg
+                    : (section.id === 'biblia365' || section.id === 'ebook_biblia')
+                      ? bibliaMainImg
+                      : wnrMainImg
+                }
                 alt={section.name}
                 className="w-full h-full object-cover object-center transform group-hover:scale-102 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
                 <span className="text-xs font-semibold text-white/90 font-heading-cinzel tracking-wider backdrop-blur-xs px-3 py-1 rounded-lg bg-black/40 border border-white/20">
-                  {(section.id === 'rhz365' || section.id === 'ebook_rhz') ? 'Grafika Główna: Różaniec Historii Zbawienia (RHZ365)' : 'Grafika Główna: Widoki na Raj (WnR365)'}
+                  {
+                    (section.id === 'rhz365' || section.id === 'ebook_rhz')
+                      ? 'Grafika Główna: Różaniec Historii Zbawienia (RHZ365)'
+                      : (section.id === 'biblia365' || section.id === 'ebook_biblia')
+                        ? 'Grafika Główna: Biblia365 i Apokryfy'
+                        : 'Grafika Główna: Widoki na Raj (WnR365)'
+                  }
                 </span>
               </div>
             </div>
