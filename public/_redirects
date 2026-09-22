@@ -1,6 +1,6 @@
 # Moje własne przekierowania (konkretne linki)
 /z/1 https://youtu.be/kFdLgWrUt10?si=MtS86vPE4ddts2Am 301
-/z/2 https://youtu.be/u3HeJFr01T0?si=O17L_9HqsYDcnMhM 301
+/z/2 https://youtu.be/u3HeJFrO1T0?si=O17L_9HqsYDcnMhM 301
 /z/3 https://youtu.be/Tfk4P7T8fBI?si=cHR7r5WHtJNZeBxA 301
 /z/4 https://youtu.be/VbcLWGoP1I4?si=QwQaHUpxyTGSP-c5 301
 /z/5 https://youtu.be/JmKLT59cTIc?si=GQ35JNj00945b_ru 301
@@ -25,12 +25,7 @@
 /z/24 https://youtu.be/8QKboVU6aCo?si=wSBxGyrEdFvqaRMR 301
 /z/25 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida.jpg 301
 /z/26 https://youtu.be/lKVgoT3JsRE?si=D-OmYREfEAVRgxeS 301
-
-# Przekierowania dla dynamicznych kodów QR (Biblia, WnR365, Różaniec, Zasoby)
-/b/* https://wnr365.pages.dev 301
-/w/* https://wnr365.pages.dev 301
-/r/* https://wnr365.pages.dev 301
-/z/* https://wnr365.pages.dev 301
+/z/27 https://youtu.be/u3HeJFrO1T0 301
 
 # Przekierowania zasobów i obsługa SPA
 /src/pliki/* /pliki/:splat 301

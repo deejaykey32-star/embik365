@@ -50,6 +50,7 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
 
   'wnr365': 'wnr365',
   'wnr': 'wnr365',
+  'w': 'wnr365',
   'wnr366': 'wnr365',
   'widoki-na-raj': 'wnr365',
   'widokinaraj': 'wnr365',
@@ -63,6 +64,7 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
 
   'biblia365': 'biblia365',
   'biblia': 'biblia365',
+  'b': 'biblia365',
   'pismo-swiete': 'biblia365',
   'apokryfy': 'biblia365',
 
@@ -251,9 +253,16 @@ export function parseUrlRoute(): ParsedRoute {
   if (parts.length > 0) {
     if (parts[0] === 'r') {
       const slug = parts[1] ? parts[1].toLowerCase() : '';
-      if (!slug || slug === 'aistudio' || slug === 'ai-studio' || slug.includes('pkg_') || slug.includes('aistudio') || slug.includes('paczka')) {
+      if (slug === 'aistudio' || slug === 'ai-studio' || slug.includes('pkg_') || slug.includes('paczka')) {
         const pkgId = slug.startsWith('pkg_') ? parts[1] : undefined;
         return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId: pkgId };
+      }
+      const foundDate = parseDaySlug(slug);
+      if (foundDate) {
+        return { sectionId: 'rhz365', date: foundDate };
+      }
+      if (slug === 'wstep' || slug === 'intro' || slug === 'koronka') {
+        return { sectionId: 'rhz365', date: getTodayCycleDate(), subview: slug };
       }
       const mappedSec = parseSectionSlug(slug);
       if (mappedSec) {
@@ -265,7 +274,7 @@ export function parseUrlRoute(): ParsedRoute {
       if (slug === 'kody-qr' || slug === 'qr') {
         return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'kody-qr' };
       }
-      return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId: slug };
+      return { sectionId: 'rhz365', date: getTodayCycleDate() };
     }
 
     if (parts[0] === 'paczka' || parts[0] === 'paczki' || parts[0] === 'aistudio' || parts[0] === 'ai-studio') {
