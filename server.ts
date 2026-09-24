@@ -9,8 +9,9 @@ import util from 'util';
 
 const execPromise = util.promisify(exec);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentMetaUrl = typeof import.meta !== 'undefined' ? import.meta.url : undefined;
+const __filename = currentMetaUrl ? fileURLToPath(currentMetaUrl) : (typeof __filename !== 'undefined' ? __filename : '');
+const __dirname = path.dirname(__filename || process.cwd());
 
 const PORT = 3000;
 const app = express();

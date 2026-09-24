@@ -33,6 +33,12 @@
 /z/32 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/znak.gif 301
 /z/33 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida-zielony.png 301
 /z/34 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/prezentacja-RGB-CMY.png 301
+/z/35 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Jezus-i-piotr-z-kluczami.jpg 301
+/z/36 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/ombw.jpg 301
+/z/37 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/stworzenie-pieklo.jpg 301
+/z/38 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wspolnota_ruch_szensztacki.jpg 301
+/z/39 https://youtu.be/BoohNb-BPPw?si=YRlYB6zSEXrYWwHM 301
+/z/40 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/tecza.png 301
 
 # Przekierowania zasobów i obsługa SPA
 /src/pliki/* /pliki/:splat 301
