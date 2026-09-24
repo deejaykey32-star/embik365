@@ -25,7 +25,11 @@
 /z/24 https://youtu.be/8QKboVU6aCo?si=wSBxGyrEdFvqaRMR 301
 /z/25 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida.jpg 301
 /z/26 https://youtu.be/lKVgoT3JsRE?si=D-OmYREfEAVRgxeS 301
-/z/27 https://youtu.be/u3HeJFrO1T0 301
+/z/27 https://youtu.be/DXmNOQea3Ao?si=nmfqpcGUaHw8wfGj 301
+/z/28 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wszystko2.png 301
+/z/29 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/gwiazda-dawida.jpg 301
+/z/30 https://www.youtube.com/watch?v=l-vOVXNR-00&list=PLOrIokJN_wIc 301
+/z/31 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/znak.gif 301
 
 # Przekierowania zasobów i obsługa SPA
 /src/pliki/* /pliki/:splat 301
