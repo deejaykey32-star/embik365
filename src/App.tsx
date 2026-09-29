@@ -21,7 +21,7 @@ import { fetchEntriesFromGitHub, syncStateToGitHub, getStoredGitHubConfig } from
 import { setSavedQrCodes, getSavedQrCodes } from './utils/qrCodeService';
 import { translateEntry } from './utils/translationService';
 import { MediaLibraryViewer } from './components/MediaLibraryViewer';
-import { Sparkles, X } from 'lucide-react';
+import { Sparkles, X, ExternalLink, Compass } from 'lucide-react';
 
 import { parseUrlRoute, updateBrowserUrlSlug } from './utils/slugRouter';
 
@@ -576,6 +576,44 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* 3.5 Active banner linking to Histada (nad footerem) */}
+      <div className="bg-[#f2ece3]/60 dark:bg-[#0a0f18]/60 border-t border-[#e2d5c7] dark:border-[#1d2636] py-5 px-4 transition-colors">
+        <div className="max-w-4xl mx-auto">
+          <a
+            href="https://histada.pages.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block overflow-hidden rounded-2xl border border-amber-600/30 dark:border-amber-500/30 bg-gradient-to-r from-amber-100/90 via-amber-50/80 to-orange-100/70 dark:from-amber-950/40 dark:via-[#121927] dark:to-amber-900/30 p-4 sm:p-5 shadow-sm hover:shadow-lg hover:border-amber-500/60 dark:hover:border-amber-400/60 transition-all duration-300 hover:-translate-y-0.5 text-decoration-none"
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 text-center sm:text-left">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                  <Compass className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                    <span className="font-heading-cinzel font-bold text-base text-[#423325] dark:text-amber-200 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
+                      Histada
+                    </span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 font-semibold border border-amber-300/80 dark:border-amber-700/50">
+                      https://histada.pages.dev
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-[#6b5847] dark:text-[#a0aabe] mt-1">
+                    Dzieje i historia – historia się dzieje • Trylogia gier dla poszukujących prawdy
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-900 dark:text-amber-200 bg-amber-500/20 dark:bg-amber-500/20 px-4 py-2.5 rounded-xl transition-all duration-300 shrink-0 group-hover:bg-amber-600 group-hover:text-white dark:group-hover:bg-amber-500 dark:group-hover:text-slate-950 shadow-sm">
+                <span>Odwiedź stronę</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
 
       {/* 4. Footer */}
       <footer className="bg-[#f2ece3] dark:bg-[#0a0f18] border-t border-[#e2d5c7] dark:border-[#1d2636] py-6 px-4 text-center text-xs text-[#7b6b5c] dark:text-[#8b949e] transition-colors">
