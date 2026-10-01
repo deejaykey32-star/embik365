@@ -50,6 +50,7 @@
 /z/49 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Generuj_pynn_animacj_202602091656.gif 301
 /z/50 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol2.gif 301
 /z/51 https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol3.gif 301
+/z/52 https://youtu.be/-GbWAqXosdo?si=WrUo0Vj8s1kwQvh- 301
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301
