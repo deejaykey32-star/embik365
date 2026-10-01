@@ -10,8 +10,8 @@ import util from 'util';
 const execPromise = util.promisify(exec);
 
 const currentMetaUrl = typeof import.meta !== 'undefined' ? import.meta.url : undefined;
-const __filename = currentMetaUrl ? fileURLToPath(currentMetaUrl) : (typeof __filename !== 'undefined' ? __filename : '');
-const __dirname = path.dirname(__filename || process.cwd());
+const currentFilename = currentMetaUrl ? fileURLToPath(currentMetaUrl) : '';
+const __dirname = path.dirname(currentFilename || process.cwd());
 
 const PORT = 3000;
 const app = express();
@@ -248,6 +248,31 @@ app.get('/r/:slug?', (req, res) => {
   }
 
   return res.redirect(302, target);
+});
+
+// Short URL Direct Redirect Endpoint /z/:id (Reads public/_redirects dynamically)
+app.get('/z/:id', (req, res) => {
+  const zKey = `/z/${req.params.id}`;
+  try {
+    const redirectsPath = path.join(process.cwd(), 'public', '_redirects');
+    if (fs.existsSync(redirectsPath)) {
+      const content = fs.readFileSync(redirectsPath, 'utf-8');
+      const lines = content.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const parts = trimmed.split(/\s+/);
+        if (parts.length >= 2 && parts[0].toLowerCase() === zKey.toLowerCase()) {
+          const target = parts[1];
+          const statusCode = parseInt(parts[2] || '301', 10);
+          return res.redirect(statusCode, target);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error handling /z/:id redirect:', e);
+  }
+  return res.status(404).send('Nie znaleziono przekierowania dla podanego kodu QR.');
 });
 
 // URL Shortening API endpoint (clck.ru / is.gd with 0 ads, server-side fetch)

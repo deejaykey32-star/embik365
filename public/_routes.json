@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/assets/*", "/uploads/*", "/data/*", "/favicon.ico"]
+  "exclude": ["/assets/*", "/uploads/*", "/data/*", "/pliki/*", "/src/*", "/z/*", "/b/*", "/w/*", "/favicon.ico"]
 }
