@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klepsydra — Misja Barw i Kolorów</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Raleway:wght@300;400&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #333; font-family: 'Raleway', sans-serif; color: #eee; cursor: grab; }
+  body.dragging { cursor: grabbing; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+
+  #ui {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(10,10,15,0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+    padding: 16px 24px; display: flex; align-items: center; gap: 20px; z-index: 10;
+  }
+  #ui .group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  #ui label {
+    font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,0.55);
+  }
+  #playBtn, #quarterBtn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.08);
+    color: #fff; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.3s;
+  }
+  #playBtn:hover, #quarterBtn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
+  input[type="range"] {
+    -webkit-appearance: none; width: 110px; height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.15); outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+    background: #fff; cursor: pointer; box-shadow: 0 0 6px rgba(255,255,255,0.4);
+  }
+  #title {
+    position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+    font-family: 'Cinzel', serif; font-size: 17px; letter-spacing: 4px;
+    text-transform: uppercase; color: rgba(255,255,255,0.45);
+    text-shadow: 0 0 20px rgba(255,255,255,0.12); z-index: 10; pointer-events: none;
+  }
+  @media (max-width: 640px) {
+    #ui { padding: 12px 14px; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    input[type="range"] { width: 80px; }
+  }
+</style>
+</head>
+<body>
+<div id="title">Klepsydra — Misja Barw i Kolorów</div>
+<div id="ui">
+  <div class="group"><label>Animacja</label><button id="playBtn">▶</button></div>
+  <div class="group"><label>Zwiń</label><input type="range" id="foldSlider" min="0" max="1" step="0.005" value="0"></div>
+  <div class="group"><label>Kula</label><input type="range" id="sphereSlider" min="0" max="1" step="0.005" value="1"></div>
+  <div class="group"><label>Ćwiartki</label><button id="quarterBtn">◔</button></div>
+  <div class="group"><label>Obrót Y</label><input type="range" id="rotateYSlider" min="0" max="6.2832" step="0.01" value="0"></div>
+  <div class="group"><label>Obrót X</label><input type="range" id="rotateXSlider" min="-3.1416" max="3.1416" step="0.01" value="0"></div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  /* ============================================================
+     SCENE
+  ============================================================ */
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x2e2e34);
+  scene.fog = new THREE.FogExp2(0x2e2e34, 0.028);
+
+  const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 100);
+  camera.position.set(4, 3, 6);
+  camera.lookAt(0, 0, 0);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  document.body.prepend(renderer.domElement);
+
+  /* ============================================================
+     LIGHTS
+  ============================================================ */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.38));
+  const dirL = new THREE.DirectionalLight(0xffffff, 0.78);
+  dirL.position.set(4, 6, 5); dirL.castShadow = true; scene.add(dirL);
+  const ptL = new THREE.PointLight(0xffffcc, 0.55, 10);
+  ptL.position.set(0, 0, 2); scene.add(ptL);
+  const rimL = new THREE.PointLight(0x8888ff, 0.25, 12);
+  rimL.position.set(-4, 1, -4);
+  scene.add(rimL);
+
+  /* ============================================================
+     CONSTANTS
+  ============================================================ */
+  const CR = 1.2, CH = 2.0, NR = 0.12, DT = 0.12, LR = 0.06;
+  const SAND_COL = 0xf5c842, CYCLE = 30;
+  const SPHERE_R = 3.0; // sphere radius enclosing the hourglass
+
+  /* ============================================================
+     ROOT GROUP  (everything inside)
+  ============================================================ */
+  const root = new THREE.Group();
+  scene.add(root);
+
+  const hourglassGroup = new THREE.Group();
+  root.add(hourglassGroup);
+
+  /* ============================================================
+     GLASS
+  ============================================================ */
+  const glassMat = new THREE.MeshPhysicalMaterial({
+    color: 0xd0e8ff, transparent: true, opacity: 0.18,
+    roughness: 0.05, metalness: 0.05, side: THREE.DoubleSide, depthWrite: false,
+  });
+  function mkGlass() {
+    const pts = [];
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40, y = (t - 0.5) * CH * 2;
+      const d = Math.abs(t - 0.5) * 2;
+      pts.push(new THREE.Vector2(NR + (CR - NR) * Math.pow(d, 1.3), y));
+    }
+    const m = new THREE.Mesh(new THREE.LatheGeometry(pts, 64), glassMat);
+    m.renderOrder = 10; return m;
+  }
+  const glass = mkGlass();
+  hourglassGroup.add(glass);
+
+  /* ============================================================
+     DISKS
+  ============================================================ */
+  function mkDisk(col, y) {
+    const m = new THREE.Mesh(
+      new THREE.CylinderGeometry(CR + 0.08, CR + 0.08, DT, 64),
+      new THREE.MeshStandardMaterial({ color: col, roughness: 0.6, metalness: 0.1 })
+    );
+    m.position.y = y; m.castShadow = true; return m;
+  }
+
+  const topDisk = mkDisk(0xf0f0f0, CH + DT / 2);
+  const bottomDisk = mkDisk(0x111111, -CH - DT / 2);
+  hourglassGroup.add(topDisk, bottomDisk);
+
+  /* ============================================================
+     SAND
+  ============================================================ */
+  const sandMat = new THREE.MeshStandardMaterial({ color: SAND_COL, roughness: 0.9 });
+  const upperSand = new THREE.Mesh(new THREE.ConeGeometry(CR * 0.75, CH * 0.8, 32), sandMat);
+  upperSand.position.y = CH * 0.5; upperSand.rotation.x = Math.PI;
+  const lowerSand = new THREE.Mesh(new THREE.ConeGeometry(CR * 0.75, CH * 0.8, 32), sandMat);
+  lowerSand.position.y = -CH * 0.5;
+  const streamMat = new THREE.MeshStandardMaterial({ color: SAND_COL, transparent: true, opacity: 0.8 });
+  const sandStream = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, CH * 0.5, 8), streamMat);
+  hourglassGroup.add(upperSand, lowerSand, sandStream);
+
+  /* ============================================================
+     LEGS  RGB→CMY
+  ============================================================ */
+  function mkLeg(cTop, cBot, angle) {
+    const h = CH * 2 + DT, seg = 32;
+    const geo = new THREE.CylinderGeometry(LR, LR, h, 12, seg);
+    const colArr = new Float32Array(geo.attributes.position.count * 3);
+    geo.setAttribute('color', new THREE.BufferAttribute(colArr, 3));
+    const pa = geo.attributes.position, ca = geo.attributes.color;
+    const c1 = new THREE.Color(cTop), c2 = new THREE.Color(cBot), tmp = new THREE.Color();
+    for (let i = 0; i < pa.count; i++) {
+      const t = (pa.getY(i) + h / 2) / h;
+      tmp.copy(c2).lerp(c1, t);
+      ca.setXYZ(i, tmp.r, tmp.g, tmp.b);
+    }
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.2 });
+    const mesh = new THREE.Mesh(geo, mat);
+    const dist = CR + 0.22;
+    mesh.position.set(Math.sin(angle) * dist, 0, Math.cos(angle) * dist);
+    mesh.castShadow = true;
+
+    const sGeo = new THREE.SphereGeometry(LR * 1.8, 16, 16);
+    const ts = new THREE.Mesh(sGeo, new THREE.MeshStandardMaterial({ color: cTop, roughness: 0.3 }));
+    ts.position.set(Math.sin(angle) * dist, h / 2, Math.cos(angle) * dist);
+    const bs = new THREE.Mesh(sGeo, new THREE.MeshStandardMaterial({ color: cBot, roughness: 0.3 }));
+    bs.position.set(Math.sin(angle) * dist, -h / 2, Math.cos(angle) * dist);
+
+    const g = new THREE.Group(); g.add(mesh, ts, bs);
+    g.userData = { mesh, topSphere: ts, bottomSphere: bs, angle, dist, legHeight: h };
+    return g;
+  }
+  const leg1 = mkLeg(0xff0000, 0xffff00, 0);
+  const leg2 = mkLeg(0x00ff00, 0xff00ff, Math.PI * 2 / 3);
+  const leg3 = mkLeg(0x0000ff, 0x00ffff, Math.PI * 4 / 3);
+  hourglassGroup.add(leg1, leg2, leg3);
+  const legs = [leg1, leg2, leg3];
+
+  /* ============================================================
+     MANDALA
+  ============================================================ */
+  function mkMandala() {
+    const g = new THREE.Group();
+    // green ring
+    const tor = new THREE.Mesh(
+      new THREE.TorusGeometry(0.55, 0.025, 12, 64),
+      new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.3, metalness: 0.3 })
+    );
+    tor.rotation.x = Math.PI / 2; g.add(tor);
+
+    // 12 dots
+    const cols = [0xff0000,0xff8800,0xffff00,0x88ff00,0x00ff00,0x00ffff,
+                  0x0000ff,0x4400aa,0xff00ff,0xff0088,0x00ff88,0x8800ff];
+    const dGeo = new THREE.SphereGeometry(0.04, 12, 12);
+    cols.forEach((c, i) => {
+      const a = (i / 12) * Math.PI * 2;
+      const m = new THREE.Mesh(dGeo, new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.3 }));
+      m.position.set(Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55);
+      g.add(m);
+    });
+
+    // radial lines
+    const lm = new THREE.LineBasicMaterial({ color: 0x999999, transparent: true, opacity: 0.5 });
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55)
+        ]), lm));
+    }
+
+    // blue pentagram
+    const sm = new THREE.LineBasicMaterial({ color: 0x0000ff });
+    const sp = [];
+    for (let i = 0; i < 6; i++) {
+      const idx = (i * 2) % 5, a = (idx / 5) * Math.PI * 2 - Math.PI / 2;
+      sp.push(new THREE.Vector3(Math.cos(a) * 0.38, 0, Math.sin(a) * 0.38));
+    }
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(sp), sm));
+
+    // red triangle
+    const tp = [];
+    for (let i = 0; i <= 3; i++) {
+      const a = (i / 3) * Math.PI * 2 - Math.PI / 2;
+      tp.push(new THREE.Vector3(Math.cos(a) * 0.22, 0, Math.sin(a) * 0.22));
+    }
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(tp),
+      new THREE.LineBasicMaterial({ color: 0xff0000 })));
+
+    // white center
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.04, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 })));
+    return g;
+  }
+  const mandala = mkMandala();
+  hourglassGroup.add(mandala);
+
+  /* ============================================================
+     HAIR
+  ============================================================ */
+  function mkHair() {
+    const len = CH * 2 + DT * 2, seg = 64;
+    const geo = new THREE.CylinderGeometry(0.006, 0.006, len, 6, seg);
+    const ca = new Float32Array(geo.attributes.position.count * 3);
+    geo.setAttribute('color', new THREE.BufferAttribute(ca, 3));
+    const pa = geo.attributes.position, co = geo.attributes.color;
+    for (let i = 0; i < pa.count; i++) {
+      const t = (pa.getY(i) + len / 2) / len;
+      const b = 1.0 - t; // black at top, white at bottom
+      co.setXYZ(i, b, b, b);
+    }
+    return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true }));
+  }
+  const hair = mkHair();
+  hair.renderOrder = 5;
+  hourglassGroup.add(hair);
+
+  /* ============================================================
+     ★★★  SPHERE HALVES  ★★★
+  ============================================================ */
+
+  /*
+    Upper hemisphere: white (top) → blue (middle) → green carpet inside at equator, red ring at equator rim
+    Lower hemisphere: black (bottom) → cyan (middle) → magenta carpet inside at equator, yellow ring at equator rim
+
+    Animation: controlled by "Kula" slider.
+      slider=1 → fully open (halves separated, white bowl visible with hourglass)
+      slider=0 → fully closed (complete sphere)
+    Opening: upper half hinges back (rotates around X at equator),
+             lower half hinges forward (opposite direction)
+    When fully open, black half is hidden behind/under white half.
+  */
+
+  // -- Helper: quarter-sphere with outer+inner surfaces --
+  // phiStart/phiLen control which horizontal half (0..PI or PI..2PI)
+  function mkQuarterSphere(isUpper, phiStart, phiLen) {
+    const thetaStart = isUpper ? 0 : Math.PI / 2;
+    const thetaLen = Math.PI / 2;
+
+    // --- OUTER surface: solid white (upper) or black (lower) ---
+    const outerGeo = new THREE.SphereGeometry(SPHERE_R, 64, 32, phiStart, phiLen, thetaStart, thetaLen);
+    const outerMat = new THREE.MeshStandardMaterial({
+      color: isUpper ? 0xffffff : 0x111111,
+      roughness: 0.45, metalness: 0.08, side: THREE.FrontSide,
+    });
+    const outerMesh = new THREE.Mesh(outerGeo, outerMat);
+
+    // --- INNER surface: gradient colors ---
+    const innerGeo = new THREE.SphereGeometry(SPHERE_R * 0.998, 64, 32, phiStart, phiLen, thetaStart, thetaLen);
+    const ca = new Float32Array(innerGeo.attributes.position.count * 3);
+    innerGeo.setAttribute('color', new THREE.BufferAttribute(ca, 3));
+    const pa = innerGeo.attributes.position, co = innerGeo.attributes.color;
+
+    for (let i = 0; i < pa.count; i++) {
+      const y = pa.getY(i);
+      let t;
+      if (isUpper) { t = Math.max(0, Math.min(1, y / SPHERE_R)); }
+      else { t = Math.max(0, Math.min(1, -y / SPHERE_R)); }
+
+      let r, g, b;
+      if (isUpper) {
+        if (t > 0.5) {
+          const s = (t - 0.5) * 2;
+          r = s * 1.0 + (1 - s) * 0.15;
+          g = s * 1.0 + (1 - s) * 0.25;
+          b = s * 1.0 + (1 - s) * 0.95;
+        } else {
+          const s = t * 2;
+          r = s * 0.15 + (1 - s) * 0.05;
+          g = s * 0.25 + (1 - s) * 0.85;
+          b = s * 0.95 + (1 - s) * 0.15;
+        }
+      } else {
+        if (t > 0.5) {
+          const s = (t - 0.5) * 2;
+          r = (1 - s) * 0.0; g = (1 - s) * 0.9; b = (1 - s) * 0.9;
+        } else {
+          const s = t * 2;
+          r = (1 - s) * 0.95 + s * 0.0;
+          g = (1 - s) * 0.1 + s * 0.9;
+          b = (1 - s) * 0.85 + s * 0.9;
+        }
+      }
+      co.setXYZ(i, r, g, b);
+    }
+    const innerMat = new THREE.MeshStandardMaterial({
+      vertexColors: true, roughness: 0.45, metalness: 0.08, side: THREE.BackSide,
+    });
+    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+
+    const qGroup = new THREE.Group();
+    qGroup.add(outerMesh); qGroup.add(innerMesh);
+    return qGroup;
+  }
+
+  // -- Colored rings at equator edges (half-rings for quarters) --
+  function mkRing(color, y, radius) {
+    const geo = new THREE.TorusGeometry(radius, 0.06, 16, 80);
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.25, emissive: color, emissiveIntensity: 0.15 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.PI / 2;
+    mesh.position.y = y;
+    return mesh;
+  }
+
+  // -- Interior "carpet" disk --
+  function mkCarpet(color, y) {
+    const geo = new THREE.CircleGeometry(SPHERE_R * 0.97, 64);
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = y;
+    return mesh;
+  }
+
+  // === UPPER HALF: 2 quarters (front 0..PI, back PI..2PI) ===
+  const upperHalfGroup = new THREE.Group();
+  const upperQ1 = mkQuarterSphere(true, 0, Math.PI);          // front quarter — always visible
+  const upperQ2 = mkQuarterSphere(true, Math.PI, Math.PI);    // back quarter — toggleable
+  upperHalfGroup.add(upperQ1);
+  upperHalfGroup.add(upperQ2);
+  upperHalfGroup.add(mkCarpet(0x00cc00, 0.04));
+  upperHalfGroup.add(mkRing(0xff0000, 0.0, SPHERE_R));
+
+  // === LOWER HALF: 2 quarters (front 0..PI, back PI..2PI) ===
+  const lowerHalfGroup = new THREE.Group();
+  const lowerQ1 = mkQuarterSphere(false, 0, Math.PI);         // front quarter — toggleable
+  const lowerQ2 = mkQuarterSphere(false, Math.PI, Math.PI);   // back quarter — always visible
+  lowerHalfGroup.add(lowerQ1);
+  lowerHalfGroup.add(lowerQ2);
+  lowerHalfGroup.add(mkCarpet(0xdd00dd, -0.04));
+  lowerHalfGroup.add(mkRing(0xffff00, 0.0, SPHERE_R));
+
+  root.add(upperHalfGroup);
+  root.add(lowerHalfGroup);
+
+  // Toggle state
+  let upperQuarterHidden = false;
+  let lowerQuarterHidden = false;
+
+  /* ============================================================
+     ORBIT CONTROLS (manual)
+  ============================================================ */
+  let orbiting = false, orbitPrev = { x: 0, y: 0 };
+  let oaX = 0.4, oaY = 0.3, oDist = 8.0;
+
+  function updateCam() {
+    camera.position.set(
+      oDist * Math.sin(oaX) * Math.cos(oaY),
+      oDist * Math.sin(oaY),
+      oDist * Math.cos(oaX) * Math.cos(oaY)
+    );
+    camera.lookAt(0, 0, 0);
+  }
+  updateCam();
+
+  renderer.domElement.addEventListener('mousedown', e => {
+    orbiting = true; orbitPrev = { x: e.clientX, y: e.clientY };
+    document.body.classList.add('dragging');
+  });
+  addEventListener('mousemove', e => {
+    if (!orbiting) return;
+    oaX -= (e.clientX - orbitPrev.x) * 0.005;
+    oaY = Math.max(-1.4, Math.min(1.4, oaY + (e.clientY - orbitPrev.y) * 0.005));
+    orbitPrev = { x: e.clientX, y: e.clientY }; updateCam();
+  });
+  addEventListener('mouseup', () => { orbiting = false; document.body.classList.remove('dragging'); });
+  renderer.domElement.addEventListener('wheel', e => {
+    oDist = Math.max(3.5, Math.min(18, oDist + e.deltaY * 0.006)); updateCam();
+  });
+
+  let touchPrev = null;
+  renderer.domElement.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) touchPrev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  });
+  renderer.domElement.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && touchPrev) {
+      oaX -= (e.touches[0].clientX - touchPrev.x) * 0.005;
+      oaY = Math.max(-1.4, Math.min(1.4, oaY + (e.touches[0].clientY - touchPrev.y) * 0.005));
+      touchPrev = { x: e.touches[0].clientX, y: e.touches[0].clientY }; updateCam();
+    }
+  }, { passive: false });
+  renderer.domElement.addEventListener('touchend', () => touchPrev = null);
+
+  /* ============================================================
+     UI WIRING
+  ============================================================ */
+  let isPlaying = false, sandTime = 0, lastTs = 0, isFlipped = false;
+  const playBtn = document.getElementById('playBtn');
+  const foldSlider = document.getElementById('foldSlider');
+  const sphereSlider = document.getElementById('sphereSlider');
+  const rotateYSlider = document.getElementById('rotateYSlider');
+  const rotateXSlider = document.getElementById('rotateXSlider');
+  playBtn.onclick = () => { isPlaying = !isPlaying; playBtn.textContent = isPlaying ? '⏸' : '▶'; };
+
+  // Quarter transparency toggle
+  const quarterBtn = document.getElementById('quarterBtn');
+  let quartersTransparent = false;
+
+  function setQuarterTransparency(quarterGroup, transparent) {
+    quarterGroup.children.forEach((c, idx) => {
+      if (c.material) {
+        // idx 0 = outer mesh (white/black), idx 1 = inner mesh (gradient)
+        if (idx === 0) {
+          // Outer: make transparent or restore
+          c.material.transparent = true;
+          c.material.opacity = transparent ? 0.08 : 1.0;
+          c.material.depthWrite = !transparent;
+          c.material.needsUpdate = true;
+        }
+        // Inner gradient always stays visible
+      }
+    });
+  }
+
+  quarterBtn.onclick = () => {
+    quartersTransparent = !quartersTransparent;
+    quarterBtn.textContent = quartersTransparent ? '◕' : '◔';
+    // upperQ2 = back half of white hemisphere
+    // lowerQ1 = front half of black hemisphere
+    setQuarterTransparency(upperQ2, quartersTransparent);
+    setQuarterTransparency(lowerQ1, quartersTransparent);
+  };
+
+  const origTopY = topDisk.position.y, origBotY = bottomDisk.position.y;
+
+  /* ============================================================
+     ANIMATION
+  ============================================================ */
+  function animate(ts) {
+    requestAnimationFrame(animate);
+    const dt = lastTs ? (ts - lastTs) / 1000 : 0;
+    lastTs = ts;
+
+    // --- manual rotation of hourglass inside the sphere ---
+    hourglassGroup.rotation.y = parseFloat(rotateYSlider.value);
+    const manualX = parseFloat(rotateXSlider.value);
+
+    // --- sand ---
+    if (isPlaying) sandTime += dt;
+    let prog = (sandTime % CYCLE) / CYCLE;
+    const cyc = Math.floor(sandTime / CYCLE);
+    isFlipped = cyc % 2 === 1;
+    if (isFlipped) prog = 1 - prog;
+
+    const uS = Math.max(0.01, 1 - prog), lS = Math.max(0.01, prog);
+    upperSand.scale.set(uS, uS, uS);
+    upperSand.position.y = CH * 0.5 * uS + CH * (1 - uS) * 0.1;
+    lowerSand.scale.set(lS, lS, lS);
+    lowerSand.position.y = -CH * 0.5 * lS - CH * (1 - lS) * 0.1;
+    sandStream.material.opacity = (prog > 0.02 && prog < 0.98) ? 0.6 + 0.4 * Math.sin(ts * 0.008) : 0;
+    sandStream.visible = prog > 0.02 && prog < 0.98;
+
+    if (isPlaying) mandala.rotation.y += dt * (Math.PI * 2 / 20);
+
+    // --- fold ---
+    const fold = parseFloat(foldSlider.value);
+    const gsY = Math.max(0.001, 1 - fold * 0.98);
+    glass.scale.y = gsY;
+    topDisk.position.y = origTopY * (1 - fold) + (DT / 2) * fold;
+    bottomDisk.position.y = origBotY * (1 - fold) + (-DT / 2) * fold;
+    const sf = Math.max(0.01, 1 - fold);
+    upperSand.scale.y *= sf; lowerSand.scale.y *= sf;
+    upperSand.position.y *= (1 - fold); lowerSand.position.y *= (1 - fold);
+    sandStream.scale.y = sf;
+    hair.scale.y = gsY;
+    legs.forEach(lg => {
+      const d = lg.userData;
+      d.mesh.scale.y = Math.max(0.001, 1 - fold * 0.98);
+      const ch = d.legHeight * (1 - fold * 0.98);
+      d.topSphere.position.y = ch / 2;
+      d.bottomSphere.position.y = -ch / 2;
+    });
+    mandala.scale.set(1 + fold * 0.3, 1, 1 + fold * 0.3);
+
+    // flip on cycle + manual X tilt
+    if (isPlaying) {
+      const ft = isFlipped ? Math.PI : 0;
+      const diff = ft - hourglassGroup.rotation.x;
+      hourglassGroup.rotation.x += Math.abs(diff) > 0.01 ? diff * 3 * dt : 0;
+      if (Math.abs(diff) <= 0.01) hourglassGroup.rotation.x = ft;
+    } else {
+      hourglassGroup.rotation.x = manualX;
+    }
+
+    // --- ★ SPHERE OPEN/CLOSE ★ ---
+    // sphereSlider: 0 = closed sphere, 1 = fully open
+    const sOpen = parseFloat(sphereSlider.value);
+
+    /*
+      Opening mechanism:
+      - Upper (white) half rotates -90° around Z axis (hinges to the left)
+      - Lower (black) half rotates +90° around Z axis (hinges to the right)
+      - White half ends up as open bowl, black half swings behind it
+    */
+    const HALF_PI = Math.PI / 2;
+    upperHalfGroup.rotation.z = -sOpen * HALF_PI;
+    lowerHalfGroup.rotation.z = sOpen * HALF_PI;
+
+    // No Y offset needed — they hinge at equator
+    upperHalfGroup.position.y = 0;
+    lowerHalfGroup.position.y = 0;
+
+    // Fade lower half when mostly open so white dominates
+    const fadeStart = 0.6;
+    function setGroupOpacity(group, alpha) {
+      group.traverse(c => {
+        if (c.material) {
+          if (alpha < 1) { c.material.transparent = true; c.material.opacity = alpha; }
+          else { c.material.transparent = false; c.material.opacity = 1.0; }
+        }
+      });
+    }
+    if (sOpen > fadeStart) {
+      const fadeT = (sOpen - fadeStart) / (1 - fadeStart);
+      setGroupOpacity(lowerHalfGroup, Math.max(0, 1 - fadeT));
+    } else {
+      setGroupOpacity(lowerHalfGroup, 1.0);
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+
+  animate(0);
+})();
+</script>
+</body>
+</html>

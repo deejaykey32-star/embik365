@@ -44,7 +44,9 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     'ai-studio': 'https://widokinaraj.pl/grafika/aistudio',
     'pkg_gemini_solar_system': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_gemini_solar_system',
     'pkg_ai_1789593893001': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789593893001',
-    'pkg_ai_1789597375413': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789597375413'
+    'pkg_ai_1789597375413': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789597375413',
+    'klepsydra': 'https://widokinaraj.pl/klepsydra',
+    'symulacja': 'https://widokinaraj.pl/klepsydra'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');

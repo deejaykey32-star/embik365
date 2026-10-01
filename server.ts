@@ -60,6 +60,38 @@ app.use('/data', express.static(publicDataDir));
 app.use('/pliki', express.static(path.join(process.cwd(), 'public', 'pliki')));
 app.use('/src/pliki', (req, res) => res.redirect(301, `/pliki${req.url}`));
 
+// Serwowanie symulacji 3D klepsydry
+app.get(['/klepsydra', '/klepsydra/', '/klepsydra/index.html'], (req, res) => {
+  const filePath = path.join(process.cwd(), 'public', 'pliki', 'klepsydra-v2-4.html');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Nie znaleziono pliku klepsydry.');
+});
+
+// Obsługa przekierowań /z/:id oraz /z/klepsydra
+app.get('/z/:id', (req, res, next) => {
+  const id = req.params.id.toLowerCase();
+  if (id === 'klepsydra') {
+    return res.redirect(302, '/klepsydra');
+  }
+  const redirectsPath = path.join(process.cwd(), 'public', '_redirects');
+  if (fs.existsSync(redirectsPath)) {
+    const lines = fs.readFileSync(redirectsPath, 'utf-8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const parts = trimmed.split(/\s+/);
+      if (parts.length >= 2 && parts[0].toLowerCase() === `/z/${id}`) {
+        const statusCode = parseInt(parts[2] || '301', 10);
+        return res.redirect(statusCode, parts[1]);
+      }
+    }
+  }
+  next();
+});
+
 // Multer configuration for PDF, ePUB and DOCX uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -894,7 +926,14 @@ async function startServer() {
 
     // SPA index.html fallback for non-API/non-redirect routes in dev mode
     app.get('*', async (req, res, next) => {
-      if (req.path.startsWith('/api') || req.path.startsWith('/r/') || req.path === '/r') {
+      if (
+        req.path.startsWith('/api') ||
+        req.path.startsWith('/r/') || req.path === '/r' ||
+        req.path.startsWith('/z/') || req.path === '/z' ||
+        req.path.startsWith('/b/') || req.path === '/b' ||
+        req.path.startsWith('/w/') || req.path === '/w' ||
+        req.path === '/klepsydra' || req.path.startsWith('/klepsydra/')
+      ) {
         return next();
       }
       try {
@@ -911,7 +950,14 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api') || req.path.startsWith('/r/') || req.path === '/r') {
+      if (
+        req.path.startsWith('/api') ||
+        req.path.startsWith('/r/') || req.path === '/r' ||
+        req.path.startsWith('/z/') || req.path === '/z' ||
+        req.path.startsWith('/b/') || req.path === '/b' ||
+        req.path.startsWith('/w/') || req.path === '/w' ||
+        req.path === '/klepsydra' || req.path.startsWith('/klepsydra/')
+      ) {
         return next();
       }
       res.sendFile(path.join(distPath, 'index.html'));

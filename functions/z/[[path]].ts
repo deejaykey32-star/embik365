@@ -64,7 +64,13 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/49': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Generuj_pynn_animacj_202602091656.gif',
     '/z/50': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol2.gif',
     '/z/51': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol3.gif',
-    '/z/52': 'https://youtu.be/-GbWAqXosdo?si=WrUo0Vj8s1kwQvh-'
+    '/z/52': 'https://youtu.be/-GbWAqXosdo?si=WrUo0Vj8s1kwQvh-',
+    '/z/53': 'https://youtu.be/PeQeFT3hjMs?si=GtrUrPoej3IWi6pg',
+    '/z/54': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Obraz-milosierdzia-bozego-dla-swiata-calego--e3_zg6t.jpg',
+    '/z/55': 'https://youtu.be/CfadZa96V-s?si=2BSqZzlgVqe8k8uQ',
+    '/z/56': 'https://youtu.be/4bWamvu4luA?si=XORBGbGzFW1dZO_l',
+    '/z/57': 'https://wnr365.pages.dev/klepsydra',
+    '/z/klepsydra': '/klepsydra'
   };
 
   const target = redirectMap[pathKey];

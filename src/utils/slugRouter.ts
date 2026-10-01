@@ -274,7 +274,20 @@ export function parseUrlRoute(): ParsedRoute {
       if (slug === 'kody-qr' || slug === 'qr') {
         return { sectionId: 'wnr365', date: getTodayCycleDate(), subview: 'kody-qr' };
       }
+      if (slug === 'klepsydra' || slug === 'symulacja') {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/klepsydra');
+        }
+        return { sectionId: 'info365', date: getTodayCycleDate() };
+      }
       return { sectionId: 'rhz365', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'klepsydra') {
+      if (typeof window !== 'undefined') {
+        window.location.replace('/klepsydra/index.html');
+      }
+      return { sectionId: 'info365', date: getTodayCycleDate() };
     }
 
     if (parts[0] === 'z' && parts[1]) {
@@ -331,7 +344,13 @@ export function parseUrlRoute(): ParsedRoute {
         '49': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Generuj_pynn_animacj_202602091656.gif',
         '50': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol2.gif',
         '51': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol3.gif',
-        '52': 'https://youtu.be/-GbWAqXosdo?si=WrUo0Vj8s1kwQvh-'
+        '52': 'https://youtu.be/-GbWAqXosdo?si=WrUo0Vj8s1kwQvh-',
+        '53': 'https://youtu.be/PeQeFT3hjMs?si=GtrUrPoej3IWi6pg',
+        '54': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Obraz-milosierdzia-bozego-dla-swiata-calego--e3_zg6t.jpg',
+        '55': 'https://youtu.be/CfadZa96V-s?si=2BSqZzlgVqe8k8uQ',
+        '56': 'https://youtu.be/4bWamvu4luA?si=XORBGbGzFW1dZO_l',
+        '57': 'https://wnr365.pages.dev/klepsydra',
+        'klepsydra': '/klepsydra'
       };
 
       const targetUrl = zMap[zNum];
