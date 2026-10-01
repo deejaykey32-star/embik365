@@ -277,6 +277,70 @@ export function parseUrlRoute(): ParsedRoute {
       return { sectionId: 'rhz365', date: getTodayCycleDate() };
     }
 
+    if (parts[0] === 'z' && parts[1]) {
+      const zNum = parts[1].toLowerCase();
+      const zMap: Record<string, string> = {
+        '1': 'https://youtu.be/kFdLgWrUt10?si=MtS86vPE4ddts2Am',
+        '2': 'https://youtu.be/u3HeJFrO1T0?si=O17L_9HqsYDcnMhM',
+        '3': 'https://youtu.be/Tfk4P7T8fBI?si=cHR7r5WHtJNZeBxA',
+        '4': 'https://youtu.be/VbcLWGoP1I4?si=QwQaHUpxyTGSP-c5',
+        '5': 'https://youtu.be/JmKLT59cTIc?si=GQ35JNj00945b_ru',
+        '6': 'https://youtu.be/ruqyxb6NLHg?si=qZ58mr4lvRBGSGvU',
+        '7': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/jing-jang.jpg',
+        '8': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/RGB-model-1.jpg',
+        '9': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wszystko2.png',
+        '10': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wiosna.png',
+        '11': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/lato.png',
+        '12': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/jesien.png',
+        '13': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/zima.png',
+        '14': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wszystko2.png',
+        '15': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/diament2.png',
+        '16': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/nieskonczonosc.jpg',
+        '17': 'https://youtu.be/Nj5IK_nU4hs?si=YOhmdPemmhwC5CUO',
+        '18': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/farby-swiatlo.png',
+        '19': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wiosna2.png',
+        '20': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/lato2.png',
+        '21': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/jesien2.png',
+        '22': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/zima2.png',
+        '23': 'https://symulacja-rgb-zmiany.deejaykey32.workers.dev',
+        '24': 'https://youtu.be/8QKboVU6aCo?si=wSBxGyrEdFvqaRMR',
+        '25': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida.jpg',
+        '26': 'https://youtu.be/lKVgoT3JsRE?si=D-OmYREfEAVRgxeS',
+        '27': 'https://youtu.be/DXmNOQea3Ao?si=nmfqpcGUaHw8wfGj',
+        '28': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wszystko2.png',
+        '29': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida.jpg',
+        '30': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida-zielony.png',
+        '31': 'https://www.youtube.com/watch?v=l-vOVXNR-00&list=PLOrIokJN_wIc',
+        '32': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/znak.gif',
+        '33': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/gwiazda-dawida-zielony.png',
+        '34': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/prezentacja-RGB-CMY.png',
+        '35': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Jezus-i-piotr-z-kluczami.jpg',
+        '36': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/ombw.jpg',
+        '37': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/stworzenie-pieklo.jpg',
+        '38': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/wspolnota_ruch_szensztacki.jpg',
+        '39': 'https://youtu.be/BoohNb-BPPw?si=YRlYB6zSEXrYWwHM',
+        '40': 'https://youtu.be/a3fSfbKxOgo?si=wX2tLmzfeF2vToZM',
+        '41': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/tecza.png',
+        '42': 'https://www.youtube.com/watch?v=OwNvCpArm5E&list=PLcPaLNnBwMFQ&index=4',
+        '43': 'https://www.youtube.com/watch?v=zEQwkuKxcuQ',
+        '44': 'https://youtu.be/UVzD7WHOBUo?si=Xg-MMvb3Am-wVux0',
+        '45': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/medalik.jpg',
+        '46': 'https://www.youtube.com/watch?v=RbcUefsAnkw&list=PLzN0kNSY0xP60qNQEu56lM-xxelUROq59',
+        '47': 'https://youtu.be/pJEk5WbPZww?si=Z1HBc_Mx1SPCq5X2',
+        '48': 'https://www.youtube.com/watch?v=ra_A7JFrcQo&list=PLYkw_r77Ylneot8xKPw1ILrjQ19gsCEI_',
+        '49': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/Generuj_pynn_animacj_202602091656.gif',
+        '50': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol2.gif',
+        '51': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/refs/heads/main/public/pliki/symbol3.gif',
+        '52': 'https://youtu.be/-GbWAqXosdo?si=WrUo0Vj8s1kwQvh-'
+      };
+
+      const targetUrl = zMap[zNum];
+      if (targetUrl && typeof window !== 'undefined') {
+        window.location.href = targetUrl;
+      }
+      return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'grafika' };
+    }
+
     if (parts[0] === 'paczka' || parts[0] === 'paczki' || parts[0] === 'aistudio' || parts[0] === 'ai-studio') {
       const packageId = parts[1] || (parts[0].startsWith('pkg_') ? parts[0] : undefined);
       return { sectionId: 'grafika', date: getTodayCycleDate(), subview: 'aistudio', packageId };
