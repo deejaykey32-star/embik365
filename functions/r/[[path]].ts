@@ -11,8 +11,8 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  // Extract slug from path e.g. /r/pkg_ai_1789597375413 or //r/pkg_ai_1789597375413
-  const rawPath = url.pathname.replace(/^\/+/, ''); // e.g. "r/pkg_ai_1789597375413"
+  // Extract slug from path e.g. /r/1, /r/wstep, /r/koronka, /r/pkg_ai_1789597375413
+  const rawPath = url.pathname.replace(/^\/+/, ''); // e.g. "r/1"
   const slug = decodeURIComponent(rawPath.replace(/^r\/?/i, '').trim()).toLowerCase();
 
   const staticMap: Record<string, string> = {
@@ -50,6 +50,19 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
   let target = staticMap[slug] || url.searchParams.get('to');
 
   if (!target && slug) {
+    if (slug === 'wstep' || slug === 'intro') {
+      target = 'https://widokinaraj.pl/#rhz365/wstep';
+    } else if (slug === 'koronka') {
+      target = 'https://widokinaraj.pl/#rhz365/koronka';
+    } else {
+      const dayNum = parseInt(slug, 10);
+      if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 366) {
+        target = `https://widokinaraj.pl/#rhz365/dzien-${dayNum}`;
+      }
+    }
+  }
+
+  if (!target && slug) {
     try {
       const owner = env.GITHUB_OWNER || 'deejaykey32-star';
       const repo = env.GITHUB_REPO || 'embik365';
@@ -73,7 +86,7 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     } catch {}
   }
 
-  if (!target || target.includes('/r/pkg_ai_') || target.includes('/r/')) {
+  if (!target || target.includes('/r/pkg_ai_')) {
     target = 'https://widokinaraj.pl/grafika/aistudio';
   }
 

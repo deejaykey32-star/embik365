@@ -229,6 +229,19 @@ app.get('/r/:slug?', (req, res) => {
   let target = staticMap[slug] || (req.query.to ? req.query.to.toString() : '');
 
   if (!target && slug) {
+    if (slug === 'wstep' || slug === 'intro') {
+      target = 'https://widokinaraj.pl/#rhz365/wstep';
+    } else if (slug === 'koronka') {
+      target = 'https://widokinaraj.pl/#rhz365/koronka';
+    } else {
+      const dayNum = parseInt(slug, 10);
+      if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 366) {
+        target = `https://widokinaraj.pl/#rhz365/dzien-${dayNum}`;
+      }
+    }
+  }
+
+  if (!target && slug) {
     const data = getStoredData();
     if (Array.isArray(data.qrCodes)) {
       const match = data.qrCodes.find((q: any) =>
@@ -243,14 +256,36 @@ app.get('/r/:slug?', (req, res) => {
     }
   }
 
-  if (!target || target.includes('/r/pkg_ai_') || target.includes('/r/')) {
+  if (!target || target.includes('/r/pkg_ai_')) {
     target = 'https://widokinaraj.pl/grafika/aistudio';
   }
 
   return res.redirect(302, target);
 });
 
-// Short URL Direct Redirect Endpoint /z/:id (Reads public/_redirects dynamically)
+// Short URL Direct Redirect Endpoint /b/:day (Biblia QR codes e.g. /b/1..1460)
+app.get('/b/:day', (req, res) => {
+  const day = parseInt(req.params.day, 10);
+  if (!isNaN(day) && day >= 1 && day <= 1460) {
+    return res.redirect(302, `https://widokinaraj.pl/#biblia365/dzien-${day}`);
+  }
+  return res.redirect(302, 'https://widokinaraj.pl/#biblia365');
+});
+
+// Short URL Direct Redirect Endpoint /w/:day/:sub? (WnR365 QR codes e.g. /w/1/tekst, /w/1/yt)
+app.get('/w/:day/:sub?', (req, res) => {
+  const day = parseInt(req.params.day, 10);
+  const sub = (req.params.sub || 'tekst').toLowerCase();
+  if (!isNaN(day) && day >= 1 && day <= 366) {
+    if (sub === 'yt' || sub === 'youtube' || sub === 'audio') {
+      return res.redirect(302, `https://widokinaraj.pl/#wnr365/dzien-${day}/yt`);
+    }
+    return res.redirect(302, `https://widokinaraj.pl/#wnr365/dzien-${day}`);
+  }
+  return res.redirect(302, 'https://widokinaraj.pl/#wnr365');
+});
+
+// Short URL Direct Redirect Endpoint /z/:id (Reads public/_redirects dynamically with fallback to grafika)
 app.get('/z/:id', (req, res) => {
   const zKey = `/z/${req.params.id}`;
   try {
@@ -272,7 +307,7 @@ app.get('/z/:id', (req, res) => {
   } catch (e) {
     console.error('Error handling /z/:id redirect:', e);
   }
-  return res.status(404).send('Nie znaleziono przekierowania dla podanego kodu QR.');
+  return res.redirect(302, 'https://widokinaraj.pl/#grafika');
 });
 
 // URL Shortening API endpoint (clck.ru / is.gd with 0 ads, server-side fetch)
