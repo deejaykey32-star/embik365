@@ -90,6 +90,16 @@ app.get(['/piramidy3D', '/piramidy3D/', '/piramidy3d', '/piramidy3d/', '/piramid
   res.status(404).send('Nie znaleziono pliku piramid 3D.');
 });
 
+// Serwowanie symulacji Model 3D Ósemki (Chromatic Convergence)
+app.get(['/model-8', '/model-8/', '/model8', '/model8/', '/model-3d-8', '/model-3d-8/', '/model-8/index.html'], (req, res) => {
+  const filePath = path.join(process.cwd(), 'public', 'model-3d-8.html');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Nie znaleziono pliku modelu 3D.');
+});
+
 // Obsługa przekierowań /z/:id oraz /z/klepsydra
 app.get('/z/:id', (req, res, next) => {
   const id = req.params.id.toLowerCase();

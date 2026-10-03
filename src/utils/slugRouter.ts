@@ -292,6 +292,12 @@ export function parseUrlRoute(): ParsedRoute {
         }
         return { sectionId: 'info365', date: getTodayCycleDate() };
       }
+      if (slug === 'model-8' || slug === 'model8' || slug === 'model-3d-8') {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/model-8');
+        }
+        return { sectionId: 'info365', date: getTodayCycleDate() };
+      }
       return { sectionId: 'rhz365', date: getTodayCycleDate() };
     }
 
@@ -312,6 +318,13 @@ export function parseUrlRoute(): ParsedRoute {
     if (parts[0] === 'piramidy' || parts[0] === 'piramidy3d' || parts[0] === 'piramidy3D') {
       if (typeof window !== 'undefined') {
         window.location.replace('/piramidy3D');
+      }
+      return { sectionId: 'info365', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'model-8' || parts[0] === 'model8' || parts[0] === 'model-3d-8') {
+      if (typeof window !== 'undefined') {
+        window.location.replace('/model-8');
       }
       return { sectionId: 'info365', date: getTodayCycleDate() };
     }
@@ -378,12 +391,16 @@ export function parseUrlRoute(): ParsedRoute {
         '57': 'https://wnr365.pages.dev/klepsydra',
         '58': 'https://wnr365.pages.dev/klepsydra3D',
         '59': 'https://wnr365.pages.dev/piramidy3D',
+        '60': 'https://wnr365.pages.dev/model-8',
         'klepsydra': '/klepsydra',
         'klepsydra3d': '/klepsydra3D',
         'klepsydra3D': '/klepsydra3D',
         'piramidy': '/piramidy3D',
         'piramidy3d': '/piramidy3D',
-        'piramidy3D': '/piramidy3D'
+        'piramidy3D': '/piramidy3D',
+        'model-8': '/model-8',
+        'model8': '/model-8',
+        'model-3d-8': '/model-8'
       };
 
       const targetUrl = zMap[zNum];

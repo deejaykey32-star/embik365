@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model 3D - Chromatic Convergence (WebGL & Three.js)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #050505;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: grab;
+    }
+    #canvas-container:active {
+      cursor: grabbing;
+    }
+
+    /* Top Navigation Header */
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 20;
+    }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 10px #ffffff;
+    }
+    .title-text {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .header-pills {
+      display: flex;
+      gap: 16px;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+    }
+    @media (max-width: 640px) {
+      .header-pills { display: none; }
+    }
+
+    /* Floating Control HUD */
+    .hud-panel {
+      position: absolute;
+      top: 72px;
+      right: 20px;
+      width: 320px;
+      max-height: calc(100vh - 120px);
+      background: rgba(10, 10, 10, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 20px;
+      z-index: 10;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .hud-panel.hidden {
+      transform: translateX(360px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .section-title {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: rgba(255, 255, 255, 0.35);
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-style: italic;
+    }
+    .btn-group {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      flex: 1;
+      padding: 8px 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .btn.active {
+      background: #ffffff;
+      color: #050505;
+      font-weight: 600;
+      border-color: #ffffff;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .toggle-row input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      accent-color: #ffffff;
+    }
+    .slider-row {
+      margin-bottom: 16px;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 6px;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      accent-color: #ffffff;
+    }
+
+    /* Branch selector buttons */
+    .branch-btn {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .branch-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .branch-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #fff;
+      font-weight: 500;
+    }
+    .branch-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* Bottom Info Card */
+    #node-card {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      max-width: 380px;
+      background: rgba(10, 10, 10, 0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      padding: 16px 20px;
+      z-index: 10;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+      display: none;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .card-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #000;
+    }
+    .card-title {
+      font-size: 14px;
+      font-style: italic;
+      color: #fff;
+    }
+    .card-desc {
+      font-size: 11px;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 10px;
+    }
+    .card-coords {
+      font-family: monospace;
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.4);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 8px;
+    }
+
+    /* Watermark / HUD Badge */
+    .hud-badge {
+      position: absolute;
+      top: 72px;
+      left: 24px;
+      background: rgba(10, 10, 10, 0.75);
+      backdrop-filter: blur(8px);
+      padding: 8px 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 10px;
+      font-family: monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.7);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    /* HUD Toggle Button for Mobile / Clean View */
+    .hud-toggle-btn {
+      position: absolute;
+      top: 72px;
+      right: 20px;
+      z-index: 15;
+      background: rgba(15, 15, 15, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .hud-toggle-btn { display: block; }
+      .hud-panel { top: 120px; right: 10px; width: calc(100vw - 20px); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Header bar -->
+  <header>
+    <div class="header-title">
+      <div class="status-dot"></div>
+      <span class="title-text">Chromatic Convergence Model • WebGL & Three.js</span>
+    </div>
+    <div class="header-pills">
+      <span>Additive (RGB)</span>
+      <span>•</span>
+      <span>Subtractive (MCY)</span>
+      <span>•</span>
+      <span>Null Alpha</span>
+    </div>
+  </header>
+
+  <!-- Status Badge -->
+  <div class="hud-badge">
+    <div class="pulse-dot"></div>
+    <span>3D Vector Environment [ACTIVE]</span>
+  </div>
+
+  <button id="toggle-hud" class="hud-toggle-btn">Menu / Parametry</button>
+
+  <!-- 3D WebGL Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Selected Node Info Card -->
+  <div id="node-card">
+    <div class="card-header">
+      <div id="card-badge" class="card-badge"></div>
+      <div id="card-title" class="card-title"></div>
+    </div>
+    <p id="card-desc" class="card-desc"></p>
+    <div id="card-coords" class="card-coords"></div>
+  </div>
+
+  <!-- Controls Panel -->
+  <div id="hud-panel" class="hud-panel">
+    <div class="section-title">Krzywe Ósemek (Lemniskaty)</div>
+    <div class="btn-group">
+      <button class="btn active" data-type="lemniscate">Gładka</button>
+      <button class="btn" data-type="double_circle">Dwa Okręgi</button>
+      <button class="btn" data-type="none">Brak</button>
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-header">
+        <span>Grubość ósemek:</span>
+        <span id="thickness-val">0.035</span>
+      </div>
+      <input type="range" id="eight-thickness" min="0.01" max="0.10" step="0.005" value="0.035">
+    </div>
+
+    <div class="section-title">Filtrowanie Gałęzi</div>
+    <button class="branch-btn active" data-branch="all">
+      <span>Wszystkie Gałęzie (Pełny Model)</span>
+      <span class="branch-indicator" style="background:#fff"></span>
+    </button>
+    <button class="branch-btn" data-branch="0">
+      <span>Gałąź 1: Red → Magenta</span>
+      <span class="branch-indicator" style="background:#ef4444"></span>
+    </button>
+    <button class="branch-btn" data-branch="1">
+      <span>Gałąź 2: Blue → Cyan</span>
+      <span class="branch-indicator" style="background:#3b82f6"></span>
+    </button>
+    <button class="branch-btn" data-branch="2">
+      <span>Gałąź 3: Green → Yellow</span>
+      <span class="branch-indicator" style="background:#10b981"></span>
+    </button>
+
+    <div class="section-title" style="margin-top:16px;">Opcje Renderera</div>
+    <div class="toggle-row">
+      <label for="check-autorotate">Automatyczna rotacja</label>
+      <input type="checkbox" id="check-autorotate" checked>
+    </div>
+    <div class="slider-row">
+      <div class="slider-header">
+        <span>Prędkość obrotu:</span>
+        <span id="speed-val">0.8x</span>
+      </div>
+      <input type="range" id="rotate-speed" min="0.1" max="3.0" step="0.1" value="0.8">
+    </div>
+
+    <div class="toggle-row">
+      <label for="check-nodes">Wyświetlaj sfery</label>
+      <input type="checkbox" id="check-nodes" checked>
+    </div>
+    <div class="toggle-row">
+      <label for="check-edges">Wyświetlaj linie &amp; szkło</label>
+      <input type="checkbox" id="check-edges" checked>
+    </div>
+
+    <div class="btn-group" style="margin-top:16px;">
+      <button class="btn" id="btn-reset-cam" style="width:100%;">Resetuj Kamerę</button>
+    </div>
+  </div>
+
+  <!-- CDN Three.js and OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    // Node Definitions
+    const NODES = [
+      {
+        id: 'white',
+        namePl: 'Biała Kula (Wierzchołek)',
+        pos: [0, 4, 0],
+        color: '#ffffff',
+        size: 0.35,
+        level: 0,
+        desc: 'Pierwsza i najwyższa kula w strukturze. Reprezentuje czyste światło i jedność, z której wyłaniają się 3 białe linie rozbieżne.'
+      },
+      {
+        id: 'red',
+        namePl: 'Czerwona Kula (Poziom 1)',
+        pos: [2, 2, 0],
+        color: '#ef4444',
+        size: 0.28,
+        level: 1,
+        desc: 'Zwieńczenie 1. białej linii. Od niej biegnie szara linia zbiegająca się ku centrum.'
+      },
+      {
+        id: 'blue',
+        namePl: 'Niebieska Kula (Poziom 1)',
+        pos: [-1, 2, 1.732],
+        color: '#3b82f6',
+        size: 0.28,
+        level: 1,
+        desc: 'Zwieńczenie 2. białej linii. Od niej biegnie szara linia ku czarnemu centrum.'
+      },
+      {
+        id: 'green',
+        namePl: 'Zielona Kula (Poziom 1)',
+        pos: [-1, 2, -1.732],
+        color: '#10b981',
+        size: 0.28,
+        level: 1,
+        desc: 'Zwieńczenie 3. białej linii. Od niej biegnie szara linia ku czarnemu centrum.'
+      },
+      {
+        id: 'black',
+        namePl: 'Czarna Kula (Zjednoczenie)',
+        pos: [0, 0, 0],
+        color: '#0a0a0a',
+        size: 0.35,
+        level: 2,
+        desc: 'Centralny punkt figury. Tu zbiegają się 3 szare linie, a następnie wychodzą 3 czarne linie rozbieżne.'
+      },
+      {
+        id: 'magenta',
+        namePl: 'Kula Magenta (Poziom 3)',
+        pos: [2, -2, 0],
+        color: '#ec4899',
+        size: 0.28,
+        level: 3,
+        desc: 'Zwieńczenie 1. czarnej linii rozbieżnej (połączona z gałęzią Czerwoną). Od niej odchodzi linia o przejściu gradientowym.'
+      },
+      {
+        id: 'cyan',
+        namePl: 'Kula Cyan (Poziom 3)',
+        pos: [-1, -2, 1.732],
+        color: '#06b6d4',
+        size: 0.28,
+        level: 3,
+        desc: 'Zwieńczenie 2. czarnej linii rozbieżnej (połączona z gałęzią Niebieską). Od niej odchodzi linia o przejściu gradientowym.'
+      },
+      {
+        id: 'yellow',
+        namePl: 'Żółta Kula (Poziom 3)',
+        pos: [-1, -2, -1.732],
+        color: '#eab308',
+        size: 0.28,
+        level: 3,
+        desc: 'Zwieńczenie 3. czarnej linii rozbieżnej (połączona z gałęzią Zieloną). Od niej odchodzi linia o przejściu gradientowym.'
+      },
+      {
+        id: 'transparent',
+        namePl: 'Przezroczysta Kula (Baza)',
+        pos: [0, -4, 0],
+        color: '#e2e8f0',
+        size: 0.35,
+        level: 4,
+        desc: 'Najniższy punkt struktury. To tu zbiegają się 3 linie gradientowe, rozpuszczając formę w pełnej przezroczystości.'
+      }
+    ];
+
+    // State
+    const state = {
+      figureEightType: 'lemniscate',
+      eightThickness: 0.035,
+      selectedBranch: null,
+      autoRotate: true,
+      rotationSpeed: 0.8,
+      showNodes: true,
+      showEdges: true
+    };
+
+    // Scene Setup
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050505);
+    scene.fog = new THREE.FogExp2(0x050505, 0.04);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 2, 11);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI - 0.1;
+    controls.minDistance = 3;
+    controls.maxDistance = 25;
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.0);
+    dirLight1.position.set(6, 12, 8);
+    scene.add(dirLight1);
+
+    const rimLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    rimLight.position.set(-8, 6, -8);
+    scene.add(rimLight);
+
+    const dirLight2 = new THREE.DirectionalLight(0x3a3aff, 1.5);
+    dirLight2.position.set(-6, 2, -4);
+    scene.add(dirLight2);
+
+    const topLight = new THREE.PointLight(0xffffff, 3.5, 20);
+    topLight.position.set(0, 6, 0);
+    scene.add(topLight);
+
+    const bottomLight = new THREE.PointLight(0x00ffff, 2.5, 20);
+    bottomLight.position.set(0, -6, 0);
+    scene.add(bottomLight);
+
+    const sparkLight1 = new THREE.PointLight(0xffffff, 2.8, 15);
+    sparkLight1.position.set(5, 0, 6);
+    scene.add(sparkLight1);
+
+    const sparkLight2 = new THREE.PointLight(0xffffff, 2.8, 15);
+    sparkLight2.position.set(-5, 0, 6);
+    scene.add(sparkLight2);
+
+    // Subtle dark floor grid
+    const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x1a1a1a);
+    gridHelper.position.y = -4.5;
+    gridHelper.material.opacity = 0.25;
+    gridHelper.material.transparent = true;
+    scene.add(gridHelper);
+
+    // Groups
+    const nodesGroup = new THREE.Group();
+    const edgesGroup = new THREE.Group();
+    const eightsGroup = new THREE.Group();
+    scene.add(nodesGroup);
+    scene.add(edgesGroup);
+    scene.add(eightsGroup);
+
+    let clickableObjects = [];
+
+    // Helper: Cylinder between two 3D vectors
+    function createCylinderBetweenPoints(p1, p2, radius, material) {
+      const direction = new THREE.Vector3().subVectors(p2, p1);
+      const length = direction.length();
+      const geometry = new THREE.CylinderGeometry(radius, radius, length, 12);
+      const mesh = new THREE.Mesh(geometry, material);
+      const midpoint = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+      mesh.position.copy(midpoint);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+      return mesh;
+    }
+
+    // Rebuild Scene Elements
+    function rebuildScene() {
+      // Clear previous children
+      while (nodesGroup.children.length > 0) nodesGroup.remove(nodesGroup.children[0]);
+      while (edgesGroup.children.length > 0) edgesGroup.remove(edgesGroup.children[0]);
+      while (eightsGroup.children.length > 0) eightsGroup.remove(eightsGroup.children[0]);
+      clickableObjects = [];
+
+      // 1. Build Nodes (Spheres + Outer Glass Bubbles)
+      if (state.showNodes) {
+        NODES.forEach(node => {
+          let isDimmed = false;
+          if (state.selectedBranch !== null) {
+            if (node.level === 1 || node.level === 3) {
+              const nodeBranch = node.level === 1
+                ? (node.id === 'red' ? 0 : node.id === 'blue' ? 1 : 2)
+                : (node.id === 'magenta' ? 0 : node.id === 'cyan' ? 1 : 2);
+              if (nodeBranch !== state.selectedBranch) isDimmed = true;
+            }
+          }
+
+          let mat;
+          if (node.id === 'transparent') {
+            mat = new THREE.MeshPhysicalMaterial({
+              color: 0xe0f2fe,
+              transparent: true,
+              opacity: 0.45,
+              roughness: 0.05,
+              metalness: 0.4,
+              transmission: 0.95,
+              ior: 1.52,
+              thickness: 0.6,
+              clearcoat: 1.0,
+              depthWrite: false
+            });
+          } else if (node.id === 'black') {
+            mat = new THREE.MeshStandardMaterial({
+              color: 0x050505,
+              roughness: 0.04,
+              metalness: 0.95
+            });
+          } else if (node.id === 'white') {
+            mat = new THREE.MeshStandardMaterial({
+              color: 0xffffff,
+              emissive: 0xffffff,
+              emissiveIntensity: 0.6,
+              roughness: 0.08,
+              metalness: 0.2
+            });
+          } else {
+            const baseCol = new THREE.Color(node.color);
+            mat = new THREE.MeshStandardMaterial({
+              color: baseCol,
+              emissive: baseCol,
+              emissiveIntensity: isDimmed ? 0.05 : 0.3,
+              roughness: 0.12,
+              metalness: 0.45,
+              transparent: true,
+              opacity: isDimmed ? 0.25 : 1.0
+            });
+          }
+
+          const sphereGeo = new THREE.SphereGeometry(node.size, 32, 32);
+          const sphereMesh = new THREE.Mesh(sphereGeo, mat);
+          sphereMesh.position.set(...node.pos);
+          sphereMesh.userData = { node };
+          nodesGroup.add(sphereMesh);
+          clickableObjects.push(sphereMesh);
+
+          // Outer Glass Bubble
+          const bubbleColor = (node.id === 'white' || node.id === 'black' || node.id === 'transparent')
+            ? new THREE.Color(0xffffff)
+            : new THREE.Color(node.color).multiplyScalar(0.7).addScalar(0.3);
+
+          const glassBubbleMat = new THREE.MeshPhysicalMaterial({
+            color: bubbleColor,
+            transparent: true,
+            opacity: isDimmed ? 0.1 : 0.45,
+            roughness: 0.03,
+            metalness: 0.1,
+            transmission: 0.96,
+            ior: 1.54,
+            thickness: 0.22,
+            clearcoat: 1.0,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
+
+          const bubbleGeo = new THREE.SphereGeometry(node.size * 1.45, 32, 32);
+          const bubbleMesh = new THREE.Mesh(bubbleGeo, glassBubbleMat);
+          bubbleMesh.position.set(...node.pos);
+          bubbleMesh.userData = { node };
+          nodesGroup.add(bubbleMesh);
+          clickableObjects.push(bubbleMesh);
+        });
+      }
+
+      // 2. Build Lines / Edges (Thick Casing + Glass Tubes)
+      if (state.showEdges) {
+        const branchAngles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
+        const pWhite = new THREE.Vector3(0, 4, 0);
+        const pBlack = new THREE.Vector3(0, 0, 0);
+        const pTrans = new THREE.Vector3(0, -4, 0);
+
+        const rInner = 0.08;
+        const rOuter = 0.17;
+        const branchColorsList = [0xef4444, 0x3b82f6, 0x10b981]; // Red, Blue, Green
+        const bottomColorsList = [0xec4899, 0x06b6d4, 0xeab308]; // Magenta, Cyan, Yellow
+
+        branchAngles.forEach((theta, bIdx) => {
+          const isBranchDimmed = state.selectedBranch !== null && state.selectedBranch !== bIdx;
+          const opacity = isBranchDimmed ? 0.15 : 1.0;
+
+          const pL1 = new THREE.Vector3(2 * Math.cos(theta), 2, 2 * Math.sin(theta));
+          const pL3 = new THREE.Vector3(2 * Math.cos(theta), -2, 2 * Math.sin(theta));
+
+          const glassTopMat = new THREE.MeshPhysicalMaterial({
+            color: new THREE.Color(branchColorsList[bIdx]),
+            transparent: true,
+            opacity: isBranchDimmed ? 0.08 : 0.45,
+            roughness: 0.04,
+            metalness: 0.15,
+            transmission: 0.95,
+            ior: 1.52,
+            thickness: 0.15,
+            clearcoat: 1.0,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
+
+          const glassBottomMat = new THREE.MeshPhysicalMaterial({
+            color: new THREE.Color(bottomColorsList[bIdx]),
+            transparent: true,
+            opacity: isBranchDimmed ? 0.08 : 0.45,
+            roughness: 0.04,
+            metalness: 0.15,
+            transmission: 0.95,
+            ior: 1.52,
+            thickness: 0.15,
+            clearcoat: 1.0,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
+
+          // Edge 1: White to Level 1
+          const matWhite = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.45,
+            transparent: true,
+            opacity: opacity
+          });
+          edgesGroup.add(createCylinderBetweenPoints(pWhite, pL1, rInner, matWhite));
+          edgesGroup.add(createCylinderBetweenPoints(pWhite, pL1, rOuter, glassTopMat));
+
+          // Edge 2: Level 1 to Black (Gray metallic)
+          const matGray = new THREE.MeshStandardMaterial({
+            color: 0xb5b5b5,
+            roughness: 0.15,
+            metalness: 0.6,
+            transparent: true,
+            opacity: opacity
+          });
+          edgesGroup.add(createCylinderBetweenPoints(pL1, pBlack, rInner, matGray));
+          edgesGroup.add(createCylinderBetweenPoints(pL1, pBlack, rOuter, glassTopMat));
+
+          // Edge 3: Black to Level 3 (Black glossy)
+          const matBlack = new THREE.MeshStandardMaterial({
+            color: 0x1c1c1c,
+            roughness: 0.1,
+            metalness: 0.85,
+            transparent: true,
+            opacity: opacity
+          });
+          edgesGroup.add(createCylinderBetweenPoints(pBlack, pL3, rInner, matBlack));
+          edgesGroup.add(createCylinderBetweenPoints(pBlack, pL3, rOuter, glassBottomMat));
+
+          // Edge 4: Level 3 to Transparent (Shader gradient from black to transparent)
+          const gradientMat = new THREE.ShaderMaterial({
+            uniforms: {
+              color: { value: new THREE.Color(0x1c1c1c) },
+              opacityMultiplier: { value: opacity }
+            },
+            vertexShader: `
+              varying float vLocalY;
+              void main() {
+                vLocalY = position.y;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `,
+            fragmentShader: `
+              varying float vLocalY;
+              uniform vec3 color;
+              uniform float opacityMultiplier;
+              void main() {
+                float normOpacity = (vLocalY + 1.4142) / 2.8284;
+                normOpacity = clamp(normOpacity, 0.0, 1.0);
+                float finalOpacity = mix(0.12, 1.0, normOpacity);
+                gl_FragColor = vec4(color, finalOpacity * opacityMultiplier);
+              }
+            `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: false
+          });
+          edgesGroup.add(createCylinderBetweenPoints(pL3, pTrans, rInner, gradientMat));
+          edgesGroup.add(createCylinderBetweenPoints(pL3, pTrans, rOuter, glassBottomMat));
+        });
+      }
+
+      // 3. Build Figure-Eights (Trzy Ósemki)
+      if (state.figureEightType !== 'none') {
+        const branchAngles = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
+        const branchColors = [0xff4444, 0x4444ff, 0x44ff44]; // Upper: Red, Blue, Green
+        const bottomColors = [0xec4899, 0x06b6d4, 0xeab308]; // Lower: Magenta, Cyan, Yellow
+        const tubeRadius = state.eightThickness;
+
+        branchAngles.forEach((theta, bIdx) => {
+          if (state.selectedBranch !== null && state.selectedBranch !== bIdx) return;
+
+          const upperCol = branchColors[bIdx];
+          const lowerCol = bottomColors[bIdx];
+
+          if (state.figureEightType === 'lemniscate') {
+            const curvePoints = [];
+            const numSegments = 120;
+            for (let j = 0; j <= numSegments; j++) {
+              const t = (j / numSegments) * 2 * Math.PI;
+              const v = 4 * Math.sin(t);
+              const u = 2.3094 * Math.sin(2 * t);
+              const x = u * Math.cos(theta);
+              const y = v;
+              const z = u * Math.sin(theta);
+              curvePoints.push(new THREE.Vector3(x, y, z));
+            }
+            const curve = new THREE.CatmullRomCurve3(curvePoints, true);
+            const tubeGeo = new THREE.TubeGeometry(curve, 120, tubeRadius, 10, true);
+
+            const lemniscateMat = new THREE.ShaderMaterial({
+              uniforms: {
+                topColor: { value: new THREE.Color(upperCol) },
+                bottomColor: { value: new THREE.Color(lowerCol) },
+                emissiveIntensity: { value: 0.6 },
+                opacity: { value: 0.85 }
+              },
+              vertexShader: `
+                varying float vWorldY;
+                void main() {
+                  vWorldY = (modelMatrix * vec4(position, 1.0)).y;
+                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+              `,
+              fragmentShader: `
+                varying float vWorldY;
+                uniform vec3 topColor;
+                uniform vec3 bottomColor;
+                uniform float emissiveIntensity;
+                uniform float opacity;
+                void main() {
+                  float factor = (vWorldY + 4.0) / 8.0;
+                  factor = clamp(factor, 0.0, 1.0);
+                  vec3 finalColor = mix(bottomColor, topColor, factor);
+                  gl_FragColor = vec4(finalColor * (1.0 + emissiveIntensity * 0.4), opacity);
+                }
+              `,
+              transparent: true,
+              side: THREE.DoubleSide,
+              depthWrite: false
+            });
+
+            eightsGroup.add(new THREE.Mesh(tubeGeo, lemniscateMat));
+          } else if (state.figureEightType === 'double_circle') {
+            const numSegments = 80;
+            const matUpper = new THREE.MeshStandardMaterial({
+              color: upperCol,
+              emissive: upperCol,
+              emissiveIntensity: 0.6,
+              roughness: 0.1,
+              metalness: 0.5,
+              transparent: true,
+              opacity: 0.85
+            });
+            const matLower = new THREE.MeshStandardMaterial({
+              color: lowerCol,
+              emissive: lowerCol,
+              emissiveIntensity: 0.6,
+              roughness: 0.1,
+              metalness: 0.5,
+              transparent: true,
+              opacity: 0.85
+            });
+
+            // Upper circle
+            const upperPoints = [];
+            for (let j = 0; j <= numSegments; j++) {
+              const t = (j / numSegments) * 2 * Math.PI;
+              const v = 2 + 2 * Math.cos(t);
+              const u = 2 * Math.sin(t);
+              upperPoints.push(new THREE.Vector3(u * Math.cos(theta), v, u * Math.sin(theta)));
+            }
+            const upperCurve = new THREE.CatmullRomCurve3(upperPoints, true);
+            eightsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(upperCurve, 80, tubeRadius, 10, true), matUpper));
+
+            // Lower circle
+            const lowerPoints = [];
+            for (let j = 0; j <= numSegments; j++) {
+              const t = (j / numSegments) * 2 * Math.PI;
+              const v = -2 - 2 * Math.cos(t);
+              const u = 2 * Math.sin(t);
+              lowerPoints.push(new THREE.Vector3(u * Math.cos(theta), v, u * Math.sin(theta)));
+            }
+            const lowerCurve = new THREE.CatmullRomCurve3(lowerPoints, true);
+            eightsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(lowerCurve, 80, tubeRadius, 10, true), matLower));
+          }
+        });
+      }
+    }
+
+    rebuildScene();
+
+    // Raycaster for Node selection
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    renderer.domElement.addEventListener('click', (e) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(clickableObjects, true);
+
+      const card = document.getElementById('node-card');
+      if (intersects.length > 0) {
+        const obj = intersects[0].object;
+        if (obj.userData && obj.userData.node) {
+          const n = obj.userData.node;
+          document.getElementById('card-badge').style.backgroundColor = n.color;
+          document.getElementById('card-badge').textContent = n.level;
+          document.getElementById('card-title').textContent = n.namePl;
+          document.getElementById('card-desc').textContent = n.desc;
+          document.getElementById('card-coords').innerHTML = 
+            '<span>X: ' + n.pos[0].toFixed(2) + '</span>' +
+            '<span>Y: ' + n.pos[1].toFixed(2) + '</span>' +
+            '<span>Z: ' + n.pos[2].toFixed(2) + '</span>' +
+            '<span>POZIOM: ' + n.level + '</span>';
+          card.style.display = 'block';
+          return;
+        }
+      }
+      card.style.display = 'none';
+    });
+
+    // Animation Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      if (state.autoRotate) {
+        scene.rotation.y += 0.005 * state.rotationSpeed;
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Resize Handler
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // UI Listeners
+    document.querySelectorAll('.btn[data-type]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn[data-type]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.figureEightType = btn.dataset.type;
+        rebuildScene();
+      });
+    });
+
+    document.getElementById('eight-thickness').addEventListener('input', (e) => {
+      state.eightThickness = parseFloat(e.target.value);
+      document.getElementById('thickness-val').textContent = state.eightThickness.toFixed(3);
+      rebuildScene();
+    });
+
+    document.querySelectorAll('.branch-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.branch-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const b = btn.dataset.branch;
+        state.selectedBranch = b === 'all' ? null : parseInt(b, 10);
+        rebuildScene();
+      });
+    });
+
+    document.getElementById('check-autorotate').addEventListener('change', (e) => {
+      state.autoRotate = e.target.checked;
+    });
+
+    document.getElementById('rotate-speed').addEventListener('input', (e) => {
+      state.rotationSpeed = parseFloat(e.target.value);
+      document.getElementById('speed-val').textContent = state.rotationSpeed.toFixed(1) + 'x';
+    });
+
+    document.getElementById('check-nodes').addEventListener('change', (e) => {
+      state.showNodes = e.target.checked;
+      rebuildScene();
+    });
+
+    document.getElementById('check-edges').addEventListener('change', (e) => {
+      state.showEdges = e.target.checked;
+      rebuildScene();
+    });
+
+    document.getElementById('btn-reset-cam').addEventListener('click', () => {
+      camera.position.set(0, 2, 11);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    });
+
+    const toggleHudBtn = document.getElementById('toggle-hud');
+    const hudPanel = document.getElementById('hud-panel');
+    if (toggleHudBtn) {
+      toggleHudBtn.addEventListener('click', () => {
+        hudPanel.classList.toggle('hidden');
+      });
+    }
+  </script>
+</body>
+</html>
