@@ -60,16 +60,16 @@
 /z/59 https://wnr365.pages.dev/piramidy3D 301
 
 # Symulacja Klepsydry 3D oraz Podwójnej Piramidy (WebGL HTML)
-/klepsydra3D /symulacja-klepsydry-3d.html 200
-/klepsydra3d /symulacja-klepsydry-3d.html 200
-/klepsydra3D/ /symulacja-klepsydry-3d.html 200
-/klepsydra3d/ /symulacja-klepsydry-3d.html 200
-/piramidy3D /podwojna_piramida.html 200
-/piramidy3d /podwojna_piramida.html 200
-/piramidy3D/ /podwojna_piramida.html 200
-/piramidy3d/ /podwojna_piramida.html 200
-/piramidy /podwojna_piramida.html 200
-/piramidy/ /podwojna_piramida.html 200
+/klepsydra3D /klepsydra3D/index.html 200
+/klepsydra3d /klepsydra3D/index.html 200
+/klepsydra3D/ /klepsydra3D/index.html 200
+/klepsydra3d/ /klepsydra3D/index.html 200
+/piramidy3D /piramidy3D/index.html 200
+/piramidy3d /piramidy3D/index.html 200
+/piramidy3D/ /piramidy3D/index.html 200
+/piramidy3d/ /piramidy3D/index.html 200
+/piramidy /piramidy3D/index.html 200
+/piramidy/ /piramidy3D/index.html 200
 
 # Klepsydra — Misja Barw i Kolorów (Symulacja 3D HTML)
 /r/klepsydra /klepsydra 302
