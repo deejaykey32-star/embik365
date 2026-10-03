@@ -70,7 +70,12 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/55': 'https://youtu.be/CfadZa96V-s?si=2BSqZzlgVqe8k8uQ',
     '/z/56': 'https://youtu.be/4bWamvu4luA?si=XORBGbGzFW1dZO_l',
     '/z/57': 'https://wnr365.pages.dev/klepsydra',
-    '/z/klepsydra': '/klepsydra'
+    '/z/58': 'https://wnr365.pages.dev/klepsydra3D',
+    '/z/59': 'https://wnr365.pages.dev/piramidy3D',
+    '/z/klepsydra': '/klepsydra',
+    '/z/klepsydra3d': '/klepsydra3D',
+    '/z/piramidy': '/piramidy3D',
+    '/z/piramidy3d': '/piramidy3D'
   };
 
   const target = redirectMap[pathKey];

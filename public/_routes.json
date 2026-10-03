@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/api/*", "/r/*", "/b/*", "/w/*"],
-  "exclude": ["/assets/*", "/uploads/*", "/data/*", "/pliki/*", "/src/*", "/z/*", "/klepsydra*", "/favicon.ico"]
+  "exclude": ["/assets/*", "/uploads/*", "/data/*", "/pliki/*", "/src/*", "/z/*", "/klepsydra*", "/klepsydra3D*", "/klepsydra3d*", "/piramidy*", "/symulacja-klepsydry-3d.html", "/podwojna_piramida.html", "/favicon.ico"]
 }

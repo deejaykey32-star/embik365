@@ -70,6 +70,26 @@ app.get(['/klepsydra', '/klepsydra/', '/klepsydra/index.html'], (req, res) => {
   res.status(404).send('Nie znaleziono pliku klepsydry.');
 });
 
+// Serwowanie symulacji klepsydry 3D (nowa wersja)
+app.get(['/klepsydra3D', '/klepsydra3D/', '/klepsydra3d', '/klepsydra3d/', '/klepsydra3D/index.html'], (req, res) => {
+  const filePath = path.join(process.cwd(), 'public', 'symulacja-klepsydry-3d.html');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Nie znaleziono pliku symulacji klepsydry 3D.');
+});
+
+// Serwowanie symulacji podwójnej piramidy barwnej 3D
+app.get(['/piramidy3D', '/piramidy3D/', '/piramidy3d', '/piramidy3d/', '/piramidy', '/piramidy/', '/piramidy3D/index.html'], (req, res) => {
+  const filePath = path.join(process.cwd(), 'public', 'podwojna_piramida.html');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Nie znaleziono pliku piramid 3D.');
+});
+
 // Obsługa przekierowań /z/:id oraz /z/klepsydra
 app.get('/z/:id', (req, res, next) => {
   const id = req.params.id.toLowerCase();

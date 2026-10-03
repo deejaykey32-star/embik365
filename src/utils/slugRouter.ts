@@ -280,12 +280,38 @@ export function parseUrlRoute(): ParsedRoute {
         }
         return { sectionId: 'info365', date: getTodayCycleDate() };
       }
+      if (slug === 'klepsydra3d' || slug === 'klepsydra3D') {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/klepsydra3D');
+        }
+        return { sectionId: 'info365', date: getTodayCycleDate() };
+      }
+      if (slug === 'piramidy' || slug === 'piramidy3d' || slug === 'piramidy3D') {
+        if (typeof window !== 'undefined') {
+          window.location.replace('/piramidy3D');
+        }
+        return { sectionId: 'info365', date: getTodayCycleDate() };
+      }
       return { sectionId: 'rhz365', date: getTodayCycleDate() };
     }
 
     if (parts[0] === 'klepsydra') {
       if (typeof window !== 'undefined') {
         window.location.replace('/klepsydra/index.html');
+      }
+      return { sectionId: 'info365', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'klepsydra3d' || parts[0] === 'klepsydra3D') {
+      if (typeof window !== 'undefined') {
+        window.location.replace('/klepsydra3D');
+      }
+      return { sectionId: 'info365', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'piramidy' || parts[0] === 'piramidy3d' || parts[0] === 'piramidy3D') {
+      if (typeof window !== 'undefined') {
+        window.location.replace('/piramidy3D');
       }
       return { sectionId: 'info365', date: getTodayCycleDate() };
     }
@@ -350,7 +376,14 @@ export function parseUrlRoute(): ParsedRoute {
         '55': 'https://youtu.be/CfadZa96V-s?si=2BSqZzlgVqe8k8uQ',
         '56': 'https://youtu.be/4bWamvu4luA?si=XORBGbGzFW1dZO_l',
         '57': 'https://wnr365.pages.dev/klepsydra',
-        'klepsydra': '/klepsydra'
+        '58': 'https://wnr365.pages.dev/klepsydra3D',
+        '59': 'https://wnr365.pages.dev/piramidy3D',
+        'klepsydra': '/klepsydra',
+        'klepsydra3d': '/klepsydra3D',
+        'klepsydra3D': '/klepsydra3D',
+        'piramidy': '/piramidy3D',
+        'piramidy3d': '/piramidy3D',
+        'piramidy3D': '/piramidy3D'
       };
 
       const targetUrl = zMap[zNum];

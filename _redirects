@@ -56,10 +56,34 @@
 /z/55 https://youtu.be/CfadZa96V-s?si=2BSqZzlgVqe8k8uQ 301
 /z/56 https://youtu.be/4bWamvu4luA?si=XORBGbGzFW1dZO_l 301
 /z/57 https://wnr365.pages.dev/klepsydra 301
+/z/58 https://wnr365.pages.dev/klepsydra3D 301
+/z/59 https://wnr365.pages.dev/piramidy3D 301
+
+# Symulacja Klepsydry 3D oraz Podwójnej Piramidy (WebGL HTML)
+/klepsydra3D /symulacja-klepsydry-3d.html 200
+/klepsydra3d /symulacja-klepsydry-3d.html 200
+/klepsydra3D/ /symulacja-klepsydry-3d.html 200
+/klepsydra3d/ /symulacja-klepsydry-3d.html 200
+/piramidy3D /podwojna_piramida.html 200
+/piramidy3d /podwojna_piramida.html 200
+/piramidy3D/ /podwojna_piramida.html 200
+/piramidy3d/ /podwojna_piramida.html 200
+/piramidy /podwojna_piramida.html 200
+/piramidy/ /podwojna_piramida.html 200
 
 # Klepsydra — Misja Barw i Kolorów (Symulacja 3D HTML)
 /r/klepsydra /klepsydra 302
 /z/klepsydra /klepsydra 302
+/r/klepsydra3D /klepsydra3D 302
+/r/klepsydra3d /klepsydra3D 302
+/z/klepsydra3D /klepsydra3D 302
+/z/klepsydra3d /klepsydra3D 302
+/r/piramidy3D /piramidy3D 302
+/r/piramidy3d /piramidy3D 302
+/r/piramidy /piramidy3D 302
+/z/piramidy3D /piramidy3D 302
+/z/piramidy3d /piramidy3D 302
+/z/piramidy /piramidy3D 302
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

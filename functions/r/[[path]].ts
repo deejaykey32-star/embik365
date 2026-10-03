@@ -46,7 +46,12 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     'pkg_ai_1789593893001': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789593893001',
     'pkg_ai_1789597375413': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789597375413',
     'klepsydra': 'https://widokinaraj.pl/klepsydra',
-    'symulacja': 'https://widokinaraj.pl/klepsydra'
+    'symulacja': 'https://widokinaraj.pl/klepsydra',
+    'klepsydra3d': 'https://wnr365.pages.dev/klepsydra3D',
+    'klepsydra3D': 'https://wnr365.pages.dev/klepsydra3D',
+    'piramidy3d': 'https://wnr365.pages.dev/piramidy3D',
+    'piramidy3D': 'https://wnr365.pages.dev/piramidy3D',
+    'piramidy': 'https://wnr365.pages.dev/piramidy3D'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');
