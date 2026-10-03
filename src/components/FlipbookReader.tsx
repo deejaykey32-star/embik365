@@ -26,7 +26,8 @@ import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
 import { getRhzEntryForDay } from '../data/rhz365Data';
-import { getWnrEntryForDay } from '../data/wnr365Data';
+import { getWnrEntryForDay, getWnrStartPdfPageForDay, getWnrDayForPdfPage, getWnrPagePosition } from '../data/wnr365Data';
+import { getWnrPdfPage } from '../data/wnrPdfPagesData';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio, getSerialLectorState, saveSerialLectorState } from '../utils/audioLectorService';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
@@ -169,10 +170,12 @@ function getPdfPageData(
   selectedYear: 1 | 2 | 3 | 4 = 1
 ) {
   const isBiblia = sectionId === 'ebook_biblia' || sectionId === 'biblia365';
-  const maxP = isBiblia ? 365 : 1460;
+  const isWnr = sectionId === 'ebook_wnr' || sectionId === 'wnr365' || sectionId === 'wnr366';
+  const maxP = isBiblia ? 365 : (isWnr ? 1084 : 1460);
   const safeP = Math.max(1, Math.min(maxP, P));
-  const dayNum = isBiblia ? safeP : (Math.floor((safeP - 1) / 4) + 1); // 1 to 365
-  const subPage = isBiblia ? 1 : (((safeP - 1) % 4) + 1); // 1, 2, 3, or 4
+  const wnrPos = isWnr ? getWnrPagePosition(safeP) : null;
+  const dayNum = isBiblia ? safeP : (isWnr ? wnrPos!.dayNumber : (Math.floor((safeP - 1) / 4) + 1)); // 1 to 365
+  const subPage = isBiblia ? 1 : (isWnr ? wnrPos!.subPage : (((safeP - 1) % 4) + 1)); // 1, 2, 3, or 4
 
   const dateObj = getCycleDateByDayNumber(dayNum);
 
@@ -189,6 +192,7 @@ function getPdfPageData(
       pdfPageNumber: safeP,
       dayNumber: dayNum,
       subPage,
+      totalPagesForDay: 4,
       dateKey: dateObj.dateKey,
       displayDate: dateObj.displayDate,
       season: dateObj.season,
@@ -198,35 +202,32 @@ function getPdfPageData(
       prayer: `${rhz.gloryBe}\n\n${rhz.fatimaPrayer}`,
       mystery: rhz.stageTitle,
       intention: `Tajemnica ${rhz.mysteryIndex} Różańca Historii Zbawienia`,
-      fullContent: rhz.fullText
+      fullContent: rhz.fullText,
+      qrBadges: [] as any[]
     };
   }
 
-  // 2. Direct handling for WnR365 / ebook_wnr:
-  if (sectionId === 'ebook_wnr' || sectionId === 'wnr365' || sectionId === 'wnr366') {
-    const wnr = getWnrEntryForDay(dayNum);
-    const { chunk1, chunk2, chunk3, chunk4 } = splitContentIntoFourChunks(wnr.content);
-    let chunk = '';
-    if (subPage === 1) chunk = chunk1;
-    else if (subPage === 2) chunk = chunk2;
-    else if (subPage === 3) chunk = chunk3;
-    else chunk = chunk4;
+  // 2. Direct handling for WnR365 / ebook_wnr (1:1 with 1084 PDF pages):
+  if (isWnr && wnrPos) {
+    const pageData = getWnrPdfPage(safeP);
+    const wnr = getWnrEntryForDay(wnrPos.dayNumber);
 
     return {
       pdfPageNumber: safeP,
-      dayNumber: dayNum,
-      subPage,
-      dateKey: dateObj.dateKey,
-      displayDate: dateObj.displayDate,
+      dayNumber: wnrPos.dayNumber,
+      subPage: wnrPos.subPage,
+      totalPagesForDay: wnrPos.totalPages,
+      dateKey: pageData.dateKey,
+      displayDate: pageData.displayDate,
       season: dateObj.season,
-      title: wnr.title || `Widoki na Raj • Dzień ${dayNum}`,
-      subtitle: `${dateObj.displayDate} • Dzień ${dayNum} z 365`,
-      chunk,
+      title: pageData.title || wnr.title || `Widoki na Raj • Dzień ${wnrPos.dayNumber}`,
+      subtitle: `${pageData.displayDate} • Dzień ${wnrPos.dayNumber} z 365 (Strona PDF ${safeP} z 1084)`,
+      chunk: pageData.text || '',
       prayer: '',
       mystery: '',
       intention: '',
-      fullContent: wnr.content,
-      qrBadges: wnr.qrBadges
+      fullContent: wnr.content || pageData.fullContent,
+      qrBadges: (pageData.qrBadges as any[]) || []
     };
   }
 
@@ -237,6 +238,7 @@ function getPdfPageData(
       pdfPageNumber: safeP,
       dayNumber: dayNum,
       subPage: 1,
+      totalPagesForDay: 1,
       dateKey: dateObj.dateKey,
       displayDate: dateObj.displayDate,
       season: dateObj.season,
@@ -246,7 +248,8 @@ function getPdfPageData(
       prayer: '',
       mystery: '',
       intention: '',
-      fullContent: bibliaEntry.content
+      fullContent: bibliaEntry.content,
+      qrBadges: [] as any[]
     };
   }
 
@@ -272,6 +275,7 @@ function getPdfPageData(
     pdfPageNumber: safeP,
     dayNumber: dayNum,
     subPage,
+    totalPagesForDay: 4,
     dateKey: dateObj.dateKey,
     displayDate: dateObj.displayDate,
     season: dateObj.season,
@@ -281,7 +285,8 @@ function getPdfPageData(
     prayer: entryObj.prayer,
     mystery: entryObj.mystery,
     intention: entryObj.intention,
-    fullContent: entryObj.content
+    fullContent: entryObj.content,
+    qrBadges: [] as any[]
   };
 }
 
@@ -357,9 +362,9 @@ export const FlipbookReader: React.FC<Props> = ({
     url: '/pdf/!WnR365 - całość poprawiana 17.09.2026.pdf',
     size: 5655100,
     sectionId: 'ebook_wnr',
-    title: 'Księga Widoki na Raj (WnR365) - Pełny PDF 1:1',
-    description: 'Najnowszy plik PDF książki z dnia 17.09.2026.',
-    uploadedAt: '2026-09-17T12:00:00.000Z'
+    title: 'Widoki na Raj (WnR365) – Druk KDP Amazon & E-book (PDF 1:1)',
+    description: 'Oficjalny plik PDF książki WnR365 (1084 strony, format A5/6x9, marginesy KDP, kody QR /z/1-/z/61). Gotowy do publikacji w Amazon KDP i do czytnika.',
+    uploadedAt: '2026-10-03T12:00:00.000Z'
   };
 
   const defaultRhzPdf: UploadedPdf = {
@@ -391,8 +396,6 @@ export const FlipbookReader: React.FC<Props> = ({
       ? defaultRhzPdf
       : null
   );
-
-
 
   // Save current reading position and layout mode to localStorage
   useEffect(() => {
@@ -430,11 +433,39 @@ export const FlipbookReader: React.FC<Props> = ({
   };
 
   const isBibliaSection = section.id === 'ebook_biblia' || section.id === 'biblia365';
-  const maxBookPages = isBibliaSection ? 365 : 1460;
+  const isWnrSection = section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366';
+  const maxBookPages = isBibliaSection ? 365 : (isWnrSection ? 1084 : 1460);
+
+  // Sync reading position when currentDate changes from outside (calendar, navigation)
+  useEffect(() => {
+    if (isWnrSection) {
+      const currentDayOfPage = getWnrDayForPdfPage(currentPageNum);
+      if (currentDayOfPage !== currentDate.dayNumber) {
+        setCurrentPageNum(getWnrStartPdfPageForDay(currentDate.dayNumber));
+      }
+    } else if (isBibliaSection) {
+      if (currentPageNum !== currentDate.dayNumber) {
+        setCurrentPageNum(currentDate.dayNumber);
+      }
+    } else {
+      const currentDayOfPage = Math.floor((currentPageNum - 1) / 4) + 1;
+      if (currentDayOfPage !== currentDate.dayNumber) {
+        setCurrentPageNum((currentDate.dayNumber - 1) * 4 + 1);
+      }
+    }
+  }, [currentDate.dayNumber, isWnrSection, isBibliaSection]);
+
+  // Ensure reading position doesn't exceed book bounds when switching sections
+  useEffect(() => {
+    setCurrentPageNum(prev => {
+      if (prev > maxBookPages) return 1;
+      return prev;
+    });
+  }, [maxBookPages, section.id]);
 
   // Calculate 1:1 PDF Page numbers for left and right pages in spread mode
   const leftPdfPageNum = currentPageNum % 2 === 0 ? Math.max(1, currentPageNum - 1) : currentPageNum;
-  const rightPdfPageNum = leftPdfPageNum + 1;
+  const rightPdfPageNum = Math.min(maxBookPages, leftPdfPageNum + 1);
 
   const leftPageData = getPdfPageData(leftPdfPageNum, section.id, currentDate, entry, customEntries, selectedYear);
   const rightPageData = getPdfPageData(rightPdfPageNum, section.id, currentDate, entry, customEntries, selectedYear);
@@ -545,7 +576,14 @@ export const FlipbookReader: React.FC<Props> = ({
     const step = layoutMode === 'single' ? 1 : 2;
     const nextPos = Math.min(maxBookPages, currentPageNum + step);
     setCurrentPageNum(nextPos);
-    const newDayNum = isBibliaSection ? nextPos : (Math.floor((nextPos - 1) / 4) + 1);
+    let newDayNum = 1;
+    if (isBibliaSection) {
+      newDayNum = nextPos;
+    } else if (isWnrSection) {
+      newDayNum = getWnrDayForPdfPage(nextPos);
+    } else {
+      newDayNum = Math.floor((nextPos - 1) / 4) + 1;
+    }
     onSelectDate(getCycleDateByDayNumber(newDayNum));
 
     setFlipDirection('next');
@@ -563,7 +601,14 @@ export const FlipbookReader: React.FC<Props> = ({
     const step = layoutMode === 'single' ? 1 : 2;
     const prevPos = Math.max(1, currentPageNum - step);
     setCurrentPageNum(prevPos);
-    const newDayNum = isBibliaSection ? prevPos : (Math.floor((prevPos - 1) / 4) + 1);
+    let newDayNum = 1;
+    if (isBibliaSection) {
+      newDayNum = prevPos;
+    } else if (isWnrSection) {
+      newDayNum = getWnrDayForPdfPage(prevPos);
+    } else {
+      newDayNum = Math.floor((prevPos - 1) / 4) + 1;
+    }
     onSelectDate(getCycleDateByDayNumber(newDayNum));
 
     setFlipDirection('prev');
@@ -842,7 +887,7 @@ export const FlipbookReader: React.FC<Props> = ({
         );
       }
 
-      if (section.id !== 'ebook_biblia' && section.id !== 'biblia365') {
+      if (section.id !== 'ebook_biblia' && section.id !== 'biblia365' && !isWnrSection) {
         // Elegant 1:1 Title Cover Page in Text View (Format A5)
         return (
           <div className="flex flex-col h-full justify-between items-center text-center p-4 sm:p-6 bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-black dark:to-amber-950/10 rounded-2xl border-2 border-amber-600/30 shadow-inner my-auto overflow-hidden select-none flex-1">
@@ -901,46 +946,57 @@ export const FlipbookReader: React.FC<Props> = ({
           )}
         </div>
 
-        {data.subPage === 4 && data.qrBadges && data.qrBadges.length > 0 && (
+        {data.qrBadges && data.qrBadges.length > 0 && (
           <div className="mt-2 space-y-1.5 shrink-0">
-            {data.qrBadges.map((badge, bIdx) => (
-              <div key={bIdx} className="p-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 flex items-center justify-between gap-2.5 text-xs">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <img src={badge.image} alt={badge.title} className="w-10 h-10 object-contain rounded-lg border border-amber-500/20 bg-white shrink-0 p-0.5 shadow-xs" />
-                  <div className="overflow-hidden text-left">
-                    <div className="font-bold text-[10px] truncate text-[#2f271f] dark:text-white">
-                      {badge.title}
-                    </div>
-                    <div className="text-[9px] font-mono text-amber-800 dark:text-amber-300 truncate">
-                      {badge.shortUrl || badge.url}
+            {data.qrBadges.map((badge: any, bIdx: number) => {
+              const bImg = badge.imagePath || badge.image;
+              const bUrl = badge.targetUrl || badge.url || badge.shortUrl || badge.link;
+              const bId = badge.codeId || badge.id || (bIdx + 1);
+              return (
+                <div key={bIdx} className="p-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 flex items-center justify-between gap-2.5 text-xs">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    {bImg && (
+                      <img src={bImg} alt={badge.title} className="w-10 h-10 object-contain rounded-lg border border-amber-500/20 bg-white shrink-0 p-0.5 shadow-xs" />
+                    )}
+                    <div className="overflow-hidden text-left">
+                      <div className="font-bold text-[10px] truncate text-[#2f271f] dark:text-white">
+                        {badge.title}
+                      </div>
+                      <div className="text-[9px] font-mono text-amber-800 dark:text-amber-300 truncate">
+                        {bUrl}
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {bUrl && (
+                      <a
+                        href={bUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold transition-colors"
+                      >
+                        Otwórz
+                      </a>
+                    )}
+                    {bImg && (
+                      <a
+                        href={bImg}
+                        download={`qr_z${bId}.png`}
+                        onClick={e => e.stopPropagation()}
+                        className="px-2 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 text-[10px] font-medium transition-colors"
+                      >
+                        PNG
+                      </a>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <a
-                    href={badge.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold transition-colors"
-                  >
-                    Otwórz
-                  </a>
-                  <a
-                    href={badge.image}
-                    download={`qr_z${badge.id}.png`}
-                    onClick={e => e.stopPropagation()}
-                    className="px-2 py-1 rounded-lg bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 text-[10px] font-medium transition-colors"
-                  >
-                    PNG
-                  </a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {data.subPage === 4 && (
+        {((!isWnrSection && data.subPage === 4) || (isWnrSection && data.subPage === (data.totalPagesForDay || 1) && (!data.qrBadges || data.qrBadges.length === 0))) && (
           <div className="mt-2 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between gap-3 text-xs shrink-0">
             {(() => {
               const qrItem = getQrCodeForSection(section.id, section.name);
@@ -1010,7 +1066,7 @@ export const FlipbookReader: React.FC<Props> = ({
               </span>
             </div>
             <p className="text-xs text-[#716152] dark:text-[#94a3b8] font-serif-book">
-              {section.shortTitle} • Dzień {singlePageData.dayNumber} z 365 (Strona PDF {currentPageNum} / 1460)
+              {section.shortTitle} • Dzień {singlePageData.dayNumber} z 365 (Strona PDF {currentPageNum} / {maxBookPages})
             </p>
           </div>
         </div>
@@ -1259,7 +1315,7 @@ export const FlipbookReader: React.FC<Props> = ({
         {/* Next page arrow button (right) */}
         <button
           onClick={handleTurnNext}
-          disabled={currentPageNum >= 1460}
+          disabled={currentPageNum >= maxBookPages}
           id="btn-flip-right"
           className="absolute right-0 sm:-right-4 z-40 p-2.5 sm:p-3 rounded-full bg-[#35281e]/90 dark:bg-amber-600/90 text-white shadow-2xl hover:bg-[#4d3b2e] dark:hover:bg-amber-500 active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer border border-amber-500/30"
           title="Przewróć kartkę w prawo (Następna strona A5)"
@@ -1304,7 +1360,7 @@ export const FlipbookReader: React.FC<Props> = ({
                         {section.shortTitle}
                       </span>
                       <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                        Strona PDF {currentPageNum} z 1460 (A5)
+                        Strona PDF {currentPageNum} z {maxBookPages} (A5)
                       </span>
                     </div>
 
@@ -1334,7 +1390,7 @@ export const FlipbookReader: React.FC<Props> = ({
                             e.stopPropagation();
                             handleTurnNext();
                           }}
-                          disabled={currentPageNum >= 1460}
+                          disabled={currentPageNum >= maxBookPages}
                           className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
                           title="Następna strona"
                         >
@@ -1368,7 +1424,7 @@ export const FlipbookReader: React.FC<Props> = ({
                           {section.shortTitle}
                         </span>
                         <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                          Strona PDF {leftPdfPageNum} z 1460 (A5)
+                          Strona PDF {leftPdfPageNum} z {maxBookPages} (A5)
                         </span>
                       </div>
 
@@ -1418,7 +1474,7 @@ export const FlipbookReader: React.FC<Props> = ({
                       {/* Right page header */}
                       <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between shrink-0">
                         <span className="font-serif-book text-xs italic font-bold text-amber-800 dark:text-amber-300">
-                          Strona PDF {rightPdfPageNum} z 1460 (A5)
+                          Strona PDF {rightPdfPageNum} z {maxBookPages} (A5)
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="font-heading-cinzel text-xs font-bold text-[#7a6755] dark:text-white">
@@ -1453,7 +1509,7 @@ export const FlipbookReader: React.FC<Props> = ({
                               e.stopPropagation();
                               handleTurnNext();
                             }}
-                            disabled={currentPageNum >= 1460}
+                            disabled={currentPageNum >= maxBookPages}
                             className="p-1 hover:text-[#2c2016] dark:hover:text-white disabled:opacity-30 cursor-pointer"
                             title="Następna karta"
                           >
@@ -1519,25 +1575,29 @@ export const FlipbookReader: React.FC<Props> = ({
           </span>
         </div>
 
-        {/* 1460 PDF Pages Slider */}
+        {/* PDF Pages Slider */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono">Str. 1</span>
           <input
             type="range"
             min="1"
-            max="1460"
+            max={maxBookPages}
             step="1"
             value={currentPageNum}
             onChange={(e) => {
               const pNum = parseInt(e.target.value, 10);
               setCurrentPageNum(pNum);
-              const newDayNum = Math.floor((pNum - 1) / 4) + 1;
+              const newDayNum = isBibliaSection
+                ? pNum
+                : isWnrSection
+                ? getWnrDayForPdfPage(pNum)
+                : Math.floor((pNum - 1) / 4) + 1;
               onSelectDate(getCycleDateByDayNumber(newDayNum));
             }}
             className="w-36 sm:w-56 accent-[#8c572b] dark:accent-amber-500 cursor-pointer"
           />
           <span className="text-xs text-[#716152] dark:text-[#94a3b8] font-mono font-bold text-amber-800 dark:text-amber-400">
-            {currentPageNum === 1 ? 'Strona Tytułowa 1' : `Strona PDF ${currentPageNum}`} / 1460
+            {currentPageNum === 1 ? 'Strona Tytułowa 1' : `Strona PDF ${currentPageNum}`} / {maxBookPages}
           </span>
         </div>
       </div>
@@ -1565,7 +1625,11 @@ export const FlipbookReader: React.FC<Props> = ({
               {CYCLE_DAYS.map((d) => {
                 const isCurrent = d.dayNumber === singlePageData.dayNumber;
                 const isMarked = bookmarkedDays.includes(d.dayNumber);
-                const dPdfNum = (d.dayNumber - 1) * 4 + 1;
+                const dPdfNum = isBibliaSection
+                  ? d.dayNumber
+                  : isWnrSection
+                  ? getWnrStartPdfPageForDay(d.dayNumber)
+                  : ((d.dayNumber - 1) * 4 + 1);
 
                 return (
                   <button
@@ -1620,7 +1684,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   {section.name} • Czytnik E-Reader A5 (Pełny Ekran)
                 </h3>
                 <p className="text-[11px] text-amber-300 font-serif-book">
-                  {singlePageData.displayDate} • Dzień {singlePageData.dayNumber} z 365 (Strona PDF {currentPageNum} z 1460)
+                  {singlePageData.displayDate} • Dzień {singlePageData.dayNumber} z 365 (Strona PDF {currentPageNum} z {maxBookPages})
                 </p>
               </div>
             </div>
@@ -1663,7 +1727,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
               <button
                 onClick={handleTurnNext}
-                disabled={currentPageNum >= 1460}
+                disabled={currentPageNum >= maxBookPages}
                 className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-30 cursor-pointer"
               >
                 Następna strona <ChevronRight className="w-4 h-4" />
@@ -1694,7 +1758,7 @@ export const FlipbookReader: React.FC<Props> = ({
                   <>
                     <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
                       <span>{section.shortTitle}</span>
-                      <span>Strona PDF {currentPageNum} z 1460 (A5)</span>
+                      <span>Strona PDF {currentPageNum} z {maxBookPages} (A5)</span>
                     </div>
 
                     <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden">
@@ -1720,7 +1784,7 @@ export const FlipbookReader: React.FC<Props> = ({
                     <>
                       <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold uppercase tracking-widest shrink-0">
                         <span>{section.shortTitle}</span>
-                        <span>Strona PDF {leftPdfPageNum} z 1460 (A5)</span>
+                        <span>Strona PDF {leftPdfPageNum} z {maxBookPages} (A5)</span>
                       </div>
 
                       <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden">
@@ -1745,7 +1809,7 @@ export const FlipbookReader: React.FC<Props> = ({
                     <>
                       <div className="border-b border-black/10 dark:border-white/20 pb-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 font-bold shrink-0">
                         <span>Dzień {rightPageData.dayNumber} z 365</span>
-                        <span>Strona PDF {rightPdfPageNum} z 1460 (A5)</span>
+                        <span>Strona PDF {rightPdfPageNum} z {maxBookPages} (A5)</span>
                       </div>
 
                       <div className="my-auto py-1 flex-1 flex flex-col justify-between overflow-hidden">

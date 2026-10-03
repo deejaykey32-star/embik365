@@ -508,10 +508,11 @@ export async function generatePodPdf(
     if (badgesToEmbed && badgesToEmbed.length > 0) {
       for (const badge of badgesToEmbed) {
         let badgeDataUrl: string | null = null;
-        if (badge.image) {
-          badgeDataUrl = await fetchQrImageBase64(badge.image);
+        const imgPath = (badge as any).imagePath || (badge as any).image;
+        if (imgPath) {
+          badgeDataUrl = await fetchQrImageBase64(imgPath);
         }
-        const targetUrl = (badge as any).url || (badge as any).link || (badge as any).shortUrl || 'https://wnr365.pages.dev';
+        const targetUrl = (badge as any).targetUrl || (badge as any).url || (badge as any).link || (badge as any).shortUrl || 'https://embik.pl';
         if (!badgeDataUrl) {
           try {
             badgeDataUrl = await QRCode.toDataURL(targetUrl, { width: 300, margin: 1 });
@@ -747,7 +748,7 @@ export async function generatePodDocx(
           </w:p>
           <w:p>
             <w:pPr><w:spacing w:after="160"/><w:jc w:val="left"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="20"/><w:color w:val="1D4ED8"/></w:rPr><w:t>Odnośnik: ${escapeXml((badge as any).link || (badge as any).url || (badge as any).shortUrl || '')}</w:t></w:r>
+            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="20"/><w:color w:val="1D4ED8"/></w:rPr><w:t>Odnośnik: ${escapeXml((badge as any).targetUrl || (badge as any).link || (badge as any).url || (badge as any).shortUrl || '')}</w:t></w:r>
           </w:p>
         `;
       }
@@ -1020,13 +1021,15 @@ p.first {
     const qrMaterialsHtml = badgesToEmbed.length > 0 ? `
     <div style="margin-top: 2em; padding: 1em; border: 1px solid #d97706; background-color: #fffbeb; border-radius: 6px;">
       <h3 style="color: #92400e; font-size: 1.1em; margin-bottom: 0.8em; text-align: center;">Materiały Dodatkowe i Kody QR (Wersja 1:1)</h3>
-      ${badgesToEmbed.map((b: any) => `
+      ${badgesToEmbed.map((b: any) => {
+        const bTarget = b.targetUrl || b.link || b.url || b.shortUrl || '';
+        return `
         <div style="margin-bottom: 1em; padding-bottom: 0.8em; border-bottom: 1px dashed #fcd34d; text-align: center;">
           <p style="font-weight: bold; margin-bottom: 0.2em;">${escapeXml(b.title)}</p>
           ${b.subtitle ? `<p style="font-size: 0.85em; color: #4b5563; margin-bottom: 0.4em;">${escapeXml(b.subtitle)}</p>` : ''}
-          <p style="text-indent: 0;"><a href="${b.link || b.url || b.shortUrl || ''}" style="color: #b45309; font-weight: bold; text-decoration: underline;">Otwórz materiał: ${escapeXml(b.link || b.url || b.shortUrl || '')}</a></p>
-        </div>
-      `).join('')}
+          <p style="text-indent: 0;"><a href="${bTarget}" style="color: #b45309; font-weight: bold; text-decoration: underline;">Otwórz materiał: ${escapeXml(bTarget)}</a></p>
+        </div>`;
+      }).join('')}
     </div>` : '';
 
     const onlineQrHtml = `

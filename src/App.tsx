@@ -133,15 +133,27 @@ export default function App() {
   const DEFAULT_SYSTEM_UPLOADS: UploadedPdf[] = [
     {
       id: 'pdf-wnr365-full',
-      filename: '1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-      originalName: '_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
+      filename: '!WnR365 - całość poprawiana 17.09.2026.pdf',
+      originalName: '!WnR365 - całość poprawiana 17.09.2026.pdf',
       format: 'pdf',
-      url: '/uploads/1789322144113-_WnR365_poprawiany-Calosc_Ksiega_A5_-_ca_o___-_13.09.2026.pdf',
-      size: 4358441,
+      url: '/pdf/!WnR365 - całość poprawiana 17.09.2026.pdf',
+      size: 5655100,
       sectionId: 'ebook_wnr',
-      title: 'Widoki na Raj (WnR365) - Pełny PDF 1:1',
-      description: 'Zaimportowany przez administratora pełny plik PDF książki.',
-      uploadedAt: '2026-09-13T12:00:00.000Z'
+      title: 'Widoki na Raj (WnR365) – Druk KDP Amazon & E-book (PDF 1:1)',
+      description: 'Oficjalny plik PDF książki WnR365 (1084 strony, format A5/6x9, marginesy KDP, kody QR /z/1-/z/61). Gotowy do publikacji w Amazon KDP i do pobrania.',
+      uploadedAt: '2026-10-03T12:00:00.000Z'
+    },
+    {
+      id: 'pdf-rhz365-full',
+      filename: '!RHZ365 - gotowy i poprawiony 17.09.2026.pdf',
+      originalName: '!RHZ365 - gotowy i poprawiony 17.09.2026.pdf',
+      format: 'pdf',
+      url: '/pdf/!RHZ365 - gotowy i poprawiony 17.09.2026.pdf',
+      size: 2123083,
+      sectionId: 'ebook_rhz',
+      title: 'Księga Różaniec Historii Zbawienia (RHZ365) – Pełny PDF 1:1',
+      description: 'Oficjalny plik PDF książki RHZ365 (1460 stron, format A5, 175 tajemnic).',
+      uploadedAt: '2026-09-17T12:00:00.000Z'
     }
   ];
 
