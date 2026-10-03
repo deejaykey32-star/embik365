@@ -561,21 +561,39 @@
           disk.receiveShadow = true;
           group.add(disk);
 
-          // Circle inscribed in base
+          // Circle color: vibrant blue on white top base, bright gold on black bottom base
           const circleColor = isTop ? 0x0284c7 : 0xfacc15;
-          const ringMat = new THREE.MeshBasicMaterial({ color: circleColor, side: THREE.DoubleSide });
-          const ringGeo = new THREE.RingGeometry(BASE_RADIUS * 0.72, BASE_RADIUS * 0.78, 64);
-          const ring = new THREE.Mesh(ringGeo, ringMat);
-          ring.rotation.x = -Math.PI / 2;
-          ring.position.y = (isTop ? -1 : 1) * (DISK_THICKNESS / 2 + 0.002);
-          group.add(ring);
 
-          // Central Dot
-          const dotGeo = new THREE.CircleGeometry(0.12, 32);
-          const dot = new THREE.Mesh(dotGeo, ringMat);
-          dot.rotation.x = -Math.PI / 2;
-          dot.position.y = ring.position.y;
-          group.add(dot);
+          // Helper to create inscribed ring and central dot
+          function addInscribedRingAndDot(yPos) {
+            const ringMat = new THREE.MeshBasicMaterial({
+              color: circleColor,
+              side: THREE.DoubleSide,
+              polygonOffset: true,
+              polygonOffsetFactor: -2,
+              polygonOffsetUnits: -2
+            });
+            const ringGeo = new THREE.RingGeometry(BASE_RADIUS * 0.68, BASE_RADIUS * 0.78, 64);
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.y = yPos;
+            group.add(ring);
+
+            // Central Dot
+            const dotGeo = new THREE.CircleGeometry(0.13, 32);
+            const dot = new THREE.Mesh(dotGeo, ringMat);
+            dot.rotation.x = -Math.PI / 2;
+            dot.position.y = yPos;
+            group.add(dot);
+          }
+
+          // Outer face (prominently visible from outside, especially on collapsed hourglass!)
+          const outerY = (isTop ? 1 : -1) * (DISK_THICKNESS / 2 + 0.003);
+          addInscribedRingAndDot(outerY);
+
+          // Inner face (visible through glass when hourglass is expanded)
+          const innerY = (isTop ? -1 : 1) * (DISK_THICKNESS / 2 + 0.003);
+          addInscribedRingAndDot(innerY);
 
           return group;
         }
@@ -636,8 +654,8 @@
           pillarGroups.push({ group });
         });
 
-        // Central Gradient Line (od czarnej u góry do białej na dole w środku klepsydry)
-        const centerLineHeight = (BULB_HEIGHT + DISK_THICKNESS * 0.5) * 2;
+        // Central Gradient Line (od czarnej u góry do białej na dole w środku klepsydry, przebija podstawy)
+        const centerLineHeight = (BULB_HEIGHT + DISK_THICKNESS) * 2 + 0.35;
         const centerLineGeo = new THREE.CylinderGeometry(0.024, 0.024, centerLineHeight, 24, 64);
         const clCount = centerLineGeo.attributes.position.count;
         const clColors = new Float32Array(clCount * 3);
