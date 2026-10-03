@@ -74,6 +74,7 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/59': 'https://wnr365.pages.dev/piramidy3D',
     '/z/60': 'https://wnr365.pages.dev/model-8',
     '/z/61': 'https://wnr365.pages.dev/siec',
+    '/z/62': 'https://codepen.io/Aledom/full/emZXYjJ',
     '/z/klepsydra': '/klepsydra',
     '/z/klepsydra3d': '/klepsydra3D',
     '/z/piramidy': '/piramidy3D',

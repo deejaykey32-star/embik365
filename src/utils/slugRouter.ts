@@ -406,6 +406,7 @@ export function parseUrlRoute(): ParsedRoute {
         '59': 'https://wnr365.pages.dev/piramidy3D',
         '60': 'https://wnr365.pages.dev/model-8',
         '61': 'https://wnr365.pages.dev/siec',
+        '62': 'https://codepen.io/Aledom/full/emZXYjJ',
         'klepsydra': '/klepsydra',
         'klepsydra3d': '/klepsydra3D',
         'klepsydra3D': '/klepsydra3D',

@@ -60,8 +60,11 @@
 /z/59 https://wnr365.pages.dev/piramidy3D 301
 /z/60 https://wnr365.pages.dev/model-8 301
 /z/61 https://wnr365.pages.dev/siec 301
+/z/62 https://codepen.io/Aledom/full/emZXYjJ 301
 
-# Symulacja Klepsydry 3D oraz Podwójnej Piramidy (WebGL HTML)
+# Symulacje 3D (WebGL HTML)
+/klepsydra /klepsydra/index.html 200
+/klepsydra/ /klepsydra/index.html 200
 /klepsydra3D /klepsydra3D/index.html 200
 /klepsydra3d /klepsydra3D/index.html 200
 /klepsydra3D/ /klepsydra3D/index.html 200
@@ -72,20 +75,16 @@
 /piramidy3d/ /piramidy3D/index.html 200
 /piramidy /piramidy3D/index.html 200
 /piramidy/ /piramidy3D/index.html 200
-
-# Symulacja Model 3D Ósemki - Chromatic Convergence
 /model-8 /model-8/index.html 200
 /model-8/ /model-8/index.html 200
 /model8 /model-8/index.html 200
 /model8/ /model-8/index.html 200
 /model-3d-8 /model-8/index.html 200
 /model-3d-8/ /model-8/index.html 200
-
-# Symulacja Sieć Wizjonerska (WebGL HTML)
 /siec /siec/index.html 200
 /siec/ /siec/index.html 200
 
-# Klepsydra — Misja Barw i Kolorów (Symulacja 3D HTML)
+# Skróty aliasów /r/ i /z/ dla symulacji
 /r/klepsydra /klepsydra 302
 /z/klepsydra /klepsydra 302
 /r/klepsydra3D /klepsydra3D 302
