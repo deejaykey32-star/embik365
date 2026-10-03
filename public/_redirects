@@ -59,6 +59,7 @@
 /z/58 https://wnr365.pages.dev/klepsydra3D 301
 /z/59 https://wnr365.pages.dev/piramidy3D 301
 /z/60 https://wnr365.pages.dev/model-8 301
+/z/61 https://wnr365.pages.dev/siec 301
 
 # Symulacja Klepsydry 3D oraz Podwójnej Piramidy (WebGL HTML)
 /klepsydra3D /klepsydra3D/index.html 200
@@ -80,6 +81,10 @@
 /model-3d-8 /model-8/index.html 200
 /model-3d-8/ /model-8/index.html 200
 
+# Symulacja Sieć Wizjonerska (WebGL HTML)
+/siec /siec/index.html 200
+/siec/ /siec/index.html 200
+
 # Klepsydra — Misja Barw i Kolorów (Symulacja 3D HTML)
 /r/klepsydra /klepsydra 302
 /z/klepsydra /klepsydra 302
@@ -97,6 +102,8 @@
 /r/model8 /model-8 302
 /z/model-8 /model-8 302
 /z/model8 /model-8 302
+/r/siec /siec 302
+/z/siec /siec 302
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

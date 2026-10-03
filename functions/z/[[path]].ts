@@ -73,12 +73,14 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/58': 'https://wnr365.pages.dev/klepsydra3D',
     '/z/59': 'https://wnr365.pages.dev/piramidy3D',
     '/z/60': 'https://wnr365.pages.dev/model-8',
+    '/z/61': 'https://wnr365.pages.dev/siec',
     '/z/klepsydra': '/klepsydra',
     '/z/klepsydra3d': '/klepsydra3D',
     '/z/piramidy': '/piramidy3D',
     '/z/piramidy3d': '/piramidy3D',
     '/z/model-8': '/model-8',
-    '/z/model8': '/model-8'
+    '/z/model8': '/model-8',
+    '/z/siec': '/siec'
   };
 
   const target = redirectMap[pathKey];

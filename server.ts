@@ -100,6 +100,16 @@ app.get(['/model-8', '/model-8/', '/model8', '/model8/', '/model-3d-8', '/model-
   res.status(404).send('Nie znaleziono pliku modelu 3D.');
 });
 
+// Serwowanie symulacji Sieć Wizjonerska 3D
+app.get(['/siec', '/siec/', '/siec/index.html'], (req, res) => {
+  const filePath = path.join(process.cwd(), 'public', 'siec.html');
+  if (fs.existsSync(filePath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.sendFile(filePath);
+  }
+  res.status(404).send('Nie znaleziono pliku sieci.');
+});
+
 // Obsługa przekierowań /z/:id oraz /z/klepsydra
 app.get('/z/:id', (req, res, next) => {
   const id = req.params.id.toLowerCase();

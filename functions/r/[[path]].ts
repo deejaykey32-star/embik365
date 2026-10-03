@@ -54,7 +54,8 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     'piramidy': 'https://wnr365.pages.dev/piramidy3D',
     'model-8': 'https://wnr365.pages.dev/model-8',
     'model8': 'https://wnr365.pages.dev/model-8',
-    'model-3d-8': 'https://wnr365.pages.dev/model-8'
+    'model-3d-8': 'https://wnr365.pages.dev/model-8',
+    'siec': 'https://wnr365.pages.dev/siec'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');

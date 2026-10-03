@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sieć Wizjonerska – Trójwymiarowa Symulacja WebGL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0F0F0F;
+      color: #E0E0E0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .font-serif {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .app-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #0F0F0F;
+    }
+    header {
+      height: 64px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+      background: #0F0F0F;
+      z-index: 10;
+    }
+    @media (min-width: 768px) {
+      header {
+        height: 80px;
+        padding: 0 40px;
+      }
+    }
+    .header-title-box {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .header-title {
+      font-style: italic;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+    @media (min-width: 768px) {
+      .header-title {
+        font-size: 2.25rem;
+      }
+    }
+    .header-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      opacity: 0.4;
+    }
+    .header-metrics {
+      display: none;
+      gap: 40px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    @media (min-width: 768px) {
+      .header-metrics {
+        display: flex;
+      }
+    }
+    .metric-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .metric-label {
+      opacity: 0.4;
+      font-size: 9px;
+    }
+    .metric-value-green {
+      color: #00FF41;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    @media (min-width: 768px) {
+      main {
+        flex-direction: row;
+      }
+    }
+    aside {
+      width: 100%;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background: #0F0F0F;
+      z-index: 5;
+      overflow-y: auto;
+    }
+    @media (min-width: 768px) {
+      aside {
+        width: 320px;
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 36px;
+      }
+    }
+    .info-card {
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background-color: rgba(255, 255, 255, 0.02);
+      border-radius: 2px;
+      margin-bottom: 24px;
+    }
+    .info-title {
+      font-size: 1.25rem;
+      font-style: italic;
+      margin-bottom: 14px;
+      color: #ffffff;
+    }
+    .info-item {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #A3A3A3;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+    .dot-white {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      opacity: 0.8;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+      flex-shrink: 0;
+    }
+    .dot-black {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #000000;
+      border: 1px solid #525252;
+      flex-shrink: 0;
+    }
+    .control-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 14px;
+      opacity: 0.6;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ctrl-btn {
+      width: 100%;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.25);
+      color: #E0E0E0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
+    .ctrl-btn:active {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(1px);
+    }
+    .ctrl-arrow {
+      opacity: 0.3;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .ctrl-btn:hover .ctrl-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+    .badge-standalone {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 4px 8px;
+      font-size: 9px;
+      border: 1px solid rgba(0, 255, 65, 0.25);
+      color: #00FF41;
+      background: rgba(0, 255, 65, 0.05);
+      letter-spacing: 0.1em;
+      border-radius: 2px;
+    }
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      background-color: #0A0A0A;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    #canvas-container.grabbing {
+      cursor: grabbing;
+    }
+    footer {
+      height: 44px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      opacity: 0.4;
+      flex-shrink: 0;
+      background: #0F0F0F;
+    }
+    @media (min-width: 768px) {
+      footer {
+        padding: 0 40px;
+        height: 48px;
+      }
+    }
+    #crosshair-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      pointer-events: none;
+      font-size: 10px;
+      opacity: 0.4;
+      background: rgba(0,0,0,0.5);
+      padding: 6px 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="header-title-box">
+        <h1 class="header-title font-serif">Sieć Wizjonerska</h1>
+        <span class="header-tag font-mono">v.1.00-WebGL-Standalone</span>
+      </div>
+      <div class="header-metrics font-mono">
+        <div class="metric-col">
+          <span class="metric-label">Status</span>
+          <span class="metric-value-green">● Operational</span>
+        </div>
+        <div class="metric-col">
+          <span class="metric-label">Grid Nodes</span>
+          <span>225 Total (15×15)</span>
+        </div>
+        <div class="metric-col">
+          <span class="metric-label">Renderer</span>
+          <span>Three.js WebGL</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <aside>
+        <div>
+          <div class="info-card">
+            <h4 class="info-title font-serif">Instrukcje interakcji</h4>
+            <div class="info-item">
+              <span class="dot-white"></span>
+              <span>Przeciągnij w górę – świetlista biel</span>
+            </div>
+            <div class="info-item">
+              <span class="dot-black"></span>
+              <span>Przeciągnij w dół – głęboka czerń</span>
+            </div>
+            <div class="info-item" style="margin-top: 14px; opacity: 0.7; font-size: 11px;">
+              <span>Dotknij kuli i pociągnij – elastyczna sieć pociąga za sobą sąsiadujące punkty. Obracaj widok przeciągając tło.</span>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="control-label font-mono">Kontrola Modelu</h3>
+            <div class="btn-group font-mono">
+              <button id="btn-reset" class="ctrl-btn">
+                <span>Resetuj krystalizację</span>
+                <span class="ctrl-arrow">→</span>
+              </button>
+              <button id="btn-randomize" class="ctrl-btn">
+                <span>Entropia (Losowo)</span>
+                <span class="ctrl-arrow">→</span>
+              </button>
+              <button id="btn-wave" class="ctrl-btn">
+                <span>Częstotliwość fali</span>
+                <span class="ctrl-arrow">→</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="badge-standalone font-mono">
+            Plik 1:1 Samodzielny WebGL
+          </div>
+        </div>
+
+        <div style="margin-top: 24px;" class="font-mono" style="font-size: 9px; opacity: 0.3; letter-spacing: 0.2em;">
+          0x73706865726573_STANDALONE
+        </div>
+      </aside>
+
+      <section id="canvas-container">
+        <div id="crosshair-indicator" class="font-mono">
+          <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#00FF41;"></span>
+          <span id="node-info">Dotknij kuli, aby manipulować</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="font-mono">
+      <div>Oś Y – Jasność przestrzenna</div>
+      <div>2026 AI_Studio • Standalone Three.js</div>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      // Configuration
+      var WIDTH = 15;
+      var DEPTH = 15;
+      var SPACING = 1.5;
+      var MAX_HEIGHT = 5;
+      var DRAG_SENSITIVITY = 0.05;
+      var SIGMA = 3.5;
+      var numNodes = WIDTH * DEPTH;
+
+      // Base coordinate setup
+      var basePositions = new Float32Array(numNodes * 3);
+      var indices = [];
+      var offX = ((WIDTH - 1) * SPACING) / 2;
+      var offZ = ((DEPTH - 1) * SPACING) / 2;
+
+      for (var i = 0; i < DEPTH; i++) {
+        for (var j = 0; j < WIDTH; j++) {
+          var index = i * WIDTH + j;
+          basePositions[index * 3] = j * SPACING - offX;
+          basePositions[index * 3 + 1] = 0;
+          basePositions[index * 3 + 2] = i * SPACING - offZ;
+
+          if (j < WIDTH - 1) indices.push(index, index + 1);
+          if (i < DEPTH - 1) indices.push(index, index + WIDTH);
+        }
+      }
+
+      // Elevation tracking arrays
+      var targetYs = new Float32Array(numNodes);
+      var currentYs = new Float32Array(numNodes);
+
+      // Setup Three.js Scene, Camera, Renderer
+      var container = document.getElementById('canvas-container');
+      var nodeInfo = document.getElementById('node-info');
+
+      var scene = new THREE.Scene();
+      scene.background = new THREE.Color('#0A0A0A');
+      scene.fog = new THREE.Fog('#0A0A0A', 15, 60);
+
+      var camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 10, 25);
+
+      var renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+
+      var controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enablePan = true;
+      controls.enableZoom = true;
+      controls.minDistance = 10;
+      controls.maxDistance = 50;
+      controls.maxPolarAngle = Math.PI / 1.5;
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      // Lighting
+      var ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+      scene.add(ambientLight);
+
+      var dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
+      dirLight.position.set(10, 30, 10);
+      scene.add(dirLight);
+
+      var pointLight = new THREE.PointLight(0xffffff, 0.5);
+      pointLight.position.set(-10, -5, -10);
+      scene.add(pointLight);
+
+      // Spheres: InstancedMesh
+      var sphereGeometry = new THREE.SphereGeometry(0.35, 32, 32);
+      var sphereMaterial = new THREE.MeshStandardMaterial({
+        roughness: 0.3,
+        metalness: 0.1
+      });
+
+      var instancedMesh = new THREE.InstancedMesh(sphereGeometry, sphereMaterial, numNodes);
+      instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      
+      // Initialize colors for instances
+      var initialColors = new Float32Array(numNodes * 3).fill(0.5);
+      instancedMesh.instanceColor = new THREE.InstancedBufferAttribute(initialColors, 3);
+      scene.add(instancedMesh);
+
+      // Connecting lines: LineSegments
+      var lineGeometry = new THREE.BufferGeometry();
+      var linePositions = new Float32Array(basePositions);
+      var lineColors = new Float32Array(numNodes * 3).fill(0.5);
+
+      lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+      lineGeometry.setAttribute('color', new THREE.BufferAttribute(lineColors, 3));
+      lineGeometry.setIndex(indices);
+
+      var lineMaterial = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.65,
+        linewidth: 2
+      });
+
+      var lineSegments = new THREE.LineSegments(lineGeometry, lineMaterial);
+      scene.add(lineSegments);
+
+      // Reusable Three objects
+      var tempMatrix = new THREE.Matrix4();
+      var tempColor = new THREE.Color();
+      var raycaster = new THREE.Raycaster();
+      var pointer = new THREE.Vector2();
+
+      // Dragging State
+      var dragState = {
+        active: false,
+        id: null,
+        startMouseY: 0,
+        startGridYs: new Float32Array(numNodes)
+      };
+
+      function updatePositionsAndColors() {
+        var posAttr = lineGeometry.attributes.position;
+        var colAttr = lineGeometry.attributes.color;
+
+        for (var k = 0; k < numNodes; k++) {
+          // Elastic lerp interpolation
+          currentYs[k] += (targetYs[k] - currentYs[k]) * 0.25;
+          var y = currentYs[k];
+
+          // Map Y to [0, 1] luminance: -MAX_HEIGHT is 0 (black), +MAX_HEIGHT is 1 (white)
+          var normY = Math.max(0, Math.min(1, (y + MAX_HEIGHT) / (MAX_HEIGHT * 2)));
+
+          // Update InstancedMesh transform
+          tempMatrix.makeTranslation(basePositions[k * 3], y, basePositions[k * 3 + 2]);
+          instancedMesh.setMatrixAt(k, tempMatrix);
+
+          tempColor.setRGB(normY, normY, normY);
+          instancedMesh.setColorAt(k, tempColor);
+
+          // Update Lines vertices & colors
+          posAttr.array[k * 3 + 1] = y;
+          colAttr.array[k * 3] = normY;
+          colAttr.array[k * 3 + 1] = normY;
+          colAttr.array[k * 3 + 2] = normY;
+        }
+
+        instancedMesh.instanceMatrix.needsUpdate = true;
+        if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
+        posAttr.needsUpdate = true;
+        colAttr.needsUpdate = true;
+      }
+
+      // Pointer Interaction & Raycasting
+      function getClientCoords(e) {
+        if (e.touches && e.touches.length > 0) {
+          return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+        }
+        return { clientX: e.clientX, clientY: e.clientY };
+      }
+
+      function onPointerDown(e) {
+        var coords = getClientCoords(e);
+        var rect = renderer.domElement.getBoundingClientRect();
+
+        pointer.x = ((coords.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((coords.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(pointer, camera);
+        var intersects = raycaster.intersectObject(instancedMesh);
+
+        if (intersects.length > 0) {
+          var hit = intersects[0];
+          if (hit.instanceId !== undefined) {
+            dragState.active = true;
+            dragState.id = hit.instanceId;
+            dragState.startMouseY = coords.clientY;
+            dragState.startGridYs.set(targetYs);
+
+            controls.enabled = false;
+            container.classList.add('grabbing');
+            nodeInfo.textContent = 'Aktywny węzeł: #' + hit.instanceId + ' (przeciąganie)';
+
+            if (e.target && e.target.setPointerCapture && e.pointerId) {
+              try { e.target.setPointerCapture(e.pointerId); } catch(err) {}
+            }
+          }
+        }
+      }
+
+      function onPointerMove(e) {
+        if (!dragState.active || dragState.id === null) return;
+
+        var coords = getClientCoords(e);
+        var delta = -(coords.clientY - dragState.startMouseY) * DRAG_SENSITIVITY;
+
+        var draggedId = dragState.id;
+        var mainX = basePositions[draggedId * 3];
+        var mainZ = basePositions[draggedId * 3 + 2];
+
+        for (var k = 0; k < numNodes; k++) {
+          var dx = basePositions[k * 3] - mainX;
+          var dz = basePositions[k * 3 + 2] - mainZ;
+          var dist = Math.sqrt(dx * dx + dz * dz);
+          var weight = Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
+
+          var newY = dragState.startGridYs[k] + delta * weight;
+          newY = Math.max(-MAX_HEIGHT, Math.min(MAX_HEIGHT, newY));
+          targetYs[k] = newY;
+        }
+
+        var elev = targetYs[draggedId].toFixed(2);
+        nodeInfo.textContent = 'Węzeł #' + draggedId + ' • Wysokość Y: ' + elev;
+      }
+
+      function onPointerUp(e) {
+        if (dragState.active) {
+          dragState.active = false;
+          dragState.id = null;
+          controls.enabled = true;
+          container.classList.remove('grabbing');
+          nodeInfo.textContent = 'Dotknij kuli, aby manipulować';
+
+          if (e && e.target && e.target.releasePointerCapture && e.pointerId) {
+            try { e.target.releasePointerCapture(e.pointerId); } catch(err) {}
+          }
+        }
+      }
+
+      // Event listeners for dragging
+      renderer.domElement.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+
+      // Touch fallbacks
+      renderer.domElement.addEventListener('touchstart', onPointerDown, { passive: false });
+      window.addEventListener('touchmove', onPointerMove, { passive: false });
+      window.addEventListener('touchend', onPointerUp);
+
+      // Simulation Controls
+      document.getElementById('btn-reset').addEventListener('click', function() {
+        for (var k = 0; k < numNodes; k++) targetYs[k] = 0;
+        nodeInfo.textContent = 'Zresetowano układ do płaszczyzny zerowej';
+      });
+
+      document.getElementById('btn-randomize').addEventListener('click', function() {
+        for (var k = 0; k < numNodes; k++) {
+          targetYs[k] = (Math.random() * 2 - 1) * MAX_HEIGHT * 0.8;
+        }
+        nodeInfo.textContent = 'Zastosowano losową entropię wysokości';
+      });
+
+      document.getElementById('btn-wave').addEventListener('click', function() {
+        for (var k = 0; k < numNodes; k++) {
+          var x = basePositions[k * 3];
+          var z = basePositions[k * 3 + 2];
+          targetYs[k] = Math.sin(x * 0.5) * Math.cos(z * 0.5) * MAX_HEIGHT * 0.8;
+        }
+        nodeInfo.textContent = 'Zastosowano harmoniczną częstotliwość fali';
+      });
+
+      // Window resize handling
+      function onWindowResize() {
+        var width = container.clientWidth;
+        var height = container.clientHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      }
+      window.addEventListener('resize', onWindowResize);
+
+      // Initial pass
+      updatePositionsAndColors();
+
+      // Render loop
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        updatePositionsAndColors();
+        renderer.render(scene, camera);
+      }
+      animate();
+    })();
+  </script>
+</body>
+</html>

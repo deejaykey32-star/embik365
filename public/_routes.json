@@ -1,5 +1,5 @@
 {
   "version": 1,
   "include": ["/api/*", "/r/*", "/b/*", "/w/*"],
-  "exclude": ["/assets/*", "/uploads/*", "/data/*", "/pliki/*", "/src/*", "/z/*", "/klepsydra*", "/klepsydra3D*", "/klepsydra3d*", "/piramidy*", "/model*", "/model-8*", "/model-3d-8*", "/model-3d-8.html", "/symulacja-klepsydry-3d.html", "/podwojna_piramida.html", "/favicon.ico"]
+  "exclude": ["/assets/*", "/uploads/*", "/data/*", "/pliki/*", "/src/*", "/z/*", "/klepsydra*", "/klepsydra3D*", "/klepsydra3d*", "/piramidy*", "/model*", "/model-8*", "/model-3d-8*", "/model-3d-8.html", "/siec*", "/siec.html", "/symulacja-klepsydry-3d.html", "/podwojna_piramida.html", "/favicon.ico"]
 }
