@@ -380,11 +380,11 @@
         <div class="legend-list">
           <div class="legend-item">
             <span>Podstawa górna:</span>
-            <span style="color: #ffffff; font-weight: 600;">Biała (z wpisanym okręgiem i kropką)</span>
+            <span style="color: #ffffff; font-weight: 600;">Biała (z czarnym wpisanym okręgiem i kropką)</span>
           </div>
           <div class="legend-item">
             <span>Podstawa dolna:</span>
-            <span style="color: #94a3b8; font-weight: 600;">Czarna (z wpisanym okręgiem i kropką)</span>
+            <span style="color: #94a3b8; font-weight: 600;">Czarna (z białym wpisanym okręgiem i kropką)</span>
           </div>
           <div class="legend-item">
             <span>Środkowa linia:</span>
@@ -561,8 +561,8 @@
           disk.receiveShadow = true;
           group.add(disk);
 
-          // Circle color: vibrant blue on white top base, bright gold on black bottom base
-          const circleColor = isTop ? 0x0284c7 : 0xfacc15;
+          // Circle color: czarny na białej podstawie górnej, biały na czarnej podstawie dolnej
+          const circleColor = isTop ? 0x000000 : 0xffffff;
 
           // Helper to create inscribed ring and central dot
           function addInscribedRingAndDot(yPos) {
