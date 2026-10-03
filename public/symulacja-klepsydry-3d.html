@@ -632,20 +632,34 @@
           pillarMesh.castShadow = true;
           group.add(pillarMesh);
 
-          // Piercing tips / caps
-          const capGeo = new THREE.SphereGeometry(0.08, 16, 16);
-          const capMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.8, roughness: 0.2 });
-          const capTop = new THREE.Mesh(capGeo, capMat);
-          capTop.position.y = pillarTotalHeight / 2;
-          group.add(capTop);
-
-          const capBot = new THREE.Mesh(capGeo, capMat);
-          capBot.position.y = -pillarTotalHeight / 2;
-          group.add(capBot);
-
           hourglassGroup.add(group);
           pillarGroups.push({ group });
         });
+
+        // Central Gradient Line (od czarnej u góry do białej na dole w środku klepsydry)
+        const centerLineHeight = (BULB_HEIGHT + DISK_THICKNESS * 0.5) * 2;
+        const centerLineGeo = new THREE.CylinderGeometry(0.024, 0.024, centerLineHeight, 24, 64);
+        const clCount = centerLineGeo.attributes.position.count;
+        const clColors = new Float32Array(clCount * 3);
+        const clTopColor = new THREE.Color(0x050505); // Czarny u góry
+        const clBotColor = new THREE.Color(0xffffff); // Biały na dole
+        const clPos = centerLineGeo.attributes.position;
+        for (let i = 0; i < clCount; i++) {
+          const y = clPos.getY(i);
+          const alpha = Math.max(0, Math.min(1, (y / centerLineHeight) + 0.5));
+          const c = clBotColor.clone().lerp(clTopColor, alpha);
+          clColors[i * 3] = c.r;
+          clColors[i * 3 + 1] = c.g;
+          clColors[i * 3 + 2] = c.b;
+        }
+        centerLineGeo.setAttribute('color', new THREE.BufferAttribute(clColors, 3));
+        const centerLineMat = new THREE.MeshBasicMaterial({
+          vertexColors: true,
+          toneMapped: false
+        });
+        const centerLineMesh = new THREE.Mesh(centerLineGeo, centerLineMat);
+        centerLineMesh.position.set(0, 0, 0);
+        hourglassGroup.add(centerLineMesh);
 
         // Mustard seeds (Ziarna gorczycy)
         let maxGrains = 3500;
@@ -714,6 +728,7 @@
           pillarGroups.forEach(p => {
             p.group.scale.y = scaleY;
           });
+          centerLineMesh.scale.y = scaleY;
 
           if (collapseValue >= 0.95) {
             collapsedBanner.style.display = 'block';
