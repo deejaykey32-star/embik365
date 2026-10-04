@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   BookOpen,
   Quote,
@@ -108,15 +108,22 @@ export const StandardReader: React.FC<Props> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const isTogglingRef = useRef(false);
+
   const toggleSpeech = async (e?: React.SyntheticEvent) => {
     if (e) {
       e.stopPropagation();
     }
+    if (isTogglingRef.current) return;
+    isTogglingRef.current = true;
+    setTimeout(() => { isTogglingRef.current = false; }, 300);
+
     unlockMobileAudio();
 
     if (isSpeaking) {
       stopLectorSpeech();
       setIsSpeaking(false);
+      saveSerialLectorState({ isActive: false });
       return;
     }
 
@@ -255,10 +262,6 @@ export const StandardReader: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={(e) => toggleSpeech(e)}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  toggleSpeech(e);
-                }}
                 id="btn-lector-read"
                 className={`h-10 px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer touch-manipulation shadow-xs ${
                   isSpeaking

@@ -381,28 +381,179 @@ export function resumeLectorSpeech(): void {
   notifyLectorStateChange();
 }
 
+let activePlaybackSessionId = 0;
+
 export function stopLectorSpeech(): void {
+  // Invalidate any active playback session immediately
+  activePlaybackSessionId++;
+
   stopBackgroundAudioKeepAlive();
+
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch {}
+    try {
+      window.speechSynthesis.cancel();
+    } catch {}
   }
-  if (currentAudioElement) {
-    try { currentAudioElement.pause(); } catch {}
-    currentAudioElement = null;
-  }
+
+  // Clear AudioBufferSourceNode and detach onended handler first so it doesn't trigger onEnd
   if (currentSourceNode) {
-    try { currentSourceNode.stop(); } catch {}
+    try {
+      currentSourceNode.onended = null;
+      currentSourceNode.stop();
+    } catch {}
     currentSourceNode = null;
   }
+
+  // Clear HTMLAudioElement and detach handlers first
+  if (currentAudioElement) {
+    try {
+      currentAudioElement.onended = null;
+      currentAudioElement.onerror = null;
+      currentAudioElement.pause();
+      currentAudioElement.src = '';
+    } catch {}
+    currentAudioElement = null;
+  }
+
   if (currentAudioContext) {
-    try { currentAudioContext.close(); } catch {}
+    try {
+      currentAudioContext.close();
+    } catch {}
     currentAudioContext = null;
   }
+
+  // Mark serial lector inactive so it won't auto-advance or restart
+  saveSerialLectorState({ isActive: false });
+
   lectorPlaybackState = 'idle';
   if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
-    try { navigator.mediaSession.playbackState = 'none'; } catch {}
+    try {
+      navigator.mediaSession.playbackState = 'none';
+    } catch {}
   }
   notifyLectorStateChange();
+}
+
+/**
+ * Czyści tekst dla lektora audio:
+ * - Usuwa znaczniki markdown (* gwiazdka, # kratka)
+ * - Usuwa sigla biblijne i numery wersetów (np. (Mt 10,8), [1], 1 Na początku...)
+ * - Rozwija skróty polskie (np. -> na przykład, św. -> świętego, itd. -> i tak dalej)
+ * - Usuwa cudzysłowy (aby syntezator mowy nie wymawiał słowa "cudzysłów")
+ * - Usuwa linki, adresy URL i znaki śmieci
+ */
+export function cleanTextForSpeech(rawText: string, lang: string = 'pl'): string {
+  if (!rawText) return '';
+  let text = rawText;
+
+  // 1. Usunięcie tagów HTML, kontenerów QR, skryptów, styli
+  text = text.replace(/<style[\s\S]*?<\/style>/gi, ' ');
+  text = text.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+  text = text.replace(/<div[^>]*class=['"][^'"]*wnr-qr-container[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, ' ');
+  text = text.replace(/<div[^>]*class=['"][^'"]*qr-code-embed-card[\s\S]*?<\/div>\s*<\/div>/gi, ' ');
+  text = text.replace(/<[^>]+>/g, ' ');
+
+  // 2. Dekodowanie encji HTML
+  text = text.replace(/&nbsp;/gi, ' ')
+             .replace(/&amp;/gi, ' i ')
+             .replace(/&quot;|&apos;|&#39;|&ldquo;|&rdquo;|&laquo;|&raquo;/gi, ' ')
+             .replace(/&hellip;/gi, '. ')
+             .replace(/&ndash;|&mdash;/gi, ', ')
+             .replace(/&[a-zA-Z0-9#]+;/g, ' ');
+
+  // 3. Usunięcie napisów z kart QR i przycisków akcji
+  text = text.replace(/Materiał dodatkowy \d+:[^.]*?(?:Kod QR)?/gi, ' ');
+  text = text.replace(/Pobierz PNG|Otwórz\s*→?/gi, ' ');
+
+  // 4. Usunięcie linków internetowych i URL
+  text = text.replace(/https?:\/\/\S+/gi, ' ');
+  text = text.replace(/www\.\S+/gi, ' ');
+  text = text.replace(/(?<!\p{L})(?:więcej(?:\s+na)?|zob\.|link)\s*:?\s*(?=[.!?]|$)/gui, ' ');
+
+  // 5. Zamiana nagłówków Markdown (#, ##, ###) na zdania z kropką i usunięcie kratek
+  text = text.replace(/(^|\n)\s*#{1,6}\s*([^\n]+)/g, '$1 $2. ');
+  text = text.replace(/#/g, ' ');
+
+  // 6. Usunięcie gwiazdek (*, **, ***) - aby lektor nigdy nie czytał "gwiazdka"
+  text = text.replace(/\*+/g, ' ');
+
+  // Normalizacja wielokropków przed dopasowaniem wersetów
+  text = text.replace(/\.{2,}/g, '. ');
+
+  // 7. Usunięcie sigli i odnośników biblijnych w nawiasach np. (Mt 10,8), (J 10,34), (por. Łk 1, 26)
+  const biblicalBooks = 'Mt|Mk|Łk|Lk|J|Jn|Dz|Rz|Rom|Kor|Ga|Gal|Ef|Eph|Flp|Phil|Kol|Col|Tes|Thess|Tm|Tim|Tt|Tit|Flm|Phlm|Hbr|Heb|Jk|Jas|P|Pet|Jud|Jude|Ap|Rev|Rdz|Gen|Wj|Ex|Kpł|Lev|Lb|Num|Pwt|Deut|Joz|Josh|Sdz|Judg|Rt|Ruth|Sm|Sam|Krl|Kgs|Krn|Chron|Ezd|Ezra|Ne|Neh|Tb|Tob|Jdt|Est|Esth|Mch|Macc|Hi|Job|Ps|Prz|Prov|Koh|Eccl|Pnp|Song|Mdr|Wis|Syr|Sir|Iz|Isa|Jr|Jer|Lm|Lam|Bar|Ez|Ezek|Dn|Dan|Oz|Hos|Jl|Joel|Am|Amos|Ab|Obad|Jon|Jonah|Mi|Mic|Na|Nah|Ha|Hab|Sof|Zeph|Ag|Hag|Za|Zech|Mal';
+  
+  const bibRefRegex = new RegExp(`\\([\\s]*(?:por\\.?|zob\\.?|cf\\.?)?\\s*(?:[1-3]\\s*)?(?:${biblicalBooks})\\s*\\d+[^)]*\\)`, 'gi');
+  text = text.replace(bibRefRegex, ' ');
+  const bibRefBracketRegex = new RegExp(`\\[[\\s]*(?:por\\.?|zob\\.?|cf\\.?)?\\s*(?:[1-3]\\s*)?(?:${biblicalBooks})\\s*\\d+[^\\]]*\\]`, 'gi');
+  text = text.replace(bibRefBracketRegex, ' ');
+  
+  // Samodzielne sigla biblijne np. 'Mt 10, 8-12', 'Łk 1, 26-38:' lub 'J 10, 34'
+  const bibStandaloneRegex = new RegExp(`(?<!\\p{L})(?:[1-3]\\s*)?(?:${biblicalBooks})\\s*\\d+\\s*[,:]\\s*\\d+(?:\\s*[-–.]\\s*\\d+)*(?:[a-z])?:?`, 'gui');
+  text = text.replace(bibStandaloneRegex, ' ');
+
+  // Ogólne odsyłacze w nawiasach (por. ...) lub (zob. ...)
+  text = text.replace(/\(\s*(?:por\.|zob\.|cf\.)\s*[^)]+\)/gi, ' ');
+
+  // 8. Usunięcie przypisów w nawiasach kwadratowych [1], (1), [a]
+  text = text.replace(/\[\s*\d+\s*\]/g, ' ');
+  text = text.replace(/\(\s*\d+\s*\)/g, ' ');
+  text = text.replace(/\[\s*[a-zA-Z]\s*\]/g, ' ');
+
+  // 9. Usunięcie cyfr w indeksie górnym (wersetów biblijnych)
+  text = text.replace(/[¹²³⁴⁵⁶⁷⁸⁹⁰]+/g, ' ');
+
+  // 10. Usunięcie numerów wersetów na początku linii lub po znakach końca zdania (np. '1 Na początku', '. 2 Wtedy')
+  text = text.replace(/(?:^|\n|(?<=[.!?„"”«»;\n]))\s*\d{1,3}[\.\s]+(?=[A-ZĄĆĘŁŃÓŚŹŻ])/gu, ' ');
+
+  // 11. Rozwinięcie skrótów na pełne słowa dla naturalnego brzmienia
+  const isPl = !lang || lang.toLowerCase().startsWith('pl');
+  if (isPl) {
+    text = text.replace(/(?<!\p{L})np\.\s*/gui, 'na przykład ');
+    text = text.replace(/(?<!\p{L})itd\.\s*/gui, 'i tak dalej. ');
+    text = text.replace(/(?<!\p{L})itp\.\s*/gui, 'i tym podobne. ');
+    text = text.replace(/(?<!\p{L})tzn\.\s*/gui, 'to znaczy ');
+    text = text.replace(/(?<!\p{L})m\.in\.\s*/gui, 'między innymi ');
+    text = text.replace(/(?<!\p{L})św\.\s*/gui, 'świętego ');
+    text = text.replace(/(?<!\p{L})bł\.\s*/gui, 'błogosławiony ');
+    text = text.replace(/(?<!\p{L})ks\.\s*/gui, 'ksiądz ');
+    text = text.replace(/(?<!\p{L})bp\.\s*|(?<!\p{L})bp(?!\p{L})/gui, 'biskup ');
+    text = text.replace(/(?<!\p{L})abp\.\s*|(?<!\p{L})abp(?!\p{L})/gui, 'arcybiskup ');
+    text = text.replace(/(?<!\p{L})kard\.\s*|(?<!\p{L})kard(?!\p{L})/gui, 'kardynał ');
+    text = text.replace(/(?<!\p{L})o\.\s*(?=[A-ZĄĆĘŁŃÓŚŹŻ])/gu, 'ojciec ');
+    text = text.replace(/(\d{4})\s*r\.\s*/gui, '$1 roku ');
+    text = text.replace(/(?<!\p{L})ok\.\s*/gui, 'około ');
+    text = text.replace(/(?<!\p{L})tzw\.\s*/gui, 'tak zwany ');
+    text = text.replace(/(?<!\p{L})por\.\s*/gui, 'porównaj ');
+    text = text.replace(/(?<!\p{L})zob\.\s*/gui, 'zobacz ');
+    text = text.replace(/(?<!\p{L})rozdz\.\s*/gui, 'rozdział ');
+  } else {
+    text = text.replace(/(?<!\p{L})e\.g\.\s*/gui, 'for example ');
+    text = text.replace(/(?<!\p{L})i\.e\.\s*/gui, 'that is ');
+    text = text.replace(/(?<!\p{L})etc\.\s*/gui, 'etcetera. ');
+    text = text.replace(/(?<!\p{L})St\.\s*/gui, 'Saint ');
+  }
+
+  // 12. Usunięcie emoji i symboli obrazkowych
+  text = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, ' ');
+
+  // 13. Usunięcie znaków cudzysłowu (by lektor nie czytał "cudzysłów")
+  text = text.replace(/[„”«»\"“’'‘`´]/g, ' ');
+
+  // 14. Usunięcie znaków śmieci (zachowując standardową interpunkcję . , ; : ? ! -)
+  text = text.replace(/[_~^|\\/{}\[\]<>§©®™°+=•●○■◆▪▫]/g, ' ');
+  text = text.replace(/[–—]/g, ', ');
+  text = text.replace(/[-]{2,}/g, ' ');
+
+  // 15. Normalizacja spacji i interpunkcji
+  text = text.replace(/\s*([,.;?!])\s*/g, '$1 ');
+  text = text.replace(/([.?!])\s*[.?!]+/g, '$1 ');
+  text = text.replace(/\s+,/g, ',');
+  text = text.replace(/,\s*\./g, '.');
+  text = text.replace(/,\s*,+/g, ',');
+  text = text.replace(/\s+/g, ' ').trim();
+
+  return text;
 }
 
 export interface PlayLectorOptions {
@@ -422,12 +573,16 @@ export interface PlayLectorOptions {
 export async function playLectorSpeech(options: PlayLectorOptions): Promise<void> {
   const { text, config, overrideLang, title, sectionName, artworkUrl, onStart, onEnd, onError, onNext, onPrev } = options;
 
-  // 0. Synchronously unlock AudioContext inside mobile user touch gesture
+  // 0. Synchronously unlock AudioContext inside mobile user touch gesture & stop previous speech
   unlockMobileAudio();
   stopLectorSpeech();
   startBackgroundAudioKeepAlive();
 
+  const currentSession = activePlaybackSessionId;
+  const isCurrentSession = () => currentSession === activePlaybackSessionId;
+
   const wrappedOnStart = () => {
+    if (!isCurrentSession()) return;
     lectorPlaybackState = 'playing';
     if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
       try { navigator.mediaSession.playbackState = 'playing'; } catch {}
@@ -437,6 +592,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   };
 
   const wrappedOnEnd = () => {
+    if (!isCurrentSession()) return;
     lectorPlaybackState = 'idle';
     if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
       try { navigator.mediaSession.playbackState = 'none'; } catch {}
@@ -446,6 +602,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   };
 
   const wrappedOnError = (err: any) => {
+    if (!isCurrentSession()) return;
     lectorPlaybackState = 'idle';
     if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
       try { navigator.mediaSession.playbackState = 'none'; } catch {}
@@ -464,11 +621,6 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
     });
   }
 
-  if (!text || !text.trim()) {
-    if (onError) onError('Brak tekstu');
-    return;
-  }
-
   // 1. Look up online profile by selected onlineVoiceId first
   let onlineProfile = ONLINE_VOICES.find(v => v.id === config.onlineVoiceId);
   const targetLang = (overrideLang || (config.mode === 'online' ? onlineProfile?.lang : config.lang) || 'pl').toLowerCase();
@@ -480,13 +632,20 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
       || ONLINE_VOICES[0];
   }
 
+  // 2. Wyczyść tekst ze znaczników markdown (*, #), sigli, numerów wersetów i śmieci
+  const cleanedSpeechText = cleanTextForSpeech(text, targetLang);
+  if (!cleanedSpeechText) {
+    if (onError) onError('Brak tekstu do przeczytania');
+    return;
+  }
+
   if (config.mode === 'online') {
     try {
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text,
+          text: cleanedSpeechText,
           voiceId: onlineProfile.id,
           lang: targetLang,
           gender: targetGender,
@@ -495,17 +654,24 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
         })
       });
 
+      if (!isCurrentSession()) return;
+
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
-        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, wrappedOnStart, wrappedOnEnd, wrappedOnError);
+        if (!isCurrentSession()) return;
+        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, currentSession, wrappedOnStart, wrappedOnEnd, wrappedOnError);
         return;
       }
     } catch (err) {
       console.warn('Online TTS endpoint unavailable, falling back to neural speech synthesis:', err);
     }
 
+    if (!isCurrentSession()) return;
+
     playLocalSpeechFallback({
       ...options,
+      text: cleanedSpeechText,
+      sessionId: currentSession,
       overrideLang: targetLang,
       desiredGender: targetGender,
       voiceProfile: onlineProfile,
@@ -516,6 +682,8 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   } else {
     playLocalSpeechFallback({
       ...options,
+      text: cleanedSpeechText,
+      sessionId: currentSession,
       overrideLang: targetLang,
       desiredGender: targetGender,
       preferredURI: config.localVoiceURI,
@@ -563,6 +731,7 @@ async function playAudioBufferWithVoiceEffects(
   arrayBuffer: ArrayBuffer,
   voiceProfile: OnlineVoiceOption,
   config: LectorConfig,
+  sessionId: number,
   onStart?: () => void,
   onEnd?: () => void,
   onError?: (err: any) => void
@@ -578,7 +747,11 @@ async function playAudioBufferWithVoiceEffects(
         await audioCtx.resume();
       }
 
+      if (sessionId !== activePlaybackSessionId) return;
+
       const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
+      if (sessionId !== activePlaybackSessionId) return;
+
       const source = audioCtx.createBufferSource();
       source.buffer = decodedData;
 
@@ -603,9 +776,10 @@ async function playAudioBufferWithVoiceEffects(
       source.connect(gainNode);
       gainNode.connect(audioCtx.destination);
 
-      if (onStart) onStart();
+      if (onStart && sessionId === activePlaybackSessionId) onStart();
 
       source.onended = () => {
+        if (sessionId !== activePlaybackSessionId) return;
         if (onEnd) onEnd();
         currentSourceNode = null;
       };
@@ -617,40 +791,55 @@ async function playAudioBufferWithVoiceEffects(
     }
   } catch (err) {
     console.warn('AudioContext playback error, using HTML Audio fallback:', err);
+    if (sessionId !== activePlaybackSessionId) return;
     try {
       const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audio.volume = config.volume;
       audio.playbackRate = config.rate;
-      audio.onended = () => { if (onEnd) onEnd(); currentAudioElement = null; };
-      audio.onerror = (e) => { if (onError) onError(e); currentAudioElement = null; };
+      audio.onended = () => {
+        if (sessionId !== activePlaybackSessionId) return;
+        if (onEnd) onEnd();
+        currentAudioElement = null;
+      };
+      audio.onerror = (e) => {
+        if (sessionId !== activePlaybackSessionId) return;
+        if (onError) onError(e);
+        currentAudioElement = null;
+      };
       currentAudioElement = audio;
-      if (onStart) onStart();
+      if (onStart && sessionId === activePlaybackSessionId) onStart();
       await audio.play();
     } catch (e2) {
-      if (onError) onError(e2);
+      if (onError && sessionId === activePlaybackSessionId) onError(e2);
     }
   }
 }
 
 export interface LocalSpeechOptions extends PlayLectorOptions {
+  sessionId?: number;
   desiredGender?: LectorGender;
   voiceProfile?: OnlineVoiceOption;
   preferredURI?: string;
 }
 
 function playLocalSpeechFallback(options: LocalSpeechOptions): void {
-  const { text, config, overrideLang, desiredGender, voiceProfile, preferredURI, onStart, onEnd, onError } = options;
+  const { text, config, sessionId, overrideLang, desiredGender, voiceProfile, preferredURI, onStart, onEnd, onError } = options;
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onError) onError('Speech Synthesis API unsupported in this browser.');
     return;
   }
 
+  const currentSession = sessionId ?? activePlaybackSessionId;
+  const isCurrentSession = () => currentSession === activePlaybackSessionId;
+
+  if (!isCurrentSession()) return;
+
   const targetLang = (overrideLang || (voiceProfile ? voiceProfile.lang : config.lang) || 'pl').toLowerCase();
   const targetGender: LectorGender = desiredGender || (voiceProfile ? voiceProfile.gender : config.gender) || 'male';
 
-  const cleanText = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleanText = cleanTextForSpeech(text, targetLang);
   if (!cleanText) {
     if (onError) onError('Brak tekstu do przeczytania');
     return;
@@ -665,6 +854,8 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
   let chunkIndex = 0;
 
   const speakNextChunk = () => {
+    if (!isCurrentSession()) return;
+
     if (chunkIndex >= textChunks.length) {
       if (onEnd) onEnd();
       return;
@@ -715,10 +906,16 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     }
 
     utterance.onend = () => {
+      if (!isCurrentSession()) return;
       speakNextChunk();
     };
 
-    utterance.onerror = (err) => {
+    utterance.onerror = (err: any) => {
+      if (!isCurrentSession()) return;
+      // Jeśli synteza została przerwana lub anulowana przez przycisk Stop - nie czytaj dalej!
+      if (err && (err.error === 'interrupted' || err.error === 'canceled')) {
+        return;
+      }
       console.warn('Local speech chunk error:', err);
       speakNextChunk();
     };

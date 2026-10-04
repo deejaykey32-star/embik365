@@ -83,8 +83,9 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
   };
 
   const handleStop = () => {
-    stopLectorSpeech();
     saveSerialLectorState({ isActive: false });
+    stopLectorSpeech();
+    setPlaybackState('idle');
   };
 
   const triggerPlayCurrentEntry = async () => {
@@ -112,7 +113,10 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
         if (currentSerial.autoNext && currentSerial.isActive) {
           onNextDay();
           setTimeout(() => {
-            triggerPlayCurrentEntry();
+            const freshSerial = getSerialLectorState();
+            if (freshSerial.isActive) {
+              triggerPlayCurrentEntry();
+            }
           }, 400);
         } else {
           saveSerialLectorState({ isActive: false });
@@ -134,7 +138,10 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
     onPrevDay();
     if (playbackState === 'playing') {
       setTimeout(() => {
-        triggerPlayCurrentEntry();
+        const fresh = getSerialLectorState();
+        if (fresh.isActive) {
+          triggerPlayCurrentEntry();
+        }
       }, 300);
     }
   };
@@ -143,7 +150,10 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
     onNextDay();
     if (playbackState === 'playing') {
       setTimeout(() => {
-        triggerPlayCurrentEntry();
+        const fresh = getSerialLectorState();
+        if (fresh.isActive) {
+          triggerPlayCurrentEntry();
+        }
       }, 300);
     }
   };

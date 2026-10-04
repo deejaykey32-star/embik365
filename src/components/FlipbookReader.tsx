@@ -484,15 +484,22 @@ export const FlipbookReader: React.FC<Props> = ({
     }, 280);
   };
 
+  const isTogglingRef = useRef(false);
+
   const toggleSpeech = async (e?: React.SyntheticEvent) => {
     if (e) {
       e.stopPropagation();
     }
+    if (isTogglingRef.current) return;
+    isTogglingRef.current = true;
+    setTimeout(() => { isTogglingRef.current = false; }, 300);
+
     unlockMobileAudio();
 
     if (isSpeaking) {
       stopLectorSpeech();
       setIsSpeaking(false);
+      saveSerialLectorState({ isActive: false });
       return;
     }
 
@@ -1238,10 +1245,6 @@ export const FlipbookReader: React.FC<Props> = ({
           {/* Audio Lector Speech Play / Pause button */}
           <button
             onClick={(e) => toggleSpeech(e)}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              toggleSpeech(e);
-            }}
             id="btn-flipbook-lector-play"
             className={`p-2 rounded-xl transition-colors border text-xs font-semibold flex items-center gap-1 cursor-pointer touch-manipulation ${
               isSpeaking
