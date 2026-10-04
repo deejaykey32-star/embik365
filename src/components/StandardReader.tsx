@@ -6,6 +6,7 @@ import {
   FileText,
   Volume2,
   VolumeX,
+  Headphones,
   Copy,
   Check,
   Calendar,
@@ -180,8 +181,8 @@ export const StandardReader: React.FC<Props> = ({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 transition-colors duration-300">
       {/* Top Banner & Date indicator */}
       <div className="bg-[#f7f2ea] dark:bg-[#111722] rounded-3xl p-6 sm:p-8 border border-[#e5d8ca] dark:border-[#1f293d] shadow-xs mb-8 transition-colors duration-300">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3 pt-1">
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#e7d8c6] dark:bg-[#1e293b] text-[#6d4f33] dark:text-amber-300 border border-[#d6c3ae] dark:border-[#334155]">
               {section.badge}
             </span>
@@ -190,106 +191,135 @@ export const StandardReader: React.FC<Props> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex flex-col items-start sm:items-end gap-3">
             {/* Font size picker: 12 pt, 14 pt, 16 pt, 18 pt */}
-            <div className="flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-0.5 text-xs">
-              <button
-                onClick={() => setFontSize('compact')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
-                  fontSize === 'compact'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
-                    : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
-                title="Czcionka 12 pt (Kompaktowa / format druku)"
-              >
-                12pt
-              </button>
-              <button
-                onClick={() => setFontSize('normal')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
-                  fontSize === 'normal'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
-                    : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
-                title="Czcionka 14 pt (Standardowa, czytelna na ekranie)"
-              >
-                14pt
-              </button>
-              <button
-                onClick={() => setFontSize('large')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
-                  fontSize === 'large'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
-                    : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
-                title="Czcionka 16 pt (Powiększona)"
-              >
-                16pt
-              </button>
-              <button
-                onClick={() => setFontSize('xlarge')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
-                  fontSize === 'xlarge'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
-                    : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                }`}
-                title="Czcionka 18 pt (Duża)"
-              >
-                18pt
-              </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-[#7c6957] dark:text-[#94a3b8] hidden sm:inline">
+                Czcionka:
+              </span>
+              <div className="inline-flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-1 text-xs shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setFontSize('compact')}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                    fontSize === 'compact'
+                      ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
+                      : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
+                  }`}
+                  title="Czcionka 12 pt (Kompaktowa / format druku POD)"
+                >
+                  12 pt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize('normal')}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                    fontSize === 'normal'
+                      ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
+                      : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
+                  }`}
+                  title="Czcionka 14 pt (Standardowa, optymalna do czytania)"
+                >
+                  14 pt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize('large')}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                    fontSize === 'large'
+                      ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
+                      : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
+                  }`}
+                  title="Czcionka 16 pt (Powiększona)"
+                >
+                  16 pt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFontSize('xlarge')}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                    fontSize === 'xlarge'
+                      ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
+                      : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
+                  }`}
+                  title="Czcionka 18 pt (Duża, wysoki kontrast)"
+                >
+                  18 pt
+                </button>
+              </div>
             </div>
 
-            {/* Read aloud toggle */}
-            <button
-              onClick={(e) => toggleSpeech(e)}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                toggleSpeech(e);
-              }}
-              id="btn-lector-read"
-              className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer touch-manipulation ${isSpeaking
-                  ? 'bg-amber-600 text-white border-amber-700 animate-pulse'
-                  : 'bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#dccdc0] dark:border-[#29364b]'
+            {/* 4 przyciski akcji umieszczone pod wyborem rozmiaru czcionki */}
+            <div className="flex items-center gap-2 flex-wrap justify-start sm:justify-end">
+              {/* 1. Lektor audio - włącz / zatrzymaj czytanie */}
+              <button
+                type="button"
+                onClick={(e) => toggleSpeech(e)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  toggleSpeech(e);
+                }}
+                id="btn-lector-read"
+                className={`h-10 px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer touch-manipulation shadow-xs ${
+                  isSpeaking
+                    ? 'bg-amber-600 text-white border-amber-700 shadow-amber-600/25 animate-pulse'
+                    : 'bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#dccdc0] dark:border-[#29364b]'
                 }`}
-              title={isSpeaking ? 'Zatrzymaj lektora' : 'Włącz czytanie na głos (Lektor)'}
-            >
-              {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#8a572c] dark:text-amber-400" />}
-              <span className="hidden sm:inline">{isSpeaking ? 'Głos gra' : 'Lektor'}</span>
-            </button>
-
-            {/* Lector Settings Modal Button */}
-            {onOpenLectorModal && (
-              <button
-                onClick={onOpenLectorModal}
-                className="p-2 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-colors cursor-pointer text-xs font-semibold flex items-center gap-1"
-                title="Ustawienia Lektora (Wersja Lokalna / Online AI, Język, Wybór głosu)"
+                title={isSpeaking ? 'Zatrzymaj czytanie lektora audio' : 'Włącz czytanie wpisu na głos (Lektor audio)'}
+                aria-label={isSpeaking ? 'Zatrzymaj lektora' : 'Włącz czytanie na głos (Lektor)'}
               >
-                <span>🎧</span>
-                <span className="hidden lg:inline">Głos Lektora</span>
+                {isSpeaking ? (
+                  <VolumeX className="w-5 h-5 shrink-0 text-white" />
+                ) : (
+                  <Volume2 className="w-5 h-5 shrink-0 text-[#8a572c] dark:text-amber-400" />
+                )}
+                <span className="font-semibold whitespace-nowrap">{isSpeaking ? 'Zatrzymaj' : 'Lektor'}</span>
               </button>
-            )}
 
+              {/* 2. Ustawienia głosu lektora */}
+              {onOpenLectorModal && (
+                <button
+                  type="button"
+                  onClick={onOpenLectorModal}
+                  className="h-10 px-3.5 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-all cursor-pointer text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
+                  title="Ustawienia głosu lektora (Wersja lokalna / AI, język, wybór barwy głosu)"
+                  aria-label="Ustawienia głosu lektora"
+                >
+                  <Headphones className="w-5 h-5 shrink-0 text-[#8a572c] dark:text-amber-400" />
+                  <span className="font-semibold whitespace-nowrap">Głos lektora</span>
+                </button>
+              )}
 
-            {/* Copy button */}
-            <button
-              onClick={handleCopy}
-              className="p-2 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-colors cursor-pointer"
-              title="Kopiuj treść wpisu"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-
-            {/* Download E-book / POD button */}
-            {onOpenDownloadModal && (
+              {/* 3. Kopiuj treść wpisu */}
               <button
-                onClick={onOpenDownloadModal}
-                className="p-2 sm:px-3 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="Pobierz E-book (PDF POD, Word DOCX, ePUB) gotowe do druku i publikacji"
+                type="button"
+                onClick={handleCopy}
+                className="h-10 px-3.5 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-all cursor-pointer text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
+                title={copied ? 'Skopiowano pełną treść do schowka!' : 'Kopiuj pełną treść wpisu do schowka'}
+                aria-label="Kopiuj treść wpisu"
               >
-                <Download className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                <span className="hidden md:inline">Pobierz E-book / Druk</span>
+                {copied ? (
+                  <Check className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <Copy className="w-5 h-5 shrink-0 text-[#6d5b4a] dark:text-[#cbd5e1]" />
+                )}
+                <span className="font-semibold whitespace-nowrap">{copied ? 'Skopiowano' : 'Kopiuj'}</span>
               </button>
-            )}
+
+              {/* 4. Pobierz e-book / POD */}
+              {onOpenDownloadModal && (
+                <button
+                  type="button"
+                  onClick={onOpenDownloadModal}
+                  className="h-10 px-3.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  title="Pobierz E-book (format POD PDF do druku, Word DOCX, ePUB)"
+                  aria-label="Pobierz E-book / Druk"
+                >
+                  <Download className="w-5 h-5 shrink-0 text-amber-700 dark:text-amber-400" />
+                  <span className="whitespace-nowrap">Pobierz E-book</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

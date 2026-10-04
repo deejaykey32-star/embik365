@@ -59,6 +59,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 // Helper to sanitize text for XML (DOCX & ePUB)
 function escapeXml(unsafe: string): string {
   return (unsafe || '')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -106,6 +107,167 @@ export function sanitizeTextForPdfFallback(text: string): string {
     .replace(/Ż/g, 'Z')
     .replace(/ź/g, 'z')
     .replace(/Ź/g, 'Z');
+}
+
+// Decode HTML entities that may appear in content
+function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d{1,6});/gi, (_: string, num: string) => String.fromCharCode(parseInt(num, 10)))
+    .replace(/&#x([0-9a-f]{1,6});/gi, (_: string, hex: string) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+// Content block types for structured rendering of markdown content in PDF, DOCX, ePUB
+interface ContentBlock {
+  type: 'h1' | 'h2' | 'h3' | 'h4' | 'hr' | 'blockquote' | 'paragraph' | 'bullet';
+  text: string;
+  segments: Array<{ text: string; bold?: boolean; italic?: boolean }>;
+}
+
+// Parse inline **bold** and *italic* formatting into segments
+function parseInlineFormatting(text: string): Array<{ text: string; bold?: boolean; italic?: boolean }> {
+  const segments: Array<{ text: string; bold?: boolean; italic?: boolean }> = [];
+  const regex = /\*\*([^*]+)\*\*|\*([^*]+)\*/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ text: text.substring(lastIndex, match.index) });
+    }
+    if (match[1]) {
+      segments.push({ text: match[1], bold: true });
+    } else if (match[2]) {
+      segments.push({ text: match[2], italic: true });
+    }
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    segments.push({ text: text.substring(lastIndex) });
+  }
+  return segments.length > 0 ? segments : [{ text }];
+}
+
+// Strip markdown bold/italic markers from text (for PDF where inline formatting is limited)
+function stripMarkdownInline(text: string): string {
+  return (text || '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1');
+}
+
+// Parse raw markdown content into typed blocks for structured rendering
+function parseMarkdownToBlocks(rawContent: string): ContentBlock[] {
+  if (!rawContent) return [];
+  const decoded = decodeHtmlEntities(rawContent)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  const normalized = decoded
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/([^\n])\n(#{1,4}\s+[^\n]+)/g, '$1\n\n$2')
+    .replace(/(#{1,4}\s+[^\n]+)\n([^\n#])/g, '$1\n\n$2')
+    .replace(/([^\n])\n(---\s*)\n/g, '$1\n\n$2\n');
+
+  const rawChunks = normalized.split(/\n\s*\n+/);
+  const blocks: ContentBlock[] = [];
+
+  for (const chunk of rawChunks) {
+    const trimmed = chunk.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.startsWith('#### ')) {
+      const t = trimmed.replace(/^####\s+/, '').trim();
+      blocks.push({ type: 'h4', text: t, segments: parseInlineFormatting(t) });
+    } else if (trimmed.startsWith('### ')) {
+      const t = trimmed.replace(/^###\s+/, '').trim();
+      blocks.push({ type: 'h3', text: t, segments: parseInlineFormatting(t) });
+    } else if (trimmed.startsWith('## ')) {
+      const t = trimmed.replace(/^##\s+/, '').trim();
+      blocks.push({ type: 'h2', text: t, segments: parseInlineFormatting(t) });
+    } else if (trimmed.startsWith('# ')) {
+      const t = trimmed.replace(/^#\s+/, '').trim();
+      blocks.push({ type: 'h1', text: t, segments: parseInlineFormatting(t) });
+    } else if (trimmed === '---' || trimmed === '***') {
+      blocks.push({ type: 'hr', text: '', segments: [] });
+    } else if (trimmed.startsWith('>')) {
+      const qText = trimmed.replace(/^>\s*/gm, ' ').replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+      blocks.push({ type: 'blockquote', text: qText, segments: parseInlineFormatting(qText) });
+    } else if (/^[*\-]\s+/.test(trimmed) && !trimmed.startsWith('**')) {
+      const items = trimmed.split(/\n\s*[*\-]\s+/);
+      for (const item of items) {
+        const it = item.replace(/^[*\-]\s+/, '').replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+        if (it) blocks.push({ type: 'bullet', text: it, segments: parseInlineFormatting(it) });
+      }
+    } else {
+      const pText = trimmed.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ').replace(/\s+([.,;:!?])/g, '$1').trim();
+      if (pText) blocks.push({ type: 'paragraph', text: pText, segments: parseInlineFormatting(pText) });
+    }
+  }
+  return blocks;
+}
+
+// Convert content blocks to DOCX XML with proper heading styles and inline bold/italic formatting
+function blocksToDocxXml(blocks: ContentBlock[]): string {
+  const makeRuns = (segs: ContentBlock['segments'], baseBold = false, baseItalic = false, fontSize = '24', color = '000000') => {
+    return segs.map(seg => {
+      const t = escapeXml(seg.text);
+      const bTag = (seg.bold || baseBold) ? '<w:b/><w:bCs/>' : '';
+      const iTag = (seg.italic || baseItalic) ? '<w:i/><w:iCs/>' : '';
+      return `<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>${bTag}${iTag}<w:sz w:val="${fontSize}"/><w:szCs w:val="${fontSize}"/><w:color w:val="${color}"/></w:rPr><w:t xml:space="preserve">${t}</w:t></w:r>`;
+    }).join('');
+  };
+
+  return blocks.map(block => {
+    switch (block.type) {
+      case 'h1':
+        return `<w:p><w:pPr><w:pStyle w:val="Heading1"/><w:spacing w:before="360" w:after="200"/><w:jc w:val="center"/></w:pPr>${makeRuns(block.segments, true, false, '32')}</w:p>`;
+      case 'h2':
+        return `<w:p><w:pPr><w:pStyle w:val="Heading2"/><w:spacing w:before="280" w:after="160"/><w:jc w:val="left"/></w:pPr>${makeRuns(block.segments, true, false, '26')}</w:p>`;
+      case 'h3':
+        return `<w:p><w:pPr><w:pStyle w:val="Heading3"/><w:spacing w:before="200" w:after="120"/><w:jc w:val="left"/></w:pPr>${makeRuns(block.segments, true, false, '24')}</w:p>`;
+      case 'h4':
+        return `<w:p><w:pPr><w:spacing w:before="200" w:after="100"/><w:jc w:val="left"/></w:pPr>${makeRuns(block.segments, true, true, '24')}</w:p>`;
+      case 'hr':
+        return `<w:p><w:pPr><w:spacing w:before="200" w:after="200"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="20"/><w:color w:val="999999"/></w:rPr><w:t>\u2022 \u2022 \u2022</w:t></w:r></w:p>`;
+      case 'blockquote':
+        return `<w:p><w:pPr><w:ind w:left="480" w:right="480"/><w:spacing w:line="276" w:lineRule="auto" w:before="120" w:after="120"/><w:jc w:val="both"/></w:pPr>${makeRuns(block.segments, false, true, '24', '333333')}</w:p>`;
+      case 'bullet':
+        return `<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:line="276" w:lineRule="auto" w:after="80"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">\u2022 </w:t></w:r>${makeRuns(block.segments)}</w:p>`;
+      default:
+        return `<w:p><w:pPr><w:ind w:firstLine="360"/><w:spacing w:line="276" w:lineRule="auto" w:after="120"/><w:jc w:val="both"/></w:pPr>${makeRuns(block.segments)}</w:p>`;
+    }
+  }).join('\n');
+}
+
+// Convert content blocks to ePUB XHTML with proper HTML tags and inline bold/italic
+function blocksToEpubHtml(blocks: ContentBlock[]): string {
+  const formatSegs = (segs: ContentBlock['segments']) => {
+    return segs.map(seg => {
+      const t = escapeXml(seg.text);
+      if (seg.bold && seg.italic) return `<strong><em>${t}</em></strong>`;
+      if (seg.bold) return `<strong>${t}</strong>`;
+      if (seg.italic) return `<em>${t}</em>`;
+      return t;
+    }).join('');
+  };
+
+  return blocks.map((block, idx) => {
+    switch (block.type) {
+      case 'h1': return `<h1>${formatSegs(block.segments)}</h1>`;
+      case 'h2': return `<h2>${formatSegs(block.segments)}</h2>`;
+      case 'h3': return `<h3>${formatSegs(block.segments)}</h3>`;
+      case 'h4': return `<h4>${formatSegs(block.segments)}</h4>`;
+      case 'hr': return '<hr/>';
+      case 'blockquote': return `<blockquote><p style="text-indent: 0;">${formatSegs(block.segments)}</p></blockquote>`;
+      case 'bullet': return `<p class="bullet">\u2022 ${formatSegs(block.segments)}</p>`;
+      default: return `<p${idx === 0 ? ' class="first"' : ''}>${formatSegs(block.segments)}</p>`;
+    }
+  }).join('\n');
 }
 
 // Download file trigger helper in browser
@@ -436,58 +598,137 @@ export async function generatePodPdf(
       currentY += 4;
     }
 
-    // Body Paragraphs: 12 pt Times New Roman, Pure Black (#000000), Pełne wyjustowanie obustronne do obu krawędzi, interlinia 1.15
-    // Usuwamy zbędne znaki "Enter" wewnątrz zdań, pozostawiając naturalne, wyjustowane akapity
-    const rawParagraphs = cleanParagraphsFromEnters(stripHtml(currentEntry.content || ''));
+    // Body Content: Parse markdown blocks for structured rendering
+    // 12 pt Times New Roman, Pure Black (#000000), Pełne wyjustowanie, interlinia 1.15
+    const contentBlocks = parseMarkdownToBlocks(stripHtml(currentEntry.content || ''));
+    const lineHeight12 = 12 * 0.352778 * 1.15; // 4.868 mm
 
-    doc.setFont(fontFamily, 'normal');
-    doc.setFontSize(12); // Exact 12 pt specified by user
-    doc.setTextColor(0, 0, 0); // Pure black
-    doc.setLineHeightFactor(1.15);
-    const lineHeight = 12 * 0.352778 * 1.15; // 4.868 mm (12 pt font with 1.15 line spacing)
+    for (const block of contentBlocks) {
+      const plainText = processText(stripMarkdownInline(block.text || ''));
 
-    for (const rawPara of rawParagraphs) {
-      const sanitizedPara = processText(rawPara);
-      const paraLines: string[] = doc.splitTextToSize(sanitizedPara, getContentWidth());
-      let remainingLines = [...paraLines];
-
-      while (remainingLines.length > 0) {
-        if (currentY + lineHeight > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-          doc.addPage();
-          pageNumber++;
-          curLeft = getLeftMargin(pageNumber);
-          currentY = topMargin + 10;
+      if (block.type === 'h1') {
+        doc.setFont(fontFamily, 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        const hLines = doc.splitTextToSize(plainText, getContentWidth());
+        const hLineH = 16 * 0.352778 * 1.15;
+        currentY += 4;
+        for (const hLine of hLines) {
+          if (currentY + hLineH > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+          doc.text(hLine, curLeft + getContentWidth() / 2, currentY, { align: 'center' });
+          currentY += hLineH;
         }
-
-        const availableHeight = (pageHeight - bottomMargin) - currentY;
-        const linesThatFit = Math.max(1, Math.floor(availableHeight / lineHeight));
-        const chunk = remainingLines.slice(0, linesThatFit);
-        const isEndOfPara = chunk.length === remainingLines.length;
-
+        currentY += 4;
+      } else if (block.type === 'h2') {
+        doc.setFont(fontFamily, 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(0, 0, 0);
+        const hLines = doc.splitTextToSize(plainText, getContentWidth());
+        const hLineH = 13 * 0.352778 * 1.15;
+        currentY += 3;
+        for (const hLine of hLines) {
+          if (currentY + hLineH > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+          doc.text(hLine, curLeft, currentY);
+          currentY += hLineH;
+        }
+        currentY += 3;
+      } else if (block.type === 'h3' || block.type === 'h4') {
+        const sz = block.type === 'h3' ? 11.5 : 11;
+        doc.setFont(fontFamily, 'bold');
+        doc.setFontSize(sz);
+        doc.setTextColor(0, 0, 0);
+        const hLines = doc.splitTextToSize(plainText, getContentWidth());
+        const hLineH = sz * 0.352778 * 1.15;
+        currentY += 2;
+        for (const hLine of hLines) {
+          if (currentY + hLineH > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+          doc.text(hLine, curLeft, currentY);
+          currentY += hLineH;
+        }
+        currentY += 2;
+      } else if (block.type === 'hr') {
+        if (currentY + 6 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+          doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+        }
+        currentY += 3;
+        doc.setDrawColor(180, 160, 140);
+        doc.setLineWidth(0.2);
+        doc.line(curLeft + 15, currentY, curLeft + getContentWidth() - 15, currentY);
+        currentY += 5;
+      } else if (block.type === 'blockquote') {
+        doc.setFont(fontFamily, 'italic');
+        doc.setFontSize(11);
+        doc.setTextColor(60, 60, 60);
+        const qLines = doc.splitTextToSize(plainText, getContentWidth() - 12);
+        const qLineH = 11 * 0.352778 * 1.15;
+        for (const qLine of qLines) {
+          if (currentY + qLineH > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+          doc.text(qLine, curLeft + 6, currentY);
+          currentY += qLineH;
+        }
+        doc.setTextColor(0, 0, 0);
+        currentY += 2;
+      } else if (block.type === 'bullet') {
         doc.setFont(fontFamily, 'normal');
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
-
-        if (isEndOfPara) {
-          // All remaining lines fit on current page.
-          // jsPDF justifies all lines except the last element in array (natural left-align for paragraph ending)
-          doc.text(chunk, curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
-          currentY += chunk.length * lineHeight;
-          remainingLines = [];
-        } else {
-          // Paragraph continues to next page; by passing a trailing dummy line, all lines in chunk get justified!
-          doc.text([...chunk, ''], curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
-          currentY += chunk.length * lineHeight;
-          remainingLines = remainingLines.slice(linesThatFit);
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-          doc.addPage();
-          pageNumber++;
-          curLeft = getLeftMargin(pageNumber);
-          currentY = topMargin + 10;
+        const bLines = doc.splitTextToSize('\u2022 ' + plainText, getContentWidth() - 6);
+        for (const bLine of bLines) {
+          if (currentY + lineHeight12 > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+          doc.text(bLine, curLeft + 4, currentY);
+          currentY += lineHeight12;
         }
+        currentY += 1.5;
+      } else {
+        // Regular paragraph: 12 pt, justified, Times New Roman, interlinia 1.15
+        doc.setFont(fontFamily, 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.setLineHeightFactor(1.15);
+
+        const paraLines: string[] = doc.splitTextToSize(plainText, getContentWidth());
+        let remainingLines = [...paraLines];
+
+        while (remainingLines.length > 0) {
+          if (currentY + lineHeight12 > pageHeight - bottomMargin) {
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+          const availableHeight = (pageHeight - bottomMargin) - currentY;
+          const linesThatFit = Math.max(1, Math.floor(availableHeight / lineHeight12));
+          const chunk = remainingLines.slice(0, linesThatFit);
+          const isEndOfPara = chunk.length === remainingLines.length;
+
+          if (isEndOfPara) {
+            doc.text(chunk, curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
+            currentY += chunk.length * lineHeight12;
+            remainingLines = [];
+          } else {
+            doc.text([...chunk, ''], curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
+            currentY += chunk.length * lineHeight12;
+            remainingLines = remainingLines.slice(linesThatFit);
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+          }
+        }
+        currentY += 2.8;
       }
-      currentY += 2.8; // Odstęp po akapicie (proporcjonalny z interlinią 1.15)
     }
 
     // Bez modlitwy w ramce na koniec każdego dnia (opcjonalnie tylko przy jawnym options.includePrayer === true)

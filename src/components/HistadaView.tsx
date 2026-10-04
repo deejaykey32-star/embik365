@@ -64,7 +64,15 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   };
 
   const handleDownloadQr = () => {
-    generateAndDownloadQrBadgePng('histada-app.pages.dev', 'Gra Histada – Dzieje i Historia', 'histada');
+    generateAndDownloadQrBadgePng({
+      id: 'histada',
+      title: 'Gra Histada – Dzieje i Historia',
+      displayLabel: 'histada-app.pages.dev',
+      shortUrl: 'https://histada-app.pages.dev',
+      fullUrl: 'https://histada-app.pages.dev',
+      category: 'histada',
+      createdAt: new Date().toISOString()
+    });
   };
 
   // 3 Tomy / Części Trylogii Histada

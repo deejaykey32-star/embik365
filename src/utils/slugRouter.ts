@@ -546,7 +546,7 @@ export function buildUrlSlug(route: {
 
   const parts: string[] = [route.sectionId];
 
-  if (route.date && route.sectionId !== 'info365' && route.sectionId !== 'mapa' && route.sectionId !== 'histada') {
+  if (route.date && (route.sectionId as string) !== 'info365') {
     parts.push(getCanonicalDateSlug(route.date));
   } else if (route.date && route.subview) {
     parts.push(getCanonicalDateSlug(route.date));
