@@ -97,9 +97,9 @@ export const RhzPrayerGuide: React.FC<Props> = ({
   ).length;
 
   const fontClass = 
-    fontSize === 'normal' ? 'text-sm sm:text-base leading-relaxed' :
-    fontSize === 'large' ? 'text-base sm:text-lg leading-relaxed' :
-    'text-lg sm:text-xl leading-relaxed';
+    fontSize === 'normal' ? 'text-[12pt] leading-[1.15]' :
+    fontSize === 'large' ? 'text-[14pt] leading-[1.2]' :
+    'text-[16pt] leading-[1.25]';
 
   return (
     <div className="space-y-8 transition-colors duration-300">

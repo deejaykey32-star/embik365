@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --font-serif: 'Newsreader', Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-serif: 'Times New Roman', Times, Georgia, serif;
     --font-heading: 'Cinzel', serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
@@ -209,14 +209,45 @@
   background: rgba(245, 158, 11, 0.45);
 }
 
-/* Rich text content formatting for WYSIWYG & HTML reader outputs */
-.rich-text-content p {
-  margin-bottom: 1.25rem;
-  line-height: 1.8;
+/* Rich text content formatting for WYSIWYG & HTML reader outputs (Times New Roman, interlinia 1.15, pełne wyjustowanie obustronne) */
+.rich-text-content,
+.app-reading-content {
+  font-family: 'Times New Roman', Times, Georgia, serif !important;
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  text-align-last: left;
+  hyphens: auto !important;
+  -webkit-hyphens: auto !important;
+  line-height: 1.15 !important;
 }
 
-.rich-text-content p:last-child {
-  margin-bottom: 0;
+.rich-text-content p,
+.app-reading-content p,
+.app-reading-para {
+  font-family: 'Times New Roman', Times, Georgia, serif !important;
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  text-align-last: left;
+  hyphens: auto !important;
+  -webkit-hyphens: auto !important;
+  line-height: 1.15 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.45em !important;
+  text-indent: 1.5em;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.rich-text-content p:first-of-type,
+.app-reading-content p:first-of-type,
+.app-reading-para:first-child,
+.app-reading-para.no-indent {
+  text-indent: 0 !important;
+}
+
+.rich-text-content p:last-child,
+.app-reading-content p:last-child {
+  margin-bottom: 0 !important;
 }
 
 .rich-text-content h1,
@@ -272,10 +303,7 @@
   color: #fde68a;
 }
 
-.rich-text-content {
-  white-space: pre-line;
-}
-
+.rich-text-content,
 .rich-text-content p,
 .rich-text-content .not-prose,
 .rich-text-content .wnr-qr-container {

@@ -28,6 +28,7 @@ import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrC
 import { QrImageDisplay } from './QrImageDisplay';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
+import { formatContentForReaderHtml } from '../utils/textFormatter';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -60,7 +61,7 @@ export const StandardReader: React.FC<Props> = ({
   currentLang = 'pl',
   theme = 'light'
 }) => {
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
+  const [fontSize, setFontSize] = useState<'compact' | 'normal' | 'large' | 'xlarge'>('normal');
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
@@ -84,6 +85,15 @@ export const StandardReader: React.FC<Props> = ({
   const displayedTitle = activeBibliaEntry ? activeBibliaEntry.title : entry.title;
   const displayedSubtitle = activeBibliaEntry ? `${currentDate.displayDate} • ${activeBibliaEntry.category} (${activeBibliaEntry.passage})` : entry.subtitle;
   const displayedContent = activeBibliaEntry ? activeBibliaEntry.content : entry.content;
+
+  // Sformatowana treść z usuniętymi przypadkowymi znakami "Enter", równomiernym wyjustowaniem i interlinią 1.15
+  const formattedContentHtml = React.useMemo(() => {
+    return formatContentForReaderHtml(displayedContent || '');
+  }, [displayedContent]);
+
+  const formattedPrayerHtml = React.useMemo(() => {
+    return formatContentForReaderHtml(entry.prayer || '');
+  }, [entry.prayer]);
 
   // Find PDFs/ebooks for this section and day
   const matchingPdfs = sectionPdfs.filter(
@@ -181,34 +191,51 @@ export const StandardReader: React.FC<Props> = ({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Font size picker */}
+            {/* Font size picker: 12 pt, 14 pt, 16 pt, 18 pt */}
             <div className="flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-0.5 text-xs">
               <button
-                onClick={() => setFontSize('normal')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all cursor-pointer ${fontSize === 'normal'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
+                onClick={() => setFontSize('compact')}
+                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  fontSize === 'compact'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                     : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                  }`}
+                }`}
+                title="Czcionka 12 pt (Kompaktowa / format druku)"
               >
-                A
+                12pt
+              </button>
+              <button
+                onClick={() => setFontSize('normal')}
+                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  fontSize === 'normal'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
+                    : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
+                }`}
+                title="Czcionka 14 pt (Standardowa, czytelna na ekranie)"
+              >
+                14pt
               </button>
               <button
                 onClick={() => setFontSize('large')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-sm cursor-pointer ${fontSize === 'large'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
+                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  fontSize === 'large'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                     : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                  }`}
+                }`}
+                title="Czcionka 16 pt (Powiększona)"
               >
-                A+
+                16pt
               </button>
               <button
                 onClick={() => setFontSize('xlarge')}
-                className={`px-2 py-1 rounded-lg font-medium transition-all text-base cursor-pointer ${fontSize === 'xlarge'
-                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs'
+                className={`px-2 py-1 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  fontSize === 'xlarge'
+                    ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                     : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white'
-                  }`}
+                }`}
+                title="Czcionka 18 pt (Duża)"
               >
-                A++
+                18pt
               </button>
             </div>
 
@@ -457,23 +484,37 @@ export const StandardReader: React.FC<Props> = ({
       {/* Main Reading Card (for non-RHZ sections, or additional notes) */}
       {section.id !== 'rhz365' && (
         <article className="bg-white dark:bg-[#111722] rounded-3xl p-6 sm:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
-          {/* Main Content */}
-          <div className={`font-serif-book text-[#2e241c] dark:text-[#e2e8f0] leading-relaxed text-justify ${fontSize === 'normal' ? 'text-base sm:text-lg leading-7 sm:leading-8' :
-              fontSize === 'large' ? 'text-lg sm:text-xl leading-8 sm:leading-9' :
-                'text-xl sm:text-2xl leading-9 sm:leading-10'
-            }`}>
-            {/<[a-z][\s\S]*>/i.test(displayedContent || '') ? (
-              <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: displayedContent }} />
-            ) : (
-              <div className="whitespace-pre-line">{displayedContent}</div>
-            )}
-          </div>
+          {/* Main Content: Wyjustowany obustronnie, Times New Roman, interlinia 1.15, bez zbędnych Enterów */}
+          <div
+            className={`app-reading-content select-text font-serif-book text-[#2e241c] dark:text-[#e2e8f0] ${
+              fontSize === 'compact' ? 'text-[12pt]' :
+              fontSize === 'normal' ? 'text-[14pt]' :
+              fontSize === 'large' ? 'text-[16pt]' : 'text-[18pt]'
+            }`}
+            style={{
+              fontFamily: '"Times New Roman", Times, Georgia, serif',
+              fontSize: fontSize === 'compact' ? '12pt' : fontSize === 'normal' ? '14pt' : fontSize === 'large' ? '16pt' : '18pt',
+              lineHeight: '1.15',
+              textAlign: 'justify',
+              textJustify: 'inter-word'
+            }}
+            dangerouslySetInnerHTML={{ __html: formattedContentHtml }}
+          />
 
           {/* Quote if present */}
           {entry.quote && (
             <div className="p-6 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border-l-4 border-[#8c572b] dark:border-amber-500 my-6 space-y-2 transition-colors">
               <Quote className="w-6 h-6 text-[#8c572b] dark:text-amber-400" />
-              <p className="font-serif-book italic text-base sm:text-lg text-[#473729] dark:text-amber-100">
+              <p
+                className="font-serif-book italic leading-[1.15] text-[#473729] dark:text-amber-100"
+                style={{
+                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontSize: fontSize === 'compact' ? '12pt' : fontSize === 'normal' ? '14pt' : fontSize === 'large' ? '16pt' : '18pt',
+                  lineHeight: '1.15',
+                  textAlign: 'justify',
+                  textJustify: 'inter-word'
+                }}
+              >
                 {entry.quote}
               </p>
             </div>
@@ -486,13 +527,21 @@ export const StandardReader: React.FC<Props> = ({
                 <Heart className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                 <span>Modlitwa Końcowa</span>
               </div>
-              <div className="font-serif-book italic text-base sm:text-lg text-[#3f3125] dark:text-[#cbd5e1] leading-relaxed">
-                {/<[a-z][\s\S]*>/i.test(entry.prayer || '') ? (
-                  <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: entry.prayer }} />
-                ) : (
-                  <div className="whitespace-pre-line">{entry.prayer}</div>
-                )}
-              </div>
+              <div
+                className={`app-reading-content select-text font-serif-book italic text-[#3f3125] dark:text-[#cbd5e1] ${
+                  fontSize === 'compact' ? 'text-[12pt]' :
+                  fontSize === 'normal' ? 'text-[14pt]' :
+                  fontSize === 'large' ? 'text-[16pt]' : 'text-[18pt]'
+                }`}
+                style={{
+                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontSize: fontSize === 'compact' ? '12pt' : fontSize === 'normal' ? '14pt' : fontSize === 'large' ? '16pt' : '18pt',
+                  lineHeight: '1.15',
+                  textAlign: 'justify',
+                  textJustify: 'inter-word'
+                }}
+                dangerouslySetInnerHTML={{ __html: formattedPrayerHtml }}
+              />
             </div>
           )}
         </article>

@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import QRCode from 'qrcode';
 import { SectionEntry, SectionMeta } from '../types';
 import { getWnrEntryForDay } from '../data/wnr365Data';
+import { cleanParagraphsFromEnters } from './textFormatter';
 
 // Memory cache for QR code card images to avoid repeated fetches
 const qrImageCache = new Map<string, string>();
@@ -10,19 +11,18 @@ const qrImageCache = new Map<string, string>();
 async function fetchQrImageBase64(imgPath: string): Promise<string | null> {
   if (qrImageCache.has(imgPath)) return qrImageCache.get(imgPath)!;
   try {
-    const res = await fetch(imgPath);
+    const url = (typeof window !== 'undefined' && imgPath.startsWith('/'))
+      ? `${window.location.origin}${imgPath}`
+      : imgPath;
+    const res = await fetch(url);
     if (!res.ok) return null;
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const dataUrl = reader.result as string;
-        qrImageCache.set(imgPath, dataUrl);
-        resolve(dataUrl);
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
+    const arrayBuf = await res.arrayBuffer();
+    const contentType = res.headers.get('content-type');
+    const mime = contentType || (imgPath.match(/\.jpe?g$/i) ? 'image/jpeg' : 'image/png');
+    const base64 = arrayBufferToBase64(arrayBuf);
+    const dataUrl = `data:${mime};base64,${base64}`;
+    qrImageCache.set(imgPath, dataUrl);
+    return dataUrl;
   } catch (err) {
     console.warn('Could not load QR image:', imgPath, err);
     return null;
@@ -41,15 +41,17 @@ export interface ExportOptions {
   selectedSeason?: 'zima' | 'wiosna' | 'lato' | 'jesien';
   selectedYear?: 1 | 2 | 3 | 4;
   allYearEntries?: SectionEntry[];
+  onProgress?: (current: number, total: number, message: string) => void;
 }
 
-// Helper to convert ArrayBuffer to Base64 for jsPDF font embedding
+// Helper to convert ArrayBuffer to Base64 in fast chunks for jsPDF font embedding
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = '';
   const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
+  const chunkSize = 8192;
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   return btoa(binary);
 }
@@ -131,10 +133,11 @@ let fontCache: { reg?: string; bold?: string; ital?: string } | null = null;
 async function fetchPdfFonts(): Promise<{ reg?: string; bold?: string; ital?: string }> {
   if (fontCache) return fontCache;
   try {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     const [regRes, boldRes, italRes] = await Promise.all([
-      fetch('/fonts/PTSerif-Regular.ttf'),
-      fetch('/fonts/PTSerif-Bold.ttf'),
-      fetch('/fonts/PTSerif-Italic.ttf')
+      fetch(`${baseUrl}/fonts/PTSerif-Regular.ttf`),
+      fetch(`${baseUrl}/fonts/PTSerif-Bold.ttf`),
+      fetch(`${baseUrl}/fonts/PTSerif-Italic.ttf`)
     ]);
 
     if (regRes.ok && boldRes.ok && italRes.ok) {
@@ -154,6 +157,19 @@ async function fetchPdfFonts(): Promise<{ reg?: string; bold?: string; ital?: st
     console.warn('Could not fetch custom TTF fonts for jsPDF:', e);
   }
   return {};
+}
+
+// Cache for daily online reading QR codes to avoid regenerating identical codes
+const dayQrCodeCache = new Map<string, string>();
+async function getDayQrCodeDataUrl(dayUrl: string): Promise<string | null> {
+  if (dayQrCodeCache.has(dayUrl)) return dayQrCodeCache.get(dayUrl)!;
+  try {
+    const dataUrl = await QRCode.toDataURL(dayUrl, { width: 140, margin: 1 });
+    dayQrCodeCache.set(dayUrl, dataUrl);
+    return dataUrl;
+  } catch (e) {
+    return null;
+  }
 }
 
 // -------------------------------------------------------------
@@ -318,9 +334,20 @@ export async function generatePodPdf(
     ? options.allYearEntries
     : [entry];
 
+  const totalEntries = entriesToProcess.length;
+
   // Process entries
-  for (let idx = 0; idx < entriesToProcess.length; idx++) {
+  for (let idx = 0; idx < totalEntries; idx++) {
     const currentEntry = entriesToProcess[idx];
+
+    // Yield control periodically so browser UI remains smooth and progress is visible
+    if (idx % 2 === 0 || idx === totalEntries - 1) {
+      if (options.onProgress) {
+        const pct = Math.round(((idx + 1) / totalEntries) * 100);
+        options.onProgress(idx + 1, totalEntries, `Generowanie stron POD: ${idx + 1} z ${totalEntries} (${pct}%)...`);
+      }
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
 
     doc.addPage();
     pageNumber++;
@@ -355,7 +382,7 @@ export async function generatePodPdf(
       const passLines = doc.splitTextToSize(passText, getContentWidth());
       for (const pLine of passLines) {
         if (currentY + 5.2 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
@@ -376,7 +403,7 @@ export async function generatePodPdf(
       const mystLines = doc.splitTextToSize(mystText, getContentWidth());
       for (const mLine of mystLines) {
         if (currentY + 5.2 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
@@ -397,7 +424,7 @@ export async function generatePodPdf(
       const intLines = doc.splitTextToSize(intText, getContentWidth());
       for (const iLine of intLines) {
         if (currentY + 5.2 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
@@ -409,15 +436,15 @@ export async function generatePodPdf(
       currentY += 4;
     }
 
-    // Body Paragraphs: 12 pt Times New Roman, Pure Black (#000000), Wyjustowane obustronnie!
-    const rawParagraphs = stripHtml(currentEntry.content || '')
-      .split('\n')
-      .filter(p => p.trim().length > 0);
+    // Body Paragraphs: 12 pt Times New Roman, Pure Black (#000000), Wyjustowane obustronnie, interlinia 1.15
+    // Usuwamy zbędne znaki "Enter" wewnątrz zdań, pozostawiając naturalne, wyjustowane akapity
+    const rawParagraphs = cleanParagraphsFromEnters(stripHtml(currentEntry.content || ''));
 
     doc.setFont(fontFamily, 'normal');
     doc.setFontSize(12); // Exact 12 pt specified by user
     doc.setTextColor(0, 0, 0); // Pure black
-    const lineHeight = 5.8; // 5.8 mm leading for 12 pt font
+    doc.setLineHeightFactor(1.15);
+    const lineHeight = 12 * 0.352778 * 1.15; // 4.868 mm (12 pt font with 1.15 line spacing)
 
     for (const rawPara of rawParagraphs) {
       const sanitizedPara = processText(rawPara);
@@ -428,7 +455,7 @@ export async function generatePodPdf(
         const isLastLine = lIdx === paraLines.length - 1;
 
         if (currentY + lineHeight > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
           doc.addPage();
           pageNumber++;
           curLeft = getLeftMargin(pageNumber);
@@ -449,19 +476,20 @@ export async function generatePodPdf(
 
         currentY += lineHeight;
       }
-      currentY += 3.2; // Spacing after paragraph
+      currentY += 2.8; // Spacing after paragraph (proportional with 1.15 line spacing)
     }
 
-    // Prayer Box (12 pt Italic, Pure Black text, Justified)
+    // Prayer Box (12 pt Italic, Pure Black text, Justified, interlinia 1.15)
     if (currentEntry.prayer && options.includePrayer !== false) {
       doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(11);
+      doc.setFontSize(12);
+      const prayerLineHeight = 12 * 0.352778 * 1.15; // 4.868 mm
       const sanitizedPrayer = processText(stripHtml(currentEntry.prayer));
       const prayerLines: string[] = doc.splitTextToSize(sanitizedPrayer, getContentWidth() - 10);
-      const prayerBoxHeight = prayerLines.length * 5.2 + 16;
+      const prayerBoxHeight = prayerLines.length * prayerLineHeight + 16;
 
       if (currentY + prayerBoxHeight > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
         doc.addPage();
         pageNumber++;
         curLeft = getLeftMargin(pageNumber);
@@ -480,7 +508,7 @@ export async function generatePodPdf(
       doc.text('MODLITWA SERCA', curLeft + getContentWidth() / 2, currentY + 6, { align: 'center' });
 
       doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(11);
+      doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       let pY = currentY + 12;
       for (let pIdx = 0; pIdx < prayerLines.length; pIdx++) {
@@ -491,7 +519,7 @@ export async function generatePodPdf(
         } else {
           doc.text(pLine, curLeft + 5, pY);
         }
-        pY += 5.2;
+        pY += prayerLineHeight;
       }
 
       currentY += prayerBoxHeight + 6;
@@ -515,7 +543,7 @@ export async function generatePodPdf(
         const targetUrl = (badge as any).targetUrl || (badge as any).url || (badge as any).link || (badge as any).shortUrl || 'https://embik.pl';
         if (!badgeDataUrl) {
           try {
-            badgeDataUrl = await QRCode.toDataURL(targetUrl, { width: 300, margin: 1 });
+            badgeDataUrl = await QRCode.toDataURL(targetUrl, { width: 200, margin: 1 });
           } catch (e) {}
         }
 
@@ -523,7 +551,7 @@ export async function generatePodPdf(
           const cardW = 72; // mm
           const cardH = 99; // mm (800x1100 ratio)
           if (currentY + cardH + 10 > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
             doc.addPage();
             pageNumber++;
             curLeft = getLeftMargin(pageNumber);
@@ -531,7 +559,8 @@ export async function generatePodPdf(
           }
 
           const cardX = curLeft + (getContentWidth() - cardW) / 2;
-          doc.addImage(badgeDataUrl, 'PNG', cardX, currentY, cardW, cardH);
+          const imgFmt = badgeDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
+          doc.addImage(badgeDataUrl, imgFmt, cardX, currentY, cardW, cardH, undefined, 'FAST');
           if (targetUrl) {
             doc.link(cardX, currentY, cardW, cardH, { url: targetUrl });
           }
@@ -547,15 +576,12 @@ export async function generatePodPdf(
       ? `https://wnr365.pages.dev/b/${currentEntry.dayNumber}`
       : `https://wnr365.pages.dev/w/${currentEntry.dayNumber}`;
 
-    let dayQrDataUrl: string | null = null;
-    try {
-      dayQrDataUrl = await QRCode.toDataURL(dayUrl, { width: 250, margin: 1 });
-    } catch (e) {}
+    const dayQrDataUrl = await getDayQrCodeDataUrl(dayUrl);
 
     if (dayQrDataUrl) {
       const boxH = 26;
       if (currentY + boxH + 6 > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
         doc.addPage();
         pageNumber++;
         curLeft = getLeftMargin(pageNumber);
@@ -568,7 +594,7 @@ export async function generatePodPdf(
       doc.setFillColor(252, 250, 245);
       doc.roundedRect(curLeft, currentY, getContentWidth(), boxH, 2, 2, 'FD');
 
-      doc.addImage(dayQrDataUrl, 'PNG', curLeft + 3, currentY + 3, 20, 20);
+      doc.addImage(dayQrDataUrl, 'PNG', curLeft + 3, currentY + 3, 20, 20, undefined, 'FAST');
       doc.link(curLeft + 3, currentY + 3, 20, 20, { url: dayUrl });
 
       doc.setFont(fontFamily, 'bold');
@@ -590,13 +616,13 @@ export async function generatePodPdf(
       currentY += boxH + 6;
     }
 
-    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily);
+    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
   }
 
   return doc.output('blob');
 }
 
-// Running headers and page numbers in pure black (#000000)
+// Running headers and page numbers in pure black (#000000) with precise odd/even alternating alignment
 function addHeaderFooter(
   doc: jsPDF,
   pageNum: number,
@@ -605,27 +631,34 @@ function addHeaderFooter(
   width: number,
   height: number,
   topM: number,
-  bottomM: number,
-  fontFamily: string = 'TimesNewRoman'
+  bottomMargin: number,
+  fontFamily: string = 'TimesNewRoman',
+  gutterM: number = 18,
+  outerM: number = 12
 ) {
   doc.setFont(fontFamily, 'normal');
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0); // Pure black
 
-  // Footer: Page Number centered
-  doc.text(String(pageNum), width / 2, height - bottomM + 8, { align: 'center' });
+  const isOdd = pageNum % 2 !== 0;
+  const curLeft = isOdd ? gutterM : outerM;
+  const contentW = width - gutterM - outerM;
+  const curCenter = curLeft + contentW / 2;
+
+  // Footer: Page Number centered perfectly under the text block
+  doc.text(String(pageNum), curCenter, height - bottomMargin + 8, { align: 'center' });
 
   // Running header: page 5 and above
   if (pageNum >= 5) {
-    const isOdd = pageNum % 2 !== 0;
     let headerText = isOdd ? chapterTitle : bookTitle;
-    if (headerText.length > 38) {
-      headerText = headerText.substring(0, 35) + '...';
+    if (headerText.length > 40) {
+      headerText = headerText.substring(0, 37) + '...';
     }
-    doc.text(headerText.toUpperCase(), width / 2, topM - 6, { align: 'center' });
+    doc.text(headerText.toUpperCase(), curCenter, topM - 6, { align: 'center' });
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    doc.line(16, topM - 3, width - 16, topM - 3);
+    // Line strictly spans the content column
+    doc.line(curLeft, topM - 3, curLeft + contentW, topM - 3);
   }
 }
 
@@ -675,7 +708,7 @@ export async function generatePodDocx(
   <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>`);
 
-  // 4. word/styles.xml (Times New Roman, 12 pt = 24 half-pt, Pure Black #000000, Wyjustowanie obustronne)
+  // 4. word/styles.xml (Times New Roman, 12 pt = 24 half-pt, interlinia 1.15 = 276, Pure Black #000000, Wyjustowanie obustronne)
   zip.file('word/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:docDefaults>
@@ -683,13 +716,14 @@ export async function generatePodDocx(
       <w:rPr>
         <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
         <w:sz w:val="24"/>
+        <w:szCs w:val="24"/>
         <w:color w:val="000000"/>
         <w:lang w:val="pl-PL"/>
       </w:rPr>
     </w:rPrDefault>
     <w:pPrDefault>
       <w:pPr>
-        <w:spacing w:line="288" w:lineRule="auto" w:after="140"/>
+        <w:spacing w:line="276" w:lineRule="auto" w:after="120"/>
         <w:wordWrap/>
         <w:jc w:val="both"/>
       </w:pPr>
@@ -706,17 +740,17 @@ export async function generatePodDocx(
   for (let idx = 0; idx < entriesToProcess.length; idx++) {
     const curEntry = entriesToProcess[idx];
     const chapterTitle = escapeXml(curEntry.title || `Dzień ${curEntry.dayNumber || idx + 1}`);
-    const paragraphs = stripHtml(curEntry.content || '').split('\n').filter(p => p.trim().length > 0);
+    const paragraphs = cleanParagraphsFromEnters(stripHtml(curEntry.content || ''));
 
     const paragraphsXml = paragraphs.map(p => `
       <w:p>
         <w:pPr>
           <w:ind w:firstLine="360"/>
-          <w:spacing w:line="288" w:after="140"/>
+          <w:spacing w:line="276" w:lineRule="auto" w:after="120"/>
           <w:jc w:val="both"/>
         </w:pPr>
         <w:r>
-          <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="24"/><w:color w:val="000000"/></w:rPr>
+          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr>
           <w:t>${escapeXml(p)}</w:t>
         </w:r>
       </w:p>`).join('');
@@ -724,11 +758,11 @@ export async function generatePodDocx(
     const prayerXml = curEntry.prayer ? `
       <w:p>
         <w:pPr><w:spacing w:before="360" w:after="100"/><w:jc w:val="center"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="22"/><w:color w:val="000000"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
       </w:p>
       <w:p>
-        <w:pPr><w:spacing w:after="280"/><w:jc w:val="both"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
+        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="240"/><w:jc w:val="both"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
       </w:p>` : '';
 
     const wnrDocx = (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || curEntry.sectionId === 'wnr365' || curEntry.sectionId === 'ebook_wnr')
@@ -778,8 +812,8 @@ export async function generatePodDocx(
       </w:p>
       ${curEntry.passage ? `
       <w:p>
-        <w:pPr><w:spacing w:after="180"/><w:jc w:val="left"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="20"/><w:color w:val="000000"/></w:rPr><w:t>Fragment: ${escapeXml(curEntry.passage)}</w:t></w:r>
+        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="160"/><w:jc w:val="left"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>Fragment: ${escapeXml(curEntry.passage)}</w:t></w:r>
       </w:p>` : ''}
       ${paragraphsXml}
       ${prayerXml}
@@ -893,12 +927,12 @@ export async function generateEpub(
   </rootfiles>
 </container>`);
 
-  // 3. OEBPS/style.css (12 pt Times New Roman, Pure Black #000000, Wyjustowane obustronnie)
+  // 3. OEBPS/style.css (12 pt Times New Roman, interlinia 1.15, Pure Black #000000, Wyjustowane obustronnie)
   zip.file('OEBPS/style.css', `
 body {
   font-family: 'Times New Roman', Times, Georgia, serif;
   font-size: 12pt;
-  line-height: 1.6;
+  line-height: 1.15;
   margin: 4%;
   padding: 0;
   color: #000000;
@@ -907,38 +941,49 @@ body {
   hyphens: auto;
 }
 h1 {
+  font-family: 'Times New Roman', Times, Georgia, serif;
   font-size: 1.5em;
   color: #000000;
   text-align: center;
   margin-top: 1.2em;
   margin-bottom: 0.5em;
+  line-height: 1.15;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 h2 {
+  font-family: 'Times New Roman', Times, Georgia, serif;
   font-size: 1.1em;
   color: #000000;
   text-align: center;
   font-weight: normal;
   font-style: italic;
   margin-bottom: 1.2em;
+  line-height: 1.15;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 p {
+  font-family: 'Times New Roman', Times, Georgia, serif;
   font-size: 12pt;
+  line-height: 1.15;
   color: #000000;
   text-indent: 1.5em;
   margin-top: 0;
-  margin-bottom: 0.4em;
+  margin-bottom: 0.35em;
   text-align: justify;
+  text-justify: inter-word;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  hyphens: auto;
 }
 p.first {
   text-indent: 0;
 }
 .chapter-content {
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-size: 12pt;
+  line-height: 1.15;
   max-width: 100%;
 }
 .prayer-box {
@@ -949,11 +994,19 @@ p.first {
   border-radius: 4px;
   text-align: justify;
   font-style: italic;
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-size: 12pt;
+  line-height: 1.15;
   color: #000000;
   box-sizing: border-box;
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+.prayer-box p {
+  font-family: 'Times New Roman', Times, Georgia, serif;
+  font-size: 12pt;
+  line-height: 1.15;
 }
 .prayer-title {
   font-weight: bold;
@@ -1001,9 +1054,7 @@ p.first {
 
     htmlNavItems.push(`<li><a href="${chapFileName}">${chapTitle}</a></li>`);
 
-    const paragraphsHtml = stripHtml(curEntry.content || '')
-      .split('\n')
-      .filter(p => p.trim().length > 0)
+    const paragraphsHtml = cleanParagraphsFromEnters(stripHtml(curEntry.content || ''))
       .map((p, pIdx) => `<p class="${pIdx === 0 ? 'first' : ''}">${escapeXml(p)}</p>`)
       .join('\n');
 

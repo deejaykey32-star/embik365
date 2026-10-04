@@ -33,6 +33,7 @@ import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio,
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { COMMON_PRAYERS } from '../data/rosaryData';
+import { formatContentForReaderHtml } from '../utils/textFormatter';
 
 interface Props {
   section: SectionMeta;
@@ -751,10 +752,16 @@ export const FlipbookReader: React.FC<Props> = ({
               </p>
             </div>
 
-            {/* Chapter Text Body */}
-            <div className="flex-1 whitespace-pre-line leading-relaxed text-xs sm:text-sm font-serif-book">
-              {data.chunk || data.fullContent}
-            </div>
+            {/* Chapter Text Body: 14 pt, interlinia 1.15, Times New Roman, bez zbędnych Enterów */}
+            <div
+              className="flex-1 text-[13pt] sm:text-[14pt] leading-[1.15] font-serif-book text-justify app-reading-content"
+              style={{
+                fontFamily: '"Times New Roman", Times, Georgia, serif',
+                textAlign: 'justify',
+                textJustify: 'inter-word'
+              }}
+              dangerouslySetInnerHTML={{ __html: formatContentForReaderHtml(data.chunk || data.fullContent || '') }}
+            />
 
             {/* PDF Running Footer */}
             <div className="border-t border-amber-800/20 pt-2 mt-3 flex items-center justify-between text-[10px] text-amber-800/70 dark:text-amber-400/70 font-sans-ui shrink-0">
@@ -879,7 +886,10 @@ export const FlipbookReader: React.FC<Props> = ({
                 {rhzDay1.stageTitle}
               </div>
 
-              <div className="rich-text-content whitespace-pre-line text-xs font-serif-book leading-relaxed text-justify text-[#30261e] dark:text-[#f1f5f9]">
+              <div
+                className="rich-text-content whitespace-pre-line text-[12pt] font-serif-book leading-[1.15] text-justify text-[#30261e] dark:text-[#f1f5f9]"
+                style={{ fontFamily: '"Times New Roman", Times, Georgia, serif' }}
+              >
                 {rhzDay1.page1}
               </div>
             </div>
@@ -927,24 +937,20 @@ export const FlipbookReader: React.FC<Props> = ({
 
     return (
       <div className="flex flex-col h-full flex-1 justify-between space-y-3 overflow-hidden">
-        <div className={`font-serif-book leading-relaxed text-[#30261e] dark:text-white text-justify flex-1 overflow-y-auto pr-1 ${
-          fontSize === 'sm' ? 'text-xs leading-5' :
-          fontSize === 'base' ? 'text-sm leading-6' :
-          fontSize === 'lg' ? 'text-base leading-7' :
-          'text-lg leading-8'
-        }`}>
-          {data.chunk ? (
-            /<[a-z][\s\S]*>/i.test(data.chunk) ? (
-              <div className="rich-text-content whitespace-pre-line" dangerouslySetInnerHTML={{ __html: data.chunk }} />
-            ) : (
-              <div className="whitespace-pre-line">{data.chunk}</div>
-            )
-          ) : (
-            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 text-xs sm:text-sm font-serif-book leading-relaxed text-justify my-auto text-[#30261e] dark:text-[#f1f5f9]">
-              {data.fullContent || data.title}
-            </div>
-          )}
-        </div>
+        <div
+          className={`font-serif-book text-[#30261e] dark:text-white text-justify flex-1 overflow-y-auto pr-1 app-reading-content ${
+            fontSize === 'sm' ? 'text-[12pt] leading-[1.15]' :
+            fontSize === 'base' ? 'text-[14pt] leading-[1.15]' :
+            fontSize === 'lg' ? 'text-[16pt] leading-[1.2]' :
+            'text-[18pt] leading-[1.25]'
+          }`}
+          style={{
+            fontFamily: '"Times New Roman", Times, Georgia, serif',
+            textAlign: 'justify',
+            textJustify: 'inter-word'
+          }}
+          dangerouslySetInnerHTML={{ __html: formatContentForReaderHtml(data.chunk || data.fullContent || data.title || '') }}
+        />
 
         {data.qrBadges && data.qrBadges.length > 0 && (
           <div className="mt-2 space-y-1.5 shrink-0">
