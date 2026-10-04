@@ -103,6 +103,11 @@
 /z/model8 /model-8 302
 /r/siec /siec 302
 /z/siec /siec 302
+/r/mapa /mapa/ 302
+/z/mapa /mapa/ 302
+/pielgrzymka /mapa/ 302
+/pielgrzymka-gwiazdzista /mapa/ 302
+/szlak /mapa/ 302
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

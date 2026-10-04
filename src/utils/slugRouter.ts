@@ -68,6 +68,13 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'pismo-swiete': 'biblia365',
   'apokryfy': 'biblia365',
 
+  'mapa': 'mapa',
+  'map': 'mapa',
+  'pielgrzymka': 'mapa',
+  'pielgrzymka-gwiazdzista': 'mapa',
+  'orle-gniazda': 'mapa',
+  'szlak': 'mapa',
+
   'ebook_wnr': 'ebook_wnr',
   'ebook-wnr': 'ebook_wnr',
   'ebook-wnr365': 'ebook_wnr',
@@ -500,10 +507,13 @@ export function buildUrlSlug(route: {
   if (route.sectionId === 'grafika' && (route.subview === 'aistudio' || route.subview === 'ai-studio')) {
     return '/grafika/aistudio';
   }
+  if (route.sectionId === 'mapa') {
+    return '/mapa';
+  }
 
   const parts: string[] = [route.sectionId];
 
-  if (route.date && route.sectionId !== 'info365') {
+  if (route.date && route.sectionId !== 'info365' && route.sectionId !== 'mapa') {
     parts.push(getCanonicalDateSlug(route.date));
   } else if (route.date && route.subview) {
     parts.push(getCanonicalDateSlug(route.date));

@@ -70,6 +70,19 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       hidden: false
     },
     {
+      id: 'mapa',
+      name: 'Mapa: Pielgrzymka Gwiaździsta 2026',
+      badge: 'Pielgrzymka & Szlak Orlich Gniazd',
+      shortDesc: 'Wielka Pielgrzymka Gwiaździsta 2026 i Szlak Orlich Gniazd – interaktywna mapa i przewodnik.',
+      fullDesc: 'Trzy etapy pielgrzymki: Promienie z całego świata ku Jasnej Górze, 164 km Szlakiem Orlich Gniazd do Sanktuarium Bożego Miłosierdzia w Łagiewnikach (z czuwaniem w Dniu Ojca w Ojcowie) oraz uroczyste Rozesłanie na cały świat.',
+      imageUrl: 'https://images.unsplash.com/photo-1524850011238-e3d235c7d4c9?w=800&auto=format&fit=crop&q=80',
+      imageAlt: 'Interaktywna Mapa Pielgrzymki Gwiaździstej 2026',
+      color: '#d97706',
+      bgGradient: 'from-amber-950/20 via-orange-900/10 to-transparent',
+      qrId: 'qr_mapa',
+      hidden: false
+    },
+    {
       id: 'ebook_wnr',
       name: 'ebook WnR365',
       badge: 'Wydanie Książkowe Flipbook',

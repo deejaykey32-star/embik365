@@ -9,6 +9,7 @@ import { FlipbookReader } from './components/FlipbookReader';
 import { StandardReader } from './components/StandardReader';
 import { Info365View } from './components/Info365View';
 import { MediaGallerySectionView } from './components/MediaGallerySectionView';
+import { PilgrimageMapView } from './components/PilgrimageMapView';
 import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
@@ -539,6 +540,13 @@ export default function App() {
             onOpenAdmin={() => setIsAdminOpen(true)}
             onOpenQrModal={() => setIsAdminOpen(true)}
             currentLang={currentLang}
+          />
+        ) : activeSectionId === 'mapa' ? (
+          <PilgrimageMapView
+            key={`mapa-${currentLang}`}
+            section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
           />
         ) : activeSectionId === 'grafika' ? (
           <MediaGallerySectionView

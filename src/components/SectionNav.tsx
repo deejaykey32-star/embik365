@@ -8,6 +8,8 @@ import {
   Library, 
   HeartHandshake,
   Image as ImageIcon,
+  MapPin,
+  Map,
   EyeOff
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
@@ -31,7 +33,9 @@ const ICONS: Record<string, React.ElementType> = {
   Compass,
   Library,
   HeartHandshake,
-  Image: ImageIcon
+  Image: ImageIcon,
+  MapPin,
+  Map
 };
 
 export const SectionNav: React.FC<Props> = ({

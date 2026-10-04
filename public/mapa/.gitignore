@@ -1,0 +1,12 @@
+# Dependencies & OS
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Wrangler & Cloudflare
+.wrangler/
+.pages/
+
+# Environment
+.env
+.env.*

@@ -4,6 +4,7 @@ export type SectionId =
   | 'wnr366'        // backward-compat alias
   | 'rhz365'        // modlitwa "Różaniec Historii Zbawienia"
   | 'biblia365'     // czytanie Pisma Świętego i Apokryfów
+  | 'mapa'          // Pielgrzymka Gwiaździsta 2026 i Szlak Orlich Gniazd
   | 'ebook_wnr'     // ebook WnR365 w formie przewracanych kartek
   | 'ebook_rhz'     // ebook RHZ365 w formie przewracanych kartek
   | 'ebook_biblia'  // Biblia365 w formie przewracanych kartek
