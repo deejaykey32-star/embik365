@@ -5,6 +5,7 @@ export type SectionId =
   | 'rhz365'        // modlitwa "Różaniec Historii Zbawienia"
   | 'biblia365'     // czytanie Pisma Świętego i Apokryfów
   | 'mapa'          // Pielgrzymka Gwiaździsta 2026 i Szlak Orlich Gniazd
+  | 'histada'       // Gra Histada - Trylogia dla poszukujących
   | 'ebook_wnr'     // ebook WnR365 w formie przewracanych kartek
   | 'ebook_rhz'     // ebook RHZ365 w formie przewracanych kartek
   | 'ebook_biblia'  // Biblia365 w formie przewracanych kartek
@@ -39,7 +40,7 @@ export interface SectionMeta {
 }
 
 export interface SectionShowcaseConfig {
-  id: SectionId;
+  id: SectionId | string;
   name: string;
   badge: string;
   shortDesc: string;
@@ -50,6 +51,8 @@ export interface SectionShowcaseConfig {
   bgGradient?: string;
   qrId?: string;
   hidden?: boolean;
+  externalUrl?: string;
+  openInNewTab?: boolean;
 }
 
 export interface HomePageConfig {

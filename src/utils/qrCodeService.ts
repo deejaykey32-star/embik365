@@ -60,6 +60,8 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   ebook_biblia: 'https://clck.ru/3Vnjrg',
   bio365: 'https://clck.ru/3Vnjre',
   grafika: 'https://clck.ru/3Vr8B8',
+  mapa: 'https://mapa-aon.pages.dev',
+  histada: 'https://codepen.io/Aledom/full/emZXYjJ',
   ...FILE_CLCK_MAP
 };
 
@@ -162,6 +164,26 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     sectionId: 'grafika',
     category: 'Grafika',
     createdAt: '2026-01-01'
+  },
+  {
+    id: 'qr_mapa',
+    title: 'Wielka Pielgrzymka Gwiaździsta 2026 (mapa-aon.pages.dev)',
+    displayLabel: 'Zeskanuj, aby otworzyć interaktywną mapę Pielgrzymki Gwiaździstej 2026',
+    shortUrl: 'https://wnr365.pages.dev/mapa-aon',
+    fullUrl: 'https://mapa-aon.pages.dev',
+    sectionId: 'mapa',
+    category: 'Pielgrzymka',
+    createdAt: '2026-10-04'
+  },
+  {
+    id: 'qr_histada',
+    title: 'Gra Histada – Trylogia dla Poszukujących',
+    displayLabel: 'Zeskanuj, aby zagrać w grę Histada – Dzieje i historia',
+    shortUrl: 'https://wnr365.pages.dev/histada',
+    fullUrl: 'https://codepen.io/Aledom/full/emZXYjJ',
+    sectionId: 'histada',
+    category: 'Gry',
+    createdAt: '2026-10-04'
   }
 ];
 

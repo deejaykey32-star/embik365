@@ -27,7 +27,8 @@ import {
   Lock,
   Unlock,
   Eye,
-  EyeOff
+  EyeOff,
+  ExternalLink
 } from 'lucide-react';
 import { generateAndDownloadQrBadgePng, getSavedQrCodes, getQrCodeForSection } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
@@ -412,11 +413,17 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 </div>
               )}
 
-              {/* Top illustration - Clickable to open section */}
+              {/* Top illustration - Clickable to open section or external app */}
               <div 
-                onClick={() => onSelectSection(section.id)}
+                onClick={() => {
+                  if (section.externalUrl) {
+                    window.open(section.externalUrl, section.openInNewTab !== false ? '_blank' : '_self');
+                  } else {
+                    onSelectSection(section.id as SectionId);
+                  }
+                }}
                 className="relative h-44 w-full overflow-hidden cursor-pointer bg-stone-100 dark:bg-stone-900"
-                title={`Kliknij, aby otworzyć sekcję ${section.name}`}
+                title={section.externalUrl ? `Kliknij, aby otworzyć platformę zewnętrzną: ${section.externalUrl}` : `Kliknij, aby otworzyć sekcję ${section.name}`}
               >
                 <img
                   src={section.imageUrl}
@@ -427,11 +434,17 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                 
                 {/* Badge on illustration */}
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 max-w-[85%]">
                   <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white/90 dark:bg-[#0c121e]/90 text-stone-900 dark:text-white backdrop-blur-xs shadow-xs flex items-center gap-1.5">
-                    <IconComponent className="w-3.5 h-3.5 text-amber-600" />
+                    <IconComponent className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                     <span>{section.badge}</span>
                   </span>
+                  {section.externalUrl && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-600 text-white backdrop-blur-xs shadow-xs flex items-center gap-1">
+                      <ExternalLink className="w-2.5 h-2.5" />
+                      <span>Zewnętrzny</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Section title over image */}
@@ -444,15 +457,29 @@ export const Info365View: React.FC<Info365ViewProps> = ({
 
               {/* Description body - Clickable to open section */}
               <div 
-                onClick={() => onSelectSection(section.id)}
+                onClick={() => {
+                  if (section.externalUrl) {
+                    window.open(section.externalUrl, section.openInNewTab !== false ? '_blank' : '_self');
+                  } else {
+                    onSelectSection(section.id as SectionId);
+                  }
+                }}
                 className="p-5 flex-1 cursor-pointer flex flex-col justify-between"
-                title={`Kliknij, aby otworzyć ${section.name}`}
+                title={section.externalUrl ? `Kliknij, aby otworzyć ${section.externalUrl}` : `Kliknij, aby otworzyć ${section.name}`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2">
-                    <p className="font-semibold text-xs text-amber-800 dark:text-amber-300 flex-1">
-                      {section.shortDesc}
-                    </p>
+                    <div className="flex-1">
+                      <p className="font-semibold text-xs text-amber-800 dark:text-amber-300">
+                        {section.shortDesc}
+                      </p>
+                      {section.externalUrl && (
+                        <div className="mt-1 flex items-center gap-1 text-[11px] font-mono text-amber-700 dark:text-amber-400">
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{section.externalUrl.replace(/^https?:\/\//, '')}</span>
+                        </div>
+                      )}
+                    </div>
                     {/* Visual QR Code Thumbnail */}
                     {(() => {
                       const qrItem = getQrCodeForSection(section.id, section.name);
@@ -476,13 +503,17 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 </div>
 
                 <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 group-hover:translate-x-1 transition-transform">
-                  <span>{getUIText('readToday', currentLang) || 'Otwórz sekcję'}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>
+                    {section.externalUrl 
+                      ? 'Otwórz platformę zewnętrzną' 
+                      : (getUIText('readToday', currentLang) || 'Otwórz sekcję')}
+                  </span>
+                  {section.externalUrl ? <ExternalLink className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                 </div>
               </div>
 
               {/* Bottom Card Bar: Direct Jump & QR Download */}
-              <div className="px-5 py-3 bg-stone-50/80 dark:bg-[#111827] border-t border-stone-200 dark:border-[#1e2a40] flex items-center justify-between text-xs">
+              <div className="px-5 py-3 bg-stone-50/80 dark:bg-[#111827] border-t border-stone-200 dark:border-[#1e2a40] flex items-center justify-between text-xs gap-2">
                 
                 {/* QR Code Quick Download */}
                 <button
@@ -498,14 +529,44 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                   <span>{downloadingQrId === (section.qrId || `qr_${section.name}`) ? 'Pobieranie...' : 'Kod QR (PNG)'}</span>
                 </button>
 
-                {/* Primary Button to Jump */}
-                <button
-                  onClick={() => onSelectSection(section.id)}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
-                >
-                  <span>Wejdź</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {/* Secondary internal view button if section is 'mapa' */}
+                  {section.id === 'mapa' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectSection('mapa');
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-medium text-xs transition-colors cursor-pointer"
+                      title="Podgląd mapy wbudowany w aplikację"
+                    >
+                      Wbudowana
+                    </button>
+                  )}
+
+                  {/* Primary Action Button */}
+                  {section.externalUrl ? (
+                    <a
+                      href={section.externalUrl}
+                      target={section.openInNewTab !== false ? '_blank' : '_self'}
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
+                      title={`Otwórz ${section.externalUrl}`}
+                    >
+                      <span>Otwórz</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => onSelectSection(section.id as SectionId)}
+                      className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
+                    >
+                      <span>Wejdź</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
             </div>
@@ -614,6 +675,7 @@ const ShowcaseEditModal: React.FC<{
   const [imageUrl, setImageUrl] = useState(item.imageUrl);
   const [imageAlt, setImageAlt] = useState(item.imageAlt);
   const [hidden, setHidden] = useState(Boolean(item.hidden));
+  const [externalUrl, setExternalUrl] = useState(item.externalUrl || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleLocalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -640,7 +702,8 @@ const ShowcaseEditModal: React.FC<{
       fullDesc,
       imageUrl,
       imageAlt,
-      hidden
+      hidden,
+      externalUrl: externalUrl.trim() || undefined
     });
   };
 
@@ -786,6 +849,19 @@ const ShowcaseEditModal: React.FC<{
               value={imageAlt}
               onChange={(e) => setImageAlt(e.target.value)}
               className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-hidden focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">
+              Adres URL Zewnętrznego Serwisu (opcjonalny, np. https://mapa-aon.pages.dev lub gra Histada)
+            </label>
+            <input
+              type="text"
+              value={externalUrl}
+              onChange={(e) => setExternalUrl(e.target.value)}
+              placeholder="np. https://mapa-aon.pages.dev"
+              className="w-full px-3.5 py-2 rounded-xl bg-stone-50 dark:bg-[#131c2e] border border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 font-mono text-xs focus:outline-hidden focus:border-amber-500"
             />
           </div>
 

@@ -108,6 +108,12 @@
 /pielgrzymka /mapa/ 302
 /pielgrzymka-gwiazdzista /mapa/ 302
 /szlak /mapa/ 302
+/mapa-aon https://mapa-aon.pages.dev 302
+/z/mapa-aon https://mapa-aon.pages.dev 302
+/histada https://codepen.io/Aledom/full/emZXYjJ 302
+/gra https://codepen.io/Aledom/full/emZXYjJ 302
+/gra-histada https://codepen.io/Aledom/full/emZXYjJ 302
+/z/histada https://codepen.io/Aledom/full/emZXYjJ 302
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

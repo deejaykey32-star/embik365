@@ -179,12 +179,13 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               </button>
 
               <a
-                href="/mapa/index.html"
+                href="https://mapa-aon.pages.dev"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition"
+                title="Przejdź do oficjalnego serwisu https://mapa-aon.pages.dev"
               >
-                <span>Otwórz w nowej karcie</span>
+                <span>Otwórz mapa-aon.pages.dev</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -279,6 +280,17 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </div>
 
             <div className="pointer-events-auto flex items-center gap-2">
+              <a
+                href="https://mapa-aon.pages.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Otwórz samodzielną aplikację na mapa-aon.pages.dev"
+                className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition"
+              >
+                <span>mapa-aon.pages.dev</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
               <button
                 onClick={handleReloadMap}
                 title="Odśwież widok mapy"

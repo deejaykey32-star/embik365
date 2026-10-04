@@ -1,14 +1,16 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2 } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
 
-export const SECTION_ICONS_MAP: Record<SectionId, any> = {
+export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
   wnr366: Feather,
   rhz365: Cross,
   biblia365: BookOpen,
+  mapa: Map,
+  histada: Gamepad2,
   ebook_wnr: Book,
   ebook_rhz: Compass,
   ebook_biblia: Library,
@@ -37,7 +39,7 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       name: 'WnR365',
       badge: 'Blog Codzienny',
       shortDesc: 'Widoki na Raj – codzienne spojrzenie na świat oczami wiary, nadziei i perspektywy wieczności.',
-      fullDesc: 'Codzienny zbiór głębokich rozważań, aforyzmów i medytacji. Każdego dnia nowy wpis pomagający odnaleźć Boga w codziennych situacjach i dostrzec horyzont Wieczności.',
+      fullDesc: 'Codzienny zbiór głębokich rozważań, aforyzmów i medytacji. Każdego dnia nowy wpis pomagający odnaleźć Boga w codziennych sytuacjach i dostrzec horyzont Wieczności.',
       imageUrl: wnrMainImg,
       imageAlt: 'Grafika Główna Widoki na Raj (WnR365)',
       color: '#b45309',
@@ -71,15 +73,32 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
     },
     {
       id: 'mapa',
-      name: 'Mapa: Pielgrzymka Gwiaździsta 2026',
-      badge: 'Pielgrzymka & Szlak Orlich Gniazd',
-      shortDesc: 'Wielka Pielgrzymka Gwiaździsta 2026 i Szlak Orlich Gniazd – interaktywna mapa i przewodnik.',
-      fullDesc: 'Trzy etapy pielgrzymki: Promienie z całego świata ku Jasnej Górze, 164 km Szlakiem Orlich Gniazd do Sanktuarium Bożego Miłosierdzia w Łagiewnikach (z czuwaniem w Dniu Ojca w Ojcowie) oraz uroczyste Rozesłanie na cały świat.',
+      name: 'Pielgrzymka Gwiaździsta 2026',
+      badge: 'Interaktywna Mapa • mapa-aon.pages.dev',
+      shortDesc: 'Wielka Pielgrzymka Gwiaździsta 2026 i Szlak Orlich Gniazd – platforma satelitarno-terenowa.',
+      fullDesc: 'Trzy etapy pielgrzymki: Promienie z całego świata ku Jasnej Górze, 164 km Szlakiem Orlich Gniazd do Sanktuarium Bożego Miłosierdzia w Łagiewnikach (z czuwaniem w Dniu Ojca w Ojcowie) oraz Rozesłanie. Dostępna na dedykowanej platformie mapa-aon.pages.dev.',
       imageUrl: 'https://images.unsplash.com/photo-1524850011238-e3d235c7d4c9?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Interaktywna Mapa Pielgrzymki Gwiaździstej 2026',
+      imageAlt: 'Interaktywna Mapa Pielgrzymki Gwiaździstej 2026 (mapa-aon.pages.dev)',
       color: '#d97706',
       bgGradient: 'from-amber-950/20 via-orange-900/10 to-transparent',
       qrId: 'qr_mapa',
+      externalUrl: 'https://mapa-aon.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
+      id: 'histada',
+      name: 'Gra: Histada',
+      badge: 'Projekt Gry & Dzieje',
+      shortDesc: '„Dzieje i historia – historia się dzieje.” Trylogia gier dla ludzi poszukujących prawdy.',
+      fullDesc: 'Autorski projekt gry łączącej historię, kulturę, naukę, filozofię i wiarę. Interaktywny świat zachęcający do odkrywania prawdy, pobudzający do myślenia i motywujący do zgłębiania dorobku ludzkości.',
+      imageUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
+      imageAlt: 'Projekt gry Histada - Dzieje i historia',
+      color: '#7c3aed',
+      bgGradient: 'from-purple-950/20 via-violet-900/10 to-transparent',
+      qrId: 'qr_histada',
+      externalUrl: 'https://codepen.io/Aledom/full/emZXYjJ',
+      openInNewTab: true,
       hidden: false
     },
     {
@@ -218,9 +237,11 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = isOldUnsplash ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika'].includes(def.id);
+        const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
-        return found ? { ...def, ...found, imageUrl, hidden } : { ...def, hidden: isPublicSection ? false : Boolean(def.hidden) };
+        const externalUrl = def.externalUrl || found?.externalUrl;
+        const openInNewTab = def.openInNewTab !== undefined ? def.openInNewTab : found?.openInNewTab;
+        return found ? { ...def, ...found, imageUrl, hidden, externalUrl, openInNewTab } : { ...def, hidden: isPublicSection ? false : Boolean(def.hidden) };
       });
       
       const oldIntro = localStorage.getItem('drogowskazy_info365_intro');

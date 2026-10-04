@@ -311,6 +311,18 @@ export function parseUrlRoute(): ParsedRoute {
         }
         return { sectionId: 'info365', date: getTodayCycleDate() };
       }
+      if (slug === 'mapa-aon') {
+        if (typeof window !== 'undefined') {
+          window.location.href = 'https://mapa-aon.pages.dev';
+        }
+        return { sectionId: 'mapa', date: getTodayCycleDate() };
+      }
+      if (slug === 'histada' || slug === 'gra' || slug === 'gra-histada') {
+        if (typeof window !== 'undefined') {
+          window.location.href = 'https://codepen.io/Aledom/full/emZXYjJ';
+        }
+        return { sectionId: 'info365', date: getTodayCycleDate() };
+      }
       return { sectionId: 'rhz365', date: getTodayCycleDate() };
     }
 
@@ -345,6 +357,20 @@ export function parseUrlRoute(): ParsedRoute {
     if (parts[0] === 'siec') {
       if (typeof window !== 'undefined') {
         window.location.replace('/siec');
+      }
+      return { sectionId: 'info365', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'mapa-aon') {
+      if (typeof window !== 'undefined') {
+        window.location.href = 'https://mapa-aon.pages.dev';
+      }
+      return { sectionId: 'mapa', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'histada' || parts[0] === 'gra' || parts[0] === 'gra-histada') {
+      if (typeof window !== 'undefined') {
+        window.location.href = 'https://codepen.io/Aledom/full/emZXYjJ';
       }
       return { sectionId: 'info365', date: getTodayCycleDate() };
     }
@@ -414,6 +440,9 @@ export function parseUrlRoute(): ParsedRoute {
         '60': 'https://wnr365.pages.dev/model-8',
         '61': 'https://wnr365.pages.dev/siec',
         '62': 'https://codepen.io/Aledom/full/emZXYjJ',
+        'mapa-aon': 'https://mapa-aon.pages.dev',
+        'histada': 'https://codepen.io/Aledom/full/emZXYjJ',
+        'gra': 'https://codepen.io/Aledom/full/emZXYjJ',
         'klepsydra': '/klepsydra',
         'klepsydra3d': '/klepsydra3D',
         'klepsydra3D': '/klepsydra3D',
