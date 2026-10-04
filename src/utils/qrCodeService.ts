@@ -61,7 +61,7 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   bio365: 'https://clck.ru/3Vnjre',
   grafika: 'https://clck.ru/3Vr8B8',
   mapa: 'https://mapa-aon.pages.dev',
-  histada: 'https://codepen.io/Aledom/full/emZXYjJ',
+  histada: 'https://histada-app.pages.dev',
   ...FILE_CLCK_MAP
 };
 
@@ -180,7 +180,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     title: 'Gra Histada – Trylogia dla Poszukujących',
     displayLabel: 'Zeskanuj, aby zagrać w grę Histada – Dzieje i historia',
     shortUrl: 'https://wnr365.pages.dev/histada',
-    fullUrl: 'https://codepen.io/Aledom/full/emZXYjJ',
+    fullUrl: 'https://histada-app.pages.dev',
     sectionId: 'histada',
     category: 'Gry',
     createdAt: '2026-10-04'
@@ -274,7 +274,9 @@ export function sanitizeQrItem(item: QrCodeItem): QrCodeItem {
   }
 
   let currentFull = item.fullUrl;
-  if (!currentFull || currentFull.startsWith('blob:') || currentFull.includes('blob:')) {
+  if (item.id === 'qr_histada' && (currentFull?.includes('codepen.io') || currentFull?.includes('histada.pages.dev'))) {
+    currentFull = 'https://histada-app.pages.dev';
+  } else if (!currentFull || currentFull.startsWith('blob:') || currentFull.includes('blob:')) {
     currentFull = `https://widokinaraj.pl/#${fallbackSlug}`;
   }
 

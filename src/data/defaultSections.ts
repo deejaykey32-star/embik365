@@ -62,6 +62,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-amber-900/20 via-orange-800/10 to-transparent'
   },
   {
+    id: 'histada',
+    name: 'Histada',
+    shortTitle: 'Gra: Histada',
+    subtitle: 'Dzieje i historia – historia się dzieje',
+    type: 'info',
+    description: 'Trylogia gier dla poszukujących prawdy. Autorski projekt łączący historię, naukę, kulturę, filozofię i wiarę – platforma histada-app.pages.dev pobudzająca do myślenia i odkrywania bogactwa dorobku ludzkości.',
+    badge: 'Gra & Dzieje',
+    icon: 'Gamepad2',
+    accentColor: '#7c3aed', // purple-600
+    bgGradient: 'from-purple-950/20 via-violet-900/10 to-transparent'
+  },
+  {
     id: 'ebook_wnr',
     name: 'ebook WnR365',
     shortTitle: 'Księga Widoki na Raj',

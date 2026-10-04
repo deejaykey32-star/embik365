@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   MapPin,
   Map,
+  Gamepad2,
   EyeOff
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
@@ -35,7 +36,8 @@ const ICONS: Record<string, React.ElementType> = {
   HeartHandshake,
   Image: ImageIcon,
   MapPin,
-  Map
+  Map,
+  Gamepad2
 };
 
 export const SectionNav: React.FC<Props> = ({
@@ -96,7 +98,7 @@ export const SectionNav: React.FC<Props> = ({
                           ? 'bg-violet-500/30 text-violet-200' 
                           : 'bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300'
                       }`}>
-                        Start
+                        {sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : 'Start'}
                       </span>
                     )}
                     {sec.type === 'flipbook' && (

@@ -110,10 +110,11 @@
 /szlak /mapa/ 302
 /mapa-aon https://mapa-aon.pages.dev 302
 /z/mapa-aon https://mapa-aon.pages.dev 302
-/histada https://codepen.io/Aledom/full/emZXYjJ 302
-/gra https://codepen.io/Aledom/full/emZXYjJ 302
-/gra-histada https://codepen.io/Aledom/full/emZXYjJ 302
-/z/histada https://codepen.io/Aledom/full/emZXYjJ 302
+/histada-app https://histada-app.pages.dev 302
+/z/histada-app https://histada-app.pages.dev 302
+/z/histada https://histada-app.pages.dev 302
+/r/histada /histada 302
+/r/gra /histada 302
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

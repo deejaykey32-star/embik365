@@ -89,15 +89,15 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
     {
       id: 'histada',
       name: 'Gra: Histada',
-      badge: 'Projekt Gry & Dzieje',
+      badge: 'Projekt Gry • histada-app.pages.dev',
       shortDesc: '„Dzieje i historia – historia się dzieje.” Trylogia gier dla ludzi poszukujących prawdy.',
-      fullDesc: 'Autorski projekt gry łączącej historię, kulturę, naukę, filozofię i wiarę. Interaktywny świat zachęcający do odkrywania prawdy, pobudzający do myślenia i motywujący do zgłębiania dorobku ludzkości.',
+      fullDesc: 'Autorski projekt gry łączącej historię, kulturę, naukę, filozofię i wiarę. Interaktywny świat zachęcający do odkrywania prawdy, pobudzający do myślenia i motywujący do zgłębiania dorobku ludzkości. Dostępna na dedykowanej platformie histada-app.pages.dev.',
       imageUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Projekt gry Histada - Dzieje i historia',
+      imageAlt: 'Projekt gry Histada - Dzieje i historia (histada-app.pages.dev)',
       color: '#7c3aed',
       bgGradient: 'from-purple-950/20 via-violet-900/10 to-transparent',
       qrId: 'qr_histada',
-      externalUrl: 'https://codepen.io/Aledom/full/emZXYjJ',
+      externalUrl: 'https://histada-app.pages.dev',
       openInNewTab: true,
       hidden: false
     },
@@ -239,7 +239,8 @@ export function getHomePageConfig(): HomePageConfig {
         const imageUrl = isOldUnsplash ? def.imageUrl : (found?.imageUrl || def.imageUrl);
         const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
-        const externalUrl = def.externalUrl || found?.externalUrl;
+        const rawExtUrl = def.externalUrl || found?.externalUrl;
+        const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : rawExtUrl;
         const openInNewTab = def.openInNewTab !== undefined ? def.openInNewTab : found?.openInNewTab;
         return found ? { ...def, ...found, imageUrl, hidden, externalUrl, openInNewTab } : { ...def, hidden: isPublicSection ? false : Boolean(def.hidden) };
       });

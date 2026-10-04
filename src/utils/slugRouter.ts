@@ -75,6 +75,11 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'orle-gniazda': 'mapa',
   'szlak': 'mapa',
 
+  'histada': 'histada',
+  'gra': 'histada',
+  'gra-histada': 'histada',
+  'histada-app': 'histada',
+
   'ebook_wnr': 'ebook_wnr',
   'ebook-wnr': 'ebook_wnr',
   'ebook-wnr365': 'ebook_wnr',
@@ -317,11 +322,8 @@ export function parseUrlRoute(): ParsedRoute {
         }
         return { sectionId: 'mapa', date: getTodayCycleDate() };
       }
-      if (slug === 'histada' || slug === 'gra' || slug === 'gra-histada') {
-        if (typeof window !== 'undefined') {
-          window.location.href = 'https://codepen.io/Aledom/full/emZXYjJ';
-        }
-        return { sectionId: 'info365', date: getTodayCycleDate() };
+      if (slug === 'histada' || slug === 'gra' || slug === 'gra-histada' || slug === 'histada-app') {
+        return { sectionId: 'histada', date: getTodayCycleDate() };
       }
       return { sectionId: 'rhz365', date: getTodayCycleDate() };
     }
@@ -368,11 +370,8 @@ export function parseUrlRoute(): ParsedRoute {
       return { sectionId: 'mapa', date: getTodayCycleDate() };
     }
 
-    if (parts[0] === 'histada' || parts[0] === 'gra' || parts[0] === 'gra-histada') {
-      if (typeof window !== 'undefined') {
-        window.location.href = 'https://codepen.io/Aledom/full/emZXYjJ';
-      }
-      return { sectionId: 'info365', date: getTodayCycleDate() };
+    if (parts[0] === 'histada' || parts[0] === 'gra' || parts[0] === 'gra-histada' || parts[0] === 'histada-app') {
+      return { sectionId: 'histada', date: getTodayCycleDate() };
     }
 
     if (parts[0] === 'z' && parts[1]) {
@@ -441,8 +440,10 @@ export function parseUrlRoute(): ParsedRoute {
         '61': 'https://wnr365.pages.dev/siec',
         '62': 'https://codepen.io/Aledom/full/emZXYjJ',
         'mapa-aon': 'https://mapa-aon.pages.dev',
-        'histada': 'https://codepen.io/Aledom/full/emZXYjJ',
-        'gra': 'https://codepen.io/Aledom/full/emZXYjJ',
+        'histada': 'https://histada-app.pages.dev',
+        'histada-app': 'https://histada-app.pages.dev',
+        'gra': 'https://histada-app.pages.dev',
+        'gra-histada': 'https://histada-app.pages.dev',
         'klepsydra': '/klepsydra',
         'klepsydra3d': '/klepsydra3D',
         'klepsydra3D': '/klepsydra3D',
@@ -539,10 +540,13 @@ export function buildUrlSlug(route: {
   if (route.sectionId === 'mapa') {
     return '/mapa';
   }
+  if (route.sectionId === 'histada') {
+    return '/histada';
+  }
 
   const parts: string[] = [route.sectionId];
 
-  if (route.date && route.sectionId !== 'info365' && route.sectionId !== 'mapa') {
+  if (route.date && route.sectionId !== 'info365' && route.sectionId !== 'mapa' && route.sectionId !== 'histada') {
     parts.push(getCanonicalDateSlug(route.date));
   } else if (route.date && route.subview) {
     parts.push(getCanonicalDateSlug(route.date));
