@@ -941,13 +941,14 @@ export const FlipbookReader: React.FC<Props> = ({
           className={`font-serif-book text-[#30261e] dark:text-white text-justify flex-1 overflow-y-auto pr-1 app-reading-content ${
             fontSize === 'sm' ? 'text-[12pt] leading-[1.15]' :
             fontSize === 'base' ? 'text-[14pt] leading-[1.15]' :
-            fontSize === 'lg' ? 'text-[16pt] leading-[1.2]' :
-            'text-[18pt] leading-[1.25]'
+            fontSize === 'lg' ? 'text-[16pt] leading-[1.15]' :
+            'text-[18pt] leading-[1.15]'
           }`}
           style={{
             fontFamily: '"Times New Roman", Times, Georgia, serif',
             textAlign: 'justify',
-            textJustify: 'inter-word'
+            textJustify: 'inter-word',
+            lineHeight: '1.15'
           }}
           dangerouslySetInnerHTML={{ __html: formatContentForReaderHtml(data.chunk || data.fullContent || data.title || '') }}
         />

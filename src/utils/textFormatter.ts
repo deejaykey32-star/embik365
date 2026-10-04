@@ -43,11 +43,17 @@ export function formatContentForReaderHtml(rawContent: string): string {
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
+  // Normalizacja: zapewnienie, że nagłówki Markdown i linie poziome są czysto rozdzielone pustą linią
+  let preprocessed = normalized
+    .replace(/([^\n])\n(#{1,4}\s+[^\n]+)/g, '$1\n\n$2')
+    .replace(/(#{1,4}\s+[^\n]+)\n([^\n#])/g, '$1\n\n$2')
+    .replace(/([^\n])\n(---\s*)\n/g, '$1\n\n$2\n');
+
   // Oddzielamy osadzone kontenery QR z HTML (np. materiały dodatkowe WnR)
   const qrPlaceholderMap: Map<string, string> = new Map();
   let placeholderIndex = 0;
 
-  let textWithoutQr = normalized.replace(/<div class=['"]wnr-qr-container[\s\S]*?<\/div><\/div><\/div>/gi, (match) => {
+  let textWithoutQr = preprocessed.replace(/<div class=['"]wnr-qr-container[\s\S]*?<\/div><\/div><\/div>/gi, (match) => {
     const key = `___QR_CONTAINER_PLACEHOLDER_${placeholderIndex++}___`;
     qrPlaceholderMap.set(key, match);
     return `\n\n${key}\n\n`;
@@ -67,7 +73,7 @@ export function formatContentForReaderHtml(rawContent: string): string {
       continue;
     }
 
-    // Obsługa nagłówków Markdown (#, ##, ###)
+    // Obsługa nagłówków Markdown (#, ##, ###, ####)
     if (trimmed.startsWith('# ')) {
       const title = trimmed.replace(/^#\s+/, '').trim();
       htmlParts.push(`<h1 class="font-heading-cinzel font-bold text-xl sm:text-2xl mt-6 mb-2 text-[#2a2016] dark:text-[#f3e8d2] text-center">${escapeHtml(title)}</h1>`);
@@ -83,12 +89,27 @@ export function formatContentForReaderHtml(rawContent: string): string {
       htmlParts.push(`<h3 class="font-heading-cinzel font-bold text-base sm:text-lg mt-4 mb-1.5 text-stone-800 dark:text-stone-200 text-left">${escapeHtml(title)}</h3>`);
       continue;
     }
+    if (trimmed.startsWith('#### ')) {
+      const title = trimmed.replace(/^####\s+/, '').trim();
+      htmlParts.push(`<h4 class="font-heading-cinzel font-bold text-sm sm:text-base mt-3 mb-1 text-stone-700 dark:text-stone-300 text-left">${escapeHtml(title)}</h4>`);
+      continue;
+    }
     if (trimmed === '---') {
       htmlParts.push(`<hr class="my-4 border-amber-600/25 dark:border-amber-500/20" />`);
       continue;
     }
 
-    // Usuwamy pojedyncze znaki "Enter" wewnątrz akapitu (zamiana na spację)
+    // Obsługa cytatów Markdown (> )
+    if (trimmed.startsWith('> ')) {
+      const quoteText = trimmed.replace(/^>\s*/gm, ' ').replace(/\n+/g, ' ').trim();
+      const formattedQuote = escapeHtml(quoteText)
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      htmlParts.push(`<blockquote class="border-l-4 border-amber-600/40 pl-4 my-3 italic text-stone-700 dark:text-stone-300 font-serif-book" style="font-family: 'Times New Roman', Times, Georgia, serif; line-height: 1.15; text-align: justify; text-justify: inter-word;">${formattedQuote}</blockquote>`);
+      continue;
+    }
+
+    // Usuwamy pojedyncze znaki "Enter" wewnątrz akapitu (zamiana na spację) dla zachowania idealnej estetyki
     const cleanedText = trimmed
       .replace(/\n+/g, ' ')
       .replace(/\s{2,}/g, ' ')
@@ -102,7 +123,7 @@ export function formatContentForReaderHtml(rawContent: string): string {
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-    htmlParts.push(`<p class="app-reading-para">${formattedHtml}</p>`);
+    htmlParts.push(`<p class="app-reading-para" style="font-family: 'Times New Roman', Times, Georgia, serif; line-height: 1.15; text-align: justify; text-justify: inter-word;">${formattedHtml}</p>`);
   }
 
   return htmlParts.join('\n');
