@@ -436,7 +436,7 @@ export async function generatePodPdf(
       currentY += 4;
     }
 
-    // Body Paragraphs: 12 pt Times New Roman, Pure Black (#000000), Wyjustowane obustronnie, interlinia 1.15
+    // Body Paragraphs: 12 pt Times New Roman, Pure Black (#000000), Pełne wyjustowanie obustronne do obu krawędzi, interlinia 1.15
     // Usuwamy zbędne znaki "Enter" wewnątrz zdań, pozostawiając naturalne, wyjustowane akapity
     const rawParagraphs = cleanParagraphsFromEnters(stripHtml(currentEntry.content || ''));
 
@@ -449,11 +449,9 @@ export async function generatePodPdf(
     for (const rawPara of rawParagraphs) {
       const sanitizedPara = processText(rawPara);
       const paraLines: string[] = doc.splitTextToSize(sanitizedPara, getContentWidth());
+      let remainingLines = [...paraLines];
 
-      for (let lIdx = 0; lIdx < paraLines.length; lIdx++) {
-        const line = paraLines[lIdx];
-        const isLastLine = lIdx === paraLines.length - 1;
-
+      while (remainingLines.length > 0) {
         if (currentY + lineHeight > pageHeight - bottomMargin) {
           addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
           doc.addPage();
@@ -462,25 +460,38 @@ export async function generatePodPdf(
           currentY = topMargin + 10;
         }
 
+        const availableHeight = (pageHeight - bottomMargin) - currentY;
+        const linesThatFit = Math.max(1, Math.floor(availableHeight / lineHeight));
+        const chunk = remainingLines.slice(0, linesThatFit);
+        const isEndOfPara = chunk.length === remainingLines.length;
+
         doc.setFont(fontFamily, 'normal');
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
 
-        if (!isLastLine && line.trim().indexOf(' ') !== -1) {
-          // Justify full lines left and right
-          doc.text(line, curLeft, currentY, { align: 'justify', maxWidth: getContentWidth() });
+        if (isEndOfPara) {
+          // All remaining lines fit on current page.
+          // jsPDF justifies all lines except the last element in array (natural left-align for paragraph ending)
+          doc.text(chunk, curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
+          currentY += chunk.length * lineHeight;
+          remainingLines = [];
         } else {
-          // Last line of paragraph rests naturally to the left
-          doc.text(line, curLeft, currentY);
+          // Paragraph continues to next page; by passing a trailing dummy line, all lines in chunk get justified!
+          doc.text([...chunk, ''], curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
+          currentY += chunk.length * lineHeight;
+          remainingLines = remainingLines.slice(linesThatFit);
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+          doc.addPage();
+          pageNumber++;
+          curLeft = getLeftMargin(pageNumber);
+          currentY = topMargin + 10;
         }
-
-        currentY += lineHeight;
       }
-      currentY += 2.8; // Spacing after paragraph (proportional with 1.15 line spacing)
+      currentY += 2.8; // Odstęp po akapicie (proporcjonalny z interlinią 1.15)
     }
 
-    // Prayer Box (12 pt Italic, Pure Black text, Justified, interlinia 1.15)
-    if (currentEntry.prayer && options.includePrayer !== false) {
+    // Bez modlitwy w ramce na koniec każdego dnia (opcjonalnie tylko przy jawnym options.includePrayer === true)
+    if (currentEntry.prayer && options.includePrayer === true) {
       doc.setFont(fontFamily, 'italic');
       doc.setFontSize(12);
       const prayerLineHeight = 12 * 0.352778 * 1.15; // 4.868 mm
@@ -755,7 +766,8 @@ export async function generatePodDocx(
         </w:r>
       </w:p>`).join('');
 
-    const prayerXml = curEntry.prayer ? `
+    // Bez modlitwy na koniec dnia w pliku Word DOCX
+    const prayerXml = (curEntry.prayer && options.includePrayer === true) ? `
       <w:p>
         <w:pPr><w:spacing w:before="360" w:after="100"/><w:jc w:val="center"/></w:pPr>
         <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
@@ -1058,7 +1070,8 @@ p.first {
       .map((p, pIdx) => `<p class="${pIdx === 0 ? 'first' : ''}">${escapeXml(p)}</p>`)
       .join('\n');
 
-    const prayerHtml = curEntry.prayer ? `
+    // Bez modlitwy na koniec dnia w pliku ePUB
+    const prayerHtml = (curEntry.prayer && options.includePrayer === true) ? `
     <div class="prayer-box">
       <div class="prayer-title">Modlitwa Serca</div>
       <p style="text-indent: 0;">${escapeXml(stripHtml(curEntry.prayer))}</p>

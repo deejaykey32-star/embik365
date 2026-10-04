@@ -236,6 +236,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         exportScope,
         selectedSeason,
         selectedYear,
+        includePrayer: false,
         allYearEntries: (exportScope === 'year' || exportScope === 'season') ? allYearEntries : undefined,
         onProgress: (_current: number, _total: number, message: string) => {
           setProgressMsg(message);
