@@ -263,51 +263,64 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
       {/* 2. Interactive Map View Container */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         
+        {/* Map Header Controls Bar above Map Card */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div className="bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-[#e2d6c7] dark:border-[#233149] shadow-xs flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#1f1712] dark:text-white">
+            <MapPin className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="font-heading-cinzel font-bold text-amber-900 dark:text-amber-300">
+              {activeStage === 'stage-1' && 'Etap I: Zbieżność Promieni do Jasnej Góry'}
+              {activeStage === 'stage-2' && 'Etap II: Szlak Orlich Gniazd (Jasna Góra ➔ Łagiewniki)'}
+              {activeStage === 'stage-3' && 'Etap III: Rozesłanie ze wzgórza Miłosierdzia'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="https://mapa-aon.pages.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Otwórz samodzielną aplikację na mapa-aon.pages.dev"
+              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+            >
+              <span>mapa-aon.pages.dev</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <button
+              onClick={handleReloadMap}
+              title="Odśwież widok mapy"
+              className="p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-xs hover:bg-[#faf6f0] dark:hover:bg-[#182234] transition cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => setIsFullscreen(f => !f)}
+              title={isFullscreen ? 'Zmniejsz mapę' : 'Pełny ekran mapy'}
+              className="p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-xs hover:bg-[#faf6f0] dark:hover:bg-[#182234] transition cursor-pointer"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
         {/* Map Card with Fullscreen Toggle */}
         <div className={`relative bg-white dark:bg-[#131a27] rounded-3xl border border-[#e2d6c7] dark:border-[#222e44] shadow-md overflow-hidden transition-all duration-300 ${
           isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'h-[620px] sm:h-[680px]'
         }`}>
           
-          {/* Top Embedded Controls Overlay */}
-          <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
-            <div className="pointer-events-auto bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md px-3.5 py-1.5 rounded-2xl border border-[#e2d6c7] dark:border-[#233149] shadow-sm flex items-center gap-2 text-xs font-semibold">
-              <MapPin className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span>
-                {activeStage === 'stage-1' && 'Etap I: Zbieżność Promieni do Jasnej Góry'}
-                {activeStage === 'stage-2' && 'Etap II: Szlak Orlich Gniazd (Jasna Góra ➔ Łagiewniki)'}
-                {activeStage === 'stage-3' && 'Etap III: Rozesłanie ze wzgórza Miłosierdzia'}
-              </span>
-            </div>
-
-            <div className="pointer-events-auto flex items-center gap-2">
-              <a
-                href="https://mapa-aon.pages.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Otwórz samodzielną aplikację na mapa-aon.pages.dev"
-                className="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition"
-              >
-                <span>mapa-aon.pages.dev</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-
+          {/* Fullscreen Close Button */}
+          {isFullscreen && (
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
               <button
-                onClick={handleReloadMap}
-                title="Odśwież widok mapy"
-                className="p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-sm hover:bg-white dark:hover:bg-[#182234] transition"
+                onClick={() => setIsFullscreen(false)}
+                title="Zmniejsz mapę"
+                className="p-3 rounded-2xl bg-white/95 dark:bg-[#111723]/95 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-lg hover:bg-white dark:hover:bg-[#182234] transition cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={() => setIsFullscreen(f => !f)}
-                title={isFullscreen ? 'Zmniejsz mapę' : 'Pełny ekran mapy'}
-                className="p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-sm hover:bg-white dark:hover:bg-[#182234] transition"
-              >
-                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                <Minimize2 className="w-5 h-5" />
               </button>
             </div>
-          </div>
+          )}
 
           {/* Iframe with self-hosted /mapa/ app */}
           <iframe
