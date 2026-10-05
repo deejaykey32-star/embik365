@@ -182,11 +182,11 @@ ${rhz?.fatimaPrayer || ''}`.trim();
         sectionId,
         dateKey: cycleDate.dateKey,
         dayNumber,
-        title: b1.title || `Lektura Pisma Świętego i Apokryfów • Dzień ${dayNumber}`,
-        subtitle: `${displayDate} • ${b1.category} (${b1.passage})`,
-        passage: b1.passage,
-        apocryphaPassage: b1.category.includes('Apokryf') ? b1.passage : undefined,
-        content: b1.content
+        title: b1?.title || `Lektura Pisma Świętego i Apokryfów • Dzień ${dayNumber}`,
+        subtitle: `${displayDate} • ${b1?.category || 'Biblia365'} (${b1?.passage || ''})`,
+        passage: b1?.passage,
+        apocryphaPassage: b1?.category?.includes('Apokryf') ? b1?.passage : undefined,
+        content: b1?.content || `Dzień ${dayNumber} czytań biblijnych.`
       };
     }
 
@@ -205,6 +205,50 @@ Gdy spoglądam na historię naszego małżeństwa, uderza mnie, jak z pozoru dro
 Każde małżeństwo to nieustanna budowa świątyni ze słów: "przepraszam", "dziękuję", "proszę" i "kocham cię". Dziękuję Bogu za każdy dzień spędzony u boku mojej żony i proszę o kolejne lata przeżyte w zdrowiu, miłości i głębokiej wierze.
 
 (Możesz wgrać plik PDF z pełnym tekstem biografii za pomocą panelu administratora)`
+      };
+
+    case 'mapa':
+      return {
+        id: `mapa-${cycleDate.dateKey}`,
+        sectionId,
+        dateKey: cycleDate.dateKey,
+        dayNumber,
+        title: `Pielgrzymka Gwiaździsta 2026 • Dzień ${dayNumber}`,
+        subtitle: `${displayDate} • Szlak Orlich Gniazd i Sanktuaria`,
+        content: `Informacje o Wielkiej Pielgrzymce Gwiaździstej 2026, Szlaku Orlich Gniazd i etapach pielgrzymowania ku Jasnej Górze i Łagiewnikom.`
+      };
+
+    case 'histada':
+      return {
+        id: `histada-${cycleDate.dateKey}`,
+        sectionId,
+        dateKey: cycleDate.dateKey,
+        dayNumber,
+        title: `Gra Histada • Dzień ${dayNumber}`,
+        subtitle: `${displayDate} • Dzieje i historia`,
+        content: `Trylogia gier edukacyjno-filozoficznych Histada – odkrywaj historię zbawienia, naukę i filozofię.`
+      };
+
+    case 'grafika':
+      return {
+        id: `grafika-${cycleDate.dateKey}`,
+        sectionId,
+        dateKey: cycleDate.dateKey,
+        dayNumber,
+        title: `Galeria Zasobów • Dzień ${dayNumber}`,
+        subtitle: `${displayDate} • Materiały i Ilustracje`,
+        content: `Repozytorium materiałów graficznych, okładek, ilustracji i plików multimedialnych Droga365.`
+      };
+
+    default:
+      return {
+        id: `${sectionId}-${cycleDate.dateKey}`,
+        sectionId,
+        dateKey: cycleDate.dateKey,
+        dayNumber,
+        title: `Dzień ${dayNumber} • ${sectionId}`,
+        subtitle: `${displayDate} • ${season}`,
+        content: `Wpis dla sekcji ${sectionId} na dzień ${dayNumber}.`
       };
   }
 }

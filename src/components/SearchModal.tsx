@@ -74,7 +74,8 @@ function getSnippet(fullText: string, query: string): string {
   return snippet;
 }
 
-function HighlightedText({ text, query }: { text: string; query: string }) {
+function HighlightedText({ text, query }: { text?: string; query: string }) {
+  if (!text) return null;
   if (!query || !query.trim()) return <>{text}</>;
   
   const q = query.trim();
@@ -152,35 +153,43 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       // Iterate through 365 calendar days
       for (const dateObj of CYCLE_DAYS) {
         const entry = getEntryForSectionAndDate(secId, dateObj, customEntries);
+        if (!entry) continue;
+
         let matchedField: 'Tytuł' | 'Treść' | 'Modlitwa' | 'Tajemnica' | 'Fragment' | null = null;
         let matchSource = '';
 
-        if (entry.title && entry.title.toLowerCase().includes(qLower)) {
+        const title = entry.title || '';
+        const content = entry.content || '';
+        const prayer = entry.prayer || '';
+        const mystery = entry.mystery || '';
+        const passage = entry.passage || '';
+
+        if (title && title.toLowerCase().includes(qLower)) {
           matchedField = 'Tytuł';
-          matchSource = entry.content || entry.title;
-        } else if (entry.content && entry.content.toLowerCase().includes(qLower)) {
+          matchSource = content || title;
+        } else if (content && content.toLowerCase().includes(qLower)) {
           matchedField = 'Treść';
-          matchSource = entry.content;
-        } else if (entry.prayer && entry.prayer.toLowerCase().includes(qLower)) {
+          matchSource = content;
+        } else if (prayer && prayer.toLowerCase().includes(qLower)) {
           matchedField = 'Modlitwa';
-          matchSource = entry.prayer;
-        } else if (entry.mystery && entry.mystery.toLowerCase().includes(qLower)) {
+          matchSource = prayer;
+        } else if (mystery && mystery.toLowerCase().includes(qLower)) {
           matchedField = 'Tajemnica';
-          matchSource = entry.mystery;
-        } else if (entry.passage && entry.passage.toLowerCase().includes(qLower)) {
+          matchSource = mystery;
+        } else if (passage && passage.toLowerCase().includes(qLower)) {
           matchedField = 'Fragment';
-          matchSource = entry.passage;
+          matchSource = passage;
         }
 
         if (matchedField && matchSource) {
           found.push({
             id: `${secId}-${dateObj.dateKey}`,
             sectionId: secId,
-            sectionName: secMeta.name,
-            sectionBadge: secMeta.shortTitle,
-            accentColor: secMeta.accentColor,
+            sectionName: secMeta?.name || secId,
+            sectionBadge: secMeta?.shortTitle || secId,
+            accentColor: secMeta?.accentColor || '#b45309',
             date: dateObj,
-            title: entry.title || `Dzień ${dateObj.dayNumber}`,
+            title: title || `Dzień ${dateObj.dayNumber}`,
             subtitle: entry.subtitle,
             matchedField,
             snippet: getSnippet(matchSource, trimmed)
@@ -305,7 +314,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                 Znaleziono <strong className="text-amber-800 dark:text-amber-400 font-bold">{results.length}</strong> wyników dla frazy <strong className="text-[#2c221a] dark:text-white font-bold">"{query}"</strong>
               </span>
               <span className="font-mono text-[11px]">
-                Zakres: {searchScope === 'all' ? 'Wszystkie 7 tomów' : searchScope === 'current' ? currentSectionMeta.name : getSectionById(searchScope).name}
+                Zakres: {searchScope === 'all' ? 'Wszystkie 7 tomów' : searchScope === 'current' ? currentSectionMeta?.name : getSectionById(searchScope)?.name || searchScope}
               </span>
             </div>
           )}
