@@ -3,6 +3,7 @@ export type SectionId =
   | 'wnr365'        // blog "Widoki na Raj"
   | 'wnr366'        // backward-compat alias
   | 'rhz365'        // modlitwa "Różaniec Historii Zbawienia"
+  | 'nowyRHZ'       // Nowy Różaniec Historii Zbawienia (175 dni)
   | 'biblia365'     // czytanie Pisma Świętego i Apokryfów
   | 'mapa'          // Pielgrzymka Gwiaździsta 2026 i Szlak Orlich Gniazd
   | 'histada'       // Gra Histada - Trylogia dla poszukujących

@@ -38,6 +38,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-sky-900/20 via-sky-800/10 to-transparent'
   },
   {
+    id: 'nowyRHZ',
+    name: 'Nowy RHZ',
+    shortTitle: 'Nowy Różaniec HZ',
+    subtitle: '7 etapów × 5 części × 5 tajemnic = 175 dni modlitwy',
+    type: 'info',
+    description: 'Nowy Różaniec Historii Zbawienia – 175 dni modlitwy przez całą historię zbawienia (7 etapów × 5 części × 5 tajemnic). Interaktywna aplikacja różańcowa z lektorem mowy, dopowiedzeniami, automatycznym odtwarzaniem i zliczaniem dziesiątek.',
+    badge: 'Nowy RHZ 175',
+    icon: 'Sparkles',
+    accentColor: '#b8892b', // gold
+    bgGradient: 'from-amber-950/20 via-sky-900/10 to-transparent'
+  },
+  {
     id: 'biblia365',
     name: 'Biblia365',
     shortTitle: 'Pismo Święte i Apokryfy',

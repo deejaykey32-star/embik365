@@ -11,6 +11,7 @@ import { Info365View } from './components/Info365View';
 import { MediaGallerySectionView } from './components/MediaGallerySectionView';
 import { PilgrimageMapView } from './components/PilgrimageMapView';
 import { HistadaView } from './components/HistadaView';
+import { NowyRhzView } from './components/NowyRhzView';
 import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
@@ -556,6 +557,13 @@ export default function App() {
             currentLang={currentLang}
             theme={theme}
           />
+        ) : activeSectionId === 'nowyRHZ' ? (
+          <NowyRhzView
+            key={`nowyrhz-${currentLang}`}
+            section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
         ) : activeSectionId === 'grafika' ? (
           <MediaGallerySectionView
             key={`grafika-${currentLang}`}
@@ -610,8 +618,8 @@ export default function App() {
         <div className="max-w-4xl mx-auto space-y-1.5">
           <p className="font-heading-cinzel font-semibold text-[#423325] dark:text-[#f0f6fc]">
             {adminUser
-              ? 'Droga365 • info365 • WnR365 • RHZ365 • Biblia365 • Mapa • Histada • Bio365 • Grafika365'
-              : 'Droga365 • info365 • WnR365 • RHZ365 • Mapa • Histada • Grafika365'}
+              ? 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Bio365 • Grafika365'
+              : 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Mapa • Histada • Grafika365'}
           </p>
           <p>
             Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span>

@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2 } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -8,6 +8,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
   wnr366: Feather,
   rhz365: Cross,
+  nowyRHZ: Sparkles,
   biblia365: BookOpen,
   mapa: Map,
   histada: Gamepad2,
@@ -57,6 +58,19 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#0369a1',
       bgGradient: 'from-sky-900/20 via-sky-800/10 to-transparent',
       qrId: 'qr_rhz365'
+    },
+    {
+      id: 'nowyRHZ',
+      name: 'Nowy RHZ',
+      badge: 'Modlitwa 175 dni • Nowy RHZ',
+      shortDesc: 'Nowy Różaniec Historii Zbawienia – 7 etapów × 5 części × 5 tajemnic = 175 dni modlitwy.',
+      fullDesc: 'Nowy Różaniec Historii Zbawienia: 175 dni prowadzących przez całe Pismo Święte i dzieje Kościoła. Zawiera 10 dopowiedzeń po słowie „Jezus” do każdego Zdrowaś Maryjo, wbudowanego lektora syntezy mowy, tryb ciągły Auto i zliczanie dziesiątek.',
+      imageUrl: rhzMainImg,
+      imageAlt: 'Nowy Różaniec Historii Zbawienia (Nowy RHZ)',
+      color: '#b8892b',
+      bgGradient: 'from-amber-950/20 via-sky-900/10 to-transparent',
+      qrId: 'qr_nowyrhz',
+      hidden: false
     },
     {
       id: 'biblia365',

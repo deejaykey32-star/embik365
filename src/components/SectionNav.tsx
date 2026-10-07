@@ -11,6 +11,7 @@ import {
   MapPin,
   Map,
   Gamepad2,
+  Sparkles,
   EyeOff
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
@@ -37,7 +38,8 @@ const ICONS: Record<string, React.ElementType> = {
   Image: ImageIcon,
   MapPin,
   Map,
-  Gamepad2
+  Gamepad2,
+  Sparkles
 };
 
 export const SectionNav: React.FC<Props> = ({

@@ -54,6 +54,7 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   info365: 'https://clck.ru/3Vnjrc',
   wnr365: 'https://clck.ru/3Vnjri',
   rhz365: 'https://clck.ru/3Vnjrj',
+  nowyRHZ: 'https://wnr365.pages.dev/nowyRHZ.html',
   biblia365: 'https://clck.ru/3Vnjrd',
   ebook_wnr: 'https://clck.ru/3Vnjrh',
   ebook_rhz: 'https://clck.ru/3Vnjrf',

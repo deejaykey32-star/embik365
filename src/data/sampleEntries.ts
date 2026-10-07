@@ -174,6 +174,19 @@ ${rhz?.fatimaPrayer || ''}`.trim();
       };
     }
 
+    case 'nowyRHZ': {
+      const day175 = ((dayNumber - 1) % 175) + 1;
+      return {
+        id: `nowyRHZ-${cycleDate.dateKey}`,
+        sectionId: 'nowyRHZ',
+        dateKey: cycleDate.dateKey,
+        dayNumber,
+        title: `Nowy Różaniec Historii Zbawienia • Dzień ${day175} ze 175`,
+        subtitle: `${displayDate} • Nowy RHZ (175 dni modlitwy)`,
+        content: `Nowy Różaniec Historii Zbawienia – 7 etapów × 5 części × 5 tajemnic = 175 dni. Każdy dzień to jedna tajemnica (jedna dziesiątka różańca) z 10 dopowiedzeniami po słowie „Jezus” w każdym Zdrowaś Maryjo, modlitwą końcową oraz syntezą mowy lektora.`
+      };
+    }
+
     case 'biblia365':
     case 'ebook_biblia': {
       const b1 = getBibliaEntryForDayAndYear(dayNumber, 1);

@@ -62,6 +62,13 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'rozaniec': 'rhz365',
   'modlitwa': 'rhz365',
 
+  'nowyrhz': 'nowyRHZ',
+  'nowy-rhz': 'nowyRHZ',
+  'nowy_rhz': 'nowyRHZ',
+  'nowyrhz365': 'nowyRHZ',
+  'nowy-rozaniec': 'nowyRHZ',
+  'rhz-nowy': 'nowyRHZ',
+
   'biblia365': 'biblia365',
   'biblia': 'biblia365',
   'b': 'biblia365',
@@ -372,6 +379,10 @@ export function parseUrlRoute(): ParsedRoute {
 
     if (parts[0] === 'histada' || parts[0] === 'gra' || parts[0] === 'gra-histada' || parts[0] === 'histada-app') {
       return { sectionId: 'histada', date: getTodayCycleDate() };
+    }
+
+    if (parts[0] === 'nowyrhz' || parts[0] === 'nowy-rhz' || parts[0] === 'nowyrhz365' || parts[0] === 'nowy_rhz') {
+      return { sectionId: 'nowyRHZ', date: getTodayCycleDate() };
     }
 
     if (parts[0] === 'z' && parts[1]) {
