@@ -35,14 +35,14 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const standaloneUrl = '/nowyRHZ.html';
+  const standaloneUrl = '/nowyRHZ';
 
   const handleReload = () => {
     setIframeKey(k => k + 1);
   };
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/nowyRHZ.html`;
+    const shareUrl = `${window.location.origin}/nowyRHZ`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -63,11 +63,11 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   };
 
   const handleDownloadQr = () => {
-    const fullUrl = `${window.location.origin}/nowyRHZ.html`;
+    const fullUrl = `${window.location.origin}/nowyRHZ`;
     generateAndDownloadQrBadgePng({
       id: 'nowyrhz',
       title: 'Nowy Różaniec Historii Zbawienia (175 dni)',
-      displayLabel: 'wnr365.pages.dev/nowyRHZ.html',
+      displayLabel: 'wnr365.pages.dev/nowyRHZ',
       shortUrl: fullUrl,
       fullUrl: fullUrl,
       category: 'nowyrhz',
@@ -280,7 +280,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                 <span>Aplikacja zapamiętuje postęp, datę startu i wybrane tempo lektora bezpośrednio w pamięci urządzenia.</span>
               </div>
               <div className="font-mono text-[11px] text-[#8a725f] dark:text-[#6a809f]">
-                /nowyRHZ.html
+                /nowyRHZ
               </div>
             </div>
           )}
