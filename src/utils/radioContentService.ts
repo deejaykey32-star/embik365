@@ -365,6 +365,11 @@ export function getRadioBroadcastItem(
   const cleanPassage = stripHtml(rhzEntry.passage || '').trim();
   const cleanExplanation = stripHtml(rhzEntry.explanation || '').trim();
   const cleanOurFather = stripHtml(rhzEntry.ourFather || OJCZE_NASZ_PELNY).replace(/10 Osobnych Modlitw.*$/i, '').trim();
+  const cleanGloryBe = stripHtml(rhzEntry.gloryBe || CHWALA_OJCU_PELNE).trim();
+  const cleanFatima = stripHtml(rhzEntry.fatimaPrayer || MODLITWA_FATIMSKA_PELNA).trim();
+  const callsText = (rhzEntry.callsToAction || []).map(c => stripHtml(c)).join(' ');
+  const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
+  const spokenDate = normalizePolishTextForSpeech(rhzEntry.displayDate || '');
 
   const introParts = [
     `Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
