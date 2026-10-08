@@ -126,7 +126,9 @@ export const RadioView: React.FC<Props> = ({
     // Na wypadek restrykcji polityki autoplay przeglądarki (Safari/Chrome):
     // pierwszy dotyk/klik w dowolnym miejscu automatycznie odblokowuje dźwięk
     const unlockOnUserGesture = () => {
-      globalRadioManager.ensurePlaying(activeStationId);
+      if (!globalRadioManager.isListening() && !globalRadioManager.getState().isMuted) {
+        globalRadioManager.ensurePlaying(activeStationId);
+      }
     };
     window.addEventListener('pointerdown', unlockOnUserGesture, { once: true });
     window.addEventListener('touchstart', unlockOnUserGesture, { once: true });

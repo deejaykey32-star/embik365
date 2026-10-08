@@ -49,11 +49,16 @@ class RadioPlaybackManager {
   private currentBroadcastItem: RadioBroadcastItem | null = null;
   private liveStatus: StationLiveStatus | null = null;
   private transitionTimer: any = null;
+  private isTuning: boolean = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
       window.addEventListener('drogowskazy_lector_state_changed', () => {
         const state = getLectorPlaybackState();
+        // Nie przełączaj na stan idle jeśli stacja jest w trakcie strojenia/włączania
+        if (state === 'idle' && this.isTuning) {
+          return;
+        }
         if (state !== this.playbackState) {
           this.playbackState = state;
           this.notifySubscribers();
@@ -68,7 +73,7 @@ class RadioPlaybackManager {
       : 365;
 
     return {
-      isRadioActive: this.stationId !== null && this.playbackState !== 'idle',
+      isRadioActive: this.stationId !== null && (this.playbackState !== 'idle' || this.isTuning),
       stationId: this.stationId,
       dayNumber: this.dayNumber,
       totalDays,
@@ -101,6 +106,7 @@ class RadioPlaybackManager {
     startFromLiveOffset: boolean = true
   ): Promise<void> {
     this.clearTransitionTimer();
+    this.isTuning = true;
     unlockMobileAudio();
     stopLectorSpeech();
 
@@ -131,6 +137,7 @@ class RadioPlaybackManager {
     this.dayNumber = dayToPlay;
 
     if (this.isMuted) {
+      this.isTuning = false;
       this.playbackState = 'paused';
       this.notifySubscribers();
       return;
@@ -148,13 +155,16 @@ class RadioPlaybackManager {
       title: `${item.headlineTitle} (${item.displayDate})`,
       sectionName: `Radio 24/7: ${item.stationName}`,
       onStart: () => {
+        this.isTuning = false;
         this.playbackState = 'playing';
         this.notifySubscribers();
       },
       onEnd: () => {
+        this.isTuning = false;
         this.handleTrackEnded();
       },
       onError: (err) => {
+        this.isTuning = false;
         console.warn('Radio stream playback warning, auto-recovering non-stop loop:', err);
         this.handlePlaybackError();
       },
@@ -228,7 +238,7 @@ class RadioPlaybackManager {
    * Sprawdza, czy radio aktualnie nadaje i jest słyszalne.
    */
   public isListening(): boolean {
-    return this.stationId !== null && this.playbackState === 'playing' && !this.isMuted;
+    return this.stationId !== null && (this.playbackState === 'playing' || this.isTuning) && !this.isMuted;
   }
 
   /**
@@ -252,6 +262,7 @@ class RadioPlaybackManager {
   public setMuted(muted: boolean): void {
     this.isMuted = muted;
     if (this.isMuted) {
+      this.isTuning = false;
       stopLectorSpeech();
       this.playbackState = 'paused';
       this.notifySubscribers();
@@ -271,6 +282,7 @@ class RadioPlaybackManager {
 
   public stopRadio() {
     this.clearTransitionTimer();
+    this.isTuning = false;
     stopLectorSpeech();
     this.playbackState = 'idle';
     this.stationId = null;

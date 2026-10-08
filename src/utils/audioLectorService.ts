@@ -196,6 +196,9 @@ export function findBestLocalVoice(
   return langVoices[0] || voices[0];
 }
 
+// Global set to retain active SpeechSynthesisUtterances and prevent Chromium V8 garbage collection mid-speech
+const activeUtterances = new Set<SpeechSynthesisUtterance>();
+
 let currentAudioElement: HTMLAudioElement | null = null;
 let currentAudioContext: AudioContext | null = null;
 let currentSourceNode: AudioBufferSourceNode | null = null;
@@ -395,6 +398,8 @@ export function stopLectorSpeech(): void {
   }
 
   stopBackgroundAudioKeepAlive();
+
+  activeUtterances.clear();
 
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     try {
@@ -649,7 +654,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
       if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
         if (!isCurrentSession()) return;
-        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, currentSession, wrappedOnStart, wrappedOnEnd, wrappedOnError);
+        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, currentSession, cleanedSpeechText.length, wrappedOnStart, wrappedOnEnd, wrappedOnError);
         return;
       }
     } catch (err) {
@@ -722,6 +727,7 @@ async function playAudioBufferWithVoiceEffects(
   voiceProfile: OnlineVoiceOption,
   config: LectorConfig,
   sessionId: number,
+  textLength: number,
   onStart?: () => void,
   onEnd?: () => void,
   onError?: (err: any) => void
@@ -741,6 +747,12 @@ async function playAudioBufferWithVoiceEffects(
 
       const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
       if (sessionId !== activePlaybackSessionId) return;
+
+      // Sprawdzenie czy przeglądarka nie obcięła wieloczęściowego strumienia audio
+      const expectedMinSec = Math.max(8, Math.floor(textLength / 22));
+      if (textLength > 180 && decodedData.duration < expectedMinSec && decodedData.duration < 15) {
+        throw new Error(`Audio decoded buffer truncated (${decodedData.duration.toFixed(1)}s < min ${expectedMinSec}s)`);
+      }
 
       const source = audioCtx.createBufferSource();
       source.buffer = decodedData;
@@ -846,14 +858,13 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
   if (chromeKeepAliveInterval) clearInterval(chromeKeepAliveInterval);
   chromeKeepAliveInterval = setInterval(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+      if (window.speechSynthesis.paused) {
         try {
-          window.speechSynthesis.pause();
           window.speechSynthesis.resume();
         } catch {}
       }
     }
-  }, 10000);
+  }, 3000);
 
   const speakNextChunk = () => {
     if (!isCurrentSession()) {
@@ -877,6 +888,7 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     chunkIndex++;
 
     const utterance = new SpeechSynthesisUtterance(currentChunkText);
+    activeUtterances.add(utterance);
 
     // Dynamic pitch modulation based on character & gender
     let basePitch = config.pitch;
@@ -917,24 +929,73 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
       onStart();
     }
 
-    utterance.onend = () => {
-      if (!isCurrentSession()) return;
+    let chunkSettled = false;
+    let watchdogTimer: any = null;
+
+    const cleanupChunk = () => {
+      chunkSettled = true;
+      if (watchdogTimer) {
+        clearTimeout(watchdogTimer);
+        watchdogTimer = null;
+      }
+      activeUtterances.delete(utterance);
+    };
+
+    // Watchdog na wypadek gdyby przeglądarka zacięła proces mowy bez zdarzenia onend/onerror
+    const expectedDurationMs = Math.max(10000, Math.round(currentChunkText.length * 130) + 6000);
+    watchdogTimer = setTimeout(() => {
+      if (chunkSettled || !isCurrentSession()) return;
+      cleanupChunk();
+      console.warn('Speech chunk watchdog recovered stuck speech, advancing to next chunk...');
       speakNextChunk();
+    }, expectedDurationMs);
+
+    utterance.onend = () => {
+      if (chunkSettled) return;
+      cleanupChunk();
+      if (!isCurrentSession()) return;
+      // Drobny odstęp (40ms) umożliwia karcie dźwiękowej / silnikowi mowy w Chrome czyste domknięcie bufora
+      setTimeout(() => {
+        if (isCurrentSession()) {
+          speakNextChunk();
+        }
+      }, 40);
     };
 
     utterance.onerror = (err: any) => {
+      if (chunkSettled) return;
+      cleanupChunk();
       if (!isCurrentSession()) return;
-      // Jeśli synteza została przerwana lub anulowana przez przycisk Stop - nie czytaj dalej!
-      if (err && (err.error === 'interrupted' || err.error === 'canceled')) {
+      // Jeśli użytkownik świadomie przerwał / zamknął odtwarzacz
+      if (err && err.error === 'canceled') {
         return;
       }
-      console.warn('Local speech chunk error:', err);
-      speakNextChunk();
+      console.warn('Local speech chunk warning, auto-recovering next chunk:', err);
+      setTimeout(() => {
+        if (isCurrentSession()) {
+          speakNextChunk();
+        }
+      }, 50);
     };
 
-    window.speechSynthesis.speak(utterance);
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('SpeechSynthesis.speak failed:', e);
+      cleanupChunk();
+      setTimeout(() => {
+        if (isCurrentSession()) {
+          speakNextChunk();
+        }
+      }, 60);
+    }
   };
 
-  speakNextChunk();
+  // Uruchomienie z minimalnym opóźnieniem gwarantującym odblokowanie kolejki mowy
+  setTimeout(() => {
+    if (isCurrentSession()) {
+      speakNextChunk();
+    }
+  }, 20);
 }
 
