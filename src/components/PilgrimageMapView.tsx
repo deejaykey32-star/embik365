@@ -127,10 +127,10 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
   // Bezpośrednia ścieżka do nawigacji w Google Maps (Jasna Góra ➔ Łagiewniki)
   const googleMapsRouteUrl = 'https://maps.app.goo.gl/3aTKzBQiZ83mqcQdA';
   const googleMapsModes = {
-    walking: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=walking',
-    driving: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=driving',
-    bicycling: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=bicycling',
-    transit: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=transit'
+    walking: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewnikach,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w&waypoints=Z%C5%82oty+Potok%7CKr%C3%B3lewski+Zamek+Bobolice%7CZamek+Ogrodzieniec%7COjc%C3%B3w&travelmode=walking',
+    driving: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewnikach,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w&waypoints=Z%C5%82oty+Potok%7CKr%C3%B3lewski+Zamek+Bobolice%7CZamek+Ogrodzieniec%7COjc%C3%B3w&travelmode=driving',
+    bicycling: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewnikach,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w&waypoints=Z%C5%82oty+Potok%7CKr%C3%B3lewski+Zamek+Bobolice%7CZamek+Ogrodzieniec%7COjc%C3%B3w&travelmode=bicycling',
+    transit: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewnikach,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w&waypoints=Z%C5%82oty+Potok%7CKr%C3%B3lewski+Zamek+Bobolice%7CZamek+Ogrodzieniec%7COjc%C3%B3w&travelmode=transit'
   };
 
   const handleStageChange = (stage: 'stage-1' | 'stage-2' | 'stage-3') => {
@@ -597,7 +597,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
-              Skorzystaj z gotowej trasy w Google Maps ze wszystkimi 8 węzłami: <span className="font-semibold text-emerald-900 dark:text-emerald-200">Jasna Góra ➔ Złoty Potok ➔ Bobolice/Mirów ➔ Ogrodzieniec ➔ Klucze ➔ Pieskowa Skała ➔ Ojców ➔ Łagiewniki</span>. Wybierz swój tryb podróży poniżej:
+              Skorzystaj z gotowej trasy w Google Maps z głównymi punktami: <span className="font-semibold text-emerald-900 dark:text-emerald-200">Jasna Góra ➔ Złoty Potok ➔ Królewski Zamek Bobolice ➔ Zamek Ogrodzieniec ➔ Ojców ➔ Sanktuarium w Łagiewnikach</span>. Wybierz swój tryb podróży poniżej:
             </p>
             <div className="flex items-center gap-2 text-xs font-mono text-[#614e3e] dark:text-[#94a3b8]">
               <span>Link do nawigacji:</span>
@@ -1464,14 +1464,14 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200 font-bold text-sm">
                   <Navigation className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Ścieżka w Google Maps (8 węzłów etapowych)</span>
+                  <span>Ścieżka w Google Maps (Główne węzły etapowe)</span>
                 </div>
                 <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-600 text-white">
                   samochód • pociąg • pieszo • rower
                 </span>
               </div>
               <p className="text-xs text-[#473729] dark:text-[#cbd5e1] leading-relaxed">
-                Przystanki: Jasna Góra ➔ Złoty Potok ➔ Zamek Bobolice/Mirów ➔ Zamek Ogrodzieniec ➔ Klucze/Pustynia Błędowska ➔ Zamek Pieskowa Skała ➔ Ojców ➔ Sanktuarium Bożego Miłosierdzia w Łagiewnikach.
+                Przystanki: Jasna Góra ➔ Złoty Potok ➔ Zamek Bobolice ➔ Zamek Ogrodzieniec ➔ Ojców ➔ Sanktuarium Bożego Miłosierdzia w Łagiewnikach.
               </p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <a
