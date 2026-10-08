@@ -99,9 +99,10 @@ export const ONLINE_VOICES: OnlineVoiceOption[] = [
 ];
 
 const STORAGE_KEY = 'drogowskazy_lector_config';
+const MIGRATION_KEY = 'drogowskazy_lector_online_default_v2';
 
 export const DEFAULT_LECTOR_CONFIG: LectorConfig = {
-  mode: 'local',
+  mode: 'online',
   lang: 'pl',
   gender: 'male',
   localVoiceURI: '',
@@ -114,9 +115,20 @@ export const DEFAULT_LECTOR_CONFIG: LectorConfig = {
 export function getLectorConfig(): LectorConfig {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
+    const migrationDone = localStorage.getItem(MIGRATION_KEY);
+
     if (saved) {
       const parsed = JSON.parse(saved);
+      // Jeśli użytkownik miał jeszcze stary domyślny tryb 'local',
+      // migrujemy automatycznie do 'online' (płynny lektor bez zacinania):
+      if (!migrationDone) {
+        parsed.mode = 'online';
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_LECTOR_CONFIG, ...parsed }));
+        localStorage.setItem(MIGRATION_KEY, 'true');
+      }
       return { ...DEFAULT_LECTOR_CONFIG, ...parsed };
+    } else {
+      localStorage.setItem(MIGRATION_KEY, 'true');
     }
   } catch {}
   return DEFAULT_LECTOR_CONFIG;

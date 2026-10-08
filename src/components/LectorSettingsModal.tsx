@@ -244,13 +244,38 @@ export const LectorSettingsModal: React.FC<Props> = ({
             </div>
           )}
 
-          {/* 1. SELEKCJA TRYBU: LOKALNY VS ONLINE */}
+          {/* 1. SELEKCJA TRYBU: ONLINE VS LOKALNY */}
           <div>
             <label className="block font-bold text-stone-900 dark:text-stone-100 mb-2 uppercase tracking-wide text-[11px]">
               1. Wybierz wersję silnika lektora:
             </label>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Tryb Online (Domyślny) */}
+              <button
+                type="button"
+                onClick={() => handleModeChange('online')}
+                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all ${
+                  config.mode === 'online'
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-950 dark:text-amber-100 font-bold shadow-md ring-2 ring-amber-500/50'
+                    : 'bg-white dark:bg-[#131c2e] border-stone-300 dark:border-stone-800 hover:border-amber-500/50 text-stone-800 dark:text-stone-200'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="flex items-center gap-2 font-bold text-sm text-stone-900 dark:text-white">
+                    <Cloud className="w-5 h-5 text-amber-600" />
+                    <span>Wersja Online (AI Cloud Neural)</span>
+                  </span>
+                  {config.mode === 'online' && <CheckCircle2 className="w-5 h-5 text-amber-600" />}
+                </div>
+                <div className="inline-block mb-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                  Domyślna • Płynne czytanie bez zacinania
+                </div>
+                <p className="text-[11px] opacity-90 leading-relaxed font-normal text-stone-600 dark:text-stone-300">
+                  Wysokiej jakości lektorzy konwersacyjni AI (męscy i żeńscy). Naturalna intonacja, czyta płynnie i bez zacinania.
+                </p>
+              </button>
+
               {/* Tryb Lokalny */}
               <button
                 type="button"
@@ -261,37 +286,18 @@ export const LectorSettingsModal: React.FC<Props> = ({
                     : 'bg-white dark:bg-[#131c2e] border-stone-300 dark:border-stone-800 hover:border-amber-500/50 text-stone-800 dark:text-stone-200'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1.5">
                   <span className="flex items-center gap-2 font-bold text-sm text-stone-900 dark:text-white">
                     <Cpu className="w-5 h-5 text-amber-600" />
                     <span>Wersja Lokalna (Systemowa)</span>
                   </span>
                   {config.mode === 'local' && <CheckCircle2 className="w-5 h-5 text-amber-600" />}
                 </div>
-                <p className="text-[11px] opacity-90 leading-relaxed font-normal text-stone-600 dark:text-stone-300">
-                  Wykorzystuje lektorów zainstalowanych w Twojej przeglądarce i systemie (np. Windows Speech, Android TTS, iOS Siri). Działa offline!
-                </p>
-              </button>
-
-              {/* Tryb Online */}
-              <button
-                type="button"
-                onClick={() => handleModeChange('online')}
-                className={`p-4 rounded-2xl border text-left cursor-pointer transition-all ${
-                  config.mode === 'online'
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-950 dark:text-amber-100 font-bold shadow-md ring-2 ring-amber-500/50'
-                    : 'bg-white dark:bg-[#131c2e] border-stone-300 dark:border-stone-800 hover:border-amber-500/50 text-stone-800 dark:text-stone-200'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="flex items-center gap-2 font-bold text-sm text-stone-900 dark:text-white">
-                    <Cloud className="w-5 h-5 text-amber-600" />
-                    <span>Wersja Online (AI Cloud Neural)</span>
-                  </span>
-                  {config.mode === 'online' && <CheckCircle2 className="w-5 h-5 text-amber-600" />}
+                <div className="inline-block mb-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-500/10 text-stone-600 dark:text-stone-400 border border-stone-500/20">
+                  Alternatywna • Działa offline
                 </div>
                 <p className="text-[11px] opacity-90 leading-relaxed font-normal text-stone-600 dark:text-stone-300">
-                  Wysokiej jakości lektorzy konwersacyjni AI (męscy i żeńscy). Naturalna intonacja medytacyjna i rozważaniowa.
+                  Wykorzystuje pierwotnych lektorów zainstalowanych w Twojej przeglądarce i systemie (np. Windows Speech, Android TTS). Działa offline, ale może zacinać się w niektórych przeglądarkach.
                 </p>
               </button>
             </div>
