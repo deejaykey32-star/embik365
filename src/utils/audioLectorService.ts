@@ -166,13 +166,13 @@ export function findBestLocalVoice(
 
   const targetLang = (langCode || 'pl').toLowerCase();
 
-  // 1. Filter voices matching target language strictly
+  // 1. Głosy pasujące ściśle do wybranego języka
   const langVoices = voices.filter(v => {
     const vLang = v.lang.toLowerCase().replace('_', '-');
     return vLang.startsWith(targetLang) || vLang.includes(targetLang);
   });
 
-  // 2. If preferredURI is specified AND matches target language & gender, return it
+  // 2. Jeśli użytkownik wskazał konkretny głos w ustawieniach (preferredURI)
   if (preferredURI && langVoices.length > 0) {
     const match = langVoices.find(v => v.voiceURI === preferredURI);
     if (match) {
@@ -184,14 +184,22 @@ export function findBestLocalVoice(
 
   const pool = langVoices.length > 0 ? langVoices : voices;
 
-  // 3. Match gender strictly among language voices
+  // 3. Priorytet dla naturalnych głosów HD (np. Microsoft Online Natural: Marek, Zofia w Edge/Windows)
   if (desiredGender === 'female') {
+    const naturalFemale = pool.find(v => /natural|online/i.test(v.name) && FEMALE_VOICE_PATTERN.test(v.name));
+    if (naturalFemale) return naturalFemale;
     const femaleMatch = pool.find(v => FEMALE_VOICE_PATTERN.test(v.name) && !MALE_VOICE_PATTERN.test(v.name));
     if (femaleMatch) return femaleMatch;
   } else if (desiredGender === 'male') {
+    const naturalMale = pool.find(v => /natural|online/i.test(v.name) && (MALE_VOICE_PATTERN.test(v.name) || !FEMALE_VOICE_PATTERN.test(v.name)));
+    if (naturalMale) return naturalMale;
     const maleMatch = pool.find(v => MALE_VOICE_PATTERN.test(v.name) && !FEMALE_VOICE_PATTERN.test(v.name));
     if (maleMatch) return maleMatch;
   }
+
+  // 4. Fallback: jakikolwiek naturalny głos danego języka lub pierwszy dostępny
+  const naturalAny = langVoices.find(v => /natural|online/i.test(v.name));
+  if (naturalAny) return naturalAny;
 
   return langVoices[0] || voices[0];
 }
@@ -750,33 +758,73 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   }
 }
 
-export function splitTextForTts(text: string, maxLen: number = 180): string[] {
+export function splitTextForTts(text: string, maxLen: number = 320): string[] {
   if (!text) return [];
   const clean = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   if (clean.length <= maxLen) return [clean];
 
-  const sentences = clean.split(/(?<=[.!?])\s+/);
+  // 1. Podział na zdania według kropek, wykrzykników i znaków zapytania
+  const rawSentences = clean.split(/(?<=[.!?])\s+(?=[A-ZĄĆĘŁŃÓŚŹŻ0-9„"«])/u);
+  const sentences = (rawSentences.length > 1) ? rawSentences : clean.split(/(?<=[.!?])\s+/);
+
   const chunks: string[] = [];
-  let current = '';
 
-  for (const s of sentences) {
-    if (!current) {
-      current = s;
-    } else if ((current + ' ' + s).length <= maxLen) {
-      current += ' ' + s;
-    } else {
-      chunks.push(current);
-      current = s;
-    }
-  }
+  for (const sentence of sentences) {
+    const s = sentence.trim();
+    if (!s) continue;
 
-  if (current) {
-    if (current.length > maxLen) {
-      for (let i = 0; i < current.length; i += maxLen) {
-        chunks.push(current.substring(i, i + maxLen));
+    if (s.length <= maxLen) {
+      // Łączymy ze sobą krótkie zdania aż do limitu maxLen, aby lektor czytał płynnie bez zacięć
+      if (chunks.length > 0 && (chunks[chunks.length - 1].length + 1 + s.length) <= maxLen) {
+        chunks[chunks.length - 1] += ' ' + s;
+      } else {
+        chunks.push(s);
       }
     } else {
-      chunks.push(current);
+      // Zdanie przekracza maxLen - dzielimy według naturalnych pauz (średniki, myślniki, przecinki)
+      const clauses = s.split(/(?<=[,;:\-–—])\s+/);
+      let currentClauseChunk = '';
+
+      for (const clause of clauses) {
+        const c = clause.trim();
+        if (!c) continue;
+
+        if (c.length <= maxLen) {
+          if (!currentClauseChunk) {
+            currentClauseChunk = c;
+          } else if ((currentClauseChunk + ' ' + c).length <= maxLen) {
+            currentClauseChunk += ' ' + c;
+          } else {
+            chunks.push(currentClauseChunk);
+            currentClauseChunk = c;
+          }
+        } else {
+          // Jeśli nawet pojedyncza fraza jest długa, dzielimy wyłącznie po granicach słów (spacjach) - NIGDY nie tnąc słowa w połowie!
+          if (currentClauseChunk) {
+            chunks.push(currentClauseChunk);
+            currentClauseChunk = '';
+          }
+          const words = c.split(/\s+/);
+          let wordChunk = '';
+          for (const w of words) {
+            if (!wordChunk) {
+              wordChunk = w;
+            } else if ((wordChunk + ' ' + w).length <= maxLen) {
+              wordChunk += ' ' + w;
+            } else {
+              chunks.push(wordChunk);
+              wordChunk = w;
+            }
+          }
+          if (wordChunk) {
+            currentClauseChunk = wordChunk;
+          }
+        }
+      }
+
+      if (currentClauseChunk) {
+        chunks.push(currentClauseChunk);
+      }
     }
   }
 
@@ -1005,7 +1053,8 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     return;
   }
 
-  const textChunks = splitTextForTts(cleanText, 180);
+  // Używamy zoptymalizowanego rozmiaru chunka ~300 znaków (całe zdania i frazy bez cięcia słów)
+  const textChunks = splitTextForTts(cleanText, 300);
   if (textChunks.length === 0) {
     if (onError) onError('Brak tekstu');
     return;
@@ -1013,16 +1062,25 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
 
   let chunkIndex = 0;
 
+  // Rozwiązanie błędu Chromium Bug #679437: Chrome wstrzymuje odtwarzanie po ~14-15s mowy
+  // Wywołanie pause() i od razu resume() co 6 sekund resetuje wewnętrzny licznik Chrome bez przerywania dźwięku
   if (chromeKeepAliveInterval) clearInterval(chromeKeepAliveInterval);
   chromeKeepAliveInterval = setInterval(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      if (window.speechSynthesis.paused) {
-        try {
-          window.speechSynthesis.resume();
-        } catch {}
+      if (window.speechSynthesis.speaking && lectorPlaybackState === 'playing') {
+        if (!window.speechSynthesis.paused) {
+          try {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
+          } catch {}
+        } else {
+          try {
+            window.speechSynthesis.resume();
+          } catch {}
+        }
       }
     }
-  }, 3000);
+  }, 6000);
 
   const speakNextChunk = () => {
     if (!isCurrentSession()) {
@@ -1048,8 +1106,8 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     const utterance = new SpeechSynthesisUtterance(currentChunkText);
     activeUtterances.add(utterance);
 
-    // Dynamic pitch modulation based on character & gender
-    let basePitch = config.pitch;
+    // Nie deformujemy sztucznie pitchu dla lokalnych głosów systemowych (co powodowało metaliczne zacinanie w Windows)
+    let basePitch = config.pitch ?? 1.0;
     if (voiceProfile) {
       if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
         basePitch *= 0.78;
@@ -1058,17 +1116,12 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
       } else if (voiceProfile.gender === 'male') {
         basePitch *= 0.88;
       }
-    } else {
-      if (targetGender === 'female') {
-        basePitch *= 1.32;
-      } else if (targetGender === 'male') {
-        basePitch *= 0.85;
-      }
     }
 
-    utterance.rate = config.rate;
-    utterance.pitch = Math.max(0.5, Math.min(2.0, basePitch));
-    utterance.volume = config.volume;
+    const speechRate = Math.max(0.6, Math.min(1.8, config.rate || 1.0));
+    utterance.rate = speechRate;
+    utterance.pitch = Math.max(0.6, Math.min(1.8, basePitch));
+    utterance.volume = Math.max(0, Math.min(1.0, config.volume || 1.0));
 
     const chosenVoice = findBestLocalVoice(targetLang, targetGender, preferredURI);
     if (chosenVoice) {
@@ -1099,25 +1152,35 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
       activeUtterances.delete(utterance);
     };
 
-    // Watchdog na wypadek gdyby przeglądarka zacięła proces mowy bez zdarzenia onend/onerror
-    const expectedDurationMs = Math.max(10000, Math.round(currentChunkText.length * 130) + 6000);
+    // Watchdog na wypadek gdyby silnik mowy w przeglądarce całkowicie zawisł bez zdarzenia onend/onerror
+    // Zapewniamy bezpieczny czas: min. 16 sekund lub 160ms na znak uwzględniając tempo czytania
+    const expectedDurationMs = Math.max(16000, Math.round((currentChunkText.length * 160) / speechRate) + 12000);
     watchdogTimer = setTimeout(() => {
       if (chunkSettled || !isCurrentSession()) return;
       cleanupChunk();
       console.warn('Speech chunk watchdog recovered stuck speech, advancing to next chunk...');
-      speakNextChunk();
+      try {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      } catch {}
+      setTimeout(() => {
+        if (isCurrentSession()) {
+          speakNextChunk();
+        }
+      }, 70);
     }, expectedDurationMs);
 
     utterance.onend = () => {
       if (chunkSettled) return;
       cleanupChunk();
       if (!isCurrentSession()) return;
-      // Drobny odstęp (40ms) umożliwia karcie dźwiękowej / silnikowi mowy w Chrome czyste domknięcie bufora
+      // Drobny odstęp (35ms) umożliwia karcie dźwiękowej / silnikowi mowy czyste domknięcie bufora
       setTimeout(() => {
         if (isCurrentSession()) {
           speakNextChunk();
         }
-      }, 40);
+      }, 35);
     };
 
     utterance.onerror = (err: any) => {
@@ -1137,6 +1200,9 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     };
 
     try {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused) {
+        try { window.speechSynthesis.resume(); } catch {}
+      }
       window.speechSynthesis.speak(utterance);
     } catch (e) {
       console.warn('SpeechSynthesis.speak failed:', e);
@@ -1149,11 +1215,14 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     }
   };
 
-  // Uruchomienie z minimalnym opóźnieniem gwarantującym odblokowanie kolejki mowy
+  // Uruchomienie z bezpiecznym opóźnieniem (80ms) gwarantującym odblokowanie kolejki po wcześniejszym cancel()
   setTimeout(() => {
     if (isCurrentSession()) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.paused) {
+        try { window.speechSynthesis.resume(); } catch {}
+      }
       speakNextChunk();
     }
-  }, 20);
+  }, 80);
 }
 

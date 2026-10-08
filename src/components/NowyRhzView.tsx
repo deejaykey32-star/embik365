@@ -592,7 +592,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                     key={beadNum}
                     id={`nowyrhz-bead-${beadNum}`}
                     onClick={() => toggleStep(beadId)}
-                    className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer select-none scroll-mt-20 ${
+                    className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer scroll-mt-20 ${
                       isDone
                         ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-500/50 shadow-xs'
                         : 'bg-white dark:bg-[#141d2c] border-[#e7ddd1] dark:border-[#223048] hover:border-amber-500/40'

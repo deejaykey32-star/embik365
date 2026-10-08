@@ -700,12 +700,16 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const currentTheme = getThemeStyles();
 
-  // Mouse wheel handler to turn pages horizontally (disabling vertical scrolling)
+  // Mouse wheel handler to turn pages horizontally (Shift+Wheel or horizontal trackpad scroll)
   const [wheelCooldown, setWheelCooldown] = useState<boolean>(false);
 
   const handleWheelTurn = (e: React.WheelEvent) => {
+    // Pozwól na normalne przewijanie strony pionowo kółkiem myszy
+    if (!e.shiftKey && !e.altKey && Math.abs(e.deltaX) <= Math.abs(e.deltaY)) {
+      return;
+    }
     if (wheelCooldown || isFlipping) return;
-    const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
     if (Math.abs(delta) < 12) return;
 
     if (delta > 0) {

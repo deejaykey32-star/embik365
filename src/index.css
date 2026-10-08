@@ -11,23 +11,19 @@
 
   html {
     width: 100%;
-    max-width: 100%;
     min-height: 100%;
-    overflow-x: clip;
-    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
-    touch-action: manipulation;
+    scroll-behavior: smooth;
   }
 
   body {
     width: 100%;
-    max-width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
-    overflow-x: clip;
+    overflow-x: hidden;
     overflow-y: visible;
-    touch-action: pan-y pinch-zoom;
-    -webkit-overflow-scrolling: touch;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -35,12 +31,11 @@
 
   #root {
     width: 100%;
-    max-width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    overflow-x: clip;
+    overflow-x: hidden;
   }
 
   *, ::before, ::after {
