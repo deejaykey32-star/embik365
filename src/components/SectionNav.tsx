@@ -57,9 +57,9 @@ export const SectionNav: React.FC<Props> = ({
   });
 
   return (
-    <div className="bg-[#f7f2ea] dark:bg-[#0e131d] border-b border-[#e5d9cc] dark:border-[#1e2638] py-2.5 px-3 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="bg-[#f7f2ea] dark:bg-[#0e131d] border-b border-[#e5d9cc] dark:border-[#1e2638] py-2 sm:py-2.5 px-2.5 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 py-0.5">
+        <div className="flex items-center gap-1.5 sm:gap-2 py-0.5 overflow-x-auto no-scrollbar scroll-smooth sm:flex-wrap sm:justify-start">
 
           {visibleSections.map((sec) => {
             const IconComponent = ICONS[sec.icon] || BookOpen;
@@ -73,7 +73,7 @@ export const SectionNav: React.FC<Props> = ({
                 key={sec.id}
                 id={`nav-section-${sec.id}`}
                 onClick={() => onSelectSection(sec.id)}
-                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl whitespace-nowrap text-xs sm:text-sm font-medium transition-all shrink-0 cursor-pointer ${
+                className={`flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl whitespace-nowrap text-xs sm:text-sm font-medium transition-all shrink-0 cursor-pointer ${
                   isActive
                     ? 'bg-[#2f251c] dark:bg-gradient-to-r dark:from-amber-600 dark:to-amber-700 text-white shadow-sm ring-1 ring-[#5a4838] dark:ring-amber-400/40 dark:shadow-[0_0_15px_rgba(217,119,6,0.3)]'
                     : isHiddenForVisitors

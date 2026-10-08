@@ -117,12 +117,14 @@
 /r/gra /histada 302
 
 # Nowy RHZ (Różaniec Historii Zbawienia 175 dni)
-/nowyrhz /nowyRHZ 302
-/nowy-rhz /nowyRHZ 302
-/r/nowyrhz /nowyRHZ 302
-/z/nowyrhz /nowyRHZ 302
-/r/nowy-rhz /nowyRHZ 302
-/z/nowy-rhz /nowyRHZ 302
+/nowyRHZ.html /nowyRHZ.html 200
+/nowyRHZ /nowyRHZ.html 200
+/nowyrhz /nowyRHZ.html 302
+/nowy-rhz /nowyRHZ.html 302
+/r/nowyrhz /nowyRHZ.html 302
+/z/nowyrhz /nowyRHZ.html 302
+/r/nowy-rhz /nowyRHZ.html 302
+/z/nowy-rhz /nowyRHZ.html 302
 
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

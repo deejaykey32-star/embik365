@@ -208,24 +208,24 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
-      <div className="bg-[#faf8f4] dark:bg-[#0d131f] w-full max-w-3xl rounded-3xl shadow-2xl border border-[#dbcabb] dark:border-[#212b3c] my-4 sm:my-8 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-2 sm:p-6 overflow-y-auto animate-fade-in">
+      <div className="bg-[#faf8f4] dark:bg-[#0d131f] w-full max-w-3xl rounded-2xl sm:rounded-3xl shadow-2xl border border-[#dbcabb] dark:border-[#212b3c] my-2 sm:my-8 overflow-hidden flex flex-col max-h-[94vh]">
         
         {/* Search Header Bar with Input */}
-        <div className="p-4 sm:p-6 bg-white dark:bg-[#121927] border-b border-[#e2d5c6] dark:border-[#1e2738] space-y-4">
+        <div className="p-3.5 sm:p-6 bg-white dark:bg-[#121927] border-b border-[#e2d5c6] dark:border-[#1e2738] space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-600/15 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-xl bg-amber-600/15 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
                 <Search className="w-4 h-4" />
               </div>
-              <h2 className="font-heading-cinzel font-bold text-base sm:text-lg text-[#2e2319] dark:text-[#f1f5f9]">
+              <h2 className="font-heading-cinzel font-bold text-sm sm:text-lg text-[#2e2319] dark:text-[#f1f5f9] truncate">
                 Wyszukiwarka Treści Droga365
               </h2>
             </div>
             <button
               onClick={onClose}
               id="btn-close-search-modal"
-              className="p-1.5 rounded-xl hover:bg-[#ede3d5] dark:hover:bg-[#1b2333] text-[#5e4e3e] dark:text-[#94a3b8] cursor-pointer transition-colors"
+              className="p-1.5 rounded-xl hover:bg-[#ede3d5] dark:hover:bg-[#1b2333] text-[#5e4e3e] dark:text-[#94a3b8] cursor-pointer transition-colors shrink-0"
               title="Zamknij (Esc)"
             >
               <X className="w-5 h-5" />
@@ -234,19 +234,19 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
           {/* Main Search Input Field */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8a7967] dark:text-[#94a3b8]" />
+            <Search className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-[#8a7967] dark:text-[#94a3b8]" />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder='Wpisz szukaną frazę (np. "Cisza", "Boże Narodzenie", "Różaniec", "Przebaczenie")...'
-              className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-[#f5ecdf] dark:bg-[#182130] text-[#2c221a] dark:text-white placeholder-[#8c7967] dark:placeholder-[#64748b] text-sm font-medium border border-[#d8c8b5] dark:border-[#283549] focus:outline-hidden focus:border-amber-600 dark:focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner"
+              placeholder='Wpisz szukaną frazę (np. "Cisza", "Boże Narodzenie", "Różaniec")...'
+              className="w-full pl-10 sm:pl-12 pr-9 sm:pr-10 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#f5ecdf] dark:bg-[#182130] text-[#2c221a] dark:text-white placeholder-[#8c7967] dark:placeholder-[#64748b] text-xs sm:text-sm font-medium border border-[#d8c8b5] dark:border-[#283549] focus:outline-hidden focus:border-amber-600 dark:focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-[#8c7967] dark:text-[#94a3b8] cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-[#8c7967] dark:text-[#94a3b8] cursor-pointer"
                 title="Wyczyść frazę"
               >
                 <X className="w-4 h-4" />

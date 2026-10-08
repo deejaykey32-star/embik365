@@ -20,7 +20,9 @@ import {
   RefreshCw,
   Sparkles,
   ChevronRight,
-  Info
+  Info,
+  Navigation,
+  Route
 } from 'lucide-react';
 import { SectionMeta } from '../types';
 
@@ -32,10 +34,12 @@ interface Props {
 
 export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme = 'light' }) => {
   const [activeStage, setActiveStage] = useState<'stage-1' | 'stage-2' | 'stage-3'>('stage-2');
-  const [activeTab, setActiveTab] = useState<'trail' | 'rays' | 'lodging' | 'live' | 'digital'>('trail');
+  const [activeTab, setActiveTab] = useState<'trail' | 'plan' | 'rays' | 'lodging' | 'live' | 'digital'>('trail');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const googleMapsRouteUrl = 'https://maps.app.goo.gl/5t7uuhdYYeqVaaLz7';
 
   const handleStageChange = (stage: 'stage-1' | 'stage-2' | 'stage-3') => {
     setActiveStage(stage);
@@ -55,8 +59,8 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'Wielka Pielgrzymka Gwiaździsta 2026 & Szlak Orlich Gniazd',
-          text: 'Interaktywna mapa i przewodnik Pielgrzymki Gwiaździstej 2026 do Częstochowy i Łagiewnik.',
+          title: 'Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
+          text: 'Interaktywna mapa i przewodnik Pielgrzymki Gwiaździstej do Częstochowy i Łagiewnik.',
           url: shareUrl
         });
       } else {
@@ -71,11 +75,11 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     }
   };
 
-  // Harmonogram 7 dni Szlaku Orlich Gniazd (Etap II)
+  // Uniwersalny harmonogram 7 dni Szlaku Orlich Gniazd (Etap II) - coroczny 18–24 czerwca
   const eagleTrailDays = [
     {
       day: 1,
-      date: '18.06.2026 (Czw)',
+      date: '18.06',
       title: 'Jasna Góra ➔ Złoty Potok',
       km: 28,
       route: 'Jasna Góra – Zamek Olsztyn – Zrębice – Złoty Potok',
@@ -84,7 +88,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 2,
-      date: '19.06.2026 (Pt)',
+      date: '19.06',
       title: 'Złoty Potok ➔ Zamek Bobolice / Mirów',
       km: 24,
       route: 'Złoty Potok – Ostrężnik – Zamek Mirów – Zamek Bobolice',
@@ -93,7 +97,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 3,
-      date: '20.06.2026 (Sob)',
+      date: '20.06',
       title: 'Bobolice ➔ Zamek Ogrodzieniec',
       km: 26,
       route: 'Bobolice – Góra Zborów (Podlesice) – Zamek Morsko – Skarżyce – Ogrodzieniec',
@@ -102,7 +106,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 4,
-      date: '21.06.2026 (Nd)',
+      date: '21.06',
       title: 'Ogrodzieniec ➔ Klucze / Pustynia Błędowska',
       km: 27,
       route: 'Ogrodzieniec – Zamek Smoleń (Dolina Wodącej) – Bydlin – Klucze',
@@ -111,7 +115,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 5,
-      date: '22.06.2026 (Pon)',
+      date: '22.06',
       title: 'Klucze ➔ Zamek Pieskowa Skała',
       km: 25,
       route: 'Klucze – Olkusz – Zamek Rabsztyn – Sułoszowa – Zamek Pieskowa Skała',
@@ -120,7 +124,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 6,
-      date: '23.06.2026 (Wt) — DZIEŃ OJCA',
+      date: '23.06 — DZIEŃ OJCA',
       title: 'Pieskowa Skała ➔ OJCOW (Nocleg w Dzień Ojca)',
       km: 18,
       route: 'Pieskowa Skała – Grodzisko (Pustelnia bł. Salomei) – Brama Krakowska – Ojców',
@@ -130,7 +134,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 7,
-      date: '24.06.2026 (Śr)',
+      date: '24.06',
       title: 'Ojców ➔ Kraków-Łagiewniki (Sanktuarium)',
       km: 26,
       route: 'Ojców – Zamek Korzkiew – Zielonki – Kraków (Wawel) – Sanktuarium Bożego Miłosierdzia w Łagiewnikach',
@@ -161,15 +165,27 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             <div className="flex items-center gap-2.5">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 text-xs font-bold tracking-wider uppercase border border-amber-500/30">
                 <Sparkles className="w-3.5 h-3.5" />
-                SZLAK WIARY & NADZIEI 2026
+                SZLAK WIARY & NADZIEI
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-xs font-semibold border border-emerald-500/30">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Mapa Interaktywna
+                Mapa Interaktywna & Nawigacja
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-wrap gap-2">
+              <a
+                href={googleMapsRouteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition"
+                title="Otwórz trasę w Google Maps (samochód, rower, pieszo, pociąg)"
+              >
+                <Navigation className="w-3.5 h-3.5" />
+                <span>Nawigacja Google Maps</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
               <button
                 onClick={handleShare}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#18202f] border border-[#e2d6c7] dark:border-[#2a374d] text-xs font-medium text-[#6b5745] dark:text-[#94a3b8] hover:text-[#2e241c] dark:hover:text-white shadow-xs transition"
@@ -183,9 +199,9 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition"
-                title="Przejdź do oficjalnego serwisu https://mapa-aon.pages.dev"
+                title="Przejdź do dedykowanego serwisu https://mapa-aon.pages.dev"
               >
-                <span>Otwórz mapa-aon.pages.dev</span>
+                <span>mapa-aon.pages.dev</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -193,14 +209,14 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
 
           <div className="space-y-3">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-serif-book tracking-tight text-[#1f1712] dark:text-white">
-              Wielka Pielgrzymka Gwiaździsta 2026
+              Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
             </h1>
             <p className="text-base sm:text-lg text-[#614e3e] dark:text-[#94a3b8] max-w-4xl font-sans-ui leading-relaxed">
-              Interaktywna platforma multimedialno-geograficzna obsługująca 3 kluczowe etapy: 
-              <span className="font-semibold text-amber-800 dark:text-amber-300"> Promienie z całego świata ku Jasnej Górze</span>, 
-              wspólny <span className="font-semibold text-amber-800 dark:text-amber-300">Szlak Orlich Gniazd (164 km Częstochowa ➔ Łagiewniki)</span> z 
-              niezwykłym <span className="underline decoration-amber-500 font-bold text-amber-900 dark:text-amber-200">czuwaniem w Ojcowie w Dzień Ojca</span> oraz 
-              uroczyste <span className="font-semibold text-amber-800 dark:text-amber-300">Rozesłanie ze wzgórza Bożego Miłosierdzia</span>.
+              Uniwersalny, coroczny szlak wędrówki (18–24 czerwca): 
+              <span className="font-semibold text-amber-800 dark:text-amber-300"> Promienie z całego świata i Polski ku Jasnej Górze</span>, 
+              wspólny <span className="font-semibold text-amber-800 dark:text-amber-300">Szlak Orlich Gniazd (174 km Częstochowa ➔ Łagiewniki)</span> z 
+              niezwykłym <span className="underline decoration-amber-500 font-bold text-amber-900 dark:text-amber-200">czuwaniem pod Bramą Krakowską w Ojcowie w Dzień Ojca (23 czerwca)</span> oraz 
+              uroczyste <span className="font-semibold text-amber-800 dark:text-amber-300">Rozesłanie ze wzgórza Bożego Miłosierdzia</span>. Dostępna pełna <a href={googleMapsRouteUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-emerald-700 dark:text-emerald-400 underline">nawigacja GPS w Google Maps</a> we wszystkich trybach podróży.
             </p>
           </div>
 
@@ -216,7 +232,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Etap I</span>
-                <span className="text-xs text-[#7d6b5b] dark:text-[#64748b]">Do 17.06.2026</span>
+                <span className="text-xs text-[#7d6b5b] dark:text-[#64748b]">Do 17/18 czerwca</span>
               </div>
               <div className="text-sm font-bold text-[#1f1712] dark:text-white mt-1">Promienie Gwiazdy</div>
               <div className="text-xs text-[#614e3e] dark:text-[#94a3b8] mt-0.5">Świat i Polska ➔ Częstochowa</div>
@@ -231,13 +247,13 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               }`}
             >
               <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white uppercase tracking-wider">
-                Dzień Ojca w Ojcowie
+                23.06: Dzień Ojca w Ojcowie
               </span>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Etap II (Główny)</span>
               </div>
-              <div className="text-sm font-bold text-[#1f1712] dark:text-white mt-1">Szlak Orlich Gniazd (164 km)</div>
-              <div className="text-xs text-[#614e3e] dark:text-[#94a3b8] mt-0.5">18 – 24 czerwca 2026 (7 dni)</div>
+              <div className="text-sm font-bold text-[#1f1712] dark:text-white mt-1">Szlak Orlich Gniazd (174 km)</div>
+              <div className="text-xs text-[#614e3e] dark:text-[#94a3b8] mt-0.5">18 – 24 czerwca (7 dni)</div>
             </button>
 
             <button
@@ -250,7 +266,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Etap III</span>
-                <span className="text-xs text-[#7d6b5b] dark:text-[#64748b]">24.06.2026</span>
+                <span className="text-xs text-[#7d6b5b] dark:text-[#64748b]">24 i 25 czerwca</span>
               </div>
               <div className="text-sm font-bold text-[#1f1712] dark:text-white mt-1">Rozesłanie (Missio)</div>
               <div className="text-xs text-[#614e3e] dark:text-[#94a3b8] mt-0.5">Łagiewniki ➔ Cały Świat</div>
@@ -275,6 +291,18 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href={googleMapsRouteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Otwórz nawigację trasy w Google Maps (samochód, pieszo, rower, pociąg)"
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Nawigacja Google Maps</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
             <a
               href="https://mapa-aon.pages.dev"
               target="_blank"
@@ -365,6 +393,18 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
           </button>
 
           <button
+            onClick={() => setActiveTab('plan')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+              activeTab === 'plan'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'bg-white/70 dark:bg-[#131a26] text-[#614e3e] dark:text-[#94a3b8] hover:bg-white dark:hover:bg-[#1a2333]'
+            }`}
+          >
+            <Route className="w-4 h-4" />
+            <span>Kompleksowy Plan (Etapy I–III)</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('rays')}
             className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
               activeTab === 'rays'
@@ -413,14 +453,53 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
           </button>
         </div>
 
+        {/* Universal Google Maps Navigation Interactive Card */}
+        <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/40 dark:via-emerald-900/20 dark:to-transparent border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+          <div className="space-y-2 max-w-3xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs">
+                <Navigation className="w-4 h-4" />
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                Oficjalna Nawigacja GPS w Google Maps
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border border-emerald-500/30">
+                Wszystkie tryby: 🚗 Auto • 🚆 Pociąg • 🚶 Pieszo • 🚲 Rower
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
+              Skorzystaj z gotowej trasy w Google Maps ze wszystkimi 8 węzłami: <span className="font-semibold text-emerald-900 dark:text-emerald-200">Jasna Góra ➔ Złoty Potok ➔ Bobolice/Mirów ➔ Ogrodzieniec ➔ Klucze ➔ Pieskowa Skała ➔ Ojców ➔ Łagiewniki</span>. Aplikacja pozwala na nawigację na żywo pieszo, na rowerze, samochodem lub transportem zbiorowym.
+            </p>
+            <div className="flex items-center gap-2 text-xs font-mono text-[#614e3e] dark:text-[#94a3b8]">
+              <span>Link do nawigacji:</span>
+              <a href={googleMapsRouteUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-700 dark:text-emerald-400 font-semibold underline truncate max-w-xs sm:max-w-md">
+                {googleMapsRouteUrl}
+              </a>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 w-full lg:w-auto">
+            <a
+              href={googleMapsRouteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md transition"
+            >
+              <Navigation className="w-4 h-4" />
+              <span>Otwórz w Google Maps</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+
         {/* Tab 1 Content: Szlak Orlich Gniazd dzień po dniu */}
         {activeTab === 'trail' && (
           <div className="space-y-4">
             <div className="bg-[#fefce8] dark:bg-[#1a1708] border border-amber-300 dark:border-amber-800/60 p-4 rounded-2xl flex items-center gap-3">
               <Calendar className="w-5 h-5 text-amber-700 dark:text-amber-400 shrink-0" />
               <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-200">
-                <span className="font-bold">Termin: 18 – 24 czerwca 2026 r.</span> Długość trasy: 164 km. 
-                Punkt kulminacyjny wędrówki: <span className="underline font-bold">Dzień 6 (23.06) w Dzień Ojca z noclegiem na Błoniach w Ojcowie</span> pod Bramą Krakowską.
+                <span className="font-bold">Termin: corocznie 18 – 24 czerwca.</span> Długość trasy: 174 km. 
+                Punkt kulminacyjny wędrówki: <span className="underline font-bold">Dzień 6 (23.06) w Dzień Ojca z czuwaniem pod Bramą Krakowską i noclegiem w Ojcowie</span>.
               </div>
             </div>
 
@@ -463,6 +542,301 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Kompleksowy Plan (Etapy I–III) */}
+        {activeTab === 'plan' && (
+          <div className="space-y-6">
+            {/* Wprowadzenie */}
+            <div className="bg-white dark:bg-[#131a27] p-6 sm:p-8 rounded-3xl border border-[#e2d6c7] dark:border-[#222e44] shadow-xs space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="p-2.5 rounded-2xl bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                  <Compass className="w-5 h-5" />
+                </span>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Przewodnik Strategiczny</span>
+                  <h2 className="text-xl sm:text-2xl font-bold font-serif-book text-[#1f1712] dark:text-white">
+                    Kompleksowy Plan Wydarzenia: Gwiaździsta Pielgrzymka & Pieszy Rajd
+                  </h2>
+                </div>
+              </div>
+
+              <p className="text-sm sm:text-base text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
+                Propozycja całościowego programu wydarzenia – w formule gwiaździstej pielgrzymki lub pieszego rajdu. 
+                Trasa z Częstochowy do Krakowa idealnie pokrywa się z malowniczym <strong className="text-amber-800 dark:text-amber-300">Szlakiem Orlich Gniazd</strong> (Jura Krakowsko-Częstochowska), co czyni ten 7-dniowy marsz niezwykle atrakcyjnym krajobrazowo, historycznie i duchowo.
+              </p>
+
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+                <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                  <Navigation className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Ścieżka nawigacyjna Google Maps: <strong>8 węzłów etapowych</strong> (samochód, pociąg, pieszo, rower).</span>
+                </div>
+                <a
+                  href={googleMapsRouteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition"
+                >
+                  <span>Nawiguj w Google Maps</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+
+            {/* ETAP I */}
+            <div className="bg-white dark:bg-[#131a27] p-6 sm:p-8 rounded-3xl border border-[#e2d6c7] dark:border-[#222e44] shadow-xs space-y-5">
+              <div className="flex items-center justify-between border-b border-[#f0e6d9] dark:border-[#1e293b] pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold flex items-center justify-center text-sm border border-amber-500/30">
+                    I
+                  </span>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold font-serif-book text-[#1f1712] dark:text-white">
+                      ETAP I: Ścieżki do Częstochowy (Zgrupowanie do 17/18 czerwca)
+                    </h3>
+                    <p className="text-xs text-[#7d6b5b] dark:text-[#94a3b8]">Wymarsze piesze i zorganizowany transport do Częstochowy</p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#f3e9dc] dark:bg-[#1e293d] text-[#6b5745] dark:text-[#94a3b8]">
+                  Do 17/18.06
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed">
+                Uczestnicy mogą dotrzeć do Częstochowy w formie pieszej (własne, wcześniejsze wymarsze) lub zorganizowanym transportem, by 18 czerwca rano wspólnie wyruszyć na szlak.
+              </p>
+
+              {/* Polska */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                  Z miast w Polsce (opcje piesze lub dojazdowe):
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">1. Warszawa (ok. 220 km)</span>
+                      <Footprints className="w-4 h-4 text-rose-600" />
+                    </div>
+                    <ul className="text-xs text-[#614e3e] dark:text-[#94a3b8] space-y-1">
+                      <li>• <strong>Opcja piesza:</strong> Wymarsz ok. 9 czerwca (9 dni drogi).</li>
+                      <li>• <strong>Opcja transportowa:</strong> Wyjazd 17 czerwca wieczorem (pociąg IC/Pendolino) lub autokarem.</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">2. Wrocław (ok. 170 km)</span>
+                      <Bike className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <ul className="text-xs text-[#614e3e] dark:text-[#94a3b8] space-y-1">
+                      <li>• <strong>Opcja piesza:</strong> Wymarsz ok. 11 czerwca (7 dni drogi).</li>
+                      <li>• <strong>Opcja transportowa:</strong> Szybki dojazd pociągiem bezpośrednim lub autostradą A4 i A1 (ok. 2–2,5 h).</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">3. Opole (ok. 100 km)</span>
+                      <Footprints className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <ul className="text-xs text-[#614e3e] dark:text-[#94a3b8] space-y-1">
+                      <li>• <strong>Opcja piesza:</strong> Wymarsz ok. 14 czerwca (4 dni drogi przez urokliwe lasy lublinieckie).</li>
+                      <li>• <strong>Opcja transportowa:</strong> Pociąg lub autokar (ok. 1,5 h).</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">4. Ruda Śląska (ok. 65 km)</span>
+                      <Train className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <ul className="text-xs text-[#614e3e] dark:text-[#94a3b8] space-y-1">
+                      <li>• <strong>Opcja piesza:</strong> Wymarsz ok. 15 czerwca (3 dni drogi).</li>
+                      <li>• <strong>Opcja transportowa:</strong> Dojazd Kolejami Śląskimi lub autokarem (ok. 1 h).</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Zagranica */}
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+                  Ścieżki spoza granic Polski (dojazd i integracja 17 czerwca):
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Bus className="w-4 h-4 text-purple-600" />
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">5. Praga (Czechy)</span>
+                    </div>
+                    <p className="text-xs text-[#614e3e] dark:text-[#94a3b8]">
+                      Autokar przez Ostrawę i Gliwice prosto do Częstochowy (ok. 5–6 godzin).
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Train className="w-4 h-4 text-blue-600" />
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">6. Berlin (Niemcy)</span>
+                    </div>
+                    <p className="text-xs text-[#614e3e] dark:text-[#94a3b8]">
+                      Pociąg do Poznania/Wrocławia z przesiadką do Częstochowy lub bezpośredni autokar.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-emerald-600" />
+                      <span className="font-bold text-sm text-[#1f1712] dark:text-white">7. Lwów / Wilno</span>
+                    </div>
+                    <p className="text-xs text-[#614e3e] dark:text-[#94a3b8]">
+                      Zorganizowane grupy autokarowe docierające dzień przed wymarszem, nocleg w domach pielgrzyma na Jasnej Górze.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ETAP II */}
+            <div className="bg-white dark:bg-[#131a27] p-6 sm:p-8 rounded-3xl border border-[#e2d6c7] dark:border-[#222e44] shadow-xs space-y-5">
+              <div className="flex items-center justify-between border-b border-[#f0e6d9] dark:border-[#1e293b] pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold flex items-center justify-center text-sm border border-amber-500/30">
+                    II
+                  </span>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold font-serif-book text-[#1f1712] dark:text-white">
+                      ETAP II: Wspólny Szlak (18–24 czerwca)
+                    </h3>
+                    <p className="text-xs text-[#7d6b5b] dark:text-[#94a3b8]">
+                      Jasna Góra (Częstochowa) ➔ Szlak Orlich Gniazd ➔ Ojców ➔ Łagiewniki • 174 km
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/30">
+                  Główny Szlak • 7 Dni
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {eagleTrailDays.map((d) => (
+                  <div
+                    key={d.day}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      d.isSpecial
+                        ? 'bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent border-amber-500/50 shadow-xs'
+                        : 'bg-[#faf6f0] dark:bg-[#182130] border-[#ebe0d4] dark:border-[#222f44]'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                          d.isSpecial ? 'bg-rose-500 text-white' : 'bg-black/5 dark:bg-white/10 text-[#614e3e] dark:text-[#94a3b8]'
+                        }`}>
+                          Dzień {d.day} • {d.date}
+                        </span>
+                        <h4 className="font-bold text-sm text-[#1f1712] dark:text-white">{d.title}</h4>
+                      </div>
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{d.km} km</span>
+                    </div>
+
+                    <p className="text-xs font-mono text-[#7d6b5b] dark:text-[#94a3b8] mt-1.5">
+                      Trasa: {d.route}
+                    </p>
+
+                    <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] mt-2 leading-relaxed">
+                      {d.highlight}
+                    </p>
+
+                    <div className="mt-2.5 pt-2 border-t border-black/5 dark:border-white/5 flex items-center gap-1.5 text-xs text-[#6b5745] dark:text-[#94a3b8]">
+                      <Tent className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span><strong>Nocleg:</strong> {d.lodging}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ETAP III */}
+            <div className="bg-white dark:bg-[#131a27] p-6 sm:p-8 rounded-3xl border border-[#e2d6c7] dark:border-[#222e44] shadow-xs space-y-5">
+              <div className="flex items-center justify-between border-b border-[#f0e6d9] dark:border-[#1e293b] pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold flex items-center justify-center text-sm border border-amber-500/30">
+                    III
+                  </span>
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold font-serif-book text-[#1f1712] dark:text-white">
+                      ETAP III: Rozesłanie i Powroty (24 i 25 czerwca)
+                    </h3>
+                    <p className="text-xs text-[#7d6b5b] dark:text-[#94a3b8]">Komunikacja kolejowa, autokary i domy pielgrzyma w Krakowie</p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#f3e9dc] dark:bg-[#1e293d] text-[#6b5745] dark:text-[#94a3b8]">
+                  24–25.06
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed">
+                Po osiągnięciu celu w Łagiewnikach uczestnicy mogą skorzystać z doskonałej infrastruktury komunikacyjnej Krakowa, by wrócić do domów. Obok Sanktuarium znajduje się stacja kolejowa <strong>Kraków Sanktuarium / Kraków Łagiewniki</strong>.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Train className="w-4 h-4 text-blue-600" />
+                    <h4 className="font-bold text-sm text-[#1f1712] dark:text-white">Kierunek Warszawa / Zagranica (Berlin, Praga)</h4>
+                  </div>
+                  <p className="text-xs text-[#614e3e] dark:text-[#94a3b8] leading-relaxed">
+                    Bezpośrednie pociągi Pendolino/IC z Krakowa Głównego. Uczestnicy mogą podjechać z Łagiewnik do Dworca Głównego szybką koleją aglomeracyjną (ok. 15 min).
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Train className="w-4 h-4 text-emerald-600" />
+                    <h4 className="font-bold text-sm text-[#1f1712] dark:text-white">Kierunek Wrocław / Opole / Ruda Śląska</h4>
+                  </div>
+                  <p className="text-xs text-[#614e3e] dark:text-[#94a3b8] leading-relaxed">
+                    Pociągi z Dworca Głównego jadące magistralą E30. Do Rudy Śląskiej i Opola pociągi docierają w 1,5 do 2 godzin.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Bus className="w-4 h-4 text-amber-600" />
+                    <h4 className="font-bold text-sm text-[#1f1712] dark:text-white">Autokary zorganizowane</h4>
+                  </div>
+                  <p className="text-xs text-[#614e3e] dark:text-[#94a3b8] leading-relaxed">
+                    Z racji dużego parkingu przy Sanktuarium w Łagiewnikach oraz Centrum św. Jana Pawła II na Białych Morzach, to idealne miejsce na podstawienie autokarów, które zabiorą zwarte grupy bezpośrednio do ich miast i krajów.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-rose-600" />
+                    <h4 className="font-bold text-sm text-[#1f1712] dark:text-white">Nocleg i przedłużenie pobytu</h4>
+                  </div>
+                  <p className="text-xs text-[#614e3e] dark:text-[#94a3b8] leading-relaxed">
+                    Część grup może zdecydować się na pozostanie w Krakowie na noc z 24 na 25 czerwca (w domach pielgrzyma w Łagiewnikach lub w krakowskich szkołach/hostelach), by kolejnego dnia zwiedzić miasto i na spokojnie wyruszyć w drogę powrotną.
+                  </p>
+                </div>
+              </div>
+
+              {/* Dolny przycisk powrotu do nawigacji */}
+              <div className="pt-2 flex justify-center">
+                <a
+                  href={googleMapsRouteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition"
+                >
+                  <Navigation className="w-4 h-4" />
+                  <span>Otwórz nawigację trasy w Google Maps (https://maps.app.goo.gl/5t7uuhdYYeqVaaLz7)</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </div>
         )}

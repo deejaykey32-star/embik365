@@ -204,11 +204,11 @@ export const StandardReader: React.FC<Props> = ({
               <span className="text-xs font-semibold text-[#7c6957] dark:text-[#94a3b8] hidden sm:inline">
                 Czcionka:
               </span>
-              <div className="inline-flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-1 text-xs shadow-xs">
+              <div className="inline-flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-0.5 sm:p-1 text-xs shadow-xs">
                 <button
                   type="button"
                   onClick={() => setFontSize('compact')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'compact'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                       : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
@@ -220,7 +220,7 @@ export const StandardReader: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setFontSize('normal')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'normal'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                       : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
@@ -232,7 +232,7 @@ export const StandardReader: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setFontSize('large')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'large'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                       : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
@@ -244,7 +244,7 @@ export const StandardReader: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setFontSize('xlarge')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'xlarge'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
                       : 'text-[#6d5b4a] dark:text-[#94a3b8] hover:text-[#2c2219] dark:hover:text-white hover:bg-[#f5ece2] dark:hover:bg-[#1f2b3e]'
@@ -257,13 +257,13 @@ export const StandardReader: React.FC<Props> = ({
             </div>
 
             {/* 4 przyciski akcji umieszczone pod wyborem rozmiaru czcionki */}
-            <div className="flex items-center gap-2 flex-wrap justify-start sm:justify-end">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-start sm:justify-end w-full sm:w-auto">
               {/* 1. Lektor audio - włącz / zatrzymaj czytanie */}
               <button
                 type="button"
                 onClick={(e) => toggleSpeech(e)}
                 id="btn-lector-read"
-                className={`h-10 px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer touch-manipulation shadow-xs ${
+                className={`h-9 sm:h-10 px-2.5 sm:px-3.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer touch-manipulation shadow-xs flex-1 sm:flex-initial ${
                   isSpeaking
                     ? 'bg-amber-600 text-white border-amber-700 shadow-amber-600/25 animate-pulse'
                     : 'bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border-[#dccdc0] dark:border-[#29364b]'
@@ -272,9 +272,9 @@ export const StandardReader: React.FC<Props> = ({
                 aria-label={isSpeaking ? 'Zatrzymaj lektora' : 'Włącz czytanie na głos (Lektor)'}
               >
                 {isSpeaking ? (
-                  <VolumeX className="w-5 h-5 shrink-0 text-white" />
+                  <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-white" />
                 ) : (
-                  <Volume2 className="w-5 h-5 shrink-0 text-[#8a572c] dark:text-amber-400" />
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-[#8a572c] dark:text-amber-400" />
                 )}
                 <span className="font-semibold whitespace-nowrap">{isSpeaking ? 'Zatrzymaj' : 'Lektor'}</span>
               </button>
@@ -284,12 +284,12 @@ export const StandardReader: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={onOpenLectorModal}
-                  className="h-10 px-3.5 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-all cursor-pointer text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
+                  className="h-9 sm:h-10 px-2.5 sm:px-3.5 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-all cursor-pointer text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 shadow-xs flex-1 sm:flex-initial"
                   title="Ustawienia głosu lektora (Wersja lokalna / AI, język, wybór barwy głosu)"
                   aria-label="Ustawienia głosu lektora"
                 >
-                  <Headphones className="w-5 h-5 shrink-0 text-[#8a572c] dark:text-amber-400" />
-                  <span className="font-semibold whitespace-nowrap">Głos lektora</span>
+                  <Headphones className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-[#8a572c] dark:text-amber-400" />
+                  <span className="font-semibold whitespace-nowrap">Głos</span>
                 </button>
               )}
 
@@ -297,14 +297,14 @@ export const StandardReader: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="h-10 px-3.5 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-all cursor-pointer text-xs font-semibold flex items-center justify-center gap-2 shadow-xs"
+                className="h-9 sm:h-10 px-2.5 sm:px-3.5 rounded-xl bg-white dark:bg-[#17202f] hover:bg-[#f1e6d7] dark:hover:bg-[#202c40] text-[#4d3d2e] dark:text-[#e2e8f0] border border-[#dccdc0] dark:border-[#29364b] transition-all cursor-pointer text-xs font-semibold flex items-center justify-center gap-1.5 sm:gap-2 shadow-xs flex-1 sm:flex-initial"
                 title={copied ? 'Skopiowano pełną treść do schowka!' : 'Kopiuj pełną treść wpisu do schowka'}
                 aria-label="Kopiuj treść wpisu"
               >
                 {copied ? (
-                  <Check className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Copy className="w-5 h-5 shrink-0 text-[#6d5b4a] dark:text-[#cbd5e1]" />
+                  <Copy className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-[#6d5b4a] dark:text-[#cbd5e1]" />
                 )}
                 <span className="font-semibold whitespace-nowrap">{copied ? 'Skopiowano' : 'Kopiuj'}</span>
               </button>
@@ -314,11 +314,11 @@ export const StandardReader: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={onOpenDownloadModal}
-                  className="h-10 px-3.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  className="h-9 sm:h-10 px-2.5 sm:px-3.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 dark:text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer shadow-xs flex-1 sm:flex-initial"
                   title="Pobierz E-book (format POD PDF do druku, Word DOCX, ePUB)"
                   aria-label="Pobierz E-book / Druk"
                 >
-                  <Download className="w-5 h-5 shrink-0 text-amber-700 dark:text-amber-400" />
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-amber-700 dark:text-amber-400" />
                   <span className="whitespace-nowrap">Pobierz E-book</span>
                 </button>
               )}

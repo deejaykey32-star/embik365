@@ -13,8 +13,8 @@ export const PILGRIMAGE_STAGES = {
     id: "stage-2",
     name: "Etap II: Wielkie Zjednoczenie – Szlak Orlich Gniazd",
     subtitle: "Częstochowa (Jasna Góra) -> Kraków-Łagiewniki (Sanktuarium Miłosierdzia Bożego)",
-    period: "18 czerwca 2026 – 24 czerwca 2026",
-    highlight: "Nocleg w Ojcowie w Dzień Ojca (23 czerwca 2026)",
+    period: "18 czerwca – 24 czerwca",
+    highlight: "Nocleg w Ojcowie w Dzień Ojca (23 czerwca)",
     description: "Wspólna wielka pielgrzymka zjednoczonych grup przez malowniczy jurajski Szlak Orlich Gniazd. 7 dni wędrówki pośród zamków, ostańców skalnych i dolin aż do Łagiewnik.",
     center: [50.4, 19.6],
     zoom: 9
@@ -284,11 +284,11 @@ export const STAR_RAYS = [
   }
 ];
 
-// Etap 2: Szlak Orlich Gniazd (18 - 24 czerwca 2026) dzień po dniu
+// Etap 2: Szlak Orlich Gniazd (18 - 24 czerwca) dzień po dniu
 export const STAGE_2_DAYS = [
   {
     dayNumber: 1,
-    date: "18.06.2026 (Czwartek)",
+    date: "18.06",
     name: "Dzień 1: Przełom Warty i Warownia Królewska",
     route: "Częstochowa (Jasna Góra) -> Zamek Olsztyn -> Zrębice -> Złoty Potok",
     distanceKm: 28,
@@ -314,7 +314,7 @@ export const STAGE_2_DAYS = [
   },
   {
     dayNumber: 2,
-    date: "19.06.2026 (Piątek)",
+    date: "19.06",
     name: "Dzień 2: Bliźniacze Twierdze i Jurajskie Ostańce",
     route: "Złoty Potok -> Ostrężnik -> Zamek Mirów -> Zamek Bobolice",
     distanceKm: 24,
@@ -338,7 +338,7 @@ export const STAGE_2_DAYS = [
   },
   {
     dayNumber: 3,
-    date: "20.06.2026 (Sobota)",
+    date: "20.06",
     name: "Dzień 3: Korona Jury i Majestat Skalnego Miasta",
     route: "Zamek Bobolice -> Góra Zborów (Podlesice) -> Zamek Bąkowiec (Morsko) -> Zamek Ogrodzieniec (Podzamcze)",
     distanceKm: 26,
@@ -362,7 +362,7 @@ export const STAGE_2_DAYS = [
   },
   {
     dayNumber: 4,
-    date: "21.06.2026 (Niedziela)",
+    date: "21.06",
     name: "Dzień 4: Dolina Wodącej i Pustynne Piaski",
     route: "Zamek Ogrodzieniec -> Zamek Smoleń -> Bydlin -> Klucze / Pustynia Błędowska",
     distanceKm: 27,
@@ -386,7 +386,7 @@ export const STAGE_2_DAYS = [
   },
   {
     dayNumber: 5,
-    date: "22.06.2026 (Poniedziałek)",
+    date: "22.06",
     name: "Dzień 5: Srebrny Gród i Perła Renesansu",
     route: "Klucze -> Olkusz (Rynek) -> Zamek Rabsztyn -> Sułoszowa -> Zamek Pieskowa Skała",
     distanceKm: 25,
@@ -410,7 +410,7 @@ export const STAGE_2_DAYS = [
   },
   {
     dayNumber: 6,
-    date: "23.06.2026 (Wtorek - DZIEŃ OJCA)",
+    date: "23.06 (Dzień Ojca)",
     name: "Dzień 6: Dolina Prądnika – Nocleg w Ojcowie w DZIEŃ OJCA",
     route: "Pieskowa Skała -> Grodzisko (Pustelnia bł. Salomei) -> Brama Krakowska -> Zamek Kazimierzowski w Ojcowie",
     distanceKm: 18,
@@ -439,7 +439,7 @@ export const STAGE_2_DAYS = [
   },
   {
     dayNumber: 7,
-    date: "24.06.2026 (Środa)",
+    date: "24.06",
     name: "Dzień 7: Wejście do Krakowa i Uroczyste Zwieńczenie w Łagiewnikach",
     route: "Ojców -> Zamek Korzkiew -> Kraków (Wawel) -> Kraków-Łagiewniki (Sanktuarium Bożego Miłosierdzia)",
     distanceKm: 26,
