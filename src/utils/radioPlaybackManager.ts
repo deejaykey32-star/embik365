@@ -26,6 +26,7 @@ export interface RadioPlaybackState {
   dayNumber: number;
   totalDays: number;
   playbackState: LectorPlaybackState;
+  isMuted: boolean;
   isLiveMode: boolean;
   isLoopEnabled: boolean;
   loopMode: 'station' | 'all_stations';
@@ -40,6 +41,7 @@ class RadioPlaybackManager {
   private stationId: RadioStationId | null = null;
   private dayNumber: number = 1;
   private playbackState: LectorPlaybackState = 'idle';
+  private isMuted: boolean = false;
   private isLiveMode: boolean = true;
   private isLoopEnabled: boolean = true;
   private loopMode: 'station' | 'all_stations' = 'station';
@@ -71,6 +73,7 @@ class RadioPlaybackManager {
       dayNumber: this.dayNumber,
       totalDays,
       playbackState: this.playbackState,
+      isMuted: this.isMuted,
       isLiveMode: this.isLiveMode,
       isLoopEnabled: this.isLoopEnabled,
       loopMode: this.loopMode,
@@ -126,6 +129,13 @@ class RadioPlaybackManager {
     }
 
     this.dayNumber = dayToPlay;
+
+    if (this.isMuted) {
+      this.playbackState = 'paused';
+      this.notifySubscribers();
+      return;
+    }
+
     this.playbackState = 'playing';
     this.notifySubscribers();
 
@@ -214,17 +224,49 @@ class RadioPlaybackManager {
     }, 1200);
   }
 
+  /**
+   * Sprawdza, czy radio aktualnie nadaje i jest słyszalne.
+   */
+  public isListening(): boolean {
+    return this.stationId !== null && this.playbackState === 'playing' && !this.isMuted;
+  }
+
+  /**
+   * Automatycznie rozpoczyna lub wznawia podsłuch bez konieczności klikania Play/Włącz.
+   */
+  public ensurePlaying(defaultStationId: RadioStationId = 'nowyrhz'): void {
+    if (!this.isListening() && !this.isMuted) {
+      const target = this.stationId || defaultStationId;
+      this.tuneInStation(target, undefined, true);
+    }
+  }
+
+  /**
+   * Przełącza wyciszenie podsłuchu.
+   * Gdy słuchacz odcisza radio, natychmiast synchronizuje się z aktualnym czasem eteru na żywo!
+   */
+  public toggleMute(): void {
+    this.setMuted(!this.isMuted);
+  }
+
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted;
+    if (this.isMuted) {
+      stopLectorSpeech();
+      this.playbackState = 'paused';
+      this.notifySubscribers();
+    } else {
+      const target = this.stationId || 'nowyrhz';
+      this.tuneInStation(target, undefined, true);
+    }
+  }
+
   public pauseRadio() {
-    this.clearTransitionTimer();
-    pauseLectorSpeech();
-    this.playbackState = 'paused';
-    this.notifySubscribers();
+    this.setMuted(true);
   }
 
   public resumeRadio() {
-    resumeLectorSpeech();
-    this.playbackState = 'playing';
-    this.notifySubscribers();
+    this.setMuted(false);
   }
 
   public stopRadio() {

@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Radio as RadioIcon,
-  Play,
-  Pause,
-  Square,
-  SkipBack,
-  SkipForward,
-  RotateCcw,
   Volume2,
+  VolumeX,
   Share2,
   QrCode,
   Video,
@@ -24,7 +19,10 @@ import {
   Compass,
   Repeat,
   RadioTower,
-  Clock
+  Clock,
+  Eye,
+  FileText,
+  RotateCcw
 } from 'lucide-react';
 import {
   RADIO_STATIONS,
@@ -77,7 +75,7 @@ export const RadioView: React.FC<Props> = ({
   // Stan globalnego odtwarzacza radiowego (działa w tle niezależnie od nawigacji)
   const [radioState, setRadioState] = useState<RadioPlaybackState>(() => globalRadioManager.getState());
 
-  // Aktywna stacja (jeśli radio gra w tle, to ta która gra; inaczej wybrana przez użytkownika lub URL)
+  // Aktywna stacja podsłuchu
   const [activeStationId, setActiveStationId] = useState<RadioStationId>(() => {
     const running = globalRadioManager.getState();
     return running.stationId || initialStationId;
@@ -86,6 +84,7 @@ export const RadioView: React.FC<Props> = ({
   const [bibliaYear, setBibliaYear] = useState<1 | 2 | 3 | 4>(1);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
+  const [previewDayNumber, setPreviewDayNumber] = useState<number | null>(null);
 
   // Subskrypcja na globalne zdarzenia odtwarzania radia w tle
   useEffect(() => {
@@ -119,80 +118,62 @@ export const RadioView: React.FC<Props> = ({
     window.history.replaceState({}, '', url.toString());
   }, [activeStationId]);
 
+  // 1. AUTOMATYCZNY START PODSŁUCHU BEZ WŁĄCZANIA (Auto-tune on mount & change)
+  useEffect(() => {
+    // Automatycznie rozpoczynamy podsłuch bez konieczności klikania przycisku "Włącz"
+    globalRadioManager.ensurePlaying(activeStationId);
+
+    // Na wypadek restrykcji polityki autoplay przeglądarki (Safari/Chrome):
+    // pierwszy dotyk/klik w dowolnym miejscu automatycznie odblokowuje dźwięk
+    const unlockOnUserGesture = () => {
+      globalRadioManager.ensurePlaying(activeStationId);
+    };
+    window.addEventListener('pointerdown', unlockOnUserGesture, { once: true });
+    window.addEventListener('touchstart', unlockOnUserGesture, { once: true });
+    window.addEventListener('keydown', unlockOnUserGesture, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', unlockOnUserGesture);
+      window.removeEventListener('touchstart', unlockOnUserGesture);
+      window.removeEventListener('keydown', unlockOnUserGesture);
+    };
+  }, [activeStationId]);
+
   const activeStation = RADIO_STATIONS.find(s => s.id === activeStationId) || RADIO_STATIONS[0];
 
   // Dynamiczny status ramówki na żywo 24/7 dla wybranej stacji oraz dla wszystkich 4 stacji
   const liveStatus = getStationLiveStatus(activeStationId, nowMs, bibliaYear);
   const allLiveStatuses = getAllStationsLiveStatus(nowMs, bibliaYear);
 
-  // Sprawdzamy, czy w tej chwili nasza stacja jest odtwarzana w tle
-  const isPlayingThisStation = radioState.isRadioActive && radioState.stationId === activeStationId;
-  const isPlayingAnyStation = radioState.isRadioActive;
+  // Sprawdzamy, czy w tej chwili nasza stacja jest podsłuchiwana z dźwiękiem
+  const isCurrentlyListening = radioState.isRadioActive && radioState.stationId === activeStationId && !radioState.isMuted;
+  const isMuted = radioState.isMuted;
 
-  // Numer dnia prezentowany w studiu: jeśli gra w tle, to ten co gra; inaczej aktualny na żywo
-  const displayedDayNumber = isPlayingThisStation ? radioState.dayNumber : liveStatus.dayNumber;
-  const broadcastItem: RadioBroadcastItem = isPlayingThisStation && radioState.currentBroadcastItem
+  // Numer dnia prezentowany w studiu: zawsze aktualny na żywo
+  const displayedDayNumber = liveStatus.dayNumber;
+  const broadcastItem: RadioBroadcastItem = isCurrentlyListening && radioState.currentBroadcastItem
     ? radioState.currentBroadcastItem
-    : getRadioBroadcastItem(activeStationId, displayedDayNumber, bibliaYear);
+    : liveStatus.broadcastItem;
+
+  // Podglądany tekst archiwalny (gdy użytkownik przegląda ramówkę bez przerywania transmisji na żywo)
+  const previewItem: RadioBroadcastItem | null = previewDayNumber !== null
+    ? getRadioBroadcastItem(activeStationId, previewDayNumber, bibliaYear)
+    : null;
 
   /**
-   * 1. Dołączenie do transmisji NA ŻYWO (jak tradycyjne radio FM/internetowe)
-   * Słuchacz włącza stację i od razu słyszy to, co jest aktualnie nadawane w eterze w danej chwili.
+   * Zmiana podsłuchiwanej stacji: natychmiastowe przełączenie na żywo bez klikania Play!
    */
-  const handleTuneInLive = () => {
-    globalRadioManager.tuneInStation(activeStationId, undefined, true);
-  };
-
-  /**
-   * 2. Odtwarzanie aktualnego dnia od początku
-   */
-  const handlePlayFromStart = (dayToPlay?: number) => {
-    const targetDay = dayToPlay !== undefined ? dayToPlay : displayedDayNumber;
-    globalRadioManager.tuneInStation(activeStationId, targetDay, false);
-  };
-
-  /**
-   * 3. Przełączanie odtwarzania (Play / Pause)
-   */
-  const handleTogglePlay = () => {
-    if (isPlayingThisStation) {
-      if (radioState.playbackState === 'playing') {
-        globalRadioManager.pauseRadio();
-      } else {
-        globalRadioManager.resumeRadio();
-      }
-    } else {
-      handleTuneInLive();
-    }
-  };
-
-  const handleStop = () => {
-    globalRadioManager.stopRadio();
-  };
-
-  const handleNextDay = () => {
-    if (isPlayingThisStation) {
-      globalRadioManager.playNextDay();
-    } else {
-      const next = displayedDayNumber >= activeStation.totalDays ? 1 : displayedDayNumber + 1;
-      handlePlayFromStart(next);
-    }
-  };
-
-  const handlePrevDay = () => {
-    if (isPlayingThisStation) {
-      globalRadioManager.playPrevDay();
-    } else {
-      const prev = displayedDayNumber <= 1 ? activeStation.totalDays : displayedDayNumber - 1;
-      handlePlayFromStart(prev);
-    }
-  };
-
-  const handleStationChange = (newStationId: RadioStationId, startLive: boolean = false) => {
+  const handleSwitchStation = (newStationId: RadioStationId) => {
     setActiveStationId(newStationId);
-    if (startLive || isPlayingAnyStation) {
-      globalRadioManager.tuneInStation(newStationId, undefined, true);
-    }
+    setPreviewDayNumber(null);
+    globalRadioManager.tuneInStation(newStationId, undefined, true);
+  };
+
+  /**
+   * Wycisz / Odcisz podsłuch (Mute / Unmute)
+   */
+  const handleToggleMute = () => {
+    globalRadioManager.toggleMute();
   };
 
   /**
@@ -246,7 +227,7 @@ export const RadioView: React.FC<Props> = ({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/15 border border-red-600/30 text-red-700 dark:text-red-400 text-xs font-bold uppercase tracking-wider">
               <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
-              <span>4 Stacje Online 24/7 • Transmisja w tle w czasie rzeczywistym</span>
+              <span>4 STACJE ONLINE 24/7 • NADAJĄ W PĘTLI BEZ PRZERWY</span>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -297,25 +278,26 @@ export const RadioView: React.FC<Props> = ({
               <span>Radio Widoki na Raj 24/7</span>
             </h1>
             <p className="text-base sm:text-lg text-[#5e4b3b] dark:text-[#9bb0cf] max-w-4xl font-sans-ui leading-relaxed">
-              Tradycyjne internetowe stacje radiowe nadające w nieprzerwanym ciągu 24 godziny na dobę. 
-              Transmisja płynie w tle niezależnie od słuchacza – możesz dołączyć w dowolnym momencie i natychmiast słuchać aktualnie nadawanego fragmentu rozważań, modlitwy i Słowa Bożego.
+              Wszystkie 4 stacje radiowe nadają bez przerwy w pętli 24 godziny na dobę. 
+              Nie musisz niczego włączać ani uruchamiać – jesteś w trybie ciągłego podsłuchu. 
+              Możesz przełączać stacje i podsłuchiwać to, co w danej sekundzie płynie w eterze.
             </p>
           </div>
 
-          {/* 4 Stacje Tab Selector z zegarem na żywo dla każdej stacji */}
+          {/* 4 Stacje Selector (Karty Podsłuchu na żywo dla każdej ze stacji) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
             {RADIO_STATIONS.map((station) => {
               const isSelected = activeStationId === station.id;
-              const isStationPlayingInBg = radioState.isRadioActive && radioState.stationId === station.id;
+              const isHearingThisStation = isCurrentlyListening && isSelected;
               const stLive = allLiveStatuses.find(s => s.station.id === station.id) || liveStatus;
 
               return (
                 <button
                   key={station.id}
-                  onClick={() => handleStationChange(station.id, true)}
+                  onClick={() => handleSwitchStation(station.id)}
                   className={`p-4 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-white dark:bg-[#131d2e] border-amber-500/80 dark:border-amber-400 shadow-lg ring-2 ring-amber-500/30'
+                      ? 'bg-white dark:bg-[#131d2e] border-amber-500/80 dark:border-amber-400 shadow-xl ring-2 ring-amber-500/40'
                       : 'bg-white/60 dark:bg-[#0c1322]/80 border-[#decbc0] dark:border-[#1d273a] hover:bg-white dark:hover:bg-[#101828]'
                   }`}
                 >
@@ -328,15 +310,20 @@ export const RadioView: React.FC<Props> = ({
                       }`}>
                         {station.badge}
                       </span>
-                      {isStationPlayingInBg ? (
-                        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red-600/15 border border-red-500/40 text-[10px] font-bold text-red-600 dark:text-red-400 uppercase">
-                          <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
-                          <span>GRA W TLE</span>
+
+                      {isHearingThisStation ? (
+                        <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-600 text-[10px] font-bold text-white uppercase shadow-xs">
+                          <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                          <span>PODSŁUCHUJESZ</span>
+                        </span>
+                      ) : isSelected ? (
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold">
+                          WYBRANA
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>ONLINE</span>
+                          <span>W PĘTLI 24/7</span>
                         </span>
                       )}
                     </div>
@@ -345,7 +332,7 @@ export const RadioView: React.FC<Props> = ({
                       <div className="font-bold text-base text-[#251e18] dark:text-white leading-tight">
                         {station.name}
                       </div>
-                      <div className="text-xs text-[#715c4b] dark:text-[#8ea2c0] line-clamp-2 mt-0.5">
+                      <div className="text-xs text-[#715c4b] dark:text-[#8ea2c0] line-clamp-1 mt-0.5">
                         {station.tagline}
                       </div>
                     </div>
@@ -353,7 +340,7 @@ export const RadioView: React.FC<Props> = ({
                     {/* Wskaźnik ramówki live w czasie rzeczywistym */}
                     <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] space-y-1">
                       <div className="flex items-center justify-between text-amber-900 dark:text-amber-200 font-semibold">
-                        <span>🔴 Na antenie: Dzień {stLive.dayNumber}</span>
+                        <span>🔴 Dzień {stLive.dayNumber} z {station.totalDays}</span>
                         <span className="font-mono">{stLive.progressPercent}%</span>
                       </div>
                       <div className="w-full bg-amber-200/40 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
@@ -366,12 +353,22 @@ export const RadioView: React.FC<Props> = ({
                   </div>
 
                   <div className="mt-3 pt-2 border-t border-[#f0e6dc] dark:border-[#1a2538] flex items-center justify-between text-xs font-semibold text-amber-700 dark:text-amber-400">
-                    <span>
-                      {isStationPlayingInBg
-                        ? '🔴 Odtwarzana teraz w tle'
-                        : isSelected
-                          ? '▶ Słuchaj na żywo'
-                          : 'Włącz tę stację na żywo'}
+                    <span className="flex items-center gap-1.5">
+                      {isHearingThisStation ? (
+                        <>
+                          {/* Animated equalizer waves */}
+                          <span className="inline-flex items-end gap-0.5 h-3">
+                            <span className="w-0.5 bg-red-600 h-full animate-bounce" />
+                            <span className="w-0.5 bg-red-600 h-2/3 animate-bounce [animation-delay:0.15s]" />
+                            <span className="w-0.5 bg-red-600 h-4/5 animate-bounce [animation-delay:0.3s]" />
+                          </span>
+                          <span>Aktywny podsłuch audio</span>
+                        </>
+                      ) : isSelected ? (
+                        <span>Przełączono podsłuch</span>
+                      ) : (
+                        <span>Podsłuchuj tę stację</span>
+                      )}
                     </span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
@@ -383,7 +380,7 @@ export const RadioView: React.FC<Props> = ({
         </div>
       </section>
 
-      {/* 2. Main Live Broadcast Studio & Player Container */}
+      {/* 2. Main Live Receiver Studio (Wirtualny Odbiornik Radiowy) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="bg-gradient-to-b from-[#131d2e] to-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 sm:p-8 text-white relative overflow-hidden">
           
@@ -391,7 +388,7 @@ export const RadioView: React.FC<Props> = ({
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Top Info Bar inside Player */}
+          {/* Top Info Bar inside Receiver Studio */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-red-600 flex items-center justify-center text-white shadow-lg shadow-amber-600/20 shrink-0">
@@ -402,9 +399,9 @@ export const RadioView: React.FC<Props> = ({
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
                     {activeStation.channelName}
                   </span>
-                  <span className="px-2 py-0.2 rounded-full text-[10px] bg-red-600 text-white font-bold uppercase animate-pulse flex items-center gap-1">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-red-600 text-white font-bold uppercase animate-pulse flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                    LIVE 24/7
+                    PODSŁUCH W PĘTLI 24/7
                   </span>
                 </div>
                 <h2 className="text-lg sm:text-2xl font-bold font-serif-book text-white truncate max-w-xl">
@@ -413,56 +410,46 @@ export const RadioView: React.FC<Props> = ({
               </div>
             </div>
 
-            {/* Loop Toggle & Loop Mode Switch */}
+            {/* Loop Status & Mode */}
             <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={() => globalRadioManager.setLoopEnabled(!radioState.isLoopEnabled)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
-                  radioState.isLoopEnabled
-                    ? 'bg-amber-600/25 text-amber-300 border-amber-500/60 shadow-xs'
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
-                }`}
-                title="Pętla 24/7 bez przerw: po skończeniu dnia natychmiast odtwarza kolejny, a po ukończeniu całej serii wraca do Dnia 1."
-              >
-                <Repeat className={`w-3.5 h-3.5 ${radioState.playbackState === 'playing' ? 'animate-spin' : ''}`} />
-                <span>Pętla 24/7 {radioState.isLoopEnabled ? 'Aktywna' : 'Wyłączona'}</span>
-              </button>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600/20 border border-amber-500/40 text-amber-300 text-xs font-bold">
+                <Repeat className="w-3.5 h-3.5 animate-spin" />
+                <span>Pętla 24/7 bez przerw</span>
+              </div>
 
-              {radioState.isLoopEnabled && (
-                <div className="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-700/80 text-[11px] font-semibold gap-1">
-                  <button
-                    onClick={() => globalRadioManager.setLoopMode('station')}
-                    className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-                      radioState.loopMode === 'station'
-                        ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                    title="Pętla stacji: Dzień 1 do ostatniego, i od razu od początku (Dzień 1)"
-                  >
-                    Pętla stacji (1..{activeStation.totalDays})
-                  </button>
-                  <button
-                    onClick={() => globalRadioManager.setLoopMode('all_stations')}
-                    className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
-                      radioState.loopMode === 'all_stations'
-                        ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                    title="Wielka pętla 4 stacji: Wszystkie 4 radia internetowe po kolei bez przerw"
-                  >
-                    Wielka pętla 4 stacji
-                  </button>
-                </div>
-              )}
+              <div className="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-700/80 text-[11px] font-semibold gap-1">
+                <button
+                  onClick={() => globalRadioManager.setLoopMode('station')}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                    radioState.loopMode === 'station'
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Pętla stacji: Dni 1 do ostatniego, i od razu od początku (Dzień 1)"
+                >
+                  Pętla stacji (1..{activeStation.totalDays})
+                </button>
+                <button
+                  onClick={() => globalRadioManager.setLoopMode('all_stations')}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                    radioState.loopMode === 'all_stations'
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Wielka pętla 4 stacji: Wszystkie 4 stacje po kolei w nieprzerwanym ciągu"
+                >
+                  Wielka pętla 4 stacji
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Główny pasek statusu transmisji na żywo (Linear Real-time Broadcast Bar) */}
-          <div className="mb-6 p-4 rounded-2xl bg-[#090f1a] border border-amber-500/30 space-y-3">
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#090f1a] border border-amber-500/30 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
               <div className="flex items-center gap-2 text-amber-300 font-bold">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                <span>AKTUALNIE NADAWANE NA ŻYWO: Dzień {liveStatus.dayNumber} ze {activeStation.totalDays}</span>
+                <span>AKTUALNIE W ETERZE: Dzień {liveStatus.dayNumber} ze {activeStation.totalDays}</span>
               </div>
               <div className="flex items-center gap-3 text-slate-300 font-mono text-xs">
                 <span className="flex items-center gap-1">
@@ -470,7 +457,7 @@ export const RadioView: React.FC<Props> = ({
                   <span>{formatSeconds(liveStatus.secondsElapsedInDay)} / {formatSeconds(liveStatus.dayDurationSeconds)}</span>
                 </span>
                 <span className="text-amber-400/80">
-                  (pozostało {formatSeconds(liveStatus.secondsRemainingInDay)})
+                  (do kolejnego dnia w pętli: {formatSeconds(liveStatus.secondsRemainingInDay)})
                 </span>
               </div>
             </div>
@@ -485,45 +472,72 @@ export const RadioView: React.FC<Props> = ({
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 pt-1">
               <span>
-                Transmisja płynie 24/7 dla wszystkich słuchaczy. Po ukończeniu dnia natychmiast rozpoczyna się Dzień {liveStatus.dayNumber >= activeStation.totalDays ? 1 : liveStatus.dayNumber + 1}.
+                Transmisja płynie nieustannie dla każdego słuchacza. Po dojściu do końca audycji natychmiast rozpoczyna się Dzień {liveStatus.dayNumber >= activeStation.totalDays ? 1 : liveStatus.dayNumber + 1}.
               </span>
               <span className="text-amber-300 font-mono font-semibold">
-                Postęp audycji: {liveStatus.progressPercent}%
+                Postęp: {liveStatus.progressPercent}%
               </span>
             </div>
           </div>
 
-          {/* Duże przyciski dołączania do transmisji NA ŻYWO */}
-          <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={handleTuneInLive}
-              className={`px-6 py-3.5 rounded-2xl font-bold text-sm sm:text-base transition cursor-pointer flex items-center gap-2.5 shadow-xl hover:scale-105 active:scale-95 ${
-                isPlayingThisStation && radioState.playbackState === 'playing'
-                  ? 'bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-400'
-                  : 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:brightness-110 text-white'
-              }`}
-            >
-              <span className="w-3 h-3 rounded-full bg-white animate-ping" />
-              <span>
-                {isPlayingThisStation && radioState.playbackState === 'playing'
-                  ? '🔴 SŁUCHASZ AUDYCJI NA ŻYWO W TLE'
-                  : '🔴 DOŁĄCZ DO TRANSMISJI NA ŻYWO'}
-              </span>
-            </button>
+          {/* Główne kontrolki podsłuchu (Receiver Listening & Mute Controls) */}
+          <div className="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleToggleMute}
+                className={`px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition cursor-pointer flex items-center gap-2.5 shadow-lg active:scale-95 ${
+                  isMuted
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                    : 'bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-400'
+                }`}
+                title={isMuted ? 'Włącz dźwięk podsłuchu' : 'Wycisz podsłuch'}
+              >
+                {isMuted ? (
+                  <>
+                    <VolumeX className="w-4 h-4" />
+                    <span>ODCISZ GŁOŚNIK PODSŁUCHU</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4 animate-pulse" />
+                    <span>WYCISZ PODSŁUCH</span>
+                  </>
+                )}
+              </button>
 
-            <button
-              onClick={() => handlePlayFromStart(displayedDayNumber)}
-              className="px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold transition active:scale-95 cursor-pointer border border-white/20 flex items-center gap-2"
-              title="Odtwarzaj bieżący dzień od początku"
-            >
-              <RotateCcw className="w-4 h-4 text-amber-300" />
-              <span>Słuchaj Dnia {displayedDayNumber} od początku</span>
-            </button>
+              <div className="text-xs text-slate-300">
+                {isMuted ? (
+                  <span className="text-amber-300 font-semibold">Głośnik wyciszony (transmisja w tle trwa nadal)</span>
+                ) : (
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    Podsłuchujesz transmisję na żywo
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Szybki przełącznik stacji w odbiorniku */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-slate-400 font-semibold mr-1">Przełącz stację:</span>
+              {RADIO_STATIONS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => handleSwitchStation(s.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    activeStationId === s.id
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                  }`}
+                >
+                  {s.badge}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Day Navigation & Progress bar */}
+          {/* Aktualnie podsłuchiwana treść na żywo */}
           <div className="space-y-4">
-            
             <div className="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm text-slate-300">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-amber-400" />
@@ -531,221 +545,111 @@ export const RadioView: React.FC<Props> = ({
                 <span className="text-slate-400">• {broadcastItem.subtitle}</span>
               </div>
               <div className="font-mono text-amber-400 text-xs">
-                {displayedDayNumber} / {activeStation.totalDays} dni w cyklu
+                Dzień {displayedDayNumber} / {activeStation.totalDays} dni w pętli
               </div>
             </div>
 
-            {/* Slider do wyboru dnia w archiwum audycji */}
-            <div className="space-y-1">
-              <input
-                type="range"
-                min={1}
-                max={activeStation.totalDays}
-                value={displayedDayNumber}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  handlePlayFromStart(val);
-                }}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
-              />
-              <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-                <span>Dzień 1</span>
-                <span>Dzień {Math.round(activeStation.totalDays / 2)}</span>
-                <span>Dzień {activeStation.totalDays}</span>
-              </div>
-            </div>
-
-            {/* Sterowanie Odtwarzaczem (Play / Pause / Next / Prev) */}
-            <div className="py-4 flex flex-wrap items-center justify-center sm:justify-between gap-4 border-t border-b border-slate-800/80">
-              
-              {/* Prev Day */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handlePrevDay}
-                  className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition active:scale-95 cursor-pointer"
-                  title="Poprzedni dzień"
-                >
-                  <SkipBack className="w-5 h-5" />
-                </button>
+            {/* Treść rozważania / modlitwy / Słowa Bożego na żywo */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-[#080d17] border border-slate-800 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
+                  <Headphones className="w-3.5 h-3.5" />
+                  <span>Tekst aktualnie czytany na antenie</span>
+                </div>
+                <div className="text-[11px] text-slate-400 font-mono">
+                  Lektor AI 24/7
+                </div>
               </div>
 
-              {/* Main Play / Pause Controls */}
-              <div className="flex items-center gap-3">
-                {isPlayingThisStation && radioState.playbackState === 'playing' ? (
-                  <button
-                    onClick={handleTogglePlay}
-                    className="p-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white shadow-xl shadow-amber-600/30 transition active:scale-95 cursor-pointer"
-                    title="Wstrzymaj audycję"
-                  >
-                    <Pause className="w-7 h-7" />
-                  </button>
-                ) : isPlayingThisStation && radioState.playbackState === 'paused' ? (
-                  <button
-                    onClick={handleTogglePlay}
-                    className="p-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/30 transition active:scale-95 cursor-pointer"
-                    title="Wznów audycję"
-                  >
-                    <Play className="w-7 h-7 ml-0.5" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleTuneInLive}
-                    className="p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:brightness-110 text-white shadow-xl shadow-amber-600/30 transition active:scale-95 cursor-pointer"
-                    title="Rozpocznij transmisję na żywo"
-                  >
-                    <Play className="w-7 h-7 ml-0.5" />
-                  </button>
+              <div className="text-sm sm:text-base text-slate-200 font-serif leading-relaxed space-y-3 max-h-72 overflow-y-auto pr-2">
+                {broadcastItem.reference && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-sans text-amber-200">
+                    <strong>Fragment Pisma Świętego / Sygnatura:</strong> {broadcastItem.reference}
+                  </div>
                 )}
 
-                <button
-                  onClick={handleStop}
-                  disabled={!isPlayingThisStation || radioState.playbackState === 'idle'}
-                  className={`p-4 rounded-2xl transition active:scale-95 cursor-pointer ${
-                    isPlayingThisStation && radioState.playbackState !== 'idle'
-                      ? 'bg-white/10 hover:bg-white/20 text-white'
-                      : 'bg-white/5 text-slate-600 cursor-not-allowed'
-                  }`}
-                  title="Zatrzymaj"
-                >
-                  <Square className="w-6 h-6" />
-                </button>
-              </div>
-
-              {/* Next Day */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleNextDay}
-                  className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition active:scale-95 cursor-pointer"
-                  title="Następny dzień"
-                >
-                  <SkipForward className="w-5 h-5" />
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Equalizer animation bars */}
-          {isPlayingThisStation && radioState.playbackState === 'playing' && (
-            <div className="mt-4 flex items-center justify-center gap-1.5 h-8">
-              {[60, 90, 40, 80, 100, 70, 50, 95, 30, 85, 75, 45, 90, 65, 80].map((h, idx) => (
-                <div
-                  key={idx}
-                  className="w-1.5 bg-gradient-to-t from-amber-500 to-red-500 rounded-full animate-pulse"
-                  style={{
-                    height: `${h}%`,
-                    animationDuration: `${0.4 + (idx % 5) * 0.15}s`
-                  }}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Text Prompter / Subtitles Box with real-time reading preview */}
-          <div className="mt-6 p-5 rounded-2xl bg-[#080d16] border border-slate-800 max-h-72 overflow-y-auto space-y-3 font-serif-book leading-relaxed text-sm sm:text-base text-slate-200">
-            <div className="text-xs uppercase font-sans-ui font-bold text-amber-400 tracking-wider flex items-center gap-2 mb-2">
-              <Headphones className="w-4 h-4" />
-              <span>Treść aktualnie nadawanej audycji (Lektor AI TTS)</span>
-            </div>
-            <div className="whitespace-pre-line text-slate-300">
-              {broadcastItem.displayContent}
-            </div>
-          </div>
-
-          {/* Bottom Export Call to Action */}
-          <div className="mt-6 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-amber-400" />
-              <span>Transmisja trwa w tle niezależnie od nawigacji po serwisie. Możesz czytać inne działy słuchając radia.</span>
-            </div>
-            <button
-              onClick={() => setIsVideoModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
-            >
-              <Video className="w-4 h-4" />
-              <span>Generuj Wideo YouTube (MP4) z tego dnia</span>
-            </button>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 3. Detailed Guide & Station Description Cards */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-        <div className="text-center max-w-3xl mx-auto mb-8 space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold font-serif-book text-[#2a221b] dark:text-white">
-            4 Stacje Radia Widoki na Raj – Nadawanie 24/7
-          </h2>
-          <p className="text-sm sm:text-base text-[#675443] dark:text-[#8ea2c0]">
-            Każda stacja nadaje w czasie rzeczywistym nieprzerwanie przez cały rok. Wybierz stację, aby dołączyć do bieżącej audycji.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {RADIO_STATIONS.map((st) => {
-            const isCurrentThis = activeStationId === st.id;
-            const isPlayingThisInBg = radioState.isRadioActive && radioState.stationId === st.id;
-            const stLive = allLiveStatuses.find(s => s.station.id === st.id) || liveStatus;
-
-            return (
-              <div
-                key={st.id}
-                className={`p-6 rounded-3xl border transition-all ${
-                  isCurrentThis
-                    ? 'bg-white dark:bg-[#0f1726] border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
-                    : 'bg-white dark:bg-[#0d1422] border-[#e2d5c5] dark:border-[#1d273a]'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300">
-                      {st.badge}
-                    </span>
-                    <h3 className="text-lg font-bold text-[#1f2937] dark:text-white mt-1">
-                      {st.name}
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => handleStationChange(st.id, true)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-sm ${
-                      isPlayingThisInBg
-                        ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
-                        : 'bg-amber-600 hover:bg-amber-700 text-white'
-                    }`}
-                  >
-                    {isPlayingThisInBg ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                        <span>Nadaje w tle (Dzień {radioState.dayNumber})</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Słuchaj na żywo (Dzień {stLive.dayNumber})</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <p className="text-xs sm:text-sm text-[#5f4c3c] dark:text-[#90a6c6] leading-relaxed mb-4">
-                  {st.description}
+                <p className="whitespace-pre-line">
+                  {broadcastItem.displayContent || broadcastItem.speechText}
                 </p>
-                <div className="flex items-center justify-between text-xs font-mono text-[#826f5f] dark:text-[#6a809f] border-t border-[#f0e6dc] dark:border-[#182335] pt-3">
-                  <span>Pętla ciągła: 1 do {st.totalDays} dni i od nowa</span>
-                  <span>/radio?stacja={st.shareSlug}</span>
+              </div>
+            </div>
+
+            {/* Podgląd Ramówki Całej Pętli (Słuchacz może przeglądać teksty bez przerywania transmisji na żywo) */}
+            <div className="pt-4 border-t border-slate-800 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Program ramówki w pętli ({activeStation.totalDays} dni)</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  Kliknij dowolny dzień, aby podejrzeć jego tekst archiwalny (transmisja na żywo gra dalej)
                 </div>
               </div>
-            );
-          })}
+
+              <div className="flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar">
+                {Array.from({ length: Math.min(30, activeStation.totalDays) }, (_, i) => {
+                  const d = ((liveStatus.dayNumber - 1 + i) % activeStation.totalDays) + 1;
+                  const isCurrentLive = d === liveStatus.dayNumber;
+                  const isBeingPreviewed = previewDayNumber === d;
+
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => setPreviewDayNumber(d === previewDayNumber ? null : d)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap transition cursor-pointer ${
+                        isCurrentLive
+                          ? 'bg-red-600 text-white ring-2 ring-red-400 shadow-md'
+                          : isBeingPreviewed
+                          ? 'bg-amber-500 text-slate-950 font-extrabold'
+                          : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
+                      }`}
+                      title={`Dzień ${d} w pętli stacji`}
+                    >
+                      {isCurrentLive ? `🔴 Dzień ${d} (LIVE)` : `Dzień ${d}`}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Podgląd wybranego dnia z archiwum bez zakłócania audycji na żywo */}
+              {previewItem && previewDayNumber !== null && (
+                <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/40 text-xs sm:text-sm text-slate-200 space-y-2 animate-fade-in">
+                  <div className="flex items-center justify-between text-amber-400 font-bold">
+                    <span>📖 Podgląd archiwalny: Dzień {previewDayNumber} ({previewItem.displayDate})</span>
+                    <button
+                      onClick={() => setPreviewDayNumber(null)}
+                      className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+                    >
+                      Zamknij podgląd
+                    </button>
+                  </div>
+                  <div className="font-semibold text-white">{previewItem.headlineTitle}</div>
+                  <div className="text-xs text-slate-300 font-serif max-h-40 overflow-y-auto whitespace-pre-line">
+                    {previewItem.displayContent || previewItem.speechText}
+                  </div>
+                  <div className="text-[11px] text-amber-300/80 italic">
+                    ℹ️ Transmisja na żywo (Dzień {liveStatus.dayNumber}) płynie w tle bez żadnych przerw.
+                  </div>
+                </div>
+              )}
+            </div>
+
+          </div>
+
         </div>
       </section>
 
-      {/* Modal eksportu wideo MP4 na YouTube */}
-      <VideoYouTubeExportModal
-        isOpen={isVideoModalOpen}
-        onClose={() => setIsVideoModalOpen(false)}
-        broadcastItem={broadcastItem}
-      />
+      {/* 3. YouTube Video Karaoke Export Modal */}
+      {isVideoModalOpen && (
+        <VideoYouTubeExportModal
+          isOpen={isVideoModalOpen}
+          onClose={() => setIsVideoModalOpen(false)}
+          broadcastItem={broadcastItem}
+          stationMeta={activeStation}
+          currentDayNumber={displayedDayNumber}
+          totalDays={activeStation.totalDays}
+        />
+      )}
 
     </div>
   );

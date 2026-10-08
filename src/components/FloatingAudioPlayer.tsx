@@ -9,6 +9,7 @@ import {
   Settings,
   X,
   Volume2,
+  VolumeX,
   Radio as RadioIcon
 } from 'lucide-react';
 import { CycleDate, SectionMeta, SectionEntry } from '../types';
@@ -293,72 +294,124 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
         {/* Player Controls Bar */}
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-wrap">
           
-          {/* Studio Radia Link Button (if Radio is active) */}
-          {isRadioActive && (
-            <button
-              onClick={() => {
-                if (onNavigateSection) {
-                  onNavigateSection('radio');
-                } else {
-                  window.location.href = `/radio?stacja=${radioState.stationId || 'nowyrhz'}`;
-                }
-              }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 border border-amber-400/30 transition text-xs font-bold cursor-pointer"
-              title="Przejdź do studia radiowego"
-            >
-              <RadioIcon className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-              <span className="hidden sm:inline">Studio</span>
-            </button>
+          {isRadioActive ? (
+            <>
+              {/* Studio Radia Link */}
+              <button
+                onClick={() => {
+                  if (onNavigateSection) {
+                    onNavigateSection('radio');
+                  } else {
+                    window.location.href = `/radio?stacja=${radioState.stationId || 'nowyrhz'}`;
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/40 transition text-xs font-bold cursor-pointer"
+                title="Przejdź do studia radiowego"
+              >
+                <RadioIcon className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+                <span>Studio Radia</span>
+              </button>
+
+              {/* Przełącz stację (1..4) */}
+              <button
+                onClick={() => {
+                  const stations = RADIO_STATIONS;
+                  const curIdx = stations.findIndex(s => s.id === radioState.stationId);
+                  const nextIdx = (curIdx + 1) % stations.length;
+                  globalRadioManager.tuneInStation(stations[nextIdx].id, undefined, true);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600 transition text-xs font-semibold cursor-pointer"
+                title="Przełącz na kolejną stację radiową 24/7"
+              >
+                <RadioIcon className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Stacja:</span>
+                <span className="font-bold text-amber-300">{stationMeta?.badge}</span>
+              </button>
+
+              {/* Wycisz / Odcisz podsłuch */}
+              <button
+                onClick={() => globalRadioManager.toggleMute()}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer shadow-sm active:scale-95 ${
+                  radioState.isMuted
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                    : 'bg-red-600 hover:bg-red-700 text-white ring-1 ring-red-400'
+                }`}
+                title={radioState.isMuted ? 'Odcisz głośnik podsłuchu' : 'Wycisz podsłuch'}
+              >
+                {radioState.isMuted ? (
+                  <>
+                    <VolumeX className="w-3.5 h-3.5" />
+                    <span>Odcisz</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 animate-pulse" />
+                    <span>Wycisz</span>
+                  </>
+                )}
+              </button>
+
+              {/* Wyłącz podsłuch radia */}
+              <button
+                onClick={handleStop}
+                className="p-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 text-red-200 border border-red-500/40 transition cursor-pointer"
+                title="Zatrzymaj podsłuch"
+              >
+                <Square className="w-3.5 h-3.5 text-red-300 fill-red-400" />
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Wstecz / Poprzedni Dzień */}
+              <button
+                onClick={handlePrev}
+                className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-950/70 hover:bg-amber-900/80 text-amber-100 border border-amber-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Poprzedni dzień"
+              >
+                <SkipBack className="w-4 h-4 text-amber-300 flex-shrink-0" />
+                <span className="text-xs font-semibold hidden md:inline">Wstecz</span>
+              </button>
+
+              {/* Odtwórz / Pauza (Play / Pause Toggle) */}
+              <button
+                onClick={handleTogglePlayPause}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white shadow-xl shadow-amber-900/40 hover:brightness-110 border border-amber-300/50 transition-all active:scale-95 cursor-pointer"
+                title={playbackState === 'playing' ? 'Wstrzymaj audycję (Pause)' : 'Rozpocznij/wznów audycję (Play)'}
+              >
+                {playbackState === 'playing' ? (
+                  <>
+                    <Pause className="w-4 h-4 text-white fill-current flex-shrink-0" />
+                    <span className="text-xs font-bold text-white">Pauza</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 text-white fill-current translate-x-0.5 flex-shrink-0" />
+                    <span className="text-xs font-bold text-white">Odtwórz</span>
+                  </>
+                )}
+              </button>
+
+              {/* Stop */}
+              <button
+                onClick={handleStop}
+                className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 text-red-100 border border-red-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Zatrzymaj (Stop)"
+              >
+                <Square className="w-3.5 h-3.5 text-red-300 fill-red-400 flex-shrink-0" />
+                <span className="text-xs font-semibold text-red-200 hidden md:inline">Stop</span>
+              </button>
+
+              {/* Przód / Następny Dzień */}
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-950/70 hover:bg-amber-900/80 text-amber-100 border border-amber-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Następny dzień"
+              >
+                <span className="text-xs font-semibold hidden md:inline">Przód</span>
+                <SkipForward className="w-4 h-4 text-amber-300 flex-shrink-0" />
+              </button>
+            </>
           )}
-
-          {/* Wstecz / Poprzedni Dzień */}
-          <button
-            onClick={handlePrev}
-            className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-950/70 hover:bg-amber-900/80 text-amber-100 border border-amber-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
-            title="Poprzedni dzień"
-          >
-            <SkipBack className="w-4 h-4 text-amber-300 flex-shrink-0" />
-            <span className="text-xs font-semibold hidden md:inline">Wstecz</span>
-          </button>
-
-          {/* Odtwórz / Pauza (Play / Pause Toggle) */}
-          <button
-            onClick={handleTogglePlayPause}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white shadow-xl shadow-amber-900/40 hover:brightness-110 border border-amber-300/50 transition-all active:scale-95 cursor-pointer"
-            title={playbackState === 'playing' ? 'Wstrzymaj audycję (Pause)' : 'Rozpocznij/wznów audycję (Play)'}
-          >
-            {playbackState === 'playing' ? (
-              <>
-                <Pause className="w-4 h-4 text-white fill-current flex-shrink-0" />
-                <span className="text-xs font-bold text-white">Pauza</span>
-              </>
-            ) : (
-              <>
-                <Play className="w-4 h-4 text-white fill-current translate-x-0.5 flex-shrink-0" />
-                <span className="text-xs font-bold text-white">Odtwórz</span>
-              </>
-            )}
-          </button>
-
-          {/* Stop */}
-          <button
-            onClick={handleStop}
-            className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 text-red-100 border border-red-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
-            title="Zatrzymaj (Stop)"
-          >
-            <Square className="w-3.5 h-3.5 text-red-300 fill-red-400 flex-shrink-0" />
-            <span className="text-xs font-semibold text-red-200 hidden md:inline">Stop</span>
-          </button>
-
-          {/* Przód / Następny Dzień */}
-          <button
-            onClick={handleNext}
-            className="flex items-center gap-1 px-2.5 py-2 rounded-xl bg-amber-950/70 hover:bg-amber-900/80 text-amber-100 border border-amber-500/40 transition-all active:scale-95 cursor-pointer shadow-sm"
-            title="Następny dzień"
-          >
-            <span className="text-xs font-semibold hidden md:inline">Przód</span>
-            <SkipForward className="w-4 h-4 text-amber-300 flex-shrink-0" />
-          </button>
 
           {/* Separator */}
           <div className="h-6 w-px bg-amber-500/30 mx-0.5 hidden sm:block" />
