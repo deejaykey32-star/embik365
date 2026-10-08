@@ -11,6 +11,7 @@ export type SectionId =
   | 'ebook_rhz'     // ebook RHZ365 w formie przewracanych kartek
   | 'ebook_biblia'  // Biblia365 w formie przewracanych kartek
   | 'bio365'        // biografia mnie i żony w formie przewracanych kartek
+  | 'radio'         // Radio Internetowe 24/7 (4 stacje w pętli)
   | 'grafika';      // galeria materiałów i ilustracji administratora z edytorem WYSIWYG
 
 export type SectionType = 'reader' | 'flipbook' | 'info';

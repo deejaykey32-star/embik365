@@ -134,6 +134,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent'
   },
   {
+    id: 'radio',
+    name: 'Radio 24/7',
+    shortTitle: 'Radio Internetowe',
+    subtitle: '4 stacje w pętli z lektorem AI i eksportem wideo na YouTube',
+    type: 'info',
+    description: 'Internetowe Radio Widoki na Raj nadające w pętli 24/7 cztery stacje: Nowy RHZ (175 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni). Zawiera generator wideo MP4 na YouTube z czarnym tłem i napisami karaoke.',
+    badge: 'Radio 24/7',
+    icon: 'Radio',
+    accentColor: '#e11d48',
+    bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent'
+  },
+  {
     id: 'grafika',
     name: 'Materiały & Ilustracje',
     shortTitle: 'Galeria Zasobów',

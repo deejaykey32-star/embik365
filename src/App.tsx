@@ -12,6 +12,7 @@ import { MediaGallerySectionView } from './components/MediaGallerySectionView';
 import { PilgrimageMapView } from './components/PilgrimageMapView';
 import { HistadaView } from './components/HistadaView';
 import { NowyRhzView } from './components/NowyRhzView';
+import { RadioView } from './components/RadioView';
 import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
@@ -561,6 +562,13 @@ export default function App() {
           <NowyRhzView
             key={`nowyrhz-${currentLang}`}
             section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
+        ) : activeSectionId === 'radio' ? (
+          <RadioView
+            key={`radio-${currentLang}`}
+            onOpenLectorSettings={() => setIsLectorModalOpen(true)}
             currentLang={currentLang}
             theme={theme}
           />

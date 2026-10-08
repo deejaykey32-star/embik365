@@ -107,6 +107,12 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'biografia': 'bio365',
   'ja-i-moja-zona': 'bio365',
 
+  'radio': 'radio',
+  'radio24': 'radio',
+  'radio365': 'radio',
+  'radio-internetowe': 'radio',
+  'stacja': 'radio',
+
   'grafika': 'grafika',
   'media': 'grafika',
   'zasoby': 'grafika',
@@ -385,6 +391,10 @@ export function parseUrlRoute(): ParsedRoute {
       return { sectionId: 'nowyRHZ', date: getTodayCycleDate() };
     }
 
+    if (parts[0] === 'radio' || parts[0] === 'radio-internetowe' || parts[0] === 'radio24') {
+      return { sectionId: 'radio', date: getTodayCycleDate(), subview: parts[1] || undefined };
+    }
+
     if (parts[0] === 'z' && parts[1]) {
       const zNum = parts[1].toLowerCase();
       const zMap: Record<string, string> = {
@@ -556,6 +566,9 @@ export function buildUrlSlug(route: {
   }
   if (route.sectionId === 'nowyRHZ') {
     return '/nowy-rhz';
+  }
+  if (route.sectionId === 'radio') {
+    return route.subview ? `/radio?stacja=${route.subview}` : '/radio';
   }
 
   const parts: string[] = [route.sectionId];
