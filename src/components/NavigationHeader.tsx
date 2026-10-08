@@ -153,13 +153,13 @@ export const NavigationHeader: React.FC<Props> = ({
           </div>
 
           {/* Right Action Bar: order-2 on mobile (Top Right), order-3 on desktop (Right) */}
-          <div className="order-2 lg:order-3 flex items-center gap-1 sm:gap-1.5 lg:gap-2 shrink-0">
+          <div className="order-2 lg:order-3 flex items-center flex-wrap justify-end gap-1 sm:gap-1.5 lg:gap-2 max-w-[65%] sm:max-w-none">
             {/* Prominent Search Button (LUPA) - Always fully visible, never clipped! */}
             {onOpenSearch && (
               <button
                 onClick={onOpenSearch}
                 id="btn-header-search"
-                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#f0e4d4] hover:bg-[#e6d7c4] dark:bg-[#192232] dark:hover:bg-[#232e42] text-[#4d3d2e] dark:text-amber-300 border border-[#d6c7b5] dark:border-[#2a374f] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#f0e4d4] hover:bg-[#e6d7c4] dark:bg-[#192232] dark:hover:bg-[#232e42] text-[#4d3d2e] dark:text-amber-300 border border-[#d6c7b5] dark:border-[#2a374f] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
                 title="Szukaj frazy we wszystkich tomach lub wybranej sekcji (Skrót: Ctrl+K)"
               >
                 <Search className="w-4 h-4 text-[#8a5327] dark:text-amber-400 shrink-0" />

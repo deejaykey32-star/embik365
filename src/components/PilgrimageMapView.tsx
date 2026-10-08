@@ -124,8 +124,8 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     });
   };
 
-  // Bezpośrednia ścieżka do nawigacji po 8 przystankach trasy w Google Maps (Jasna Góra ➔ Łagiewniki)
-  const googleMapsRouteUrl = 'https://www.google.com/maps/dir/Jasna+G%C3%B3ra,+Cz%C4%99stochowa/Z%C5%82oty+Potok/Zamek+Bobolice/Zamek+Ogrodzieniec/Klucze/Zamek+Pieskowa+Ska%C5%82a/Ojc%C3%B3w/Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach/';
+  // Bezpośrednia ścieżka do nawigacji po kluczowych punktach trasy w Google Maps (Jasna Góra ➔ Łagiewniki)
+  const googleMapsRouteUrl = 'https://www.google.com/maps/dir/Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa/Z%C5%82oty+Potok/Kr%C3%B3lewski+Zamek+Bobolice,+Bobolice+14,+42-320+Bobolice/Zamek+Ogrodzieniec,+Zamkowa+28,+42-440+Podzamcze/Zamek+Pieskowa+Ska%C5%82a.+Oddzia%C5%82+Zamku+Kr%C3%B3lewskiego+na+Wawelu,+Su%C5%82oszowa+5,+32-045+Pieskowa/Ojc%C3%B3w,+32-047/Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewniki,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w/@50.4006441,18.8606964,9z/data=!3m2!4b1!5s0x471718d12fd38e89:0xe0e46b3f1cdaa8ca!4m43!4m42!1m5!1m1!1s0x4710b67725190681:0xcdd96b8d5a77910!2m2!1d19.0973742!2d50.8125887!1m5!1m1!1s0x47173818fe0a8029:0xef11fd16379b7745!2m2!1d19.4375833!2d50.7067994!1m5!1m1!1s0x47173c0e7aceffa1:0x581e1d66d2c8610!2m2!1d19.4932538!2d50.6134139!1m5!1m1!1s0x471718d146c08d25:0xc817bd86f25c678f!2m2!1d19.552043!2d50.4531168!1m5!1m1!1s0x4716fec42e6cab75:0xf47bd910e198b09f!2m2!1d19.7784461!2d50.2446602!1m5!1m1!1s0x4716f8a2ffa776b9:0x2387c55734ca40f9!2m2!1d19.8324396!2d50.2128628!1m5!1m1!1s0x47165cbaffe27917:0xd41b9b9a7b6b8341!2m2!1d19.9367971!2d50.0214202?entry=ttu&g_ep=EgoyMDI2MTAwNS4wIKXMDSoASAFQAw%3D%3D';
   const googleMapsModes = {
     walking: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=walking',
     driving: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=driving',
@@ -383,12 +383,12 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto justify-start sm:justify-end">
             <button
               onClick={() => setShowInfoModal(true)}
               id="btn-map-info-modal"
               title="Informacje o pielgrzymce, harmonogram 7 dni i kompleksowy plan"
-              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer shrink-0"
             >
               <Info className="w-3.5 h-3.5" />
               <span>Info</span>
@@ -399,7 +399,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               target="_blank"
               rel="noopener noreferrer"
               title="Otwórz nawigację trasy w Google Maps (samochód, pieszo, rower, pociąg)"
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition shrink-0"
             >
               <Navigation className="w-3.5 h-3.5" />
               <span>Nawigacja Google Maps</span>
@@ -411,7 +411,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               target="_blank"
               rel="noopener noreferrer"
               title="Otwórz oficjalną platformę mapa.widokinaraj.pl"
-              className="px-3.5 py-2 rounded-xl bg-amber-700/80 hover:bg-amber-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-700/80 hover:bg-amber-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition shrink-0"
             >
               <span>mapa.widokinaraj.pl</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -420,7 +420,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             <button
               onClick={handleReloadMap}
               title="Odśwież widok mapy"
-              className="p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-xs hover:bg-[#faf6f0] dark:hover:bg-[#182234] transition cursor-pointer"
+              className="p-2 sm:p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-xs hover:bg-[#faf6f0] dark:hover:bg-[#182234] transition cursor-pointer shrink-0"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
@@ -428,16 +428,30 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             <button
               onClick={() => setIsFullscreen(f => !f)}
               title={isFullscreen ? 'Zmniejsz mapę' : 'Pełny ekran mapy'}
-              className="p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-xs hover:bg-[#faf6f0] dark:hover:bg-[#182234] transition cursor-pointer"
+              className="p-2 sm:p-2.5 rounded-xl bg-white/90 dark:bg-[#111723]/90 backdrop-blur-md border border-[#e2d6c7] dark:border-[#233149] text-[#4a392b] dark:text-white shadow-xs hover:bg-[#faf6f0] dark:hover:bg-[#182234] transition cursor-pointer shrink-0"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
+        {/* Mobile touch scroll guidance hint */}
+        <div className="flex sm:hidden items-center justify-between px-3 py-1.5 mb-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-[#5e432a] dark:text-amber-200">
+          <span className="flex items-center gap-1">
+            <span>👆</span>
+            <span>Przewijaj stronę przesuwając palcem poza mapą</span>
+          </span>
+          <button
+            onClick={() => setIsFullscreen(true)}
+            className="font-bold underline text-amber-700 dark:text-amber-400 cursor-pointer"
+          >
+            Pełny ekran ↗
+          </button>
+        </div>
+
         {/* Map Card with Fullscreen Toggle */}
         <div className={`relative bg-white dark:bg-[#131a27] rounded-3xl border border-[#e2d6c7] dark:border-[#222e44] shadow-md overflow-hidden transition-all duration-300 ${
-          isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'h-[620px] sm:h-[680px]'
+          isFullscreen ? 'fixed inset-0 z-50 rounded-none border-0' : 'h-[380px] sm:h-[500px] md:h-[650px]'
         }`}>
           
           {/* Fullscreen Close Button */}

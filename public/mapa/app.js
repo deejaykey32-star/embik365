@@ -910,6 +910,35 @@ class PilgrimageApp {
      DOM EVENTS BINDINGS
      ------------------------------------------------------------------------- */
   bindDomEvents() {
+    // Mobile View Switcher (Both / Map / Panel)
+    const appLayout = document.getElementById('app-layout') || document.querySelector('.app-layout');
+    document.querySelectorAll('.mobile-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mobile-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = btn.dataset.view;
+        if (appLayout) {
+          appLayout.classList.remove('mobile-view-both', 'mobile-view-map', 'mobile-view-panel');
+          if (view === 'map') appLayout.classList.add('mobile-view-map');
+          else if (view === 'panel') appLayout.classList.add('mobile-view-panel');
+          else appLayout.classList.add('mobile-view-both');
+        }
+        setTimeout(() => {
+          if (this.map) this.map.invalidateSize();
+        }, 150);
+      });
+    });
+
+    // Window Resize / Orientation Change handlers for Leaflet redraw
+    window.addEventListener('resize', () => {
+      if (this.map) this.map.invalidateSize();
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (this.map) this.map.invalidateSize();
+      }, 200);
+    });
+
     // Stage Switcher
     document.querySelectorAll('.stage-btn').forEach(btn => {
       btn.addEventListener('click', () => {
