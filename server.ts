@@ -1,17 +1,12 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { createServer as createViteServer } from 'vite';
 import { exec } from 'child_process';
 import util from 'util';
 
 const execPromise = util.promisify(exec);
-
-const currentMetaUrl = typeof import.meta !== 'undefined' ? import.meta.url : undefined;
-const currentFilename = currentMetaUrl ? fileURLToPath(currentMetaUrl) : '';
-const __dirname = path.dirname(currentFilename || process.cwd());
 
 const PORT = 3000;
 const app = express();

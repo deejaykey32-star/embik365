@@ -116,5 +116,31 @@
 /r/histada /histada 302
 /r/gra /histada 302
 
+# Nowy RHZ (Różaniec Historii Zbawienia 175 dni)
+/nowyRHZ /nowyrhz/ 301
+/nowyRHZ/ /nowyrhz/ 301
+/nowyRHZ.html /nowyrhz/ 301
+/nowyrhz.html /nowyrhz/ 301
+/nowyrhz /nowyrhz/index.html 200
+/nowyrhz/ /nowyrhz/index.html 200
+/r/nowyrhz /nowyrhz/ 302
+/z/nowyrhz /nowyrhz/ 302
+/r/nowy-rhz /nowyrhz/ 302
+/z/nowy-rhz /nowyrhz/ 302
+/r/nowyRHZ /nowyrhz/ 302
+/z/nowyRHZ /nowyrhz/ 302
+
+# Radio Internetowe 24/7 (Nowy RHZ, WnR365, Biblia365, RHZ365)
+/r/radio /radio 302
+/r/radio-nowyrhz /radio?stacja=nowyrhz 302
+/r/radio-wnr365 /radio?stacja=wnr365 302
+/r/radio-biblia365 /radio?stacja=biblia365 302
+/r/radio-rhz365 /radio?stacja=rhz365 302
+/z/radio /radio 302
+/z/radio-nowyrhz /radio?stacja=nowyrhz 302
+/z/radio-wnr365 /radio?stacja=wnr365 302
+/z/radio-biblia365 /radio?stacja=biblia365 302
+/z/radio-rhz365 /radio?stacja=rhz365 302
+
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301
