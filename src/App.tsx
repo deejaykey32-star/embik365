@@ -745,6 +745,7 @@ export default function App() {
         onPrevDay={handlePrevDay}
         onOpenLectorModal={() => setIsLectorModalOpen(true)}
         currentLang={currentLang}
+        onNavigateSection={(secId) => setActiveSectionId(secId as any)}
       />
     </div>
   );
