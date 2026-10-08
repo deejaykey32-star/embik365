@@ -21,6 +21,9 @@ import {
 import { RhzDayEntry } from '../data/rhz365Data';
 import { COMMON_PRAYERS } from '../data/rosaryData';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio } from '../utils/audioLectorService';
+import { RosaryDecadeProgressTracker } from './RosaryDecadeProgressTracker';
+import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
+import { getRadioBroadcastItem } from '../utils/radioContentService';
 
 interface Props {
   rhzEntry: RhzDayEntry;
@@ -101,48 +104,66 @@ export const RhzPrayerGuide: React.FC<Props> = ({
     fontSize === 'large' ? 'text-[14pt] leading-[1.2]' :
     'text-[16pt] leading-[1.25]';
 
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
+
+  // Derivation of activeStep based on activeSpeechId
+  let activeStep: 'intro' | number | 'conclusion' | null = null;
+  if (activeSpeechId === 'refl_passage' || activeSpeechId === 'refl_expl' || activeSpeechId === 'mystery_pater') {
+    activeStep = 'intro';
+  } else if (activeSpeechId?.startsWith('bead_')) {
+    activeStep = parseInt(activeSpeechId.replace('bead_', ''), 10);
+  } else if (activeSpeechId === 'concl_glory' || activeSpeechId === 'concl_fatima' || activeSpeechId === 'concl_defense') {
+    activeStep = 'conclusion';
+  }
+
+  // Map of completed small beads 1..10
+  const completedBeadsMap: Record<number, boolean> = {};
+  for (let i = 1; i <= 10; i++) {
+    completedBeadsMap[i] = !!completedSteps[`bead_${i}`];
+  }
+  const isIntroDone = !!(completedSteps['mystery_pater'] || completedSteps['refl_passage'] || completedSteps['refl_expl']);
+  const isConclusionDone = !!(completedSteps['concl_glory'] || completedSteps['concl_fatima']);
+
+  const dopowiedzeniaList = (rhzEntry.smallBeads || []).map(b => b.dopowiedzenie);
+
+  const broadcastItem = React.useMemo(() => {
+    return getRadioBroadcastItem('rhz365', rhzEntry.dayNumber);
+  }, [rhzEntry.dayNumber]);
+
   return (
     <div className="space-y-8 transition-colors duration-300">
-      {/* Top Header Summary & Progress Tracker */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-amber-500/15 dark:from-amber-950/40 dark:via-amber-900/20 dark:to-amber-950/40 border border-amber-500/30 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-600 text-white shadow-xs">
-                {rhzEntry.cycle}
-              </span>
-              <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">
-                Tajemnica {rhzEntry.mysteryIndex} z 175 • {rhzEntry.displayDate}
-              </span>
-            </div>
-            <h2 className="font-heading-cinzel text-xl sm:text-2xl font-extrabold text-[#2d1f14] dark:text-[#f8fafc]">
-              {rhzEntry.stageTitle}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-xs font-bold text-amber-900 dark:text-amber-300">
-                Postęp dziesiątka: {completedBeadsCount} / 10
-              </div>
-              <div className="w-32 sm:w-44 h-2.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden mt-1">
-                <div 
-                  className="h-full bg-gradient-to-r from-amber-500 to-amber-600 transition-all duration-300 rounded-full"
-                  style={{ width: `${(completedBeadsCount / 10) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleResetProgress}
-              className="p-2 rounded-xl bg-white dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-stone-700 border border-amber-500/30 text-amber-900 dark:text-amber-300 transition-colors shadow-xs"
-              title="Zresetuj odznaczone paciorki"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* 1. Nowoczesna wizualizacja postępu dziesiątka: Duży okrąg (Rozważanie i Ojcze nasz) + 10 małych + Duży okrąg (Chwała i Fatima) */}
+      <RosaryDecadeProgressTracker
+        isIntroDone={isIntroDone}
+        completedBeads={completedBeadsMap}
+        isConclusionDone={isConclusionDone}
+        activeStep={activeStep}
+        dopowiedzenia={dopowiedzeniaList}
+        mysteryTitle={rhzEntry.stageTitle}
+        stageTitle={`${rhzEntry.cycle} • Tajemnica ${rhzEntry.mysteryIndex} z 175 • ${rhzEntry.displayDate}`}
+        onSelectIntro={() => {
+          setShowReflection(true);
+          const el = document.getElementById('rhz-step-reflection');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          toggleStep('mystery_pater');
+        }}
+        onSelectBead={(num) => {
+          setShowDecade(true);
+          toggleStep(`bead_${num}`);
+          const el = document.getElementById(`bead-${num}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }}
+        onSelectConclusion={() => {
+          setShowConclusion(true);
+          const el = document.getElementById('rhz-step-conclusion');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          toggleStep('concl_glory');
+        }}
+        onResetProgress={handleResetProgress}
+        onMarkAllDecade={handleMarkAllDecade}
+        onOpenVideoExport={() => setIsVideoModalOpen(true)}
+        theme={theme}
+      />
 
       {/* ========================================================= */}
       {/* SEKCJA 1: WPROWADZENIE DO RÓŻAŃCA (Krzyżyk + Zawieszka) */}
@@ -346,7 +367,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
       {/* ========================================================= */}
       {/* SEKCJA 2: ROZWAŻANIE TAJEMNICY (Pismo Święte, Słowo, 3 Wezwania) */}
       {/* ========================================================= */}
-      <div className="rounded-3xl bg-white dark:bg-[#111722] border border-[#e8ded3] dark:border-[#1f293d] overflow-hidden shadow-xs">
+      <div id="rhz-step-reflection" className="rounded-3xl bg-white dark:bg-[#111722] border border-[#e8ded3] dark:border-[#1f293d] overflow-hidden shadow-xs scroll-mt-20">
         <button
           onClick={() => setShowReflection(!showReflection)}
           className="w-full p-5 sm:p-6 flex items-center justify-between gap-3 text-left hover:bg-amber-50/40 dark:hover:bg-amber-950/20 transition-colors cursor-pointer"
@@ -498,8 +519,9 @@ export const RhzPrayerGuide: React.FC<Props> = ({
               return (
                 <div
                   key={bead.beadNumber}
+                  id={`bead-${bead.beadNumber}`}
                   onClick={() => toggleStep(beadId)}
-                  className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer select-none ${
+                  className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer select-none scroll-mt-20 ${
                     isDone
                       ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-500/50 shadow-xs'
                       : 'bg-white dark:bg-[#141d2c] border-[#e7ddd1] dark:border-[#223048] hover:border-amber-500/40'
@@ -571,7 +593,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
       {/* ========================================================= */}
       {/* SEKCJA 4: ZAKOŃCZENIE DZIESIĄTKA (Chwała Ojcu, Fatima, Pod Twoją obronę) */}
       {/* ========================================================= */}
-      <div className="rounded-3xl bg-white dark:bg-[#111722] border border-[#e8ded3] dark:border-[#1f293d] overflow-hidden shadow-xs">
+      <div id="rhz-step-conclusion" className="rounded-3xl bg-white dark:bg-[#111722] border border-[#e8ded3] dark:border-[#1f293d] overflow-hidden shadow-xs scroll-mt-20">
         <button
           onClick={() => setShowConclusion(!showConclusion)}
           className="w-full p-5 sm:p-6 flex items-center justify-between gap-3 text-left hover:bg-amber-50/40 dark:hover:bg-amber-950/20 transition-colors cursor-pointer"
@@ -659,6 +681,17 @@ export const RhzPrayerGuide: React.FC<Props> = ({
           </div>
         )}
       </div>
+
+      {/* Generator wideo MP4 z lektorem i koralikami */}
+      {isVideoModalOpen && (
+        <VideoYouTubeExportModal
+          isOpen={isVideoModalOpen}
+          onClose={() => setIsVideoModalOpen(false)}
+          broadcastItem={broadcastItem}
+          currentDayNumber={rhzEntry.dayNumber}
+          totalDays={365}
+        />
+      )}
     </div>
   );
 };

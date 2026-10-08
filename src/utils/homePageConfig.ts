@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -18,7 +18,8 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   ebook_biblia: Library,
   bio365: HeartHandshake,
   info365: Compass,
-  grafika: ImageIcon
+  grafika: ImageIcon,
+  radio: Radio
 };
 
 export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
@@ -177,6 +178,19 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       externalUrl: 'https://mapa.widokinaraj.pl',
       openInNewTab: true,
       hidden: false
+    },
+    {
+      id: 'radio',
+      name: 'Radio 24/7 (4 Stacje)',
+      badge: 'Radio Internetowe • Nadawanie 24/7',
+      shortDesc: 'Wirtualny odbiornik radiowy 24/7 – 4 stacje w ciągłej pętli z lektorem AI i generatorem wideo YouTube MP4.',
+      fullDesc: 'Całodobowe radio internetowe z wirtualnym odbiornikiem radiowym. Nadaje w pętli 24/7 cztery stacje: Nowy RHZ (175 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni). Zawiera automatycznego lektora mowy oraz generator wideo MP4 na YouTube z napisami karaoke dla dowolnego dnia i tajemnicy.',
+      imageUrl: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80',
+      imageAlt: 'Radio Internetowe 24/7 – 4 Stacje na Żywo',
+      color: '#e11d48',
+      bgGradient: 'from-rose-950/20 via-rose-900/10 to-transparent',
+      qrId: 'qr_radio',
+      hidden: false
     }
   ]
 };
@@ -252,7 +266,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika'].includes(def.id as string);
+        const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika', 'radio'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
         const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);

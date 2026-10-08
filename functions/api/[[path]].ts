@@ -616,31 +616,57 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       }
 
       const targetLang = (body.lang || 'pl').toLowerCase();
-      const textChunks = splitTextIntoSmartChunks(rawText, 180).slice(0, 80);
+      const textChunks = splitTextIntoSmartChunks(rawText, 180).slice(0, 60);
+      const validBuffers: ArrayBuffer[] = [];
 
-      // Równoległe pobieranie fragmentów audio z zachowaniem kolejności
-      const audioBuffers: (ArrayBuffer | null)[] = await Promise.all(
-        textChunks.map(async (chunk) => {
-          try {
-            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
-            const ttsRes = await fetch(ttsUrl, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      for (let i = 0; i < textChunks.length; i += 3) {
+        const batch = textChunks.slice(i, i + 3);
+        const batchRes = await Promise.all(
+          batch.map(async (chunk) => {
+            try {
+              const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
+              const ttsRes = await fetch(ttsUrl, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+              });
+              if (ttsRes.ok) {
+                return await ttsRes.arrayBuffer();
               }
-            });
-            if (ttsRes.ok) {
-              return await ttsRes.arrayBuffer();
+            } catch (e) {
+              console.warn('TTS chunk fetch failed:', e);
             }
-          } catch (e) {
-            console.warn('TTS chunk fetch failed:', e);
-          }
-          return null;
-        })
-      );
+            return null;
+          })
+        );
 
-      const validBuffers = audioBuffers.filter((b): b is ArrayBuffer => b !== null && b.byteLength > 0);
+        for (const b of batchRes) {
+          if (b && b.byteLength > 0) validBuffers.push(b);
+        }
+      }
 
       if (validBuffers.length > 0) {
+        const wantsJson = request.headers.get('accept')?.includes('application/json') || (body as any)?.format === 'json';
+
+        if (wantsJson) {
+          const b64Chunks = validBuffers.map((b) => {
+            const bytes = new Uint8Array(b);
+            let binary = '';
+            for (let j = 0; j < bytes.byteLength; j++) {
+              binary += String.fromCharCode(bytes[j]);
+            }
+            return btoa(binary);
+          });
+
+          return new Response(JSON.stringify({ success: true, chunks: b64Chunks, chunksCount: b64Chunks.length }), {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Cache-Control': 'public, max-age=86400'
+            }
+          });
+        }
+
         const totalLength = validBuffers.reduce((acc, b) => acc + b.byteLength, 0);
         const combined = new Uint8Array(totalLength);
         let offset = 0;

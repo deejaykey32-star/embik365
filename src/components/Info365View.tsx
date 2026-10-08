@@ -28,8 +28,13 @@ import {
   Unlock,
   Eye,
   EyeOff,
-  ExternalLink
+  ExternalLink,
+  Radio,
+  RadioTower,
+  Headphones,
+  Volume2
 } from 'lucide-react';
+import { RADIO_STATIONS, RadioStationId } from '../utils/radioContentService';
 import { generateAndDownloadQrBadgePng, getSavedQrCodes, getQrCodeForSection } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { ElementEditorModal } from './ElementEditorModal';
@@ -573,6 +578,156 @@ export const Info365View: React.FC<Info365ViewProps> = ({
           );
         })}
       </div>
+
+      {/* ========================================================================= */}
+      {/* DEDYKOWANA SEKCJA: STACJE RADIOWE 24/7 (DOLNA CZĘŚĆ GŁÓWNEGO EKRANU)     */}
+      {/* ========================================================================= */}
+      <section className="mt-14 mb-6 rounded-3xl bg-gradient-to-b from-stone-900 via-[#101827] to-[#0a0f1d] border border-amber-500/40 shadow-2xl overflow-hidden text-white relative">
+        {/* Glow ambient background */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 relative z-10">
+          
+          {/* Lewa kolumna: Duża ilustracja z dynamicznymi falami i oznaczeniem LIVE */}
+          <div className="lg:col-span-5 relative min-h-[280px] sm:min-h-[360px] overflow-hidden group">
+            <img
+              src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1200&auto=format&fit=crop&q=80"
+              alt="Radio Internetowe Widoki na Raj 24/7"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 brightness-90"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1d] via-[#0a0f1d]/40 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#101827]" />
+            
+            {/* Animowana plakietka LIVE na ilustracji */}
+            <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-600/90 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-xs shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+              <span>NADAWANIE 24/7 W PĘTLI</span>
+            </div>
+
+            <div className="absolute bottom-4 left-4 right-4 text-white">
+              <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
+                <RadioTower className="w-4 h-4 animate-pulse" />
+                <span>4 STACJE INTERNETOWE ONLINE</span>
+              </div>
+              <p className="text-sm font-serif-book italic text-stone-200">
+                „Głoś słowo, nalegaj w porę i nie w porę, nauczaj z wszelką cierpliwością.”
+              </p>
+            </div>
+          </div>
+
+          {/* Prawa kolumna: Tytuł, skrócony opis i 4 kafelki stacji */}
+          <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+            
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
+                  <Radio className="w-3.5 h-3.5" />
+                  <span>Radio Internetowe • Ciągły Podsłuch Eteru</span>
+                </div>
+                <span className="text-[11px] font-mono text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  BEZ PRZERWY 24H
+                </span>
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-extrabold font-serif-book text-white leading-tight">
+                Radio Widoki na Raj 24/7
+              </h3>
+
+              <p className="text-xs sm:text-sm text-stone-300 font-sans-ui leading-relaxed">
+                Wszystkie 4 stacje radiowe nadają bez przerwy 24 godziny na dobę z lektorem AI i napisami karaoke. Nie musisz niczego włączać – w każdej chwili możesz dołączyć do podsłuchu i słuchać modlitwy oraz rozważań płynących w eterze.
+              </p>
+            </div>
+
+            {/* 4 Stacje w pigułce z ilustracyjnym opisem */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              
+              <div 
+                onClick={() => onSelectSection('radio' as any)}
+                className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-xs font-bold mb-1">
+                  <span className="text-amber-400 group-hover:text-amber-300">1. Nowy RHZ</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono">175 dni</span>
+                </div>
+                <p className="text-[11px] text-stone-400 line-clamp-2 leading-relaxed">
+                  Nowy Różaniec Historii Zbawienia: pełne 10 dopowiedzeń po słowie Jezus w każdej tajemnicy od Stworzenia po Apokalipsę.
+                </p>
+              </div>
+
+              <div 
+                onClick={() => onSelectSection('radio' as any)}
+                className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-xs font-bold mb-1">
+                  <span className="text-sky-400 group-hover:text-sky-300">2. Widoki na Raj</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono">365 dni</span>
+                </div>
+                <p className="text-[11px] text-stone-400 line-clamp-2 leading-relaxed">
+                  Codzienne duchowe wpisy blogowe, świadectwa, modlitwy i głębokie rozważania na każdy dzień roku.
+                </p>
+              </div>
+
+              <div 
+                onClick={() => onSelectSection('radio' as any)}
+                className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-xs font-bold mb-1">
+                  <span className="text-emerald-400 group-hover:text-emerald-300">3. Biblia i Apokryfy</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">4 lata</span>
+                </div>
+                <p className="text-[11px] text-stone-400 line-clamp-2 leading-relaxed">
+                  Rozdziały Pisma Świętego i starożytnych apokryfów czytane w 4-letnim cyklu z komentarzem biblijnym.
+                </p>
+              </div>
+
+              <div 
+                onClick={() => onSelectSection('radio' as any)}
+                className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-xs font-bold mb-1">
+                  <span className="text-rose-400 group-hover:text-rose-300">4. Pierwotny RHZ</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-mono">365 dni</span>
+                </div>
+                <p className="text-[11px] text-stone-400 line-clamp-2 leading-relaxed">
+                  Tradycyjny 365-dniowy Różaniec Historii Zbawienia: Słowo Boże, wyjaśnienie i 3 konkretne wezwania do czynu.
+                </p>
+              </div>
+
+            </div>
+
+            {/* Przyciski wejścia i akcji */}
+            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onSelectSection('radio' as any)}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  <Headphones className="w-4 h-4" />
+                  <span>Otwórz Studio Radiowe 24/7</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => handleDownloadQr('qr_radio', 'Radio Widoki na Raj 24/7')}
+                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-stone-200 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Pobierz kod QR radia jako grafikę PNG"
+                >
+                  <QrCode className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Kod QR</span>
+                </button>
+              </div>
+
+              <div className="text-[11px] text-stone-400 flex items-center gap-1.5">
+                <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Automatyczny podsłuch w tle</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
 
       {/* WYSIWYG Editor Modal for Intro */}
       {editingIntro && (

@@ -2,6 +2,13 @@ import { SectionEntry, SectionId, CycleDate } from '../types';
 import { getWnrEntryForDay } from './wnr365Data';
 import { getRhzEntryForDay } from './rhz365Data';
 import { getBibliaEntryForDayAndYear } from './biblia365Data';
+import { NOWY_RHZ_MYSTERIES } from './nowyRhzData';
+import {
+  buildFullHailMary,
+  OJCZE_NASZ_PELNY,
+  CHWALA_OJCU_PELNE,
+  MODLITWA_FATIMSKA_PELNA
+} from '../utils/radioContentService';
 
 export const BASE_ENTRIES: Record<string, Partial<SectionEntry>> = {
   // info365 - Guide Day 1
@@ -136,7 +143,17 @@ function generateThematicEntry(sectionId: SectionId, cycleDate: CycleDate): Sect
     case 'ebook_rhz': {
       const rhz = getRhzEntryForDay(dayNumber);
       const callsFormatted = (rhz?.callsToAction || []).filter(Boolean).map(c => c.trim()).join('\n\n');
-      const beadsFormatted = (rhz?.smallBeads || []).map((b, i) => `${i + 1}. Zdrowaś Maryjo... Jezus, ${b.dopowiedzenie}... Święta Maryjo...`).join('\n\n');
+      const cleanOurFather = (rhz?.ourFather || OJCZE_NASZ_PELNY)
+        .replace(/10 Osobnych Modlitw.*$/i, '')
+        .trim();
+
+      const beadsFormatted = (rhz?.smallBeads || []).map((b) => {
+        const text = (b.text || '').trim();
+        if (text.toLowerCase().startsWith('zdrowaś maryjo') && text.toLowerCase().includes('święta maryjo')) {
+          return text;
+        }
+        return buildFullHailMary(b.dopowiedzenie || text);
+      }).join('\n\n');
 
       const fullRhzContent = `${rhz?.stageTitle || ''}
 
@@ -150,14 +167,13 @@ Trzy Wezwania do Działania:
 ${callsFormatted}
 
 Modlitwa Pańska:
-${rhz?.ourFather || ''}
+${cleanOurFather || OJCZE_NASZ_PELNY}
 
-10 Paciorków z dopowiedzeniami po słowie "Jezus":
 ${beadsFormatted}
 
 Uwielbienie i Prośba:
-${rhz?.gloryBe || ''}
-${rhz?.fatimaPrayer || ''}`.trim();
+${rhz?.gloryBe || CHWALA_OJCU_PELNE}
+${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim();
 
       return {
         id: `${sectionId}-${cycleDate.dateKey}`,
@@ -170,20 +186,47 @@ ${rhz?.fatimaPrayer || ''}`.trim();
         intention: `Tajemnica ${rhz?.mysteryIndex || 1} Różańca Historii Zbawienia`,
         passage: rhz?.passage,
         content: fullRhzContent,
-        prayer: `${rhz?.gloryBe || ''}\n\n${rhz?.fatimaPrayer || ''}`.trim()
+        prayer: `${rhz?.gloryBe || CHWALA_OJCU_PELNE}\n\n${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim()
       };
     }
 
     case 'nowyRHZ': {
       const day175 = ((dayNumber - 1) % 175) + 1;
+      const mystery = NOWY_RHZ_MYSTERIES[day175 - 1] || NOWY_RHZ_MYSTERIES[0];
+      const beadsFormatted = mystery.cl.map(cl => buildFullHailMary(cl)).join('\n\n');
+
+      const fullNowyRhzContent = `Etap ${mystery.stage}: ${mystery.stageTitle}
+Część ${mystery.part}: ${mystery.partTitle}
+Tajemnica: ${mystery.t} – ${mystery.sub}
+
+Pismo Święte:
+${mystery.ref}
+
+Rozważanie:
+${mystery.med}
+
+Modlitwa Pańska:
+${OJCZE_NASZ_PELNY}
+
+${beadsFormatted}
+
+Uwielbienie i Prośba:
+${CHWALA_OJCU_PELNE}
+${MODLITWA_FATIMSKA_PELNA}
+${mystery.prayer ? `\nModlitwa na zakończenie:\n${mystery.prayer}` : ''}`.trim();
+
       return {
         id: `nowyRHZ-${cycleDate.dateKey}`,
         sectionId: 'nowyRHZ',
         dateKey: cycleDate.dateKey,
         dayNumber,
-        title: `Nowy Różaniec Historii Zbawienia • Dzień ${day175} ze 175`,
-        subtitle: `${displayDate} • Nowy RHZ (175 dni modlitwy)`,
-        content: `Nowy Różaniec Historii Zbawienia – 7 etapów × 5 części × 5 tajemnic = 175 dni. Każdy dzień to jedna tajemnica (jedna dziesiątka różańca) z 10 dopowiedzeniami po słowie „Jezus” w każdym Zdrowaś Maryjo, modlitwą końcową oraz syntezą mowy lektora.`
+        title: `${mystery.t} – ${mystery.sub}`,
+        subtitle: `${displayDate} • Nowy RHZ • Dzień ${day175} ze 175 (Etap ${mystery.stage}, Część ${mystery.part})`,
+        mystery: `${mystery.t} – ${mystery.sub}`,
+        intention: `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`,
+        passage: mystery.ref,
+        content: fullNowyRhzContent,
+        prayer: `${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim()
       };
     }
 

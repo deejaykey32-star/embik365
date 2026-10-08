@@ -204,6 +204,20 @@ let currentAudioContext: AudioContext | null = null;
 let currentSourceNode: AudioBufferSourceNode | null = null;
 let sharedAudioCtx: AudioContext | null = null;
 
+export interface AudioPlaybackProgress {
+  currentTime: number;
+  duration: number;
+  progressPercent: number;
+  sessionId: number;
+}
+
+let activeProgressTimer: any = null;
+let currentAudioProgressData: AudioPlaybackProgress = { currentTime: 0, duration: 0, progressPercent: 0, sessionId: 0 };
+
+export function getCurrentAudioProgress(): AudioPlaybackProgress {
+  return currentAudioProgressData;
+}
+
 export function unlockMobileAudio(): AudioContext | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -414,6 +428,17 @@ export function stopLectorSpeech(): void {
       currentSourceNode.stop();
     } catch {}
     currentSourceNode = null;
+  }
+
+  if (activeProgressTimer) {
+    clearInterval(activeProgressTimer);
+    activeProgressTimer = null;
+  }
+  currentAudioProgressData = { currentTime: 0, duration: 0, progressPercent: 0, sessionId: 0 };
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('drogowskazy_audio_playback_progress', {
+      detail: currentAudioProgressData
+    }));
   }
 
   // Clear HTMLAudioElement and detach handlers first
@@ -638,27 +663,63 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
     try {
       const response = await fetch('/api/tts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           text: cleanedSpeechText,
           voiceId: onlineProfile.id,
           lang: targetLang,
           gender: targetGender,
           rate: config.rate,
-          pitch: config.pitch
+          pitch: config.pitch,
+          format: 'json'
         })
       });
 
       if (!isCurrentSession()) return;
 
       if (response.ok) {
-        const arrayBuffer = await response.arrayBuffer();
-        if (!isCurrentSession()) return;
-        await playAudioBufferWithVoiceEffects(arrayBuffer, onlineProfile, config, currentSession, cleanedSpeechText.length, wrappedOnStart, wrappedOnEnd, wrappedOnError);
-        return;
+        let audioCtx = sharedAudioCtx;
+        if (!audioCtx || audioCtx.state === 'closed') {
+          audioCtx = unlockMobileAudio();
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        let fullAudioBuffer: AudioBuffer | null = null;
+
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          if (data && Array.isArray(data.chunks) && data.chunks.length > 0 && audioCtx) {
+            const decodedChunks: AudioBuffer[] = [];
+            for (const b64 of data.chunks) {
+              try {
+                const bin = atob(b64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+                decodedChunks.push(decoded);
+              } catch (e) {
+                console.warn('Online TTS chunk decode warning:', e);
+              }
+            }
+            if (decodedChunks.length > 0) {
+              fullAudioBuffer = concatenateAudioBuffers(audioCtx, decodedChunks);
+            }
+          }
+        } else if (audioCtx) {
+          const arrayBuffer = await response.arrayBuffer();
+          fullAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        }
+
+        if (fullAudioBuffer && isCurrentSession()) {
+          await playDecodedAudioBuffer(fullAudioBuffer, onlineProfile, config, currentSession, wrappedOnStart, wrappedOnEnd, wrappedOnError);
+          return;
+        }
       }
     } catch (err) {
-      console.warn('Online TTS endpoint unavailable, falling back to neural speech synthesis:', err);
+      console.warn('Online TTS endpoint unavailable, falling back to local speech synthesis:', err);
     }
 
     if (!isCurrentSession()) return;
@@ -722,6 +783,143 @@ export function splitTextForTts(text: string, maxLen: number = 180): string[] {
   return chunks.filter(c => c.trim().length > 0);
 }
 
+export function concatenateAudioBuffers(audioCtx: AudioContext, buffers: AudioBuffer[]): AudioBuffer {
+  if (buffers.length === 0) return audioCtx.createBuffer(1, 1, 22050);
+  if (buffers.length === 1) return buffers[0];
+
+  const numChannels = buffers[0].numberOfChannels;
+  const sampleRate = buffers[0].sampleRate;
+  const totalLength = buffers.reduce((acc, b) => acc + b.length, 0);
+
+  const result = audioCtx.createBuffer(numChannels, totalLength, sampleRate);
+
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = result.getChannelData(channel);
+    let offset = 0;
+    for (const b of buffers) {
+      const srcChannel = Math.min(channel, b.numberOfChannels - 1);
+      channelData.set(b.getChannelData(srcChannel), offset);
+      offset += b.length;
+    }
+  }
+
+  return result;
+}
+
+export async function playDecodedAudioBuffer(
+  decodedData: AudioBuffer,
+  voiceProfile: OnlineVoiceOption,
+  config: LectorConfig,
+  sessionId: number,
+  onStart?: () => void,
+  onEnd?: () => void,
+  onError?: (err: any) => void
+): Promise<void> {
+  try {
+    let audioCtx = sharedAudioCtx;
+    if (!audioCtx || audioCtx.state === 'closed') {
+      audioCtx = unlockMobileAudio();
+    }
+
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      if (sessionId !== activePlaybackSessionId) return;
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = decodedData;
+
+      // Pitch factor according to voice character
+      let pitchFactor = 1.0;
+      if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
+        pitchFactor = 0.84;
+      } else if (voiceProfile.gender === 'male') {
+        pitchFactor = 0.92;
+      } else if (voiceProfile.provider.includes('Gentle Female')) {
+        pitchFactor = 1.15;
+      } else if (voiceProfile.gender === 'female') {
+        pitchFactor = 1.08;
+      }
+
+      const finalRate = Math.max(0.5, Math.min(2.0, config.rate * pitchFactor));
+      source.playbackRate.value = finalRate;
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = Math.max(0, Math.min(1, config.volume));
+
+      source.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      const startTime = audioCtx.currentTime;
+      const totalAudioDuration = decodedData.duration / finalRate;
+
+      if (activeProgressTimer) {
+        clearInterval(activeProgressTimer);
+        activeProgressTimer = null;
+      }
+
+      const reportProgress = () => {
+        if (sessionId !== activePlaybackSessionId || !currentSourceNode) {
+          if (activeProgressTimer) {
+            clearInterval(activeProgressTimer);
+            activeProgressTimer = null;
+          }
+          return;
+        }
+        const elapsed = Math.max(0, Math.min(totalAudioDuration, (audioCtx.currentTime - startTime)));
+        const progressPercent = Math.min(100, Math.round((elapsed / totalAudioDuration) * 100));
+        currentAudioProgressData = {
+          currentTime: elapsed,
+          duration: totalAudioDuration,
+          progressPercent,
+          sessionId
+        };
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('drogowskazy_audio_playback_progress', {
+            detail: currentAudioProgressData
+          }));
+        }
+      };
+
+      activeProgressTimer = setInterval(reportProgress, 250);
+      reportProgress();
+
+      if (onStart && sessionId === activePlaybackSessionId) onStart();
+
+      source.onended = () => {
+        if (activeProgressTimer) {
+          clearInterval(activeProgressTimer);
+          activeProgressTimer = null;
+        }
+        if (sessionId !== activePlaybackSessionId) return;
+        currentAudioProgressData = {
+          currentTime: totalAudioDuration,
+          duration: totalAudioDuration,
+          progressPercent: 100,
+          sessionId
+        };
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('drogowskazy_audio_playback_progress', {
+            detail: currentAudioProgressData
+          }));
+        }
+        if (onEnd) onEnd();
+        currentSourceNode = null;
+      };
+
+      currentAudioContext = audioCtx;
+      currentSourceNode = source;
+      source.start(0);
+      return;
+    }
+  } catch (err) {
+    console.warn('AudioBuffer playback error:', err);
+    if (onError && sessionId === activePlaybackSessionId) onError(err);
+  }
+}
+
 async function playAudioBufferWithVoiceEffects(
   arrayBuffer: ArrayBuffer,
   voiceProfile: OnlineVoiceOption,
@@ -748,51 +946,11 @@ async function playAudioBufferWithVoiceEffects(
       const decodedData = await audioCtx.decodeAudioData(arrayBuffer);
       if (sessionId !== activePlaybackSessionId) return;
 
-      // Sprawdzenie czy przeglądarka nie obcięła wieloczęściowego strumienia audio
-      const expectedMinSec = Math.max(8, Math.floor(textLength / 22));
-      if (textLength > 180 && decodedData.duration < expectedMinSec && decodedData.duration < 15) {
-        throw new Error(`Audio decoded buffer truncated (${decodedData.duration.toFixed(1)}s < min ${expectedMinSec}s)`);
-      }
-
-      const source = audioCtx.createBufferSource();
-      source.buffer = decodedData;
-
-      // Pitch factor according to voice character
-      let pitchFactor = 1.0;
-      if (voiceProfile.id.includes('Deep') || voiceProfile.provider.includes('Deep Male')) {
-        pitchFactor = 0.84;
-      } else if (voiceProfile.gender === 'male') {
-        pitchFactor = 0.92;
-      } else if (voiceProfile.provider.includes('Gentle Female')) {
-        pitchFactor = 1.15;
-      } else if (voiceProfile.gender === 'female') {
-        pitchFactor = 1.08;
-      }
-
-      const finalRate = Math.max(0.5, Math.min(2.0, config.rate * pitchFactor));
-      source.playbackRate.value = finalRate;
-
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.value = Math.max(0, Math.min(1, config.volume));
-
-      source.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      if (onStart && sessionId === activePlaybackSessionId) onStart();
-
-      source.onended = () => {
-        if (sessionId !== activePlaybackSessionId) return;
-        if (onEnd) onEnd();
-        currentSourceNode = null;
-      };
-
-      currentAudioContext = audioCtx;
-      currentSourceNode = source;
-      source.start(0);
+      await playDecodedAudioBuffer(decodedData, voiceProfile, config, sessionId, onStart, onEnd, onError);
       return;
     }
   } catch (err) {
-    console.warn('AudioContext playback error, using HTML Audio fallback:', err);
+    console.warn('AudioContext decode error, using HTML Audio fallback:', err);
     if (sessionId !== activePlaybackSessionId) return;
     try {
       const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });

@@ -10558,7 +10558,7 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
       },
       {
         "beadNumber": 10,
-        "text": "Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, dla którego światło Ewangelii świeciło nawet w mrokach oświeceniowej nocy.",
+        "text": "Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, dla którego światło Ewangelii świeciło nawet w mrokach oświeceniowej nocy. Święta Maryjo, Matko Boża, módl się za nami grzesznymi teraz i w godzinę śmierci naszej. Amen.",
         "dopowiedzenie": "dla którego światło Ewangelii świeciło nawet w mrokach oświeceniowej nocy."
       }
     ],
@@ -23627,7 +23627,7 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
       },
       {
         "beadNumber": 10,
-        "text": "Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, dla którego światło Ewangelii świeciło nawet w mrokach oświeceniowej nocy.",
+        "text": "Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, dla którego światło Ewangelii świeciło nawet w mrokach oświeceniowej nocy. Święta Maryjo, Matko Boża, módl się za nami grzesznymi teraz i w godzinę śmierci naszej. Amen.",
         "dopowiedzenie": "dla którego światło Ewangelii świeciło nawet w mrokach oświeceniowej nocy."
       }
     ],

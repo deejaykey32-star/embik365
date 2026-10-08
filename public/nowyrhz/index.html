@@ -106,9 +106,17 @@ main { max-width: 680px; margin: 0 auto; padding: 16px; }
 .part li.done .st { color: var(--done); }
 .card.part { padding: 0; overflow: hidden; }
 
-/* Tryb modlitwy */
+/* Tryb modlitwy i postęp dziesiątka: Duży paciorek (Rozważanie + Ojcze nasz) + 10 małych + Duży paciorek (Chwała + Fatima) */
 .prayer-step h3 { margin: 0 0 10px; color: var(--accent); }
 .prayer-step p { margin: 0 0 12px; }
+.decade-bar { display: flex; justify-content: center; align-items: center; gap: 5px; margin: 12px 0 16px; padding: 10px 12px; background: var(--accent-soft); border-radius: 16px; border: 1px solid var(--border); overflow-x: auto; }
+.bead-large { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; font: 700 11px system-ui, sans-serif; color: var(--gold); background: var(--surface); transition: all .2s; flex-shrink: 0; box-shadow: var(--shadow); }
+.bead-large.on { background: var(--gold); color: #fff; }
+.bead-large.active { border-color: #fff; box-shadow: 0 0 10px var(--gold); }
+.bead-small { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font: 700 9px system-ui, sans-serif; color: var(--muted); background: var(--surface); transition: all .2s; flex-shrink: 0; }
+.bead-small.on { background: var(--gold); color: #fff; }
+.bead-small.active { border-color: #fff; box-shadow: 0 0 8px var(--gold); }
+.bead-wire { height: 2px; width: 6px; background: var(--gold); opacity: 0.5; flex-shrink: 0; }
 .beads { display: flex; justify-content: center; gap: 8px; margin: 18px 0; flex-wrap: wrap; }
 .bead { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--gold); background: transparent; transition: background .2s; }
 .bead.on { background: var(--gold); }
@@ -3467,8 +3475,33 @@ const TOTAL_DAYS = MYSTERIES.length; // 175
       }
       const last = i === steps.length - 1;
       const blockNext = s.kind === "beads" && count < s.cl.length;
+
+      // Wizualizacja 12 paciorków dziesiątka: Duży I (Rozważanie + Ojcze nasz) + 10 małych (Zdrowaś Maryjo) + Duży II (Chwała + Fatima)
+      const stepBeadsIdx = steps.findIndex(x => x.kind === "beads");
+      const stepGloryIdx = steps.findIndex(x => x.title && x.title.includes("Chwała Ojcu"));
+
+      const isLargeIntroDone = (stepBeadsIdx !== -1 && i >= stepBeadsIdx);
+      const isLargeIntroActive = (stepBeadsIdx !== -1 && i < stepBeadsIdx);
+
+      const isLargeConclDone = (stepGloryIdx !== -1 && i > stepGloryIdx + 1);
+      const isLargeConclActive = (stepGloryIdx !== -1 && i >= stepGloryIdx);
+
+      const decadeBarHtml = `
+        <div class="decade-bar" role="progressbar" aria-label="Postęp dziesiątka różańca">
+          <span class="bead-large ${isLargeIntroDone ? 'on' : ''} ${isLargeIntroActive ? 'active' : ''}" title="Duży paciorek: Rozważanie i Ojcze nasz">I</span>
+          <span class="bead-wire"></span>
+          ${Array.from({ length: 10 }, (_, k) => {
+            const isSmallDone = (stepBeadsIdx !== -1 && i > stepBeadsIdx) || (i === stepBeadsIdx && k < count);
+            const isSmallActive = (i === stepBeadsIdx && k === count);
+            return `<span class="bead-small ${isSmallDone ? 'on' : ''} ${isSmallActive ? 'active' : ''}" title="Paciorek #${k + 1} z 10: Zdrowaś Maryjo">${k + 1}</span>`;
+          }).join('')}
+          <span class="bead-wire"></span>
+          <span class="bead-large ${isLargeConclDone ? 'on' : ''} ${isLargeConclActive ? 'active' : ''}" title="Duży paciorek: Chwała Ojcu i O mój Jezu">II</span>
+        </div>`;
+
       app.innerHTML = `
         <div class="steps-dots">${dots}</div>
+        ${decadeBarHtml}
         ${tts.ok ? `<button class="btn big listen ${auto ? "on" : ""}" id="auto-btn">${auto ? "■ Zatrzymaj lektora" : "🔊 Lektor prowadzi modlitwę"}</button>` : ""}
         <section class="card prayer-step">
           <p class="eyebrow">Dzień ${m.day} · Etap ${ROMAN[m.stage - 1]} · ${esc(m.partTitle)}</p>

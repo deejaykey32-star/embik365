@@ -288,34 +288,56 @@ app.post('/api/tts', async (req, res) => {
     }
     if (current) textChunks.push(current);
 
-    const limitedChunks = textChunks.slice(0, 80);
+    const limitedChunks = textChunks.slice(0, 60);
+    const buffers: Buffer[] = [];
 
-    const buffers: (Buffer | null)[] = await Promise.all(
-      limitedChunks.map(async (chunk) => {
-        try {
-          const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
-          const response = await fetch(ttsUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    // Pobieranie w małych pakietach po 3 fragmenty z mikro-pauzą, aby zapobiec blokadom rate-limit (HTTP 429)
+    for (let i = 0; i < limitedChunks.length; i += 3) {
+      const batch = limitedChunks.slice(i, i + 3);
+      const batchRes = await Promise.all(
+        batch.map(async (chunk) => {
+          try {
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
+            const response = await fetch(ttsUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+              }
+            });
+            if (response.ok) {
+              const arrBuf = await response.arrayBuffer();
+              return Buffer.from(arrBuf);
             }
-          });
-          if (response.ok) {
-            const arrBuf = await response.arrayBuffer();
-            return Buffer.from(arrBuf);
+          } catch (e) {
+            console.warn('Local TTS chunk fetch failed:', e);
           }
-        } catch (e) {
-          console.warn('Local TTS chunk fetch failed:', e);
-        }
-        return null;
-      })
-    );
+          return null;
+        })
+      );
 
-    const valid = buffers.filter((b): b is Buffer => b !== null && b.length > 0);
-    if (valid.length > 0) {
-      const combined = Buffer.concat(valid);
+      for (const b of batchRes) {
+        if (b && b.length > 0) buffers.push(b);
+      }
+
+      if (i + 3 < limitedChunks.length) {
+        await new Promise(r => setTimeout(r, 40));
+      }
+    }
+
+    if (buffers.length > 0) {
+      const wantsJson = req.headers['accept']?.includes('application/json') || req.body?.format === 'json';
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Content-Type', 'audio/mpeg');
       res.setHeader('Cache-Control', 'public, max-age=86400');
+
+      if (wantsJson) {
+        return res.json({
+          success: true,
+          chunks: buffers.map(b => b.toString('base64')),
+          chunksCount: buffers.length
+        });
+      }
+
+      const combined = Buffer.concat(buffers);
+      res.setHeader('Content-Type', 'audio/mpeg');
       return res.send(combined);
     }
 

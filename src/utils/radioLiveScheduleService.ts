@@ -119,20 +119,8 @@ export function getStationLiveStatus(
 
   const broadcastItem = getRadioBroadcastItem(stationId, activeDay, bibliaYear);
 
-  // Przygotowanie tekstu odczytu z uwzględnieniem bieżącego momentu na żywo (jeśli słuchacz dołącza w środku audycji)
-  let liveSpeechText = broadcastItem.speechText;
-  if (secondsElapsedInDay > 10 && progressPercent < 85) {
-    const sentences = broadcastItem.speechText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-    if (sentences.length > 2) {
-      const startSentenceIdx = Math.min(
-        sentences.length - 1,
-        Math.floor((secondsElapsedInDay / activeDuration) * sentences.length)
-      );
-      if (startSentenceIdx > 0 && startSentenceIdx < sentences.length) {
-        liveSpeechText = sentences.slice(startSentenceIdx).join(' ');
-      }
-    }
-  }
+  // Tekst odczytu audycji: zawsze kompletna, pełna treść dnia od początku do końca, bez cięcia modlitw w połowie
+  const liveSpeechText = broadcastItem.speechText;
 
   return {
     station,

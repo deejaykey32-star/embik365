@@ -85,8 +85,9 @@ export const RadioView: React.FC<Props> = ({
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
   const [previewDayNumber, setPreviewDayNumber] = useState<number | null>(null);
+  const [audioProgress, setAudioProgress] = useState<{ currentTime: number; duration: number; progressPercent: number } | null>(null);
 
-  // Subskrypcja na globalne zdarzenia odtwarzania radia w tle
+  // Subskrypcja na globalne zdarzenia odtwarzania radia w tle oraz postępu lektora audio
   useEffect(() => {
     const handleRadioUpdate = (e: any) => {
       const state = e.detail || globalRadioManager.getState();
@@ -96,9 +97,17 @@ export const RadioView: React.FC<Props> = ({
       }
     };
 
+    const handleAudioProgress = (e: any) => {
+      if (e.detail) {
+        setAudioProgress(e.detail);
+      }
+    };
+
     window.addEventListener(RADIO_PLAYBACK_EVENT_NAME, handleRadioUpdate);
+    window.addEventListener('drogowskazy_audio_playback_progress', handleAudioProgress);
     return () => {
       window.removeEventListener(RADIO_PLAYBACK_EVENT_NAME, handleRadioUpdate);
+      window.removeEventListener('drogowskazy_audio_playback_progress', handleAudioProgress);
     };
   }, []);
 
@@ -447,40 +456,50 @@ export const RadioView: React.FC<Props> = ({
           </div>
 
           {/* Główny pasek statusu transmisji na żywo (Linear Real-time Broadcast Bar) */}
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#090f1a] border border-amber-500/30 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
-              <div className="flex items-center gap-2 text-amber-300 font-bold">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                <span>AKTUALNIE W ETERZE: Dzień {liveStatus.dayNumber} ze {activeStation.totalDays}</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-300 font-mono text-xs">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{formatSeconds(liveStatus.secondsElapsedInDay)} / {formatSeconds(liveStatus.dayDurationSeconds)}</span>
-                </span>
-                <span className="text-amber-400/80">
-                  (do kolejnego dnia w pętli: {formatSeconds(liveStatus.secondsRemainingInDay)})
-                </span>
-              </div>
-            </div>
+          {(() => {
+            const hasAudioData = isCurrentlyListening && audioProgress && audioProgress.duration > 0;
+            const effectiveElapsed = hasAudioData ? Math.round(audioProgress!.currentTime) : liveStatus.secondsElapsedInDay;
+            const effectiveTotal = hasAudioData ? Math.round(audioProgress!.duration) : liveStatus.dayDurationSeconds;
+            const effectivePercent = hasAudioData ? audioProgress!.progressPercent : liveStatus.progressPercent;
+            const effectiveRemaining = Math.max(0, effectiveTotal - effectiveElapsed);
 
-            {/* Pasek postępu audycji na żywo w czasie rzeczywistym */}
-            <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700/80">
-              <div
-                className="bg-gradient-to-r from-amber-500 to-red-500 h-full rounded-full transition-all duration-1000"
-                style={{ width: `${liveStatus.progressPercent}%` }}
-              />
-            </div>
+            return (
+              <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#090f1a] border border-amber-500/30 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 text-amber-300 font-bold">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+                    <span>AKTUALNIE W ETERZE: Dzień {liveStatus.dayNumber} ze {activeStation.totalDays}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-300 font-mono text-xs">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{formatSeconds(effectiveElapsed)} / {formatSeconds(effectiveTotal)}</span>
+                    </span>
+                    <span className="text-amber-400/80">
+                      (do kolejnego dnia w pętli: {formatSeconds(effectiveRemaining)})
+                    </span>
+                  </div>
+                </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 pt-1">
-              <span>
-                Transmisja płynie nieustannie dla każdego słuchacza. Po dojściu do końca audycji natychmiast rozpoczyna się Dzień {liveStatus.dayNumber >= activeStation.totalDays ? 1 : liveStatus.dayNumber + 1}.
-              </span>
-              <span className="text-amber-300 font-mono font-semibold">
-                Postęp: {liveStatus.progressPercent}%
-              </span>
-            </div>
-          </div>
+                {/* Pasek postępu audycji na żywo w czasie rzeczywistym */}
+                <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700/80">
+                  <div
+                    className="bg-gradient-to-r from-amber-500 to-red-500 h-full rounded-full transition-all duration-300"
+                    style={{ width: `${effectivePercent}%` }}
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 pt-1">
+                  <span>
+                    Transmisja płynie nieustannie dla każdego słuchacza. Po dojściu do końca audycji natychmiast rozpoczyna się Dzień {liveStatus.dayNumber >= activeStation.totalDays ? 1 : liveStatus.dayNumber + 1}.
+                  </span>
+                  <span className="text-amber-300 font-mono font-semibold">
+                    Postęp audycji: {effectivePercent}%
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Główne kontrolki podsłuchu (Receiver Listening & Mute Controls) */}
           <div className="mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-4">
@@ -578,31 +597,80 @@ export const RadioView: React.FC<Props> = ({
 
             {/* Podgląd Ramówki Całej Pętli (Słuchacz może przeglądać teksty bez przerywania transmisji na żywo) */}
             <div className="pt-4 border-t border-slate-800 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
                   <Calendar className="w-3.5 h-3.5 text-amber-400" />
                   <span>Program ramówki w pętli ({activeStation.totalDays} dni)</span>
                 </div>
-                <div className="text-xs text-slate-400">
-                  Kliknij dowolny dzień, aby podejrzeć jego tekst archiwalny (transmisja na żywo gra dalej)
+                {/* Szybkie przeskakiwanie dni w ramówce */}
+                <div className="flex items-center gap-1 text-xs">
+                  <button
+                    onClick={() => {
+                      const cur = previewDayNumber ?? liveStatus.dayNumber;
+                      const next = cur - 10 < 1 ? activeStation.totalDays : cur - 10;
+                      setPreviewDayNumber(next);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold cursor-pointer"
+                    title="-10 dni"
+                  >
+                    -10
+                  </button>
+                  <button
+                    onClick={() => {
+                      const cur = previewDayNumber ?? liveStatus.dayNumber;
+                      const next = cur - 1 < 1 ? activeStation.totalDays : cur - 1;
+                      setPreviewDayNumber(next);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold cursor-pointer"
+                    title="-1 dzień"
+                  >
+                    -1
+                  </button>
+                  <span className="px-2 text-amber-300 font-mono font-bold">
+                    Dzień {previewDayNumber ?? liveStatus.dayNumber} / {activeStation.totalDays}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const cur = previewDayNumber ?? liveStatus.dayNumber;
+                      const next = cur + 1 > activeStation.totalDays ? 1 : cur + 1;
+                      setPreviewDayNumber(next);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold cursor-pointer"
+                    title="+1 dzień"
+                  >
+                    +1
+                  </button>
+                  <button
+                    onClick={() => {
+                      const cur = previewDayNumber ?? liveStatus.dayNumber;
+                      const next = cur + 10 > activeStation.totalDays ? 1 : cur + 10;
+                      setPreviewDayNumber(next);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold cursor-pointer"
+                    title="+10 dni"
+                  >
+                    +10
+                  </button>
                 </div>
               </div>
 
+              {/* Pigułki dni (przewijalne, wyśrodkowane wokół bieżącego/podglądanego dnia) */}
               <div className="flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar">
-                {Array.from({ length: Math.min(30, activeStation.totalDays) }, (_, i) => {
-                  const d = ((liveStatus.dayNumber - 1 + i) % activeStation.totalDays) + 1;
+                {Array.from({ length: Math.min(50, activeStation.totalDays) }, (_, i) => {
+                  const baseDay = previewDayNumber ?? liveStatus.dayNumber;
+                  const d = ((baseDay - 10 + i + activeStation.totalDays * 10) % activeStation.totalDays) + 1;
                   const isCurrentLive = d === liveStatus.dayNumber;
-                  const isBeingPreviewed = previewDayNumber === d;
+                  const isBeingPreviewed = (previewDayNumber ?? liveStatus.dayNumber) === d;
 
                   return (
                     <button
                       key={d}
                       onClick={() => setPreviewDayNumber(d === previewDayNumber ? null : d)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap transition cursor-pointer ${
-                        isCurrentLive
-                          ? 'bg-red-600 text-white ring-2 ring-red-400 shadow-md'
-                          : isBeingPreviewed
-                          ? 'bg-amber-500 text-slate-950 font-extrabold'
+                        isBeingPreviewed
+                          ? 'bg-amber-500 text-slate-950 font-extrabold ring-2 ring-amber-300 shadow-md'
+                          : isCurrentLive
+                          ? 'bg-red-600 text-white shadow-xs'
                           : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
                       }`}
                       title={`Dzień ${d} w pętli stacji`}
@@ -615,22 +683,31 @@ export const RadioView: React.FC<Props> = ({
 
               {/* Podgląd wybranego dnia z archiwum bez zakłócania audycji na żywo */}
               {previewItem && previewDayNumber !== null && (
-                <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/40 text-xs sm:text-sm text-slate-200 space-y-2 animate-fade-in">
-                  <div className="flex items-center justify-between text-amber-400 font-bold">
-                    <span>📖 Podgląd archiwalny: Dzień {previewDayNumber} ({previewItem.displayDate})</span>
-                    <button
-                      onClick={() => setPreviewDayNumber(null)}
-                      className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
-                    >
-                      Zamknij podgląd
-                    </button>
+                <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/40 text-xs sm:text-sm text-slate-200 space-y-3 animate-fade-in">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-amber-400 font-bold border-b border-amber-500/20 pb-2">
+                    <span>📖 Podgląd: Dzień {previewDayNumber} ze {activeStation.totalDays} ({previewItem.displayDate})</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsVideoModalOpen(true)}
+                        className="px-3 py-1 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs cursor-pointer"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Generuj Wideo YouTube (MP4)</span>
+                      </button>
+                      <button
+                        onClick={() => setPreviewDayNumber(null)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+                      >
+                        Zamknij podgląd
+                      </button>
+                    </div>
                   </div>
                   <div className="font-semibold text-white">{previewItem.headlineTitle}</div>
-                  <div className="text-xs text-slate-300 font-serif max-h-40 overflow-y-auto whitespace-pre-line">
+                  <div className="text-xs text-slate-300 font-serif max-h-48 overflow-y-auto whitespace-pre-line leading-relaxed">
                     {previewItem.displayContent || previewItem.speechText}
                   </div>
                   <div className="text-[11px] text-amber-300/80 italic">
-                    ℹ️ Transmisja na żywo (Dzień {liveStatus.dayNumber}) płynie w tle bez żadnych przerw.
+                    ℹ️ Transmisja na żywo w eterze płynie nieustannie w tle bez zakłóceń.
                   </div>
                 </div>
               )}
