@@ -22,7 +22,8 @@ import {
   ChevronRight,
   Info,
   Navigation,
-  Route
+  Route,
+  X
 } from 'lucide-react';
 import { SectionMeta } from '../types';
 
@@ -34,12 +35,20 @@ interface Props {
 
 export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme = 'light' }) => {
   const [activeStage, setActiveStage] = useState<'stage-1' | 'stage-2' | 'stage-3'>('stage-2');
-  const [activeTab, setActiveTab] = useState<'trail' | 'plan' | 'rays' | 'lodging' | 'live' | 'digital'>('trail');
+  const [activeTab, setActiveTab] = useState<'info' | 'trail' | 'plan' | 'rays' | 'lodging' | 'live' | 'digital'>('info');
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const googleMapsRouteUrl = 'https://maps.app.goo.gl/5t7uuhdYYeqVaaLz7';
+  // Bezpośrednia ścieżka do nawigacji po 8 przystankach trasy w Google Maps (Jasna Góra ➔ Łagiewniki)
+  const googleMapsRouteUrl = 'https://www.google.com/maps/dir/Jasna+G%C3%B3ra,+Cz%C4%99stochowa/Z%C5%82oty+Potok/Zamek+Bobolice/Zamek+Ogrodzieniec/Klucze/Zamek+Pieskowa+Ska%C5%82a/Ojc%C3%B3w/Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach/';
+  const googleMapsModes = {
+    walking: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=walking',
+    driving: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=driving',
+    bicycling: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=bicycling',
+    transit: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=transit'
+  };
 
   const handleStageChange = (stage: 'stage-1' | 'stage-2' | 'stage-3') => {
     setActiveStage(stage);
@@ -291,6 +300,16 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowInfoModal(true)}
+              id="btn-map-info-modal"
+              title="Informacje o pielgrzymce, harmonogram 7 dni i kompleksowy plan"
+              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <Info className="w-3.5 h-3.5" />
+              <span>Info</span>
+            </button>
+
             <a
               href={googleMapsRouteUrl}
               target="_blank"
@@ -304,13 +323,13 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </a>
 
             <a
-              href="https://mapa-aon.pages.dev"
+              href="https://mapa.widokinaraj.pl"
               target="_blank"
               rel="noopener noreferrer"
-              title="Otwórz samodzielną aplikację na mapa-aon.pages.dev"
-              className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+              title="Otwórz oficjalną platformę mapa.widokinaraj.pl"
+              className="px-3.5 py-2 rounded-xl bg-amber-700/80 hover:bg-amber-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
             >
-              <span>mapa-aon.pages.dev</span>
+              <span>mapa.widokinaraj.pl</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
@@ -380,6 +399,18 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
         
         {/* Navigation Tabs */}
         <div className="flex items-center overflow-x-auto no-scrollbar gap-2 border-b border-[#e2d6c7] dark:border-[#1f293d] pb-2">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+              activeTab === 'info'
+                ? 'bg-amber-600 text-white shadow-xs'
+                : 'bg-white/70 dark:bg-[#131a26] text-[#614e3e] dark:text-[#94a3b8] hover:bg-white dark:hover:bg-[#1a2333]'
+            }`}
+          >
+            <Info className="w-4 h-4" />
+            <span>Info & Harmonogram</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('trail')}
             className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
@@ -468,7 +499,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
-              Skorzystaj z gotowej trasy w Google Maps ze wszystkimi 8 węzłami: <span className="font-semibold text-emerald-900 dark:text-emerald-200">Jasna Góra ➔ Złoty Potok ➔ Bobolice/Mirów ➔ Ogrodzieniec ➔ Klucze ➔ Pieskowa Skała ➔ Ojców ➔ Łagiewniki</span>. Aplikacja pozwala na nawigację na żywo pieszo, na rowerze, samochodem lub transportem zbiorowym.
+              Skorzystaj z gotowej trasy w Google Maps ze wszystkimi 8 węzłami: <span className="font-semibold text-emerald-900 dark:text-emerald-200">Jasna Góra ➔ Złoty Potok ➔ Bobolice/Mirów ➔ Ogrodzieniec ➔ Klucze ➔ Pieskowa Skała ➔ Ojców ➔ Łagiewniki</span>. Wybierz swój tryb podróży poniżej:
             </p>
             <div className="flex items-center gap-2 text-xs font-mono text-[#614e3e] dark:text-[#94a3b8]">
               <span>Link do nawigacji:</span>
@@ -478,19 +509,156 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0 w-full lg:w-auto">
+          <div className="flex flex-wrap items-stretch sm:items-center gap-2 shrink-0 w-full lg:w-auto">
+            <a
+              href={googleMapsModes.walking}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-emerald-600/30 text-emerald-800 dark:text-emerald-300 font-bold text-xs shadow-xs transition"
+              title="Włącz tryb pieszy w Google Maps"
+            >
+              <Footprints className="w-3.5 h-3.5" />
+              <span>🚶 Pieszo</span>
+            </a>
+
+            <a
+              href={googleMapsModes.driving}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-emerald-600/30 text-emerald-800 dark:text-emerald-300 font-bold text-xs shadow-xs transition"
+              title="Włącz tryb samochodowy w Google Maps"
+            >
+              <Car className="w-3.5 h-3.5" />
+              <span>🚗 Auto</span>
+            </a>
+
+            <a
+              href={googleMapsModes.bicycling}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-emerald-600/30 text-emerald-800 dark:text-emerald-300 font-bold text-xs shadow-xs transition"
+              title="Włącz tryb rowerowy w Google Maps"
+            >
+              <Bike className="w-3.5 h-3.5" />
+              <span>🚲 Rower</span>
+            </a>
+
+            <a
+              href={googleMapsModes.transit}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-emerald-600/30 text-emerald-800 dark:text-emerald-300 font-bold text-xs shadow-xs transition"
+              title="Włącz tryb pociągu w Google Maps"
+            >
+              <Train className="w-3.5 h-3.5" />
+              <span>🚆 Pociąg</span>
+            </a>
+
             <a
               href={googleMapsRouteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md transition"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition"
+              title="Otwórz pełną 8-etapową trasę w Google Maps"
             >
               <Navigation className="w-4 h-4" />
-              <span>Otwórz w Google Maps</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Otwórz</span>
+              <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>
+
+        {/* Tab 0 Content: Info & Pełny Harmonogram */}
+        {activeTab === 'info' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent dark:from-amber-950/40 dark:via-orange-950/20 p-6 sm:p-8 rounded-3xl border border-amber-500/30 shadow-xs space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="p-2.5 rounded-2xl bg-amber-600 text-white shadow-xs">
+                  <Info className="w-5 h-5" />
+                </span>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Przewodnik Pielgrzymki</span>
+                  <h2 className="text-xl sm:text-2xl font-bold font-serif-book text-[#1f1712] dark:text-white">
+                    Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd (18 – 24 czerwca)
+                  </h2>
+                </div>
+              </div>
+
+              <p className="text-sm sm:text-base text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
+                Coroczne wydarzenie w formie gwiaździstej pielgrzymki oraz 7-dniowego pieszego rajdu. 
+                Trasa z Częstochowy do Krakowa przebiega malowniczym <strong className="text-amber-800 dark:text-amber-300">Szlakiem Orlich Gniazd</strong> (Jura Krakowsko-Częstochowska), łącząc sanktuaria, ruiny średniowiecznych warowni, ostańce skalne oraz czuwanie w Dniu Ojca w Ojcowie.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowInfoModal(true)}
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                  <span>Otwórz pełne okno Info</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('plan')}
+                  className="px-4 py-2 rounded-xl bg-white dark:bg-[#151e2d] hover:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/30 font-bold text-xs transition cursor-pointer"
+                >
+                  Zobacz Kompleksowy Plan (Etapy I–III)
+                </button>
+              </div>
+            </div>
+
+            {/* Dni 1–7 w uniwersalnym formacie */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold font-serif-book text-[#1f1712] dark:text-white flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-amber-600" />
+                  <span>Harmonogram Dzień po Dniu (18–24 czerwca)</span>
+                </h3>
+                <span className="text-xs text-[#7d6b5b] dark:text-[#94a3b8]">Corocznie w tych samych datach</span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {eagleTrailDays.map((d) => (
+                  <div
+                    key={d.day}
+                    className={`p-5 rounded-2xl border transition-all ${
+                      d.isSpecial
+                        ? 'bg-gradient-to-br from-amber-500/10 via-rose-500/10 to-transparent border-amber-500 shadow-md ring-1 ring-amber-500/30'
+                        : 'bg-white dark:bg-[#131a27] border-[#e2d6c7] dark:border-[#222e44] shadow-xs'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                        d.isSpecial 
+                          ? 'bg-rose-500 text-white' 
+                          : 'bg-[#f0e6d9] dark:bg-[#1e293d] text-[#6b5745] dark:text-[#94a3b8]'
+                      }`}>
+                        Dzień {d.day} • {d.date}
+                      </span>
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{d.km} km</span>
+                    </div>
+
+                    <h4 className="text-base sm:text-lg font-bold font-serif-book text-[#1f1712] dark:text-white mt-2">
+                      {d.title}
+                    </h4>
+
+                    <p className="text-xs text-[#7d6b5b] dark:text-[#94a3b8] mt-1 font-mono">
+                      Trasa: {d.route}
+                    </p>
+
+                    <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] mt-2.5 font-sans-ui leading-relaxed">
+                      {d.highlight}
+                    </p>
+
+                    <div className="mt-3 pt-3 border-t border-[#f0e6d9] dark:border-[#1e293b] flex items-center gap-2 text-xs text-[#614e3e] dark:text-[#94a3b8]">
+                      <Tent className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span className="truncate">Nocleg: {d.lodging}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab 1 Content: Szlak Orlich Gniazd dzień po dniu */}
         {activeTab === 'trail' && (
@@ -997,9 +1165,9 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
 
               <div className="p-5 rounded-2xl bg-[#faf5ee] dark:bg-[#192233] border border-[#e8ded3] dark:border-[#24334a] space-y-3">
                 <Globe className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="font-bold text-base">Certyfikat Pielgrzyma 2026</h3>
+                <h3 className="font-bold text-base">Certyfikat Pielgrzyma</h3>
                 <p className="text-xs sm:text-sm text-[#614e3e] dark:text-[#94a3b8] leading-relaxed">
-                  Pobierz oficjalny imienny Certyfikat Uczestnictwa w Pielgrzymce Gwiaździstej 2026 z pieczęcią Jasnej Góry i Łagiewnik.
+                  Pobierz oficjalny imienny Certyfikat Uczestnictwa w Pielgrzymce Gwiaździstej z pieczęcią Jasnej Góry i Łagiewnik.
                 </p>
                 <a
                   href="/mapa/index.html"
@@ -1016,6 +1184,146 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
         )}
 
       </section>
+
+      {/* 5. Info Modal Dialog */}
+      {showInfoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-4xl bg-[#fdfbf7] dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 sm:p-8 relative max-h-[92vh] overflow-y-auto my-6 space-y-6">
+            <button
+              onClick={() => setShowInfoModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white cursor-pointer transition"
+              title="Zamknij okno informacyjne"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header */}
+            <div className="pr-8 space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 text-xs font-bold">
+                <Info className="w-3.5 h-3.5" />
+                <span>Informacje & Przewodnik Pielgrzymki</span>
+              </div>
+              <h2 className="text-xl sm:text-3xl font-heading-cinzel font-bold text-[#2a221b] dark:text-[#f8fafc]">
+                Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
+              </h2>
+              <p className="text-xs sm:text-sm text-[#7a6857] dark:text-[#94a3b8]">
+                Termin: corocznie 18 – 24 czerwca • Dystans pieszy: 174 km (Częstochowa ➔ Kraków-Łagiewniki)
+              </p>
+            </div>
+
+            {/* Google Maps Multi-Modal Box */}
+            <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200 font-bold text-sm">
+                  <Navigation className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Ścieżka w Google Maps (8 węzłów etapowych)</span>
+                </div>
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-600 text-white">
+                  samochód • pociąg • pieszo • rower
+                </span>
+              </div>
+              <p className="text-xs text-[#473729] dark:text-[#cbd5e1] leading-relaxed">
+                Przystanki: Jasna Góra ➔ Złoty Potok ➔ Zamek Bobolice/Mirów ➔ Zamek Ogrodzieniec ➔ Klucze/Pustynia Błędowska ➔ Zamek Pieskowa Skała ➔ Ojców ➔ Sanktuarium Bożego Miłosierdzia w Łagiewnikach.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <a
+                  href={googleMapsModes.walking}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-600/30 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1.5 transition"
+                >
+                  <Footprints className="w-3.5 h-3.5" />
+                  <span>🚶 Pieszo</span>
+                </a>
+                <a
+                  href={googleMapsModes.driving}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-600/30 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1.5 transition"
+                >
+                  <Car className="w-3.5 h-3.5" />
+                  <span>🚗 Samochód</span>
+                </a>
+                <a
+                  href={googleMapsModes.bicycling}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-600/30 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1.5 transition"
+                >
+                  <Bike className="w-3.5 h-3.5" />
+                  <span>🚲 Rower</span>
+                </a>
+                <a
+                  href={googleMapsModes.transit}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#111722] hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-600/30 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-1.5 transition"
+                >
+                  <Train className="w-3.5 h-3.5" />
+                  <span>🚆 Pociąg</span>
+                </a>
+                <a
+                  href={googleMapsRouteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span>Pełna Trasa Google Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+
+            {/* Harmonogram 7 Dni */}
+            <div className="space-y-3">
+              <h3 className="text-base sm:text-lg font-bold font-serif-book text-[#1f1712] dark:text-white flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-amber-600" />
+                <span>Harmonogram Szlaku (18–24 czerwca):</span>
+              </h3>
+              <div className="space-y-3">
+                {eagleTrailDays.map((d) => (
+                  <div
+                    key={d.day}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      d.isSpecial
+                        ? 'bg-amber-500/10 border-amber-500/50'
+                        : 'bg-white dark:bg-[#141b28] border-[#ebe0d4] dark:border-[#202c40]'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                          d.isSpecial ? 'bg-rose-500 text-white' : 'bg-black/5 dark:bg-white/10 text-[#614e3e] dark:text-[#94a3b8]'
+                        }`}>
+                          Dzień {d.day} • {d.date}
+                        </span>
+                        <h4 className="font-bold text-sm text-[#1f1712] dark:text-white">{d.title}</h4>
+                      </div>
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{d.km} km</span>
+                    </div>
+                    <p className="text-xs font-mono text-[#7d6b5b] dark:text-[#94a3b8] mt-1">Trasa: {d.route}</p>
+                    <p className="text-xs text-[#473729] dark:text-[#cbd5e1] mt-1.5 leading-relaxed">{d.highlight}</p>
+                    <div className="mt-2 pt-1.5 border-t border-black/5 dark:border-white/5 flex items-center gap-1.5 text-xs text-[#6b5745] dark:text-[#94a3b8]">
+                      <Tent className="w-3 h-3 text-amber-600" />
+                      <span><strong>Nocleg:</strong> {d.lodging}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setShowInfoModal(false)}
+                className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md transition cursor-pointer"
+              >
+                Zamknij Info
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

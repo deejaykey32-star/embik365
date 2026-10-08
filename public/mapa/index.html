@@ -69,7 +69,11 @@
 
     <!-- Header Actions -->
     <div class="header-actions">
-      <a href="https://maps.app.goo.gl/5t7uuhdYYeqVaaLz7" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#059669;color:#fff;border:1px solid #10b981;text-decoration:none;" title="Otwórz nawigację trasy w Google Maps (samochód, pieszo, rower, pociąg)">
+      <button class="action-btn" id="btn-open-info" title="Szczegółowy harmonogram 7 dni i kompleksowy plan pielgrzymki" style="background:#b45309;color:#fff;border:1px solid #d97706;cursor:pointer;">
+        <i class="fa-solid fa-circle-info"></i>
+        <span class="btn-text">Info</span>
+      </button>
+      <a href="https://www.google.com/maps/dir/Jasna+G%C3%B3ra,+Cz%C4%99stochowa/Z%C5%82oty+Potok/Zamek+Bobolice/Zamek+Ogrodzieniec/Klucze/Zamek+Pieskowa+Ska%C5%82a/Ojc%C3%B3w/Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach/" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#059669;color:#fff;border:1px solid #10b981;text-decoration:none;" title="Otwórz nawigację trasy w Google Maps (samochód, pieszo, rower, pociąg)">
         <i class="fa-solid fa-location-arrow"></i>
         <span class="btn-text">Nawigacja Google Maps</span>
       </a>
@@ -416,12 +420,12 @@
               <div class="cert-details">
                 <div><strong>Lokalizacja:</strong> <span id="preview-city">Gdynia</span></div>
                 <div><strong>Forma:</strong> <span id="preview-type">Pielgrzymka Cyfrowa</span></div>
-                <div><strong>Termin:</strong> 18–24 Czerwca 2026</div>
+                <div><strong>Termin:</strong> 18–24 Czerwca</div>
               </div>
               <div class="cert-footer">
                 <div class="cert-stamp">
                   <i class="fa-solid fa-seal"></i>
-                  <span>PIECZĘĆ SZLAKU 2026</span>
+                  <span>PIECZĘĆ SZLAKU</span>
                 </div>
                 <div class="cert-quote">„Bądźcie miłosierni, jak Ojciec wasz jest miłosierny”</div>
               </div>
@@ -432,6 +436,178 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Info & Strategic Guide Modal -->
+  <div class="modal-backdrop" id="info-modal" style="z-index: 9999;">
+    <div class="modal-dialog" style="max-width: 900px; max-height: 90vh; overflow-y: auto; background: var(--bg-surface, #0f172a); color: var(--text-primary, #f8fafc); border: 1px solid var(--border-gold, #f59e0b); border-radius: 24px; padding: 24px;">
+      <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(245, 158, 11, 0.2); padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+            <i class="fa-solid fa-circle-info"></i>
+          </div>
+          <div>
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #f59e0b; letter-spacing: 0.05em;">Przewodnik Pielgrzymki</span>
+            <h3 class="modal-title" style="margin: 0; font-size: 20px; font-weight: 800; color: #fff;">Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd</h3>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-info-modal" style="background: none; border: none; font-size: 28px; color: #94a3b8; cursor: pointer;">&times;</button>
+      </div>
+
+      <div class="modal-body" style="font-size: 13px; line-height: 1.6; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Google Maps Multi-modal Card -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #34d399; font-size: 14px;">
+              <i class="fa-solid fa-location-arrow"></i>
+              <span>Nawigacja Google Maps po 8 przystankach trasy</span>
+            </div>
+            <span style="font-size: 11px; padding: 3px 10px; border-radius: 999px; background: #059669; color: #fff; font-weight: 600;">
+              samochód • pociąg • pieszo • rower
+            </span>
+          </div>
+          <p style="font-size: 12px; color: #cbd5e1; margin-bottom: 12px;">
+            Przystanki: <strong>Jasna Góra ➔ Złoty Potok ➔ Zamek Bobolice/Mirów ➔ Zamek Ogrodzieniec ➔ Klucze/Pustynia Błędowska ➔ Zamek Pieskowa Skała ➔ Ojców ➔ Sanktuarium w Łagiewnikach</strong>.
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <a href="https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=walking" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#1e293b;color:#34d399;border:1px solid #10b981;font-size:12px;padding:6px 12px;text-decoration:none;">
+              <i class="fa-solid fa-person-walking"></i> Pieszo
+            </a>
+            <a href="https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=driving" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#1e293b;color:#38bdf8;border:1px solid #0284c7;font-size:12px;padding:6px 12px;text-decoration:none;">
+              <i class="fa-solid fa-car"></i> Samochód
+            </a>
+            <a href="https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=bicycling" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#1e293b;color:#a3e635;border:1px solid #65a30d;font-size:12px;padding:6px 12px;text-decoration:none;">
+              <i class="fa-solid fa-bicycle"></i> Rower
+            </a>
+            <a href="https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach&waypoints=Z%C5%82oty+Potok%7CZamek+Bobolice%7CZamek+Ogrodzieniec%7CKlucze%7CZamek+Pieskowa+Ska%C5%82a%7COjc%C3%B3w&travelmode=transit" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#1e293b;color:#facc15;border:1px solid #ca8a04;font-size:12px;padding:6px 12px;text-decoration:none;">
+              <i class="fa-solid fa-train"></i> Pociąg
+            </a>
+            <a href="https://www.google.com/maps/dir/Jasna+G%C3%B3ra,+Cz%C4%99stochowa/Z%C5%82oty+Potok/Zamek+Bobolice/Zamek+Ogrodzieniec/Klucze/Zamek+Pieskowa+Ska%C5%82a/Ojc%C3%B3w/Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach/" target="_blank" rel="noopener noreferrer" class="action-btn" style="background:#059669;color:#fff;border:1px solid #10b981;font-size:12px;padding:6px 14px;text-decoration:none;font-weight:700;">
+              <i class="fa-solid fa-map-location-dot"></i> Otwórz Pełną Trasę
+            </a>
+          </div>
+        </div>
+
+        <!-- 7 Dni Szlaku Dzień po Dniu -->
+        <div>
+          <h4 style="font-size: 16px; font-weight: 700; color: #f59e0b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-calendar-days"></i> Harmonogram Szlaku Orlich Gniazd (18–24 czerwca):
+          </h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+            
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f59e0b; font-size: 12px;">
+                <span>Dzień 1 • 18.06</span><span>28 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Jasna Góra ➔ Złoty Potok</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Jasna Góra – Zamek Olsztyn – Zrębice – Złoty Potok</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Uroczysty start z Wałów Jasnogórskich o 07:00 po Mszy Świętej inaugurującej Zjednoczenie.</div>
+              <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Pole namiotowe Błonia Złoty Potok & Hala w Janowie</div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f59e0b; font-size: 12px;">
+                <span>Dzień 2 • 19.06</span><span>24 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Złoty Potok ➔ Zamek Bobolice / Mirów</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Złoty Potok – Ostrężnik – Zamek Mirów – Zamek Bobolice</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Przejście malowniczą Grzędą Mirowską między bliźniaczymi zamkami.</div>
+              <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Biwak u stóp Zamku Bobolice & Gospodarstwa w Mirowie</div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f59e0b; font-size: 12px;">
+                <span>Dzień 3 • 20.06</span><span>26 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Bobolice ➔ Zamek Ogrodzieniec</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Bobolice – Góra Zborów – Zamek Morsko – Skarżyce – Ogrodzieniec</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Panorama Jury z Góry Zborów oraz wieczorne nabożeństwo światła na dziedzińcu Zamku Ogrodzieniec.</div>
+              <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Miasteczko Namiotowe Podzamcze / Ogrodzieniec</div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f59e0b; font-size: 12px;">
+                <span>Dzień 4 • 21.06</span><span>27 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Ogrodzieniec ➔ Klucze / Pustynia Błędowska</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Ogrodzieniec – Zamek Smoleń – Bydlin – Klucze</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Przejście skrajem Pustyni Błędowskiej i modlitwa anioła pokoju na punkcie widokowym Czubatka.</div>
+              <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Szkoła Podstawowa w Kluczach & Pole Biwakowe</div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f59e0b; font-size: 12px;">
+                <span>Dzień 5 • 22.06</span><span>25 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Klucze ➔ Zamek Pieskowa Skała</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Klucze – Olkusz – Zamek Rabsztyn – Sułoszowa – Pieskowa Skała</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Dolina Prądnika, Maczuga Herkulesa i Renesansowy Zamek Pieskowa Skała.</div>
+              <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Tereny Rekreacyjne w Sułoszowej & Parafia św. Wawrzyńca</div>
+            </div>
+
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f87171; font-size: 12px;">
+                <span>Dzień 6 • 23.06 — DZIEŃ OJCA</span><span>18 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Pieskowa Skała ➔ OJCOW (Nocleg w Dzień Ojca)</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Pieskowa Skała – Grodzisko – Brama Krakowska – Ojców</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">🌟 WIELKIE CZUWANIE W DZIEŃ OJCA: Modlitwa za ojców, rodziny i dzieci pod Bramą Krakowską w Ojcowie. Błogosławieństwo Ojcowskie.</div>
+              <div style="font-size: 11px; color: #f87171; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Błonia Namiotowe w Ojcowie (Złota Góra / Dolina Prądnika)</div>
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #34d399; font-size: 12px;">
+                <span>Dzień 7 • 24.06 (Wielki Finał)</span><span>26 km</span>
+              </div>
+              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Ojców ➔ Kraków-Łagiewniki (Sanktuarium)</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Ojców – Zamek Korzkiew – Zielonki – Kraków (Wawel) – Łagiewniki</div>
+              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Finałowe wejście na Wzgórze Miłosierdzia w Łagiewnikach. Uroczysta Msza Święta Te Deum o 15:00 w Godzinie Miłosierdzia.</div>
+              <div style="font-size: 11px; color: #34d399; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Domy Pielgrzyma w Łagiewnikach & Białe Morza</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Kompleksowy Plan (Etapy I–III) -->
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+          <h4 style="font-size: 16px; font-weight: 700; color: #f59e0b; margin-bottom: 8px;">
+            <i class="fa-solid fa-route"></i> Kompleksowy Plan Wydarzenia
+          </h4>
+          <p style="color: #cbd5e1; font-size: 12px; margin-bottom: 12px;">
+            Oto propozycja kompleksowego planu takiego wydarzenia – może to być forma gwiaździstej pielgrzymki lub pieszego rajdu. Trasa z Częstochowy do Krakowa idealnie pokrywa się z malowniczym <strong>Szlakiem Orlich Gniazd</strong> (Jura Krakowsko-Częstochowska), co czyni ten 7-dniowy marsz niezwykle atrakcyjnym.
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <strong style="color: #f59e0b;">ETAP I: Ścieżki do Częstochowy (Zgrupowanie do 17/18 czerwca)</strong>
+              <p style="margin: 4px 0 0 0; color: #94a3b8;">
+                Uczestnicy docierają pieszo lub zorganizowanym transportem: Warszawa (ok. 220 km, pieszo od 9.06 lub pociąg 17.06), Wrocław (ok. 170 km, pieszo od 11.06 lub A4/A1 2h), Opole (ok. 100 km, pieszo od 14.06 lub pociąg 1.5h), Ruda Śląska (ok. 65 km, pieszo od 15.06 lub Koleje Śląskie 1h). Zagranica: Praga (autokar 5-6h), Berlin (pociąg/autokar), Lwów/Wilno (autokary z noclegiem na Jasnej Górze 17.06).
+              </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <strong style="color: #f59e0b;">ETAP II: Wspólny Szlak (18–24 czerwca)</strong>
+              <p style="margin: 4px 0 0 0; color: #94a3b8;">
+                Wspólna wędrówka 174 km z Wałów Jasnogórskich przez Złoty Potok, Mirów/Bobolice, Ogrodzieniec, Klucze/Pustynię Błędowską, Pieskową Skałę, z czuwaniem w Dzień Ojca w Ojcowie (23.06) aż do Sanktuarium Bożego Miłosierdzia w Krakowie-Łagiewnikach (24.06).
+              </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <strong style="color: #f59e0b;">ETAP III: Rozesłanie i Powroty (24 i 25 czerwca)</strong>
+              <p style="margin: 4px 0 0 0; color: #94a3b8;">
+                Stacja Kraków Łagiewniki i Kraków Główny: pociągi Pendolino/IC do Warszawy i za granicę (Berlin, Praga), magistrala E30 do Wrocławia, Opola i Rudy Śląskiej. Autokary zorganizowane z parkingu przy Sanktuarium oraz nocleg z 24 na 25 czerwca w domach pielgrzyma.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <button class="action-btn primary-gold" id="btn-close-info-modal-footer" style="padding: 10px 24px; border-radius: 12px; cursor: pointer; font-weight: 700;">
+          Zamknij Info
+        </button>
       </div>
     </div>
   </div>

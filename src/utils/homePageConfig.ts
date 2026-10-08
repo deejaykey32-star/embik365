@@ -3,6 +3,7 @@ import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
+import mapaMainImg from '../pliki/mapa-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
@@ -86,21 +87,6 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       hidden: false
     },
     {
-      id: 'mapa',
-      name: 'Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
-      badge: 'Interaktywna Mapa • Nawigacja Google Maps',
-      shortDesc: 'Wielka Pielgrzymka Gwiaździsta i Szlak Orlich Gniazd (18–24 czerwca) – platforma terenowa i nawigacja GPS.',
-      fullDesc: 'Trzy etapy pielgrzymki: Promienie z całego świata ku Jasnej Górze, 174 km Szlakiem Orlich Gniazd do Sanktuarium Bożego Miłosierdzia w Łagiewnikach (z czuwaniem w Dniu Ojca w Ojcowie) oraz Rozesłanie. Dostępna nawigacja w Google Maps (samochód, pociąg, pieszo, rower).',
-      imageUrl: 'https://images.unsplash.com/photo-1524850011238-e3d235c7d4c9?w=800&auto=format&fit=crop&q=80',
-      imageAlt: 'Interaktywna Mapa Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd',
-      color: '#d97706',
-      bgGradient: 'from-amber-950/20 via-orange-900/10 to-transparent',
-      qrId: 'qr_mapa',
-      externalUrl: 'https://mapa-aon.pages.dev',
-      openInNewTab: true,
-      hidden: false
-    },
-    {
       id: 'histada',
       name: 'Gra: Histada',
       badge: 'Projekt Gry • histada-app.pages.dev',
@@ -176,6 +162,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#c026d3',
       bgGradient: 'from-fuchsia-950/20 via-fuchsia-900/10 to-transparent',
       qrId: 'qr_grafika'
+    },
+    {
+      id: 'mapa',
+      name: 'Mapa',
+      badge: 'Pielgrzymka Gwiaździsta • Szlak Orlich Gniazd',
+      shortDesc: 'Wielka Pielgrzymka Gwiaździsta i Szlak Orlich Gniazd (18–24 czerwca) – platforma terenowa, 7-dniowa trasa piesza oraz nawigacja GPS.',
+      fullDesc: 'Trzy etapy pielgrzymki: Promienie z całego świata ku Jasnej Górze, 174 km Szlakiem Orlich Gniazd do Sanktuarium Bożego Miłosierdzia w Łagiewnikach (z czuwaniem w Dniu Ojca w Ojcowie) oraz Rozesłanie. Dostępna nawigacja w Google Maps (samochód, pociąg, pieszo, rower).',
+      imageUrl: mapaMainImg,
+      imageAlt: 'Ilustracja Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd',
+      color: '#d97706',
+      bgGradient: 'from-amber-950/20 via-orange-900/10 to-transparent',
+      qrId: 'qr_mapa',
+      externalUrl: 'https://mapa.widokinaraj.pl',
+      openInNewTab: true,
+      hidden: false
     }
   ]
 };
@@ -250,11 +251,11 @@ export function getHomePageConfig(): HomePageConfig {
       const showcases = DEFAULT_HOME_PAGE_CONFIG.showcases.map(def => {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
-        const imageUrl = isOldUnsplash ? def.imageUrl : (found?.imageUrl || def.imageUrl);
+        const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
         const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
-        const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : rawExtUrl;
+        const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);
         const openInNewTab = def.openInNewTab !== undefined ? def.openInNewTab : found?.openInNewTab;
         return found ? { ...def, ...found, imageUrl, hidden, externalUrl, openInNewTab } : { ...def, hidden: isPublicSection ? false : Boolean(def.hidden) };
       });

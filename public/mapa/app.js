@@ -141,7 +141,7 @@ class PilgrimageApp {
       this.renderStage1Routes();
 
     } else if (stageId === 'stage-2') {
-      bannerBadge.innerText = 'ETAP II: SZLAK ORLICH GNIAZD (18–24.06.2026)';
+      bannerBadge.innerText = 'ETAP II: SZLAK ORLICH GNIAZD (18–24.06)';
       bannerTitle.innerText = PILGRIMAGE_STAGES.STAGE_2.name;
       bannerDesc.innerText = PILGRIMAGE_STAGES.STAGE_2.description + ' ' + PILGRIMAGE_STAGES.STAGE_2.highlight;
       hudFocus.innerText = 'Częstochowa ➔ Ojców ➔ Łagiewniki';
@@ -353,7 +353,7 @@ class PilgrimageApp {
     container.innerHTML = `
       <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--border-gold); padding: 12px; border-radius: 12px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--gold-light); font-size: 13px;">
-          <i class="fa-solid fa-shield-halved"></i> Szlak Orlich Gniazd: 18 – 24 Czerwca 2026
+          <i class="fa-solid fa-shield-halved"></i> Szlak Orlich Gniazd: 18 – 24 Czerwca
         </div>
         <p style="font-size: 11px; color: #cbd5e1; margin-top: 4px; line-height: 1.4;">
           Połączone wszystkie promienie gwiazdy zmierzają wspólnie przez jurajskie zamki i ostańce aż do Sanktuarium Bożego Miłosierdzia w Łagiewnikach.
@@ -369,7 +369,7 @@ class PilgrimageApp {
       lineCap: 'round',
       lineJoin: 'round'
     });
-    orleGniazdaPolyline.bindTooltip('<b>Główny Szlak Orlich Gniazd (164 km)</b><br>18 – 24 Czerwca 2026', { sticky: true });
+    orleGniazdaPolyline.bindTooltip('<b>Główny Szlak Orlich Gniazd (164 km)</b><br>18 – 24 Czerwca', { sticky: true });
     this.drawnLayers.routes.addLayer(orleGniazdaPolyline);
 
     // Karta dla każdego z 7 dni
@@ -956,8 +956,24 @@ class PilgrimageApp {
 
     // Focus Ojcow button in alert
     document.getElementById('btn-focus-ojcow').addEventListener('click', () => {
-      this.focusLocation(50.2106, 19.8294, 'Ojców – Nocleg w Dzień Ojca (23.06.2026)');
+      this.focusLocation(50.2106, 19.8294, 'Ojców – Nocleg w Dzień Ojca (23.06)');
     });
+
+    // Info Modal Open / Close
+    const infoModal = document.getElementById('info-modal');
+    const openInfoBtn = document.getElementById('btn-open-info');
+    if (openInfoBtn && infoModal) {
+      openInfoBtn.addEventListener('click', () => {
+        infoModal.classList.add('open');
+      });
+      const closeInfoBtn = document.getElementById('btn-close-info-modal');
+      if (closeInfoBtn) closeInfoBtn.addEventListener('click', () => infoModal.classList.remove('open'));
+      const closeInfoFooterBtn = document.getElementById('btn-close-info-modal-footer');
+      if (closeInfoFooterBtn) closeInfoFooterBtn.addEventListener('click', () => infoModal.classList.remove('open'));
+      infoModal.addEventListener('click', (e) => {
+        if (e.target.id === 'info-modal') infoModal.classList.remove('open');
+      });
+    }
 
     // Live Modal Open / Close
     document.getElementById('btn-toggle-live').addEventListener('click', () => this.openLiveModal());
