@@ -131,8 +131,6 @@
 /z/nowyRHZ /nowyrhz/ 302
 
 # Radio Internetowe 24/7 (Nowy RHZ, WnR365, Biblia365, RHZ365)
-/radio /200.html 200
-/radio/* /200.html 200
 /r/radio /radio 302
 /r/radio-nowyrhz /radio?stacja=nowyrhz 302
 /r/radio-wnr365 /radio?stacja=wnr365 302
