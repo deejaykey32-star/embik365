@@ -616,33 +616,35 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       }
 
       const targetLang = (body.lang || 'pl').toLowerCase();
-      const textChunks = splitTextIntoSmartChunks(rawText, 180).slice(0, 20);
+      const textChunks = splitTextIntoSmartChunks(rawText, 180).slice(0, 80);
 
-      const audioBuffers: ArrayBuffer[] = [];
-
-      for (const chunk of textChunks) {
-        try {
-          const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
-          const ttsRes = await fetch(ttsUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      // Równoległe pobieranie fragmentów audio z zachowaniem kolejności
+      const audioBuffers: (ArrayBuffer | null)[] = await Promise.all(
+        textChunks.map(async (chunk) => {
+          try {
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
+            const ttsRes = await fetch(ttsUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+              }
+            });
+            if (ttsRes.ok) {
+              return await ttsRes.arrayBuffer();
             }
-          });
-
-          if (ttsRes.ok) {
-            const buf = await ttsRes.arrayBuffer();
-            audioBuffers.push(buf);
+          } catch (e) {
+            console.warn('TTS chunk fetch failed:', e);
           }
-        } catch (e) {
-          console.warn('TTS chunk fetch failed:', e);
-        }
-      }
+          return null;
+        })
+      );
 
-      if (audioBuffers.length > 0) {
-        const totalLength = audioBuffers.reduce((acc, b) => acc + b.byteLength, 0);
+      const validBuffers = audioBuffers.filter((b): b is ArrayBuffer => b !== null && b.byteLength > 0);
+
+      if (validBuffers.length > 0) {
+        const totalLength = validBuffers.reduce((acc, b) => acc + b.byteLength, 0);
         const combined = new Uint8Array(totalLength);
         let offset = 0;
-        for (const b of audioBuffers) {
+        for (const b of validBuffers) {
           combined.set(new Uint8Array(b), offset);
           offset += b.byteLength;
         }

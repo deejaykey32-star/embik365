@@ -2,6 +2,12 @@ import { WNR365_FULL_DATA } from '../data/wnr365Data';
 import { RHZ365_FULL_DATA } from '../data/rhz365Data';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 import { NOWY_RHZ_MYSTERIES, NowyRhzMystery } from '../data/nowyRhzData';
+import {
+  normalizePolishTextForSpeech,
+  extractCleanWordsForKaraoke,
+  numberToPolishOrdinal,
+  expandBiblicalReference
+} from './polishSpeechNormalizer';
 
 export function stripHtml(html: string): string {
   if (!html) return '';
@@ -108,6 +114,8 @@ export interface RadioBroadcastItem {
 
 /**
  * Zwraca treść radiową dla wybranej stacji i numeru dnia.
+ * Wszystkie skróty, sigla biblijne i cyfry są w pełni rozwijane do pełnych słów,
+ * gwarantując bezbłędny odczyt przez lektora oraz perfekcyjną synchronizację karaoke.
  */
 export function getRadioBroadcastItem(
   stationId: RadioStationId,
@@ -123,36 +131,46 @@ export function getRadioBroadcastItem(
     const headlineTitle = `${mystery.t} – ${mystery.sub}`;
     const subtitle = `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
     
-    // Zbudowanie pełnego, uroczystego tekstu lektora
-    const dopowiedzeniaText = mystery.cl.map((cl, i) => `${i + 1}. Zdrowaś Maryjo... Jezus, ${cl}`).join('. ');
+    // Dopowiedzenia różańcowe z pełnymi słowami liczebników
+    const dopowiedzeniaSpoken = mystery.cl.map((cl, i) => {
+      const ordNumber = numberToPolishOrdinal(i + 1, 'n');
+      return `Dopowiedzenie ${ordNumber}: Zdrowaś Maryjo, łaski pełna, Pan z Tobą... Jezus, ${cl}`;
+    }).join('. ');
     
+    const bibRefSpoken = expandBiblicalReference(mystery.ref);
+    const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
+    const stageOrdSpoken = numberToPolishOrdinal(mystery.stage, 'm');
+    const partOrdSpoken = numberToPolishOrdinal(mystery.part, 'f');
+
     const speechParts = [
-      `Nowy Różaniec Historii Zbawienia. Dzień ${safeDay} ze stu siedemdziesięciu pięciu.`,
-      `Etap ${mystery.stage}: ${mystery.stageTitle}.`,
-      `Część ${mystery.part}: ${mystery.partTitle}.`,
+      `Nowy Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} ze stu siedemdziesięciu pięciu.`,
+      `Etap ${stageOrdSpoken}: ${mystery.stageTitle}.`,
+      `Część ${partOrdSpoken}: ${mystery.partTitle}.`,
       `Tajemnica: ${mystery.t}. ${mystery.sub}.`,
-      `Fragment Pisma Świętego: ${mystery.ref}.`,
+      `Fragment Pisma Świętego: ${bibRefSpoken}.`,
       `Rozważanie: ${mystery.med}`,
-      `Dopowiedzenia różańcowe: ${dopowiedzeniaText}.`,
+      `Dopowiedzenia różańcowe: ${dopowiedzeniaSpoken}.`,
       mystery.prayer ? `Modlitwa na zakończenie: ${mystery.prayer}` : ''
     ].filter(Boolean);
 
-    const speechText = speechParts.join(' \n\n');
+    const rawSpeechText = speechParts.join(' \n\n');
+    const speechText = normalizePolishTextForSpeech(rawSpeechText);
+
     const displayContent = [
-      `📖 Źródło: ${mystery.ref}`,
+      `📖 Źródło: ${mystery.ref} (${bibRefSpoken})`,
       `\n✨ Rozważanie:\n${mystery.med}`,
-      `\n📿 Dziesiątka z dopowiedzeniami:\n` + mystery.cl.map((c, idx) => `${idx + 1}. …Jezus, ${c}`).join('\n'),
+      `\n📿 Dziesiątka z dopowiedzeniami:\n` + mystery.cl.map((c, idx) => `Dopowiedzenie ${numberToPolishOrdinal(idx + 1, 'n')}: …Jezus, ${c}`).join('\n'),
       mystery.prayer ? `\n🙏 Modlitwa końcowa:\n${mystery.prayer}` : ''
     ].join('\n');
 
-    const cleanWords = extractCleanWords(speechText);
+    const cleanWords = extractCleanWordsForKaraoke(speechText);
 
     return {
       stationId: 'nowyrhz',
       stationName: station.name,
       dayNumber: safeDay,
       totalDays: 175,
-      displayDate: `Dzień ${safeDay} z 175`,
+      displayDate: `Dzień ${safeDay} ze 175`,
       headlineTitle,
       subtitle,
       stageName: mystery.stageTitle,
@@ -170,14 +188,18 @@ export function getRadioBroadcastItem(
     const rawTitle = entry.title || `Dzień ${safeDay}`;
     const cleanTitle = rawTitle.replace(/^Widoki na Raj\s*—\s*WnR365\s*\([^)]*\)\s*—\s*WnR365\s*—\s*Widoki na Raj\s*-\s*\([^)]*\)\s*-\s*—\s*/i, '').trim();
 
+    const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
+    const spokenDate = normalizePolishTextForSpeech(entry.displayDate || '');
+
     const speechParts = [
-      `Widoki na Raj. Dzień ${safeDay} z trzystu sześćdziesięciu pięciu. ${entry.displayDate}.`,
+      `Widoki na Raj. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
       cleanTitle,
       cleanContent
     ];
 
-    const speechText = speechParts.join(' \n\n');
-    const cleanWords = extractCleanWords(speechText);
+    const rawSpeechText = speechParts.join(' \n\n');
+    const speechText = normalizePolishTextForSpeech(rawSpeechText);
+    const cleanWords = extractCleanWordsForKaraoke(speechText);
 
     return {
       stationId: 'wnr365',
@@ -199,15 +221,20 @@ export function getRadioBroadcastItem(
     const cleanContent = stripHtml(bibliaEntry.content || '').trim();
     const headlineTitle = `${bibliaEntry.bookTitle} (Rozdział ${bibliaEntry.chapter}) – ${bibliaEntry.title || bibliaEntry.passage}`;
 
+    const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
+    const chapterOrdSpoken = numberToPolishOrdinal(bibliaEntry.chapter, 'm');
+    const bibRefSpoken = expandBiblicalReference(bibliaEntry.passage);
+
     const speechParts = [
-      `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${safeDay}.`,
-      `Księga: ${bibliaEntry.bookTitle}, rozdział ${bibliaEntry.chapter}. Fragment: ${bibliaEntry.passage}.`,
+      `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${dayOrdSpoken}.`,
+      `Księga: ${bibliaEntry.bookTitle}, rozdział ${chapterOrdSpoken}. Fragment: ${bibRefSpoken}.`,
       bibliaEntry.title ? `Temat: ${bibliaEntry.title}.` : '',
       cleanContent
     ].filter(Boolean);
 
-    const speechText = speechParts.join(' \n\n');
-    const cleanWords = extractCleanWords(speechText);
+    const rawSpeechText = speechParts.join(' \n\n');
+    const speechText = normalizePolishTextForSpeech(rawSpeechText);
+    const cleanWords = extractCleanWordsForKaraoke(speechText);
 
     return {
       stationId: 'biblia365',
@@ -228,11 +255,18 @@ export function getRadioBroadcastItem(
   const rhzEntry = RHZ365_FULL_DATA[safeDay] || RHZ365_FULL_DATA[1];
   const cleanPassage = stripHtml(rhzEntry.passage || '').trim();
   const cleanExplanation = stripHtml(rhzEntry.explanation || '').trim();
-  const beadsText = (rhzEntry.smallBeads || []).map(b => `${b.beadNumber}. Jezus, ${b.dopowiedzenie}`).join('. ');
+
+  const beadsText = (rhzEntry.smallBeads || []).map(b => {
+    const ord = numberToPolishOrdinal(b.beadNumber, 'n');
+    return `Dopowiedzenie ${ord}: Jezus, ${b.dopowiedzenie}`;
+  }).join('. ');
+
   const callsText = (rhzEntry.callsToAction || []).join(' ');
+  const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
+  const spokenDate = normalizePolishTextForSpeech(rhzEntry.displayDate || '');
 
   const speechParts = [
-    `Różaniec Historii Zbawienia. Dzień ${safeDay} z trzystu sześćdziesięciu pięciu. ${rhzEntry.displayDate}.`,
+    `Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
     rhzEntry.stageTitle,
     `Słowo Boże: ${cleanPassage}`,
     `Rozważanie: ${cleanExplanation}`,
@@ -240,8 +274,9 @@ export function getRadioBroadcastItem(
     callsText ? `Wezwania do czynu: ${callsText}.` : ''
   ].filter(Boolean);
 
-  const speechText = speechParts.join(' \n\n');
-  const cleanWords = extractCleanWords(speechText);
+  const rawSpeechText = speechParts.join(' \n\n');
+  const speechText = normalizePolishTextForSpeech(rawSpeechText);
+  const cleanWords = extractCleanWordsForKaraoke(speechText);
 
   return {
     stationId: 'rhz365',
@@ -256,17 +291,4 @@ export function getRadioBroadcastItem(
     displayContent: `${cleanPassage}\n\n${cleanExplanation}\n\n${beadsText}\n\n${callsText}`,
     words: cleanWords
   };
-}
-
-/**
- * Dzieli tekst na pojedyncze słowa do synchronizacji karaoke napisów
- */
-function extractCleanWords(text: string): string[] {
-  if (!text) return [];
-  return text
-    .replace(/[\n\r\t]+/g, ' ')
-    .replace(/[«»"„”]/g, '')
-    .split(/\s+/)
-    .map(w => w.trim())
-    .filter(w => w.length > 0);
 }

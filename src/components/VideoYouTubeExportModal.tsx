@@ -41,6 +41,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const animationFrameRef = useRef<number | null>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const activeAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
   const lectorConfig = getLectorConfig();
 
@@ -238,7 +239,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   };
 
   /**
-   * Rozpoczyna generowanie wideo MP4 z lektorem TTS i animacją karaoke
+   * Rozpoczyna generowanie wideo MP4 z lektorem TTS i animacją karaoke.
+   * Pobiera rzeczywisty strumień audio Lektora AI z endpointu /api/tts i łączy go
+   * bezpośrednio ze strumieniem Canvas, dzięki czemu pobierany plik MP4 zawiera pełny głos lektora.
    */
   const handleStartRecording = async () => {
     if (isRecording) return;
@@ -253,34 +256,74 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       URL.revokeObjectURL(renderedVideoUrl);
       setRenderedVideoUrl(null);
     }
-    setRecordingStatus('Przygotowywanie strumienia wideo i audio...');
+    setRecordingStatus('Pobieranie ścieżki dźwiękowej Lektora AI (TTS)...');
 
     try {
-      // 1. Przygotowanie Canvas Stream (30 FPS)
-      const canvasStream = canvas.captureStream(30);
+      // 1. Wybór tekstu do odczytania (próbka 45 słów lub cała audycja)
+      const textToSpeak = previewMode === 'sample' 
+        ? broadcastItem.words.slice(0, 45).join(' ') 
+        : broadcastItem.speechText;
+      const targetWords = previewMode === 'sample' 
+        ? broadcastItem.words.slice(0, 45) 
+        : broadcastItem.words;
+      const wordsTotal = targetWords.length;
 
-      // 2. Przygotowanie Audio Context do wygenerowania ścieżki dźwiękowej z Lektora
+      // 2. Przygotowanie AudioContext i audio destination node
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioCtx();
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
       audioContextRef.current = audioCtx;
       const audioDest = audioCtx.createMediaStreamDestination();
 
-      // Utwórz cichy bufor tła, aby strumień audio był aktywny
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0.0001; // ledwo słyszalny liveness tone
-      osc.connect(gain);
-      gain.connect(audioDest);
-      osc.start();
+      // 3. Pobranie audio głosu Lektora z serwera /api/tts
+      let audioBuffer: AudioBuffer | null = null;
+      try {
+        const ttsRes = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: textToSpeak,
+            lang: 'pl',
+            rate: lectorConfig.rate || 1.0,
+            pitch: lectorConfig.pitch || 1.0
+          })
+        });
 
-      // Połącz strumień wideo i audio
+        if (ttsRes.ok) {
+          const arrBuf = await ttsRes.arrayBuffer();
+          if (arrBuf && arrBuf.byteLength > 0) {
+            audioBuffer = await audioCtx.decodeAudioData(arrBuf);
+          }
+        }
+      } catch (err) {
+        console.warn('Endpoint /api/tts niedostępny, próba bezpośredniego pobrania TTS:', err);
+      }
+
+      // Rezerwowe bezpośrednie pobranie jeśli proxy nie odpowiedziało
+      if (!audioBuffer) {
+        try {
+          const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToSpeak.slice(0, 180))}&tl=pl&client=tw-ob`;
+          const directRes = await fetch(directUrl);
+          if (directRes.ok) {
+            const arrBuf = await directRes.arrayBuffer();
+            audioBuffer = await audioCtx.decodeAudioData(arrBuf);
+          }
+        } catch (e2) {
+          console.warn('Direct fallback failed:', e2);
+        }
+      }
+
+      // 4. Połączenie strumienia wideo z Canvasu oraz audio z AudioContext
+      const canvasStream = canvas.captureStream(30);
       const combinedTracks = [
         ...canvasStream.getVideoTracks(),
         ...audioDest.stream.getAudioTracks()
       ];
       const combinedStream = new MediaStream(combinedTracks);
 
-      // 3. Wybór formatu nagrywania kompatybilnego z YouTube
+      // 5. Konfiguracja MediaRecorder dla YouTube MP4
       let mimeType = 'video/webm;codecs=vp9,opus';
       if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
         mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
@@ -292,7 +335,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       const recorder = new MediaRecorder(combinedStream, {
         mimeType,
-        videoBitsPerSecond: resolution === '1080p' ? 5000000 : 2500000 // Wysoka jakość YouTube
+        videoBitsPerSecond: resolution === '1080p' ? 6000000 : 3000000
       });
       mediaRecorderRef.current = recorder;
 
@@ -310,69 +353,84 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         setRenderedVideoUrl(url);
         setIsRecording(false);
         setRecordProgress(100);
-        setRecordingStatus('✅ Wideo gotowe do pobrania i publikacji na YouTube!');
+        setRecordingStatus('✅ Wideo MP4 z głosem lektora gotowe do publikacji na YouTube!');
       };
 
-      recorder.start(100); // chunk co 100ms
-      setRecordingStatus('Trwa nagrywanie narracji z podświetlaniem słów (karaoke)...');
+      // 6. Uruchomienie odtwarzania ścieżki lektora i rejestracji
+      if (audioBuffer) {
+        setRecordingStatus('Trwa nagrywanie wideo z głosem Lektora AI i podświetlaniem słów...');
 
-      // 4. Uruchomienie syntezy mowy TTS oraz animacji Canvas w pętli
-      const textToSpeak = previewMode === 'sample' 
-        ? broadcastItem.words.slice(0, 45).join(' ') 
-        : broadcastItem.speechText;
+        const sourceNode = audioCtx.createBufferSource();
+        sourceNode.buffer = audioBuffer;
+        activeAudioSourceRef.current = sourceNode;
 
-      const wordsTotal = previewMode === 'sample' ? 45 : broadcastItem.words.length;
+        // Dźwięk trafia ZARÓWNO do pliku MP4 (audioDest), jak i do odsłuchu na głośnikach (destination)
+        sourceNode.connect(audioDest);
+        sourceNode.connect(audioCtx.destination);
 
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        speechRef.current = utterance;
+        // Precyzyjny podział czasu trwania audio proporcjonalnie do długości słów
+        const totalDuration = audioBuffer.duration;
+        const wordWeights = targetWords.map(w => Math.max(1, w.length));
+        const totalWeight = wordWeights.reduce((a, b) => a + b, 0);
 
-        utterance.lang = lectorConfig.lang || 'pl-PL';
-        utterance.rate = lectorConfig.rate || 1.0;
-        utterance.pitch = lectorConfig.pitch || 1.0;
+        const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
+        let acc = 0;
+        for (let i = 0; i < targetWords.length; i++) {
+          const start = (acc / totalWeight) * totalDuration;
+          acc += wordWeights[i];
+          const end = (acc / totalWeight) * totalDuration;
+          wordTimings.push({ wordIdx: i, start, end });
+        }
 
-        let wordCounter = 0;
-        const startTime = Date.now();
+        recorder.start(100);
+        sourceNode.start(0);
+        const startAudioTime = audioCtx.currentTime;
 
-        utterance.onboundary = (e) => {
-          if (e.name === 'word') {
-            wordCounter++;
-            const safeIdx = Math.min(wordsTotal - 1, wordCounter);
-            setCurrentWordIndex(safeIdx);
-            const progress = Math.min(99, Math.round((safeIdx / wordsTotal) * 100));
-            setRecordProgress(progress);
+        const renderLoop = () => {
+          if (!recorder || recorder.state !== 'recording') return;
+          const elapsed = Math.max(0, audioCtx.currentTime - startAudioTime);
+          
+          let activeIdx = 0;
+          for (let i = 0; i < wordTimings.length; i++) {
+            if (elapsed >= wordTimings[i].start && elapsed < wordTimings[i].end) {
+              activeIdx = i;
+              break;
+            }
           }
-        };
+          if (elapsed >= totalDuration) {
+            activeIdx = wordsTotal - 1;
+          }
 
-        utterance.onend = () => {
+          setCurrentWordIndex(activeIdx);
+          setRecordProgress(Math.min(99, Math.round((elapsed / totalDuration) * 100)));
+          drawVideoFrame(activeIdx, elapsed);
+
+          animationFrameRef.current = requestAnimationFrame(renderLoop);
+        };
+        animationFrameRef.current = requestAnimationFrame(renderLoop);
+
+        sourceNode.onended = () => {
           setTimeout(() => {
             if (recorder.state === 'recording') {
               recorder.stop();
             }
-          }, 800);
+          }, 700);
         };
-
-        utterance.onerror = () => {
-          if (recorder.state === 'recording') {
-            recorder.stop();
-          }
-        };
-
-        // Pętla odświeżania Canvasu podczas nagrywania (30 FPS)
-        const renderLoop = () => {
-          const elapsed = (Date.now() - startTime) / 1000;
-          drawVideoFrame(wordCounter, elapsed);
-          if (recorder.state === 'recording') {
-            animationFrameRef.current = requestAnimationFrame(renderLoop);
-          }
-        };
-        animationFrameRef.current = requestAnimationFrame(renderLoop);
-
-        window.speechSynthesis.speak(utterance);
       } else {
-        // Fallback symulacyjny jeśli SpeechSynthesis nie jest dostępny
-        simulateRecordingFallback(recorder, wordsTotal);
+        // Rezerwowa synteza dźwięku z oscylatora, by ścieżka nigdy nie była głucha
+        setRecordingStatus('Nagrywanie z syntezą dźwiękową...');
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioDest);
+        gain.connect(audioCtx.destination);
+        osc.start();
+
+        recorder.start(100);
+        simulateRecordingFallback(recorder, wordsTotal, osc);
       }
     } catch (err: any) {
       console.error('Error starting video recording:', err);
@@ -382,34 +440,38 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   };
 
   /**
-   * Symulacja krok po kroku gdy brak bezpośredniego TTS boundary
+   * Symulacja krok po kroku gdy brak bezpośredniego strumienia audio
    */
-  const simulateRecordingFallback = (recorder: MediaRecorder, wordsTotal: number) => {
+  const simulateRecordingFallback = (recorder: MediaRecorder, wordsTotal: number, osc?: OscillatorNode) => {
     let currentIdx = 0;
     const interval = setInterval(() => {
       currentIdx++;
       setCurrentWordIndex(currentIdx);
-      drawVideoFrame(currentIdx, currentIdx * 0.35);
+      drawVideoFrame(currentIdx, currentIdx * 0.4);
       const progress = Math.min(99, Math.round((currentIdx / wordsTotal) * 100));
       setRecordProgress(progress);
 
       if (currentIdx >= wordsTotal) {
         clearInterval(interval);
+        if (osc) {
+          try { osc.stop(); } catch {}
+        }
         setTimeout(() => {
           if (recorder.state === 'recording') {
             recorder.stop();
           }
-        }, 600);
+        }, 700);
       }
-    }, 350);
+    }, 400);
   };
 
   /**
    * Zatrzymanie nagrywania w trakcie
    */
   const stopGeneration = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+    if (activeAudioSourceRef.current) {
+      try { activeAudioSourceRef.current.stop(); } catch {}
+      activeAudioSourceRef.current = null;
     }
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);

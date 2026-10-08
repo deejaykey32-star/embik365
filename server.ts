@@ -269,6 +269,67 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Text-To-Speech (TTS) Online AI Endpoint
+app.post('/api/tts', async (req, res) => {
+  try {
+    const rawText = (req.body?.text || '').trim();
+    if (!rawText) {
+      return res.status(400).json({ error: 'Brak tekstu do odczytania.' });
+    }
+
+    const targetLang = (req.body?.lang || 'pl').toLowerCase();
+    
+    // Podział na mniejsze fragmenty (do 180 znaków)
+    const sentences = rawText.match(/[^.!?\n]+[.!?\n]+/g) || [rawText];
+    const textChunks: string[] = [];
+    let current = '';
+    for (const s of sentences) {
+      if (!current) current = s.trim();
+      else if ((current + ' ' + s.trim()).length <= 180) current += ' ' + s.trim();
+      else {
+        textChunks.push(current);
+        current = s.trim();
+      }
+    }
+    if (current) textChunks.push(current);
+
+    const limitedChunks = textChunks.slice(0, 80);
+
+    const buffers: (Buffer | null)[] = await Promise.all(
+      limitedChunks.map(async (chunk) => {
+        try {
+          const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
+          const response = await fetch(ttsUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+          });
+          if (response.ok) {
+            const arrBuf = await response.arrayBuffer();
+            return Buffer.from(arrBuf);
+          }
+        } catch (e) {
+          console.warn('Local TTS chunk fetch failed:', e);
+        }
+        return null;
+      })
+    );
+
+    const valid = buffers.filter((b): b is Buffer => b !== null && b.length > 0);
+    if (valid.length > 0) {
+      const combined = Buffer.concat(valid);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.send(combined);
+    }
+
+    return res.status(500).json({ error: 'Błąd generowania głosu TTS.' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Błąd serwera TTS.' });
+  }
+});
+
 // Short URL Direct Redirect Endpoint /r/* (Dynamic 302 Redirect via entries.json database)
 app.get('/r/:slug?', (req, res) => {
   const slug = decodeURIComponent((req.params.slug || req.query.to || '').toString().trim()).toLowerCase();

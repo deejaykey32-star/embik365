@@ -1,4 +1,5 @@
 import { SUPPORTED_LANGUAGES } from '../types';
+import { normalizePolishTextForSpeech } from './polishSpeechNormalizer';
 
 export type LectorMode = 'local' | 'online';
 export type LectorGender = 'male' | 'female';
@@ -509,24 +510,7 @@ export function cleanTextForSpeech(rawText: string, lang: string = 'pl'): string
   // 11. Rozwinięcie skrótów na pełne słowa dla naturalnego brzmienia
   const isPl = !lang || lang.toLowerCase().startsWith('pl');
   if (isPl) {
-    text = text.replace(/(?<!\p{L})np\.\s*/gui, 'na przykład ');
-    text = text.replace(/(?<!\p{L})itd\.\s*/gui, 'i tak dalej. ');
-    text = text.replace(/(?<!\p{L})itp\.\s*/gui, 'i tym podobne. ');
-    text = text.replace(/(?<!\p{L})tzn\.\s*/gui, 'to znaczy ');
-    text = text.replace(/(?<!\p{L})m\.in\.\s*/gui, 'między innymi ');
-    text = text.replace(/(?<!\p{L})św\.\s*/gui, 'świętego ');
-    text = text.replace(/(?<!\p{L})bł\.\s*/gui, 'błogosławiony ');
-    text = text.replace(/(?<!\p{L})ks\.\s*/gui, 'ksiądz ');
-    text = text.replace(/(?<!\p{L})bp\.\s*|(?<!\p{L})bp(?!\p{L})/gui, 'biskup ');
-    text = text.replace(/(?<!\p{L})abp\.\s*|(?<!\p{L})abp(?!\p{L})/gui, 'arcybiskup ');
-    text = text.replace(/(?<!\p{L})kard\.\s*|(?<!\p{L})kard(?!\p{L})/gui, 'kardynał ');
-    text = text.replace(/(?<!\p{L})o\.\s*(?=[A-ZĄĆĘŁŃÓŚŹŻ])/gu, 'ojciec ');
-    text = text.replace(/(\d{4})\s*r\.\s*/gui, '$1 roku ');
-    text = text.replace(/(?<!\p{L})ok\.\s*/gui, 'około ');
-    text = text.replace(/(?<!\p{L})tzw\.\s*/gui, 'tak zwany ');
-    text = text.replace(/(?<!\p{L})por\.\s*/gui, 'porównaj ');
-    text = text.replace(/(?<!\p{L})zob\.\s*/gui, 'zobacz ');
-    text = text.replace(/(?<!\p{L})rozdz\.\s*/gui, 'rozdział ');
+    text = normalizePolishTextForSpeech(text);
   } else {
     text = text.replace(/(?<!\p{L})e\.g\.\s*/gui, 'for example ');
     text = text.replace(/(?<!\p{L})i\.e\.\s*/gui, 'that is ');
