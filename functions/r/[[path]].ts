@@ -55,7 +55,14 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     'model-8': 'https://wnr365.pages.dev/model-8',
     'model8': 'https://wnr365.pages.dev/model-8',
     'model-3d-8': 'https://wnr365.pages.dev/model-8',
-    'siec': 'https://wnr365.pages.dev/siec'
+    'siec': 'https://wnr365.pages.dev/siec',
+    'radio': 'https://widokinaraj.pl/radio',
+    'radio-nowyrhz': 'https://widokinaraj.pl/radio?stacja=nowyrhz',
+    'radio-wnr365': 'https://widokinaraj.pl/radio?stacja=wnr365',
+    'radio-biblia365': 'https://widokinaraj.pl/radio?stacja=biblia365',
+    'radio-rhz365': 'https://widokinaraj.pl/radio?stacja=rhz365',
+    'nowyrhz': 'https://widokinaraj.pl/nowyrhz/',
+    'nowy-rhz': 'https://widokinaraj.pl/nowy-rhz'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');

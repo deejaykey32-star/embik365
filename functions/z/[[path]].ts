@@ -84,7 +84,14 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/piramidy3d': '/piramidy3D',
     '/z/model-8': '/model-8',
     '/z/model8': '/model-8',
-    '/z/siec': '/siec'
+    '/z/siec': '/siec',
+    '/z/radio': 'https://widokinaraj.pl/radio',
+    '/z/radio-nowyrhz': 'https://widokinaraj.pl/radio?stacja=nowyrhz',
+    '/z/radio-wnr365': 'https://widokinaraj.pl/radio?stacja=wnr365',
+    '/z/radio-biblia365': 'https://widokinaraj.pl/radio?stacja=biblia365',
+    '/z/radio-rhz365': 'https://widokinaraj.pl/radio?stacja=rhz365',
+    '/z/nowyrhz': 'https://widokinaraj.pl/nowyrhz/',
+    '/z/nowy-rhz': 'https://widokinaraj.pl/nowy-rhz'
   };
 
   const target = redirectMap[pathKey];
