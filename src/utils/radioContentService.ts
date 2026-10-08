@@ -112,10 +112,29 @@ export interface RadioBroadcastItem {
   words: string[];
 }
 
+// Stałe formuły modlitewne w pełnym brzmieniu liturgicznym
+export const OJCZE_NASZ_PELNY = 
+  'Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja jako w niebie tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.';
+
+export const CHWALA_OJCU_PELNE = 
+  'Chwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen.';
+
+export const MODLITWA_FATIMSKA_PELNA = 
+  'O mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.';
+
+/**
+ * Buduje kompletną modlitwę Zdrowaś Maryjo z dopowiedzeniem oraz drugą częścią Święta Maryjo
+ */
+export function buildFullHailMary(dopowiedzenie: string): string {
+  const cleanDop = (dopowiedzenie || '').trim().replace(/\.+$/, '');
+  return `Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, ${cleanDop}. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.`;
+}
+
 /**
  * Zwraca treść radiową dla wybranej stacji i numeru dnia.
- * Wszystkie skróty, sigla biblijne i cyfry są w pełni rozwijane do pełnych słów,
- * gwarantując bezbłędny odczyt przez lektora oraz perfekcyjną synchronizację karaoke.
+ * Zawiera KOMPLETNĄ treść całych modlitw (Ojcze nasz, 10 x Zdrowaś Maryjo z dopowiedzeniami,
+ * Chwała Ojcu, Modlitwa fatimska oraz modlitwy końcowe), z pełnym tekstem słownym
+ * bez skrótów i cyfr, zsynchronizowanym z lektorem AI i napisami karaoke.
  */
 export function getRadioBroadcastItem(
   stationId: RadioStationId,
@@ -131,16 +150,17 @@ export function getRadioBroadcastItem(
     const headlineTitle = `${mystery.t} – ${mystery.sub}`;
     const subtitle = `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
     
-    // Dopowiedzenia różańcowe z pełnymi słowami liczebników
-    const dopowiedzeniaSpoken = mystery.cl.map((cl, i) => {
-      const ordNumber = numberToPolishOrdinal(i + 1, 'n');
-      return `Dopowiedzenie ${ordNumber}: Zdrowaś Maryjo, łaski pełna, Pan z Tobą... Jezus, ${cl}`;
-    }).join('. ');
-    
     const bibRefSpoken = expandBiblicalReference(mystery.ref);
     const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
     const stageOrdSpoken = numberToPolishOrdinal(mystery.stage, 'm');
     const partOrdSpoken = numberToPolishOrdinal(mystery.part, 'f');
+
+    // 10 pełnych modlitw Zdrowaś Maryjo z pełnym tekstem dopowiedzenia i Święta Maryjo
+    const dopowiedzeniaList = mystery.cl.map((cl, i) => {
+      const ordNumber = numberToPolishOrdinal(i + 1, 'n');
+      const fullPrayer = buildFullHailMary(cl);
+      return `Dopowiedzenie ${ordNumber}: ${fullPrayer}`;
+    });
 
     const speechParts = [
       `Nowy Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} ze stu siedemdziesięciu pięciu.`,
@@ -149,7 +169,11 @@ export function getRadioBroadcastItem(
       `Tajemnica: ${mystery.t}. ${mystery.sub}.`,
       `Fragment Pisma Świętego: ${bibRefSpoken}.`,
       `Rozważanie: ${mystery.med}`,
-      `Dopowiedzenia różańcowe: ${dopowiedzeniaSpoken}.`,
+      `Modlitwa Pańska: ${OJCZE_NASZ_PELNY}`,
+      `Dziesiątka Różańca Świętego z pełnymi dopowiedzeniami:`,
+      ...dopowiedzeniaList,
+      CHWALA_OJCU_PELNE,
+      MODLITWA_FATIMSKA_PELNA,
       mystery.prayer ? `Modlitwa na zakończenie: ${mystery.prayer}` : ''
     ].filter(Boolean);
 
@@ -159,7 +183,10 @@ export function getRadioBroadcastItem(
     const displayContent = [
       `📖 Źródło: ${mystery.ref} (${bibRefSpoken})`,
       `\n✨ Rozważanie:\n${mystery.med}`,
-      `\n📿 Dziesiątka z dopowiedzeniami:\n` + mystery.cl.map((c, idx) => `Dopowiedzenie ${numberToPolishOrdinal(idx + 1, 'n')}: …Jezus, ${c}`).join('\n'),
+      `\n🙏 Modlitwa Pańska:\n${OJCZE_NASZ_PELNY}`,
+      `\n📿 Dziesiątka Różańca Świętego z pełnymi modlitwami i dopowiedzeniami:\n` + dopowiedzeniaList.join('\n\n'),
+      `\n✨ ${CHWALA_OJCU_PELNE}`,
+      `\n🕊️ ${MODLITWA_FATIMSKA_PELNA}`,
       mystery.prayer ? `\n🙏 Modlitwa końcowa:\n${mystery.prayer}` : ''
     ].join('\n');
 
@@ -255,13 +282,21 @@ export function getRadioBroadcastItem(
   const rhzEntry = RHZ365_FULL_DATA[safeDay] || RHZ365_FULL_DATA[1];
   const cleanPassage = stripHtml(rhzEntry.passage || '').trim();
   const cleanExplanation = stripHtml(rhzEntry.explanation || '').trim();
+  const cleanOurFather = stripHtml(rhzEntry.ourFather || OJCZE_NASZ_PELNY).replace(/10 Osobnych Modlitw.*$/i, '').trim();
 
-  const beadsText = (rhzEntry.smallBeads || []).map(b => {
+  // Kompletne 10 modlitw Zdrowaś Maryjo dla każdego paciorka
+  const beadsList = (rhzEntry.smallBeads || []).map(b => {
     const ord = numberToPolishOrdinal(b.beadNumber, 'n');
-    return `Dopowiedzenie ${ord}: Jezus, ${b.dopowiedzenie}`;
-  }).join('. ');
+    const cleanBeadText = stripHtml(b.text || '').trim();
+    if (cleanBeadText.toLowerCase().includes('święta maryjo')) {
+      return `Dopowiedzenie ${ord}: ${cleanBeadText}`;
+    }
+    return `Dopowiedzenie ${ord}: ${buildFullHailMary(b.dopowiedzenie || cleanBeadText)}`;
+  });
 
-  const callsText = (rhzEntry.callsToAction || []).join(' ');
+  const cleanGloryBe = stripHtml(rhzEntry.gloryBe || CHWALA_OJCU_PELNE).trim();
+  const cleanFatima = stripHtml(rhzEntry.fatimaPrayer || MODLITWA_FATIMSKA_PELNA).trim();
+  const callsText = (rhzEntry.callsToAction || []).map(c => stripHtml(c)).join(' ');
   const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
   const spokenDate = normalizePolishTextForSpeech(rhzEntry.displayDate || '');
 
@@ -270,13 +305,27 @@ export function getRadioBroadcastItem(
     rhzEntry.stageTitle,
     `Słowo Boże: ${cleanPassage}`,
     `Rozważanie: ${cleanExplanation}`,
-    beadsText ? `Dopowiedzenia różańcowe: ${beadsText}.` : '',
-    callsText ? `Wezwania do czynu: ${callsText}.` : ''
+    `Modlitwa Pańska: ${cleanOurFather || OJCZE_NASZ_PELNY}`,
+    `Dziesiątka Różańca Świętego z pełnymi dopowiedzeniami:`,
+    ...beadsList,
+    cleanGloryBe || CHWALA_OJCU_PELNE,
+    cleanFatima || MODLITWA_FATIMSKA_PELNA,
+    callsText ? `Wezwania do czynu: ${callsText}` : ''
   ].filter(Boolean);
 
   const rawSpeechText = speechParts.join(' \n\n');
   const speechText = normalizePolishTextForSpeech(rawSpeechText);
   const cleanWords = extractCleanWordsForKaraoke(speechText);
+
+  const displayContent = [
+    `📖 Słowo Boże:\n${cleanPassage}`,
+    `\n✨ Rozważanie:\n${cleanExplanation}`,
+    `\n🙏 Modlitwa Pańska:\n${cleanOurFather || OJCZE_NASZ_PELNY}`,
+    `\n📿 Dziesiątka Różańca Świętego z pełnymi modlitwami i dopowiedzeniami:\n` + beadsList.join('\n\n'),
+    `\n✨ ${cleanGloryBe || CHWALA_OJCU_PELNE}`,
+    `\n🕊️ ${cleanFatima || MODLITWA_FATIMSKA_PELNA}`,
+    callsText ? `\n🔥 Wezwania do czynu:\n${callsText}` : ''
+  ].join('\n');
 
   return {
     stationId: 'rhz365',
@@ -288,7 +337,7 @@ export function getRadioBroadcastItem(
     subtitle: `Pierwotny Różaniec Historii Zbawienia 365`,
     reference: rhzEntry.displayDate,
     speechText,
-    displayContent: `${cleanPassage}\n\n${cleanExplanation}\n\n${beadsText}\n\n${callsText}`,
+    displayContent,
     words: cleanWords
   };
 }
