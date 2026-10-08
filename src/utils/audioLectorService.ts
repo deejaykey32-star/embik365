@@ -383,10 +383,16 @@ export function resumeLectorSpeech(): void {
 }
 
 let activePlaybackSessionId = 0;
+let chromeKeepAliveInterval: any = null;
 
 export function stopLectorSpeech(): void {
   // Invalidate any active playback session immediately
   activePlaybackSessionId++;
+
+  if (chromeKeepAliveInterval) {
+    clearInterval(chromeKeepAliveInterval);
+    chromeKeepAliveInterval = null;
+  }
 
   stopBackgroundAudioKeepAlive();
 
@@ -837,10 +843,32 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
 
   let chunkIndex = 0;
 
+  if (chromeKeepAliveInterval) clearInterval(chromeKeepAliveInterval);
+  chromeKeepAliveInterval = setInterval(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        try {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        } catch {}
+      }
+    }
+  }, 10000);
+
   const speakNextChunk = () => {
-    if (!isCurrentSession()) return;
+    if (!isCurrentSession()) {
+      if (chromeKeepAliveInterval) {
+        clearInterval(chromeKeepAliveInterval);
+        chromeKeepAliveInterval = null;
+      }
+      return;
+    }
 
     if (chunkIndex >= textChunks.length) {
+      if (chromeKeepAliveInterval) {
+        clearInterval(chromeKeepAliveInterval);
+        chromeKeepAliveInterval = null;
+      }
       if (onEnd) onEnd();
       return;
     }
