@@ -35,14 +35,14 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const standaloneUrl = '/nowyRHZ.html';
+  const standaloneUrl = '/nowyrhz/';
 
   const handleReload = () => {
     setIframeKey(k => k + 1);
   };
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/nowyRHZ.html`;
+    const shareUrl = `${window.location.origin}/nowyrhz/`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -63,11 +63,11 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   };
 
   const handleDownloadQr = () => {
-    const fullUrl = `${window.location.origin}/nowyRHZ.html`;
+    const fullUrl = `${window.location.origin}/nowyrhz/`;
     generateAndDownloadQrBadgePng({
       id: 'nowyrhz',
       title: 'Nowy Różaniec Historii Zbawienia (175 dni)',
-      displayLabel: 'wnr365.pages.dev/nowyRHZ.html',
+      displayLabel: 'widokinaraj.pl/nowyrhz/',
       shortUrl: fullUrl,
       fullUrl: fullUrl,
       category: 'nowyrhz',
@@ -173,7 +173,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95"
-                title="Otwórz pełną stronę nowyRHZ.html w nowej karcie"
+                title="Otwórz pełną aplikację Nowy RHZ w nowej karcie"
               >
                 <span>Otwórz w osobnym oknie</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -280,7 +280,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                 <span>Aplikacja zapamiętuje postęp, datę startu i wybrane tempo lektora bezpośrednio w pamięci urządzenia.</span>
               </div>
               <div className="font-mono text-[11px] text-[#8a725f] dark:text-[#6a809f]">
-                /nowyRHZ.html
+                /nowyrhz/
               </div>
             </div>
           )}

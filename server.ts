@@ -62,8 +62,8 @@ app.use('/downloads', express.static(path.join(process.cwd(), 'public', 'downloa
 app.use('/src/pliki', (req, res) => res.redirect(301, `/pliki${req.url}`));
 
 // Serwowanie aplikacji Nowy RHZ
-app.get(['/nowyRHZ', '/nowyRHZ/', '/nowyrhz', '/nowy-rhz'], (req, res) => {
-  res.redirect('/nowyRHZ.html');
+app.get(['/nowyRHZ', '/nowyRHZ/', '/nowyrhz', '/nowyrhz/', '/nowyRHZ.html', '/nowyrhz.html'], (req, res) => {
+  res.redirect('/nowyrhz/');
 });
 
 // Serwowanie symulacji 3D klepsydry
@@ -953,6 +953,8 @@ async function startServer() {
         req.path.startsWith('/w/') || req.path === '/w' ||
         req.path === '/klepsydra' || req.path.startsWith('/klepsydra/') ||
         req.path === '/nowyRHZ.html' || req.path === '/nowyrhz.html' ||
+        req.path === '/nowyrhz' || req.path.startsWith('/nowyrhz/') ||
+        req.path === '/nowyRHZ' || req.path.startsWith('/nowyRHZ/') ||
         req.path.startsWith('/downloads')
       ) {
         return next();
@@ -979,6 +981,8 @@ async function startServer() {
         req.path.startsWith('/w/') || req.path === '/w' ||
         req.path === '/klepsydra' || req.path.startsWith('/klepsydra/') ||
         req.path === '/nowyRHZ.html' || req.path === '/nowyrhz.html' ||
+        req.path === '/nowyrhz' || req.path.startsWith('/nowyrhz/') ||
+        req.path === '/nowyRHZ' || req.path.startsWith('/nowyRHZ/') ||
         req.path.startsWith('/downloads')
       ) {
         return next();

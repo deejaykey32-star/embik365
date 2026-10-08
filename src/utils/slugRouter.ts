@@ -554,6 +554,9 @@ export function buildUrlSlug(route: {
   if (route.sectionId === 'histada') {
     return '/histada';
   }
+  if (route.sectionId === 'nowyRHZ') {
+    return '/nowy-rhz';
+  }
 
   const parts: string[] = [route.sectionId];
 
