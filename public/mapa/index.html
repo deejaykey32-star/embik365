@@ -34,7 +34,7 @@
         <div class="star-halo"></div>
       </div>
       <div class="brand-text">
-        <span class="brand-tag">SZLAK WIARY & NADZIEI 2026</span>
+        <span class="brand-tag">SZLAK WIARY & NADZIEI (18–24 CZERWCA)</span>
         <h1 class="brand-title">Pielgrzymka Gwiaździsta & Orle Gniazda</h1>
       </div>
     </div>
@@ -457,6 +457,30 @@
       </div>
 
       <div class="modal-body" style="font-size: 13px; line-height: 1.6; display: flex; flex-direction: column; gap: 20px;">
+        <!-- Lektor AI Card -->
+        <div style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(180, 83, 9, 0.3)); border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="ai-lector-icon-box" style="width: 42px; height: 42px; border-radius: 12px; background: #d97706; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.4);">
+                <i class="fa-solid fa-headphones"></i>
+              </div>
+              <div>
+                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #fbbf24; letter-spacing: 0.05em;">Lektor AI • Audioprzewodnik Szlaku</span>
+                <h4 style="margin: 2px 0 0 0; font-size: 16px; font-weight: 800; color: #fff;">O co chodzi w pielgrzymce i jak przebiega trasa</h4>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button id="btn-toggle-ai-lector" class="action-btn" style="background: linear-gradient(135deg, #d97706, #b45309); color: #fff; border: 1px solid #f59e0b; font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);">
+                <i id="btn-lector-icon" class="fa-solid fa-volume-high"></i>
+                <span id="btn-lector-text">Odsłuchaj Przewodnik (Lektor AI)</span>
+              </button>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; background: rgba(0,0,0,0.25); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
+            <strong style="color: #fbbf24;">Zakres narracji:</strong> Idea dwóch gwiazd, zjednoczenie na Wałach Jasnogórskich, szczegółowy opis 7 dni szlaku, <span style="color: #f87171; font-weight: 700;">☀️ 21.06: Dzień Przesilenia Letniego, duchowe oświecenie i urodziny autora (blog „Widoki na Raj”)</span>, 23.06 czuwanie w Dzień Ojca w Ojcowie oraz finałowa Koronka w Łagiewnikach o 15:00.
+          </div>
+        </div>
+
         <!-- Google Maps Multi-modal Card -->
         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 18px;">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
@@ -527,14 +551,14 @@
               <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Miasteczko Namiotowe Podzamcze / Ogrodzieniec</div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">
-              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #f59e0b; font-size: 12px;">
-                <span>Dzień 4 • 21.06</span><span>27 km</span>
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(239, 68, 68, 0.12)); border: 1px solid #f59e0b; border-radius: 14px; padding: 12px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
+              <div style="display: flex; justify-content: space-between; font-weight: 700; color: #fbbf24; font-size: 12px;">
+                <span>Dzień 4 • 21.06 — PRZESILENIE LETNIE & WIDOKI NA RAJ</span><span>27 km</span>
               </div>
-              <div style="font-weight: 700; color: #fff; font-size: 13px; margin: 4px 0;">Ogrodzieniec ➔ Klucze / Pustynia Błędowska</div>
-              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Ogrodzieniec – Zamek Smoleń – Bydlin – Klucze</div>
-              <div style="font-size: 11px; color: #cbd5e1; margin-top: 6px;">Przejście skrajem Pustyni Błędowskiej i modlitwa anioła pokoju na punkcie widokowym Czubatka.</div>
-              <div style="font-size: 11px; color: #f59e0b; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Szkoła Podstawowa w Kluczach & Pole Biwakowe</div>
+              <div style="font-weight: 800; color: #fff; font-size: 13px; margin: 4px 0;">Ogrodzieniec ➔ Klucze / Pustynia Błędowska (Dzień Oświecenia)</div>
+              <div style="font-size: 11px; color: #94a3b8; font-family: monospace;">Trasa: Ogrodzieniec – Zamek Smoleń – Bydlin – Klucze (Czubatka)</div>
+              <div style="font-size: 11px; color: #fde68a; margin-top: 6px; font-weight: 500;">☀️ DZIEŃ PRZESILENIA LETNIEGO & URODZINY AUTORA (WIDOKI NA RAJ): Najdłuższy dzień w roku, tryumf światła nad ciemnością i duchowe oświecenie na wzgórzu Czubatka. Spojrzenie na pustynię doczesności przez pryzmat wieczności i bloga „Widoki na Raj”.</div>
+              <div style="font-size: 11px; color: #fbbf24; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">Nocleg: Szkoła Podstawowa w Kluczach & Pole Biwakowe</div>
             </div>
 
             <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px;">

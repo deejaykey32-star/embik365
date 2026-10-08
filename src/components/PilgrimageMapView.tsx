@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   MapPin, 
   Compass, 
@@ -23,9 +23,61 @@ import {
   Info,
   Navigation,
   Route,
-  X
+  X,
+  Volume2,
+  Square,
+  BookOpen,
+  Headphones
 } from 'lucide-react';
 import { SectionMeta } from '../types';
+import { 
+  playLectorSpeech, 
+  stopLectorSpeech, 
+  getLectorConfig, 
+  unlockMobileAudio 
+} from '../utils/audioLectorService';
+
+export const PILGRIMAGE_LECTOR_SCRIPT = `
+Witaj na szlaku Wielkiej Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd. 
+
+Oto przewodnik po niezwykłej drodze serca, braterstwa i duchowej odnowy.
+
+O co w niej chodzi i na czym polega ta pielgrzymka?
+Pielgrzymka opiera się na idei dwóch wielkich gwiazd, łączących najważniejsze sanktuaria Polski. 
+Jako promienie pierwszej gwiazdy, pielgrzymi wyruszają z różnych zakątków Polski i świata – pieszo, rowerami, pociągami czy autokarami – by zjednoczyć się u stóp Matki Bożej na Jasnej Górze w Częstochowie. 
+Następnie, tworząc jedną wielką rodzinę, wyruszają we wspólną, 7-dniową wędrówkę pieszą liczącą 174 kilometry przez malowniczy Szlak Orlich Gniazd na Wyżynie Krakowsko-Częstochowskiej, aż do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
+Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Ojca.
+
+Pielgrzymka nie jest jedynie sprawdzianem kondycyjnym. Jest szkołą patrzenia na naszą codzienność z perspektywy wieczności – tak jak uczy nas blog Widoki na Raj.
+
+Posłuchaj, jak wygląda każdy z siedmiu dni tego szlaku:
+
+Dzień pierwszy, 18 czerwca. Dystans: 28 kilometrów. Trasa: Jasna Góra do Złotego Potoku.
+O godzinie siódmej rano na Wałach Jasnogórskich odbywa się uroczysta Msza Święta inaugurująca zjednoczenie wszystkich promieni. Pielgrzymi ruszają ku jurajskim ostępom, mijając ruiny Zamku w Olsztynie i zabytkowe Zrębice, docierając na nocleg do bukowych lasów Złotego Potoku.
+
+Dzień drugi, 19 czerwca. Dystans: 24 kilometry. Trasa: Złoty Potok do Bobolic i Mirowa.
+Dzień rozpoczyna się przejściem przez rezerwat Ostrężnik, a punktem kulminacyjnym jest wędrówka malowniczą Grzędą Mirowską między bliźniaczymi zamkami Mirów i Bobolice. Wieczór to czas wspólnego ogniska i odpoczynku pod jurajskim niebem.
+
+Dzień trzeci, 20 czerwca. Dystans: 26 kilometrów. Trasa: Bobolice do Zamku Ogrodzieniec.
+Szlak prowadzi przez skaliste wzniesienia Góry Zborów w Podlesicach, z której roztacza się zapierająca dech panorama Jury. Następnie przez Zamek Morsko i Skarżyce pielgrzymi docierają do Podzamcza u stóp monumentalnego Zamku Ogrodzieniec, gdzie wieczorem odbywa się modlitewne nabożeństwo światła.
+
+Dzień czwarty, 21 czerwca. Dystans: 27 kilometrów. Trasa: Ogrodzieniec przez Zamek Smoleń i Bydlin do Klucz i Pustyni Błędowskiej.
+To dzień szczególny i duchowy punkt kulminacyjny całej drogi – Dzień Przesilenia Letniego, najdłuższy dzień w roku, tryumf światła nad ciemnością oraz moment duchowego oświecenia.
+Dzień 21 czerwca to także wyjątkowe osobiste święto autora – moje urodziny – i bezpośrednie serce mojego bloga oraz dzieła Widoki na Raj.
+Stając na punkcie widokowym Czubatka i spoglądając na bezkres Pustyni Błędowskiej, doświadczamy prawdy, że nawet pośród najtrudniejszych pustyń naszego życia, w chorobie, cierpieniu, zranieniach czy samotności, Bóg rozlewa Swoje światło. Blog Widoki na Raj uczy nas patrzeć na każdy trud doczesnej wędrówki z perspektywy wieczności i Bożej logiki miłości. Na wzgórzu Czubatka modlimy się o wewnętrzne oświecenie, odrodzenie nadziei i pokój serca dla każdego z nas.
+
+Dzień piąty, 22 czerwca. Dystans: 25 kilometrów. Trasa: Klucze do Zamku Pieskowa Skała.
+Wkraczamy w granice Ojcowskiego Parku Narodowego. Szlak wiedzie przez zamek Rabsztyn i Sułoszową, otwierając przed pielgrzymami widok na słynną Maczugę Herkulesa oraz renesansowy zamek Pieskowa Skała. Wieczorna kontemplacja w Dolinie Prądnika przywraca siły przed kolejnym etapem.
+
+Dzień szósty, 23 czerwca. Dystans: 18 kilometrów. Trasa: Pieskowa Skała do Ojcowa.
+Ten dzień ma wyjątkowy charakter, ponieważ przypada w Dzień Ojca. Pielgrzymi schodzą w głąb wapiennego wąwozu Doliny Prądnika, mijając Grodzisko i Kaplicę na Wodzie. Wieczorem pod majestatyczną Bramą Krakowską w Ojcowie odbywa się wielkie czuwanie modlitewne w intencji wszystkich ojców, rodzin, przebaczenia w relacjach i odwagi w wierze.
+
+Dzień siódmy, 24 czerwca. Wielki Finał. Dystans: 26 kilometrów. Trasa: Ojców do Krakowa-Łagiewnik.
+Ostatni odcinek prowadzi przez Zamek Korzkiew i Zielonki w stronę Krakowa. Pielgrzymi wkraczają na Wzgórze Miłosierdzia w Łagiewnikach. O godzinie piętnastej, w Godzinie Miłosierdzia, sprawowana jest dziękczynna Msza Święta i odmawiana jest uroczysta Koronka do Bożego Miłosierdzia.
+Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy, stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
+
+Dziękujemy, że jesteś na tej drodze. Niech każdy krok otwiera Twoje serce na prawdziwe Widoki na Raj.
+`;
 
 interface Props {
   section?: SectionMeta;
@@ -39,7 +91,38 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isLectorPlaying, setIsLectorPlaying] = useState(false);
+  const [showNarrationText, setShowNarrationText] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Zatrzymanie lektora przy odmontowaniu widoku
+  useEffect(() => {
+    return () => {
+      stopLectorSpeech();
+    };
+  }, []);
+
+  const handleToggleLector = async () => {
+    unlockMobileAudio();
+    if (isLectorPlaying) {
+      stopLectorSpeech();
+      setIsLectorPlaying(false);
+      return;
+    }
+    stopLectorSpeech();
+    setIsLectorPlaying(true);
+    const config = getLectorConfig();
+    await playLectorSpeech({
+      text: PILGRIMAGE_LECTOR_SCRIPT,
+      config,
+      overrideLang: 'pl',
+      title: 'Wielka Pielgrzymka Gwiaździsta • Przewodnik Audio',
+      sectionName: 'Szlak Orlich Gniazd (18–24 czerwca)',
+      onStart: () => setIsLectorPlaying(true),
+      onEnd: () => setIsLectorPlaying(false),
+      onError: () => setIsLectorPlaying(false)
+    });
+  };
 
   // Bezpośrednia ścieżka do nawigacji po 8 przystankach trasy w Google Maps (Jasna Góra ➔ Łagiewniki)
   const googleMapsRouteUrl = 'https://www.google.com/maps/dir/Jasna+G%C3%B3ra,+Cz%C4%99stochowa/Z%C5%82oty+Potok/Zamek+Bobolice/Zamek+Ogrodzieniec/Klucze/Zamek+Pieskowa+Ska%C5%82a/Ojc%C3%B3w/Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia+w+Krakowie-%C5%81agiewnikach/';
@@ -115,12 +198,13 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       day: 4,
-      date: '21.06',
-      title: 'Ogrodzieniec ➔ Klucze / Pustynia Błędowska',
+      date: '21.06 — PRZESILENIE LETNIE & WIDOKI NA RAJ',
+      title: 'Ogrodzieniec ➔ Klucze / Pustynia Błędowska (Dzień Oświecenia)',
       km: 27,
-      route: 'Ogrodzieniec – Zamek Smoleń (Dolina Wodącej) – Bydlin – Klucze',
-      highlight: 'Przejście skrajem Pustyni Błędowskiej i modlitwa anioła pokoju na punkcie widokowym Czubatka.',
-      lodging: 'Szkoła Podstawowa w Kluczach & Pole Biwakowe Pustynia Błędowska'
+      route: 'Ogrodzieniec – Zamek Smoleń (Dolina Wodącej) – Bydlin – Klucze (Czubatka)',
+      highlight: '☀️ DZIEŃ PRZESILENIA LETNIEGO & URODZINY AUTORA (WIDOKI NA RAJ): Najdłuższy dzień w roku, tryumf światła nad ciemnością i duchowe oświecenie na punkcie widokowym Czubatka. Spojrzenie na pustynię doczesności przez pryzmat wieczności i bloga „Widoki na Raj”.',
+      lodging: 'Szkoła Podstawowa w Kluczach & Pole Biwakowe Pustynia Błędowska',
+      isSpecial: true
     },
     {
       day: 5,
@@ -571,6 +655,96 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
         {/* Tab 0 Content: Info & Pełny Harmonogram */}
         {activeTab === 'info' && (
           <div className="space-y-6">
+            {/* Lektor AI Audio Player Card */}
+            <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-amber-600/15 via-orange-600/10 to-amber-700/20 dark:from-amber-950/50 dark:via-orange-950/30 dark:to-amber-900/40 border border-amber-500/40 dark:border-amber-500/30 shadow-md space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className={`p-3 rounded-2xl text-white shadow-md transition-all ${
+                    isLectorPlaying 
+                      ? 'bg-rose-600 animate-pulse' 
+                      : 'bg-amber-600'
+                  }`}>
+                    {isLectorPlaying ? <Square className="w-5 h-5 fill-white" /> : <Headphones className="w-5 h-5" />}
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        Lektor AI • Audioprzewodnik
+                      </span>
+                      {isLectorPlaying && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                          ODTWARZANIE
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold font-serif-book text-[#1f1712] dark:text-white">
+                      O co chodzi w pielgrzymce i jak przebiega trasa
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={handleToggleLector}
+                    className={`px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md transition-all cursor-pointer ${
+                      isLectorPlaying
+                        ? 'bg-rose-600 hover:bg-rose-700 text-white ring-2 ring-rose-400/50'
+                        : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white'
+                    }`}
+                  >
+                    {isLectorPlaying ? (
+                      <>
+                        <Square className="w-4 h-4 fill-white" />
+                        <span>Zatrzymaj Lektora AI</span>
+                        <span className="flex items-end gap-0.5 h-3">
+                          <span className="w-1 h-3 bg-white rounded-full animate-bounce"></span>
+                          <span className="w-1 h-2 bg-white rounded-full animate-bounce [animation-delay:0.15s]"></span>
+                          <span className="w-1 h-3 bg-white rounded-full animate-bounce [animation-delay:0.3s]"></span>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-4 h-4" />
+                        <span>Odsłuchaj Przewodnik (Lektor AI)</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setShowNarrationText(!showNarrationText)}
+                    className="px-3.5 py-2.5 rounded-2xl bg-white dark:bg-[#151e2d] hover:bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                    title="Rozwiń lub zwiń tekst narracji lektora"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>{showNarrationText ? 'Ukryj tekst' : 'Tekst narracji'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-[#0f1523]/80 border border-amber-500/20 text-xs text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed flex flex-wrap items-center gap-2">
+                <span className="font-bold text-amber-800 dark:text-amber-300">W audycji:</span>
+                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Idea Dwóch Gwiazd</span>
+                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Harmonogram Dni 1–7</span>
+                <span className="px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-900 dark:text-rose-200 font-semibold">
+                  ☀️ 21.06: Przesilenie Letnie & Urodziny Autora — „Widoki na Raj”
+                </span>
+                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">23.06: Dzień Ojca w Ojcowie</span>
+                <span className="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-900 dark:text-emerald-200">24.06: Łagiewniki o 15:00</span>
+              </div>
+
+              {/* Rozwijany pełny tekst narracji */}
+              {showNarrationText && (
+                <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1422] border border-[#e2d6c7] dark:border-[#222e44] text-xs sm:text-sm text-[#3b2d22] dark:text-[#cbd5e1] leading-relaxed whitespace-pre-line max-h-80 overflow-y-auto space-y-2 font-serif-book">
+                  <div className="font-sans-ui text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 pb-1 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                    <span>Pełna treść narracji Lektora AI</span>
+                    <button onClick={() => setShowNarrationText(false)} className="text-xs hover:text-amber-600">Zamknij</button>
+                  </div>
+                  {PILGRIMAGE_LECTOR_SCRIPT.trim()}
+                </div>
+              )}
+            </div>
+
             <div className="bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-transparent dark:from-amber-950/40 dark:via-orange-950/20 p-6 sm:p-8 rounded-3xl border border-amber-500/30 shadow-xs space-y-4">
               <div className="flex items-center gap-3">
                 <span className="p-2.5 rounded-2xl bg-amber-600 text-white shadow-xs">
@@ -596,6 +770,17 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 >
                   <Info className="w-3.5 h-3.5" />
                   <span>Otwórz pełne okno Info</span>
+                </button>
+                <button
+                  onClick={handleToggleLector}
+                  className={`px-4 py-2 rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer ${
+                    isLectorPlaying 
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white' 
+                      : 'bg-amber-700 hover:bg-amber-600 text-white'
+                  }`}
+                >
+                  {isLectorPlaying ? <Square className="w-3.5 h-3.5 fill-white" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  <span>{isLectorPlaying ? 'Zatrzymaj Lektora' : 'Włącz Lektora AI'}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('plan')}
@@ -1209,6 +1394,55 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               <p className="text-xs sm:text-sm text-[#7a6857] dark:text-[#94a3b8]">
                 Termin: corocznie 18 – 24 czerwca • Dystans pieszy: 174 km (Częstochowa ➔ Kraków-Łagiewniki)
               </p>
+            </div>
+
+            {/* AI Lector Audio Player in Modal */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-amber-700/20 dark:from-amber-950/40 dark:via-orange-950/25 dark:to-amber-900/30 border border-amber-500/40 dark:border-amber-500/30 shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className={`p-2.5 rounded-xl text-white shadow-xs ${
+                  isLectorPlaying ? 'bg-rose-600 animate-pulse' : 'bg-amber-600'
+                }`}>
+                  {isLectorPlaying ? <Square className="w-4 h-4 fill-white" /> : <Headphones className="w-4 h-4" />}
+                </span>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                      Lektor AI • Audioprzewodnik
+                    </span>
+                    {isLectorPlaying && (
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
+                        GŁOS WŁĄCZONY
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-[#1f1712] dark:text-white">
+                    Posłuchaj o idei pielgrzymki, 7 dniach szlaku, przesileniu 21 czerwca i blogu „Widoki na Raj”
+                  </h4>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleToggleLector}
+                  className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer ${
+                    isLectorPlaying
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                      : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white'
+                  }`}
+                >
+                  {isLectorPlaying ? (
+                    <>
+                      <Square className="w-3.5 h-3.5 fill-white" />
+                      <span>Zatrzymaj Lektora AI</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>Odsłuchaj Lektora AI</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Google Maps Multi-Modal Box */}

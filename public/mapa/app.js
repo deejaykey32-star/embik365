@@ -43,6 +43,9 @@ class PilgrimageApp {
     // Intentions State
     this.intentions = [...SAMPLE_PRAYER_INTENTIONS];
 
+    // Lektor AI State
+    this.isLectorSpeaking = false;
+
     this.init();
   }
 
@@ -967,12 +970,27 @@ class PilgrimageApp {
         infoModal.classList.add('open');
       });
       const closeInfoBtn = document.getElementById('btn-close-info-modal');
-      if (closeInfoBtn) closeInfoBtn.addEventListener('click', () => infoModal.classList.remove('open'));
-      const closeInfoFooterBtn = document.getElementById('btn-close-info-modal-footer');
-      if (closeInfoFooterBtn) closeInfoFooterBtn.addEventListener('click', () => infoModal.classList.remove('open'));
-      infoModal.addEventListener('click', (e) => {
-        if (e.target.id === 'info-modal') infoModal.classList.remove('open');
+      if (closeInfoBtn) closeInfoBtn.addEventListener('click', () => {
+        infoModal.classList.remove('open');
+        this.stopAiLector();
       });
+      const closeInfoFooterBtn = document.getElementById('btn-close-info-modal-footer');
+      if (closeInfoFooterBtn) closeInfoFooterBtn.addEventListener('click', () => {
+        infoModal.classList.remove('open');
+        this.stopAiLector();
+      });
+      infoModal.addEventListener('click', (e) => {
+        if (e.target.id === 'info-modal') {
+          infoModal.classList.remove('open');
+          this.stopAiLector();
+        }
+      });
+    }
+
+    // Lektor AI in Info Modal
+    const lectorBtn = document.getElementById('btn-toggle-ai-lector');
+    if (lectorBtn) {
+      lectorBtn.addEventListener('click', () => this.toggleAiLector());
     }
 
     // Live Modal Open / Close
@@ -1161,6 +1179,135 @@ class PilgrimageApp {
     } catch {
       // audio fallback
     }
+  }
+
+  /* -------------------------------------------------------------------------
+     LEKTOR AI SPEECH SYNTHESIS ENGINE
+     ------------------------------------------------------------------------- */
+  toggleAiLector() {
+    if (this.isLectorSpeaking) {
+      this.stopAiLector();
+    } else {
+      this.startAiLector();
+    }
+  }
+
+  stopAiLector() {
+    this.isLectorSpeaking = false;
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
+    }
+    const icon = document.getElementById('btn-lector-icon');
+    const text = document.getElementById('btn-lector-text');
+    const btn = document.getElementById('btn-toggle-ai-lector');
+    const box = document.getElementById('ai-lector-icon-box');
+    if (icon) { icon.className = 'fa-solid fa-volume-high'; }
+    if (text) { text.innerText = 'Odsłuchaj Przewodnik (Lektor AI)'; }
+    if (btn) { btn.style.background = 'linear-gradient(135deg, #d97706, #b45309)'; }
+    if (box) { box.style.background = '#d97706'; }
+  }
+
+  startAiLector() {
+    if (!('speechSynthesis' in window)) {
+      alert('Twoja przeglądarka nie obsługuje syntezy mowy.');
+      return;
+    }
+
+    try {
+      window.speechSynthesis.cancel();
+    } catch {}
+
+    this.isLectorSpeaking = true;
+
+    const icon = document.getElementById('btn-lector-icon');
+    const text = document.getElementById('btn-lector-text');
+    const btn = document.getElementById('btn-toggle-ai-lector');
+    const box = document.getElementById('ai-lector-icon-box');
+    if (icon) { icon.className = 'fa-solid fa-stop'; }
+    if (text) { text.innerText = 'Zatrzymaj Lektora AI'; }
+    if (btn) { btn.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)'; }
+    if (box) { box.style.background = '#dc2626'; }
+
+    const lectorScript = `
+Witaj na szlaku Wielkiej Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd. 
+
+Oto przewodnik po niezwykłej drodze serca, braterstwa i duchowej odnowy.
+
+O co w niej chodzi i na czym polega ta pielgrzymka?
+Pielgrzymka opiera się na idei dwóch wielkich gwiazd, łączących najważniejsze sanktuaria Polski. 
+Jako promienie pierwszej gwiazdy, pielgrzymi wyruszają z różnych zakątków Polski i świata – pieszo, rowerami, pociągami czy autokarami – by zjednoczyć się u stóp Matki Bożej na Jasnej Górze w Częstochowie. 
+Następnie, tworząc jedną wielką rodzinę, wyruszają we wspólną, 7-dniową wędrówkę pieszą liczącą 174 kilometry przez malowniczy Szlak Orlich Gniazd na Wyżynie Krakowsko-Częstochowskiej, aż do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
+Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Ojca.
+
+Pielgrzymka nie jest jedynie sprawdzianem kondycyjnym. Jest szkołą patrzenia na naszą codzienność z perspektywy wieczności – tak jak uczy nas blog Widoki na Raj.
+
+Posłuchaj, jak wygląda każdy z siedmiu dni tego szlaku:
+
+Dzień pierwszy, 18 czerwca. Dystans: 28 kilometrów. Trasa: Jasna Góra do Złotego Potoku.
+O godzinie siódmej rano na Wałach Jasnogórskich odbywa się uroczysta Msza Święta inaugurująca zjednoczenie wszystkich promieni. Pielgrzymi ruszają ku jurajskim ostępom, mijając ruiny Zamku w Olsztynie i zabytkowe Zrębice, docierając na nocleg do bukowych lasów Złotego Potoku.
+
+Dzień drugi, 19 czerwca. Dystans: 24 kilometry. Trasa: Złoty Potok do Bobolic i Mirowa.
+Dzień rozpoczyna się przejściem przez rezerwat Ostrężnik, a punktem kulminacyjnym jest wędrówka malowniczą Grzędą Mirowską między bliźniaczymi zamkami Mirów i Bobolice. Wieczór to czas wspólnego ogniska i odpoczynku pod jurajskim niebem.
+
+Dzień trzeci, 20 czerwca. Dystans: 26 kilometrów. Trasa: Bobolice do Zamku Ogrodzieniec.
+Szlak prowadzi przez skaliste wzniesienia Góry Zborów w Podlesicach, z której roztacza się zapierająca dech panorama Jury. Następnie przez Zamek Morsko i Skarżyce pielgrzymi docierają do Podzamcza u stóp monumentalnego Zamku Ogrodzieniec, gdzie wieczorem odbywa się modlitewne nabożeństwo światła.
+
+Dzień czwarty, 21 czerwca. Dystans: 27 kilometrów. Trasa: Ogrodzieniec przez Zamek Smoleń i Bydlin do Klucz i Pustyni Błędowskiej.
+To dzień szczególny i duchowy punkt kulminacyjny całej drogi – Dzień Przesilenia Letniego, najdłuższy dzień w roku, tryumf światła nad ciemnością oraz moment duchowego oświecenia.
+Dzień 21 czerwca to także wyjątkowe osobiste święto autora – moje urodziny – i bezpośrednie serce mojego bloga oraz dzieła Widoki na Raj.
+Stając na punkcie widokowym Czubatka i spoglądając na bezkres Pustyni Błędowskiej, doświadczamy prawdy, że nawet pośród najtrudniejszych pustyń naszego życia, w chorobie, cierpieniu, zranieniach czy samotności, Bóg rozlewa Swoje światło. Blog Widoki na Raj uczy nas patrzeć na każdy trud doczesnej wędrówki z perspektywy wieczności i Bożej logiki miłości. Na wzgórzu Czubatka modlimy się o wewnętrzne oświecenie, odrodzenie nadziei i pokój serca dla każdego z nas.
+
+Dzień piąty, 22 czerwca. Dystans: 25 kilometrów. Trasa: Klucze do Zamku Pieskowa Skała.
+Wkraczamy w granice Ojcowskiego Parku Narodowego. Szlak wiedzie przez zamek Rabsztyn i Sułoszową, otwierając przed pielgrzymami widok na słynną Maczugę Herkulesa oraz renesansowy zamek Pieskowa Skała. Wieczorna kontemplacja w Dolinie Prądnika przywraca siły przed kolejnym etapem.
+
+Dzień szósty, 23 czerwca. Dystans: 18 kilometrów. Trasa: Pieskowa Skała do Ojcowa.
+Ten dzień ma wyjątkowy charakter, ponieważ przypada w Dzień Ojca. Pielgrzymi schodzą w głąb wapiennego wąwozu Doliny Prądnika, mijając Grodzisko i Kaplicę na Wodzie. Wieczorem pod majestatyczną Bramą Krakowską w Ojcowie odbywa się wielkie czuwanie modlitewne w intencji wszystkich ojców, rodzin, przebaczenia w relacjach i odwagi w wierze.
+
+Dzień siódmy, 24 czerwca. Wielki Finał. Dystans: 26 kilometrów. Trasa: Ojców do Krakowa-Łagiewnik.
+Ostatni odcinek prowadzi przez Zamek Korzkiew i Zielonki w stronę Krakowa. Pielgrzymi wkraczają na Wzgórze Miłosierdzia w Łagiewnikach. O godzinie piętnastej, w Godzinie Miłosierdzia, sprawowana jest dziękczynna Msza Święta i odmawiana jest uroczysta Koronka do Bożego Miłosierdzia.
+Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy, stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
+
+Dziękujemy, że jesteś na tej drodze. Niech każdy krok otwiera Twoje serce na prawdziwe Widoki na Raj.
+    `;
+
+    // Podział na zdania dla płynnej syntezy bez limitu czasu
+    const sentences = lectorScript
+      .split(/(?<=[.!?])\s+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    let currentIndex = 0;
+
+    const playNext = () => {
+      if (!this.isLectorSpeaking || currentIndex >= sentences.length) {
+        this.stopAiLector();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(sentences[currentIndex]);
+      utterance.lang = 'pl-PL';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      const plVoice = voices.find(v => v.lang.startsWith('pl'));
+      if (plVoice) utterance.voice = plVoice;
+
+      utterance.onend = () => {
+        currentIndex++;
+        playNext();
+      };
+
+      utterance.onerror = () => {
+        this.stopAiLector();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    };
+
+    playNext();
   }
 }
 
