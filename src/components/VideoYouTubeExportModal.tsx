@@ -145,6 +145,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   useEffect(() => {
     if (isOpen && canvasRef.current) {
       drawVideoFrame(0, 0);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          if (isOpen && canvasRef.current) {
+            drawVideoFrame(0, 0);
+          }
+        }).catch(() => {});
+      }
     }
   }, [isOpen, activeBroadcastItem, resolution]);
 
@@ -569,7 +576,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       // Pomocnik dzielenia słów danej sekcji na linie dla zadanego rozmiaru czcionki
       const buildLinesForSection = (fSize: number) => {
+        ctx.save();
         ctx.font = `600 ${fSize}px ${FONT_FAMILY}`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
         const spaceW = Math.max(Math.ceil(ctx.measureText(' ').width), Math.round(fSize * 0.28));
         const builtLines: LineItem[] = [];
         let curLineTokens: WordToken[] = [];
@@ -616,6 +626,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           });
         }
 
+        ctx.restore();
         return { builtLines, spaceW };
       };
 
@@ -627,7 +638,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
       if (sectionLines.length > 0) {
-        const requiredH = (sectionLines.length - 1) * renderLineHeight + renderFontSize;
+        const requiredH = sectionLines.length * renderLineHeight;
         if (requiredH > zoneHeight) {
           const candidateLineH = Math.floor(zoneHeight / sectionLines.length);
           const minAcceptableLineH = Math.round(height * (hasRosary ? 0.033 : 0.036));
@@ -656,52 +667,64 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       }
 
       // PIONOWE WYŚRODKOWANIE WIDOCZNYCH LINII W STREFIE NAPISÓW
-      const totalBlockHeight = Math.max(renderFontSize, (displayLines.length - 1) * renderLineHeight + renderFontSize);
+      const totalBlockHeight = displayLines.length * renderLineHeight;
       const remainingZoneY = zoneHeight - totalBlockHeight;
-      const startY = zoneTop + Math.max(0, Math.round(remainingZoneY / 2)) + Math.round(renderFontSize * 0.85);
+      const blockTop = zoneTop + Math.max(0, Math.round(remainingZoneY / 2));
+      const startY = blockTop + Math.round(renderLineHeight / 2);
 
       displayLines.forEach((line, lineIndex) => {
         const lineY = startY + lineIndex * renderLineHeight;
         const isLastLineOfSec = line === sectionLines[sectionLines.length - 1];
         const N = line.tokens.length;
 
-        // Bezpieczny odstęp między słowami (nigdy mniejszy niż standardSpaceWidth)
+        // OBUSTRONNE WYJUSTOWANIE DO LEWEGO I PRAWEGO MARGINESU:
+        // Wszystkie linie oprócz ostatniej w akapicie/sekcji są idealnie rozciągnięte od lewego do prawego marginesu
+        const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
+        const gapsCount = N - 1;
+        const isLastLine = Boolean(line.isParagraphEnd || isLastLineOfSec);
+        const isJustified = gapsCount > 0 && !isLastLine;
+
         let gap = standardSpaceWidth;
-        if (N > 1 && !line.isParagraphEnd && !isLastLineOfSec) {
-          const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
+        if (isJustified) {
           const remainingSpace = maxTextWidth - totalWordsW;
-          const candidateGap = remainingSpace / (N - 1);
-          // Odstęp może być tylko rozszerzany do 1.8x, NIGDY zmniejszany poniżej 1.0x standardSpaceWidth
-          if (candidateGap >= standardSpaceWidth && candidateGap <= standardSpaceWidth * 1.8) {
-            gap = candidateGap;
-          }
+          const candidateGap = remainingSpace / gapsCount;
+          gap = Math.max(standardSpaceWidth, candidateGap);
         }
 
-        let tokenX = marginLeft;
+        let curX = marginLeft;
 
-        line.tokens.forEach((token) => {
+        for (let tIdx = 0; tIdx < N; tIdx++) {
+          const token = line.tokens[tIdx];
           const isCurrent = token.wordIdx === activeWordIdx;
           const isSpoken = token.wordIdx < activeWordIdx;
 
-          // Stała czcionka dla spójnego pomiaru i renderowania
+          // Wyznacz bezwzględną pozycję X:
+          // Dla wyjustowanej linii ostatnie słowo styka się w 100% z prawym marginesem
+          let tokenX = curX;
+          if (isJustified && tIdx === N - 1) {
+            tokenX = marginLeft + maxTextWidth - token.width;
+          }
+
+          ctx.save();
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
           ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
 
           if (isCurrent) {
-            // EFEKT KARAOKE: Eleganckie złote tło bez zmiany szerokości liter (nie nachodzi na sąsiednie słowa)
-            ctx.save();
-            const padX = Math.min(Math.round(gap * 0.25), 5);
-            const padY = Math.round(renderFontSize * 0.12);
+            // EFEKT KARAOKE: Eleganckie złote tło dokładnie wokół aktywnego słowa
+            // Nigdy nie zachodzi na sąsiednie słowa (bezpieczny margines padX)
+            const padX = Math.min(Math.round(gap * 0.25), 6);
+            const bgH = Math.round(renderFontSize * 1.28);
             const bgX = tokenX - padX;
-            const bgY = lineY - renderFontSize + Math.round(renderFontSize * 0.12);
+            const bgY = Math.round(lineY - bgH / 2);
             const bgW = token.width + padX * 2;
-            const bgH = renderFontSize + padY;
 
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.28)';
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.26)';
             ctx.beginPath();
-            ctx.roundRect(bgX, bgY, bgW, bgH, 6);
+            ctx.roundRect(bgX, bgY, bgW, bgH, 8);
             ctx.fill();
 
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.90)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
@@ -709,25 +732,21 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.shadowBlur = 12;
             ctx.fillStyle = '#ffd700';
             ctx.fillText(token.text, tokenX, lineY);
-            ctx.restore();
           } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel
-            ctx.save();
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel, wyraźna i czytelna
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#ffffff';
             ctx.fillText(token.text, tokenX, lineY);
-            ctx.restore();
           } else {
             // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-400
-            ctx.save();
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#94a3b8';
             ctx.fillText(token.text, tokenX, lineY);
-            ctx.restore();
           }
+          ctx.restore();
 
-          tokenX += token.width + gap;
-        });
+          curX = tokenX + token.width + gap;
+        }
       });
 
       ctx.shadowBlur = 0;
