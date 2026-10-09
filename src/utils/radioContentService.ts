@@ -106,6 +106,16 @@ export interface RosaryBeadSegment {
   endWordIdx: number;
 }
 
+export interface RadioSection {
+  id: string;
+  title: string;
+  type: 'intro' | 'scripture' | 'meditation' | 'our_father' | 'hail_mary' | 'glory_be' | 'fatima' | 'conclusion' | 'general';
+  beadIndex?: number; // 0, 1..10, 11 dla różańca
+  text: string;
+  startWordIdx: number;
+  endWordIdx: number;
+}
+
 export interface RadioBroadcastItem {
   stationId: RadioStationId;
   stationName: string;
@@ -120,6 +130,8 @@ export interface RadioBroadcastItem {
   speechText: string;
   displayContent: string;
   words: string[];
+  lineBreakWordIndices?: number[];
+  sections?: RadioSection[];
   rosarySegments?: RosaryBeadSegment[];
 }
 
@@ -142,62 +154,58 @@ export function buildFullHailMary(dopowiedzenie: string): string {
 }
 
 /**
- * Oblicza dokładne zakresy indeksów słów dla 12 paciorków różańca:
- * - 0: Duży paciorek (Rozważanie i Ojcze nasz)
- * - 1..10: 10 małych paciorków (Zdrowaś Maryjo ze wstawką po słowie Jezus)
- * - 11: Kolejny duży paciorek (Chwała Ojcu i O mój Jezu)
+ * Oblicza dokładne zakresy indeksów słów dla 12 paciorków różańca na podstawie sekcji
  */
-export function calculateRosarySegments(
-  introParts: string[],
-  smallBeads: { text: string; dopowiedzenie: string }[],
-  conclusionParts: string[],
-  cleanWords: string[]
+export function calculateRosarySegmentsFromSections(
+  sections: RadioSection[],
+  smallBeadsData: { text: string; dopowiedzenie: string }[],
+  cleanWordsCount: number
 ): RosaryBeadSegment[] {
   const segments: RosaryBeadSegment[] = [];
 
-  // 1. Krok 1 (Duży paciorek): Rozważanie i Ojcze nasz
-  const introNorm = normalizePolishTextForSpeech(introParts.join(' \n\n'));
-  const introWordsCount = extractCleanWordsForKaraoke(introNorm).length;
+  // 1. Krok 1 (Duży paciorek): Informacje wstępne, Rozważanie i Ojcze nasz (beadIndex === 0)
+  const introSections = sections.filter(s => s.beadIndex === 0);
+  const introStart = introSections.length > 0 ? introSections[0].startWordIdx : 0;
+  const introEnd = introSections.length > 0 ? introSections[introSections.length - 1].endWordIdx : 0;
 
   segments.push({
     beadIndex: 0,
     beadType: 'large_intro',
     label: 'Rozważanie & Ojcze nasz',
     subLabel: 'Krok 1: Rozważanie Tajemnicy oraz Modlitwa Pańska',
-    startWordIdx: 0,
-    endWordIdx: Math.max(0, introWordsCount - 1)
+    startWordIdx: introStart,
+    endWordIdx: introEnd
   });
 
-  let currentStart = introWordsCount;
-
-  // 2. 10 Małych paciorków: Zdrowaś Maryjo ze wstawką po słowie Jezus
-  for (let i = 0; i < smallBeads.length && i < 10; i++) {
-    const bead = smallBeads[i];
-    const beadNorm = normalizePolishTextForSpeech(bead.text);
-    const beadWordsCount = extractCleanWordsForKaraoke(beadNorm).length;
-    const endWordIdx = Math.min(cleanWords.length - 1, currentStart + beadWordsCount - 1);
-
-    segments.push({
-      beadIndex: i + 1,
-      beadType: 'small_decade',
-      label: `Zdrowaś Maryjo #${i + 1} z 10`,
-      subLabel: `Paciorek #${i + 1} z 10`,
-      insertion: bead.dopowiedzenie,
-      startWordIdx: currentStart,
-      endWordIdx: Math.max(currentStart, endWordIdx)
-    });
-
-    currentStart = endWordIdx + 1;
+  // 2. 10 Małych paciorków: Zdrowaś Maryjo 1..10 (beadIndex === 1..10)
+  for (let b = 1; b <= 10; b++) {
+    const beadSec = sections.find(s => s.beadIndex === b);
+    const dop = smallBeadsData[b - 1]?.dopowiedzenie || '';
+    if (beadSec) {
+      segments.push({
+        beadIndex: b,
+        beadType: 'small_decade',
+        label: `Zdrowaś Maryjo #${b} z 10`,
+        subLabel: `Paciorek #${b} z 10`,
+        insertion: dop,
+        startWordIdx: beadSec.startWordIdx,
+        endWordIdx: beadSec.endWordIdx
+      });
+    }
   }
 
-  // 3. Krok 3 (Duży paciorek): Chwała Ojcu i O mój Jezu
+  // 3. Krok 3 (Duży paciorek): Chwała Ojcu i O mój Jezu (beadIndex === 11)
+  const conclSections = sections.filter(s => s.beadIndex === 11);
+  const conclStart = conclSections.length > 0 ? conclSections[0].startWordIdx : (segments[segments.length - 1]?.endWordIdx ?? 0) + 1;
+  const conclEnd = Math.max(conclStart, cleanWordsCount - 1);
+
   segments.push({
     beadIndex: 11,
     beadType: 'large_conclusion',
     label: 'Chwała Ojcu & O mój Jezu',
     subLabel: 'Krok 3: Modlitwa Uwielbienia oraz Modlitwa Fatimska',
-    startWordIdx: Math.min(currentStart, cleanWords.length - 1),
-    endWordIdx: Math.max(0, cleanWords.length - 1)
+    startWordIdx: conclStart,
+    endWordIdx: conclEnd
   });
 
   return segments;
@@ -208,6 +216,10 @@ export function calculateRosarySegments(
  * Zawiera KOMPLETNĄ treść całych modlitw (Ojcze nasz, 10 x Zdrowaś Maryjo z dopowiedzeniami,
  * Chwała Ojcu, Modlitwa fatimska oraz modlitwy końcowe), z pełnym tekstem słownym
  * bez skrótów i cyfr, zsynchronizowanym z lektorem AI i napisami karaoke.
+ * 
+ * KAŻDA MODLITWA (Informacje wstępne, Rozważanie, Ojcze nasz, każde Zdrowaś Maryjo x 10,
+ * Chwała Ojcu, O mój Jezu) zaczyna się od nowej linii, posiada dokładne granice indeksów słów
+ * oraz nie powoduje znikania przeczytanego tekstu w generatorze wideo MP4.
  */
 export function getRadioBroadcastItem(
   stationId: RadioStationId,
@@ -235,30 +247,79 @@ export function getRadioBroadcastItem(
     }));
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
-    const introParts = [
+    // KROK 1: Informacje wstępne, Rozważanie, Ojcze nasz - każda sekcja zaczyna się od nowej linii!
+    const introInfoText = [
       `Nowy Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} ze stu siedemdziesięciu pięciu.`,
       `Etap ${stageOrdSpoken}: ${mystery.stageTitle}.`,
       `Część ${partOrdSpoken}: ${mystery.partTitle}.`,
       `Tajemnica: ${mystery.t}. ${mystery.sub}.`,
-      `Fragment Pisma Świętego: ${bibRefSpoken}.`,
-      `Rozważanie: ${mystery.med}`,
-      `Modlitwa Pańska: ${OJCZE_NASZ_PELNY}`
+      `Fragment Pisma Świętego: ${bibRefSpoken}.`
+    ].join(' ');
+
+    const rozwazanieText = `Rozważanie: ${mystery.med}`;
+    const ojczeNaszText = `Modlitwa Pańska: ${OJCZE_NASZ_PELNY}`;
+    const chwalaOjcuText = CHWALA_OJCU_PELNE;
+    const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
+    const modlitwaKoncowaText = mystery.prayer ? `Modlitwa na zakończenie: ${mystery.prayer}` : '';
+
+    interface SectionDef {
+      id: string;
+      title: string;
+      type: RadioSection['type'];
+      beadIndex?: number;
+      rawText: string;
+    }
+
+    const sectionDefs: SectionDef[] = [
+      { id: 'intro', title: 'Informacje wstępne', type: 'intro', beadIndex: 0, rawText: introInfoText },
+      { id: 'meditation', title: 'Rozważanie', type: 'meditation', beadIndex: 0, rawText: rozwazanieText },
+      { id: 'our_father', title: 'Modlitwa Pańska (Ojcze nasz)', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
+      ...smallBeadsData.map((b, idx) => ({
+        id: `hail_mary_${idx + 1}`,
+        title: `Zdrowaś Maryjo #${idx + 1}`,
+        type: 'hail_mary' as const,
+        beadIndex: idx + 1,
+        rawText: b.text
+      })),
+      { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
+      { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText },
+      ...(modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
     ];
 
-    const conclusionParts = [
-      CHWALA_OJCU_PELNE,
-      MODLITWA_FATIMSKA_PELNA,
-      mystery.prayer ? `Modlitwa na zakończenie: ${mystery.prayer}` : ''
-    ].filter(Boolean);
+    const cleanWords: string[] = [];
+    const lineBreakWordIndices: number[] = [];
+    const sections: RadioSection[] = [];
+    const normalizedSectionTexts: string[] = [];
 
-    const speechParts = [
-      ...introParts,
-      ...dopowiedzeniaList,
-      ...conclusionParts
-    ];
+    for (let sIdx = 0; sIdx < sectionDefs.length; sIdx++) {
+      const def = sectionDefs[sIdx];
+      const normText = normalizePolishTextForSpeech(def.rawText);
+      normalizedSectionTexts.push(normText);
+      const sWords = extractCleanWordsForKaraoke(normText);
+      const startWordIdx = cleanWords.length;
 
-    const rawSpeechText = speechParts.join(' \n\n');
-    const speechText = normalizePolishTextForSpeech(rawSpeechText);
+      if (cleanWords.length > 0 && sWords.length > 0) {
+        lineBreakWordIndices.push(startWordIdx); // Każda kolejna modlitwa/sekcja zaczyna się od nowej linii!
+      }
+
+      for (const w of sWords) {
+        cleanWords.push(w);
+      }
+
+      const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+      sections.push({
+        id: def.id,
+        title: def.title,
+        type: def.type,
+        beadIndex: def.beadIndex,
+        text: normText,
+        startWordIdx,
+        endWordIdx
+      });
+    }
+
+    const speechText = normalizedSectionTexts.join('\n\n');
+    const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
     const displayContent = [
       `📖 Źródło: ${mystery.ref} (${bibRefSpoken})`,
@@ -269,9 +330,6 @@ export function getRadioBroadcastItem(
       `\n🕊️ ${MODLITWA_FATIMSKA_PELNA}`,
       mystery.prayer ? `\n🙏 Modlitwa końcowa:\n${mystery.prayer}` : ''
     ].join('\n');
-
-    const cleanWords = extractCleanWordsForKaraoke(speechText);
-    const rosarySegments = calculateRosarySegments(introParts, smallBeadsData, conclusionParts, cleanWords);
 
     return {
       stationId: 'nowyrhz',
@@ -287,6 +345,8 @@ export function getRadioBroadcastItem(
       speechText,
       displayContent,
       words: cleanWords,
+      lineBreakWordIndices,
+      sections,
       rosarySegments
     };
   }
@@ -300,15 +360,60 @@ export function getRadioBroadcastItem(
     const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
     const spokenDate = normalizePolishTextForSpeech(entry.displayDate || '');
 
-    const speechParts = [
-      `Widoki na Raj. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
-      cleanTitle,
-      cleanContent
+    const introInfoText = `Widoki na Raj. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`;
+    const titleText = cleanTitle;
+    const contentParagraphs = cleanContent.split(/\n+/).map(p => p.trim()).filter(Boolean);
+
+    interface SectionDef {
+      id: string;
+      title: string;
+      type: RadioSection['type'];
+      rawText: string;
+    }
+
+    const sectionDefs: SectionDef[] = [
+      { id: 'intro', title: 'Informacje wstępne', type: 'intro', rawText: introInfoText },
+      { id: 'title', title: 'Tytuł wpisu', type: 'general', rawText: titleText },
+      ...contentParagraphs.map((p, idx) => ({
+        id: `para_${idx + 1}`,
+        title: `Akapit ${idx + 1}`,
+        type: 'general' as const,
+        rawText: p
+      }))
     ];
 
-    const rawSpeechText = speechParts.join(' \n\n');
-    const speechText = normalizePolishTextForSpeech(rawSpeechText);
-    const cleanWords = extractCleanWordsForKaraoke(speechText);
+    const cleanWords: string[] = [];
+    const lineBreakWordIndices: number[] = [];
+    const sections: RadioSection[] = [];
+    const normalizedSectionTexts: string[] = [];
+
+    for (let sIdx = 0; sIdx < sectionDefs.length; sIdx++) {
+      const def = sectionDefs[sIdx];
+      const normText = normalizePolishTextForSpeech(def.rawText);
+      normalizedSectionTexts.push(normText);
+      const sWords = extractCleanWordsForKaraoke(normText);
+      const startWordIdx = cleanWords.length;
+
+      if (cleanWords.length > 0 && sWords.length > 0) {
+        lineBreakWordIndices.push(startWordIdx);
+      }
+
+      for (const w of sWords) {
+        cleanWords.push(w);
+      }
+
+      const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+      sections.push({
+        id: def.id,
+        title: def.title,
+        type: def.type,
+        text: normText,
+        startWordIdx,
+        endWordIdx
+      });
+    }
+
+    const speechText = normalizedSectionTexts.join('\n\n');
 
     return {
       stationId: 'wnr365',
@@ -321,7 +426,9 @@ export function getRadioBroadcastItem(
       reference: entry.displayDate,
       speechText,
       displayContent: cleanContent,
-      words: cleanWords
+      words: cleanWords,
+      lineBreakWordIndices,
+      sections
     };
   }
 
@@ -334,16 +441,60 @@ export function getRadioBroadcastItem(
     const chapterOrdSpoken = numberToPolishOrdinal(bibliaEntry.chapter, 'm');
     const bibRefSpoken = expandBiblicalReference(bibliaEntry.passage);
 
-    const speechParts = [
-      `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${dayOrdSpoken}.`,
-      `Księga: ${bibliaEntry.bookTitle}, rozdział ${chapterOrdSpoken}. Fragment: ${bibRefSpoken}.`,
-      bibliaEntry.title ? `Temat: ${bibliaEntry.title}.` : '',
-      cleanContent
-    ].filter(Boolean);
+    const introInfoText = `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${dayOrdSpoken}. Księga: ${bibliaEntry.bookTitle}, rozdział ${chapterOrdSpoken}. Fragment: ${bibRefSpoken}.`;
+    const titleText = bibliaEntry.title ? `Temat: ${bibliaEntry.title}.` : '';
+    const contentParagraphs = cleanContent.split(/\n+/).map(p => p.trim()).filter(Boolean);
 
-    const rawSpeechText = speechParts.join(' \n\n');
-    const speechText = normalizePolishTextForSpeech(rawSpeechText);
-    const cleanWords = extractCleanWordsForKaraoke(speechText);
+    interface SectionDef {
+      id: string;
+      title: string;
+      type: RadioSection['type'];
+      rawText: string;
+    }
+
+    const sectionDefs: SectionDef[] = [
+      { id: 'intro', title: 'Informacje wstępne', type: 'intro', rawText: introInfoText },
+      ...(titleText ? [{ id: 'title', title: 'Temat', type: 'general' as const, rawText: titleText }] : []),
+      ...contentParagraphs.map((p, idx) => ({
+        id: `para_${idx + 1}`,
+        title: `Akapit ${idx + 1}`,
+        type: 'general' as const,
+        rawText: p
+      }))
+    ];
+
+    const cleanWords: string[] = [];
+    const lineBreakWordIndices: number[] = [];
+    const sections: RadioSection[] = [];
+    const normalizedSectionTexts: string[] = [];
+
+    for (let sIdx = 0; sIdx < sectionDefs.length; sIdx++) {
+      const def = sectionDefs[sIdx];
+      const normText = normalizePolishTextForSpeech(def.rawText);
+      normalizedSectionTexts.push(normText);
+      const sWords = extractCleanWordsForKaraoke(normText);
+      const startWordIdx = cleanWords.length;
+
+      if (cleanWords.length > 0 && sWords.length > 0) {
+        lineBreakWordIndices.push(startWordIdx);
+      }
+
+      for (const w of sWords) {
+        cleanWords.push(w);
+      }
+
+      const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+      sections.push({
+        id: def.id,
+        title: def.title,
+        type: def.type,
+        text: normText,
+        startWordIdx,
+        endWordIdx
+      });
+    }
+
+    const speechText = normalizedSectionTexts.join('\n\n');
 
     return {
       stationId: 'biblia365',
@@ -356,7 +507,9 @@ export function getRadioBroadcastItem(
       reference: bibliaEntry.passage,
       speechText,
       displayContent: cleanContent,
-      words: cleanWords
+      words: cleanWords,
+      lineBreakWordIndices,
+      sections
     };
   }
 
@@ -371,14 +524,6 @@ export function getRadioBroadcastItem(
   const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
   const spokenDate = normalizePolishTextForSpeech(rhzEntry.displayDate || '');
 
-  const introParts = [
-    `Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
-    rhzEntry.stageTitle,
-    `Słowo Boże: ${cleanPassage}`,
-    `Rozważanie: ${cleanExplanation}`,
-    `Modlitwa Pańska: ${cleanOurFather || OJCZE_NASZ_PELNY}`
-  ];
-
   // 10 modlitw Zdrowaś Maryjo ze wstawkami
   const smallBeadsData = (rhzEntry.smallBeads || []).map((b, idx) => {
     const cleanBeadText = stripHtml(b.text || '').trim();
@@ -392,22 +537,76 @@ export function getRadioBroadcastItem(
   });
   const beadsList = smallBeadsData.map(b => b.text);
 
-  const conclusionParts = [
-    cleanGloryBe || CHWALA_OJCU_PELNE,
-    cleanFatima || MODLITWA_FATIMSKA_PELNA,
-    callsText ? `Wezwania do czynu: ${callsText}` : ''
-  ].filter(Boolean);
+  const introInfoText = [
+    `Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
+    rhzEntry.stageTitle
+  ].join(' ');
+  const slowoBozeText = `Słowo Boże: ${cleanPassage}`;
+  const rozwazanieText = `Rozważanie: ${cleanExplanation}`;
+  const ojczeNaszText = `Modlitwa Pańska: ${cleanOurFather || OJCZE_NASZ_PELNY}`;
+  const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
+  const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
+  const wezwaniaText = callsText ? `Wezwania do czynu: ${callsText}` : '';
 
-  const speechParts = [
-    ...introParts,
-    ...beadsList,
-    ...conclusionParts
+  interface SectionDef {
+    id: string;
+    title: string;
+    type: RadioSection['type'];
+    beadIndex?: number;
+    rawText: string;
+  }
+
+  const sectionDefs: SectionDef[] = [
+    { id: 'intro', title: 'Informacje wstępne', type: 'intro', beadIndex: 0, rawText: introInfoText },
+    { id: 'scripture', title: 'Słowo Boże', type: 'scripture', beadIndex: 0, rawText: slowoBozeText },
+    { id: 'meditation', title: 'Rozważanie', type: 'meditation', beadIndex: 0, rawText: rozwazanieText },
+    { id: 'our_father', title: 'Modlitwa Pańska (Ojcze nasz)', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
+    ...smallBeadsData.map((b, idx) => ({
+      id: `hail_mary_${idx + 1}`,
+      title: `Zdrowaś Maryjo #${idx + 1}`,
+      type: 'hail_mary' as const,
+      beadIndex: idx + 1,
+      rawText: b.text
+    })),
+    { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
+    { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText },
+    ...(wezwaniaText ? [{ id: 'conclusion', title: 'Wezwania do czynu', type: 'conclusion' as const, beadIndex: 11, rawText: wezwaniaText }] : [])
   ];
 
-  const rawSpeechText = speechParts.join(' \n\n');
-  const speechText = normalizePolishTextForSpeech(rawSpeechText);
-  const cleanWords = extractCleanWordsForKaraoke(speechText);
-  const rosarySegments = calculateRosarySegments(introParts, smallBeadsData, conclusionParts, cleanWords);
+  const cleanWords: string[] = [];
+  const lineBreakWordIndices: number[] = [];
+  const sections: RadioSection[] = [];
+  const normalizedSectionTexts: string[] = [];
+
+  for (let sIdx = 0; sIdx < sectionDefs.length; sIdx++) {
+    const def = sectionDefs[sIdx];
+    const normText = normalizePolishTextForSpeech(def.rawText);
+    normalizedSectionTexts.push(normText);
+    const sWords = extractCleanWordsForKaraoke(normText);
+    const startWordIdx = cleanWords.length;
+
+    if (cleanWords.length > 0 && sWords.length > 0) {
+      lineBreakWordIndices.push(startWordIdx); // Każda kolejna modlitwa/sekcja zaczyna się od nowej linii!
+    }
+
+    for (const w of sWords) {
+      cleanWords.push(w);
+    }
+
+    const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+    sections.push({
+      id: def.id,
+      title: def.title,
+      type: def.type,
+      beadIndex: def.beadIndex,
+      text: normText,
+      startWordIdx,
+      endWordIdx
+    });
+  }
+
+  const speechText = normalizedSectionTexts.join('\n\n');
+  const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
   const displayContent = [
     `📖 Słowo Boże:\n${cleanPassage}`,
@@ -431,6 +630,8 @@ export function getRadioBroadcastItem(
     speechText,
     displayContent,
     words: cleanWords,
+    lineBreakWordIndices,
+    sections,
     rosarySegments
   };
 }

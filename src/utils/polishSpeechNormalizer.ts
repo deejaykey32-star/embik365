@@ -528,13 +528,16 @@ export function normalizePolishTextForSpeech(rawText: string): string {
   // 13. Usunięcie nawiasów i niepotrzebnych znaków
   text = text.replace(/[(){}\[\]]/g, ', ');
 
-  // 14. Normalizacja interpunkcji i spacji
-  text = text.replace(/\s*([,.;?!:])\s*/g, '$1 ');
-  text = text.replace(/([.?!])\s*[.?!]+/g, '$1 ');
-  text = text.replace(/\s+,/g, ',');
-  text = text.replace(/,\s*\./g, '.');
-  text = text.replace(/,\s*,+/g, ',');
-  text = text.replace(/\s+/g, ' ').trim();
+  // 14. Normalizacja interpunkcji i spacji (z zachowaniem podziału na linie i modlitwy)
+  text = text.replace(/[^\S\r\n]+/g, ' '); // Zwija spacje w poziomie, zachowując \n
+  text = text.replace(/[^\S\r\n]*([,.;?!:])[^\S\r\n]*/g, '$1 ');
+  text = text.replace(/([.?!])[^\S\r\n]*[.?!]+/g, '$1 ');
+  text = text.replace(/[^\S\r\n]+,/g, ',');
+  text = text.replace(/,[^\S\r\n]*\./g, '.');
+  text = text.replace(/,[^\S\r\n]*,+/g, ',');
+  text = text.replace(/[^\S\r\n]*(\r?\n)[^\S\r\n]*/g, '$1'); // Czyści spacje wokół znaków nowej linii
+  text = text.replace(/(\r?\n){3,}/g, '\n\n'); // Maksymalnie 2 entery z rzędu
+  text = text.trim();
 
   return text;
 }
@@ -549,6 +552,34 @@ export function extractCleanWordsForKaraoke(normalizedText: string): string[] {
     .split(/\s+/)
     .map(w => w.trim())
     .filter(w => w.length > 0);
+}
+
+/**
+ * Zwraca tablicę słów wraz ze zbiorem indeksów słów rozpoczynających nową linię/modlitwę (po enterze).
+ */
+export function extractWordsWithNewlines(text: string): { words: string[]; lineBreakWordIndices: number[] } {
+  if (!text) return { words: [], lineBreakWordIndices: [] };
+  const words: string[] = [];
+  const lineBreakWordIndices: number[] = [];
+
+  const rawLines = text.split(/\r?\n/);
+  for (const rawLine of rawLines) {
+    const lineTokens = rawLine
+      .split(/\s+/)
+      .map(w => w.trim())
+      .filter(w => w.length > 0);
+
+    if (lineTokens.length > 0) {
+      if (words.length > 0) {
+        lineBreakWordIndices.push(words.length);
+      }
+      for (const tok of lineTokens) {
+        words.push(tok);
+      }
+    }
+  }
+
+  return { words, lineBreakWordIndices };
 }
 
 /**

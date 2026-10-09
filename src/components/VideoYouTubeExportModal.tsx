@@ -419,7 +419,29 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       interface LineItem {
         tokens: WordToken[];
         hasActiveWord: boolean;
+        isParagraphEnd?: boolean;
       }
+
+      // Zbiór indeksów słów rozpoczynających nową modlitwę / sekcję
+      const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
+
+      // Sprawdza, czy słowo o danym indeksie rozpoczyna nową modlitwę
+      const isPrayerOrSectionStart = (wIdx: number) => {
+        if (wIdx === 0) return true;
+        if (lineBreakIndicesSet.has(wIdx)) return true;
+        const w = words[wIdx]?.toLowerCase() || '';
+        const nextW = words[wIdx + 1]?.toLowerCase() || '';
+        if (w === 'rozważanie:' || (w === 'rozważanie' && nextW.endsWith(':'))) return true;
+        if ((w === 'modlitwa' && (nextW === 'pańska:' || nextW === 'pańska')) || (w === 'ojcze' && nextW.startsWith('nasz'))) return true;
+        if (w === 'zdrowaś' && nextW.startsWith('maryjo')) return true;
+        if (w === 'chwała' && nextW.startsWith('ojcu')) return true;
+        if (w === 'o' && nextW === 'mój' && (words[wIdx + 2]?.toLowerCase() || '').startsWith('jezu')) return true;
+        if (w === 'modlitwa' && (nextW.startsWith('końcow') || nextW === 'na')) return true;
+        if (w === 'fragment' && nextW.startsWith('pism')) return true;
+        if (w === 'słowo' && nextW.startsWith('boż')) return true;
+        if (w === 'wezwania' && nextW === 'do') return true;
+        return false;
+      };
 
       const lines: LineItem[] = [];
       let currentLineTokens: WordToken[] = [];
@@ -427,6 +449,20 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       for (let i = 0; i < wordsTotal; i++) {
         const wordText = words[i];
+        const isSectionStart = isPrayerOrSectionStart(i);
+
+        // KAŻDA MODLITWA (Informacje wstępne, Rozważanie, Ojcze nasz, Zdrowaś Maryjo x 10, Chwała Ojcu, O mój Jezu)
+        // ROZPOCZYNA SIĘ OD NOWEJ LINII:
+        if (isSectionStart && currentLineTokens.length > 0) {
+          lines.push({
+            tokens: currentLineTokens,
+            hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx),
+            isParagraphEnd: true
+          });
+          currentLineTokens = [];
+          currentWordsWidth = 0;
+        }
+
         const wordWidth = ctx.measureText(wordText).width;
         const gapsCount = currentLineTokens.length;
         const testLineWidth = currentWordsWidth + wordWidth + gapsCount * standardSpaceWidth;
@@ -434,7 +470,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         if (testLineWidth > maxTextWidth && currentLineTokens.length > 0) {
           lines.push({
             tokens: currentLineTokens,
-            hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx)
+            hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx),
+            isParagraphEnd: false
           });
           currentLineTokens = [];
           currentWordsWidth = 0;
@@ -447,33 +484,66 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       if (currentLineTokens.length > 0) {
         lines.push({
           tokens: currentLineTokens,
-          hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx)
+          hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx),
+          isParagraphEnd: true
         });
       }
 
-      // Znajdź indeks linii zawierającej aktualne słowo
-      let activeLineIdx = lines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-      if (activeLineIdx === -1) activeLineIdx = 0;
+      // WYBÓR LINII DO WYŚWIETLENIA BEZ ZNIKANIA PRZECZYTANYCH SŁÓW:
+      let displayLines: LineItem[] = [];
 
-      // Okno przewijania linii (auto-scroll: utrzymuje aktywną linię na 2-3 pozycji)
-      const scrollOffset = Math.max(0, activeLineIdx - 2);
-      const displayLines = lines.slice(scrollOffset, scrollOffset + visibleLinesCount);
+      if (hasRosary && rosarySegments && rosarySegments.length > 0) {
+        // Dla stacji różańcowych wybieramy linie należące do AKTUALNEGO PACIORKA:
+        // Wszystkie 10 paciorków Zdrowaś Maryjo mają po 3-4 linijki, które MIESZCZĄ SIĘ W CAŁOŚCI na ekranie.
+        // Dzięki temu przeczytane słowa NIGDY NIE ZNIKAJĄ podczas odmawiania paciorka!
+        const activeSeg = rosarySegments.find(
+          s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
+        ) || rosarySegments[0];
+
+        const segLines = lines.filter(l => 
+          l.tokens.some(t => t.wordIdx >= activeSeg.startWordIdx && t.wordIdx <= activeSeg.endWordIdx)
+        );
+
+        if (segLines.length <= visibleLinesCount) {
+          // Cała modlitwa mieści się na ekranie bez przewijania – wszystkie przeczytane słowa pozostają widoczne!
+          displayLines = segLines;
+        } else {
+          // Dla dłuższego KROKU 1 (Rozważanie + Ojcze nasz) przewijamy płynnie,
+          // ale ZAWSZE zachowując przeczytane linijki na górze (nie znikają od razu!):
+          let activeLineInSeg = segLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
+          if (activeLineInSeg === -1) activeLineInSeg = 0;
+          const segScroll = Math.max(0, Math.min(segLines.length - visibleLinesCount, activeLineInSeg - Math.floor(visibleLinesCount / 2)));
+          displayLines = segLines.slice(segScroll, segScroll + visibleLinesCount);
+        }
+      } else {
+        // Dla audycji bez paciorków różańca (WnR365, Biblia365):
+        let activeLineIdx = lines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
+        if (activeLineIdx === -1) activeLineIdx = 0;
+
+        if (lines.length <= visibleLinesCount) {
+          displayLines = lines;
+        } else {
+          // Zachowujemy co najmniej 3-4 przeczytane linijki powyżej bieżącego słowa
+          const scrollOffset = Math.max(0, Math.min(lines.length - visibleLinesCount, activeLineIdx - 3));
+          displayLines = lines.slice(scrollOffset, scrollOffset + visibleLinesCount);
+        }
+      }
 
       displayLines.forEach((line, lineIndex) => {
         const lineY = startY + lineIndex * lineHeight;
-        const globalLineIdx = scrollOffset + lineIndex;
-        const isLastLine = globalLineIdx === lines.length - 1;
+        const isLastLineOfAll = line === lines[lines.length - 1];
         const N = line.tokens.length;
 
         // OBUSTRONNE WYJUSTOWANIE DO PRAWEJ I LEWEJ:
         // Równomierne rozłożenie odstępów między słowami tak,
         // aby początek linijki dotykał lewego marginesu, a koniec prawego marginesu.
+        // Jeśli linijka to koniec modlitwy/akapitu (isParagraphEnd), nie rozciągamy jej sztucznie.
         let gap = standardSpaceWidth;
-        if (N > 1 && !isLastLine) {
+        if (N > 1 && !line.isParagraphEnd && !isLastLineOfAll) {
           const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
           const remainingSpace = maxTextWidth - totalWordsW;
           const candidateGap = remainingSpace / (N - 1);
-          if (candidateGap >= standardSpaceWidth * 0.5 && candidateGap <= standardSpaceWidth * 2.8) {
+          if (candidateGap >= standardSpaceWidth * 0.5 && candidateGap <= standardSpaceWidth * 2.5) {
             gap = candidateGap;
           }
         }
@@ -495,32 +565,38 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             const bgH = fontSize + padY;
 
             // Kapsułka świetlista w tle aktywnego słowa
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.22)';
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.28)';
             ctx.beginPath();
             ctx.roundRect(bgX, bgY, bgW, bgH, 6);
             ctx.fill();
 
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.75)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
             // Złoty promienny tekst z aureolą
             ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = 16;
+            ctx.shadowBlur = 14;
             ctx.fillStyle = '#ffd700'; // Radiant gold
             ctx.font = `bold ${fontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           } else if (isSpoken) {
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel, wyrazista i trwała, NIGDY NIE ZNIKA ANI NIE ROBI SIĘ CZARNA!
+            ctx.save();
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#f8fafc'; // Czysty biały (przeczytany)
+            ctx.fillStyle = '#ffffff'; // Niezmienna, czysta biel na czarnym tle
             ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
+            ctx.restore();
           } else {
+            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny srebrzysto-stalowy
+            ctx.save();
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#718096'; // Czytelny, stonowany srebrzysto-stalowy (przyszły)
+            ctx.fillStyle = '#94a3b8'; // Bardzo czytelny slate-400
             ctx.font = `500 ${fontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
+            ctx.restore();
           }
 
           tokenX += token.width + gap;
