@@ -643,6 +643,12 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     }
   }
 
+  // Cache dla fragmentów TTS w pamięci izolatu Cloudflare
+  if (!(globalThis as any).__ttsChunkCache) {
+    (globalThis as any).__ttsChunkCache = new Map<string, ArrayBuffer>();
+  }
+  const ttsChunkCache: Map<string, ArrayBuffer> = (globalThis as any).__ttsChunkCache;
+
   // Text-To-Speech (TTS) Online AI Endpoint
   if (pathname === '/api/tts' && request.method === 'POST') {
     try {
@@ -677,7 +683,13 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
         const batch = textChunks.slice(i, i + 3);
         const batchRes = await Promise.all(
           batch.map(async (chunk) => {
-            for (let attempt = 1; attempt <= 2; attempt++) {
+            const cacheKey = `${targetLang}:${chunk.trim().toLowerCase()}`;
+            const cached = ttsChunkCache.get(cacheKey);
+            if (cached && cached.byteLength > 64) {
+              return cached;
+            }
+
+            for (let attempt = 1; attempt <= 3; attempt++) {
               try {
                 const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
                 const ttsRes = await fetch(ttsUrl, {
@@ -686,12 +698,16 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
                   }
                 });
                 if (ttsRes.ok) {
-                  return await ttsRes.arrayBuffer();
+                  const arrBuf = await ttsRes.arrayBuffer();
+                  if (arrBuf && arrBuf.byteLength > 64) {
+                    ttsChunkCache.set(cacheKey, arrBuf);
+                    return arrBuf;
+                  }
                 }
               } catch (e) {
                 console.warn(`TTS chunk attempt ${attempt} failed:`, e);
               }
-              if (attempt < 2) await new Promise(r => setTimeout(r, 100));
+              if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 120));
             }
             return SILENCE_FALLBACK_U8.buffer.slice(0);
           })
@@ -705,7 +721,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
         }
 
         if (i + 3 < textChunks.length) {
-          await new Promise(r => setTimeout(r, 40));
+          await new Promise(r => setTimeout(r, 60));
         }
       }
 

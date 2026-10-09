@@ -472,51 +472,75 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.font = `bold ${Math.round(height * 0.02)}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = '#ffd700';
 
+      const activeSec = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
+        ? (activeBroadcastItem.sections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx) || activeBroadcastItem.sections[0])
+        : null;
+
       if (isDayZero) {
-        if (activeBeadNum === 0) {
-          ctx.fillText(`✝️ KROK 1 • Znak Krzyża Świętego, Witaj Królowo & Skład Apostolski`, width / 2, pillY + pillH / 2);
+        if (activeSec?.id === 'sign_of_cross') {
+          ctx.fillText(`✝️ KROK 1 • Znak Krzyża Świętego`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'hail_holy_queen') {
+          ctx.fillText(`👑 KROK 1 • Antyfona: Witaj Królowo (Salve Regina)`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'credo') {
+          ctx.fillText(`🛡️ KROK 1 • Skład Apostolski (Wierzę w Boga Ojca)`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'our_father') {
+          ctx.fillText(`🙏 KROK 2 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'hail_mary_faith') {
+          ctx.fillText(`🔵 PACIOREK 1/3 • Zdrowaś Maryjo o Wiarę: „który przymnaża nam wiary”`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'hail_mary_hope') {
+          ctx.fillText(`🟢 PACIOREK 2/3 • Zdrowaś Maryjo o Nadzieję: „który przymnaża nam nadziei”`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'hail_mary_love') {
+          ctx.fillText(`🔴 PACIOREK 3/3 • Zdrowaś Maryjo o Miłość: „który przymnaża nam miłości”`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'glory_be') {
+          ctx.fillText(`✨ KROK 4 • Modlitwa Uwielbienia (Chwała Ojcu)`, width / 2, pillY + pillH / 2);
+        } else if (activeBeadNum === 0) {
+          ctx.fillText(`✝️ KROK 1 • Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum === 1) {
           ctx.fillText(`🙏 KROK 2 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
-        } else if (activeBeadNum === 2) {
-          ctx.fillText(`🔵 PACIOREK 1/3 • Zdrowaś Maryjo o Wiarę: „który przymnaża nam wiary”`, width / 2, pillY + pillH / 2);
-        } else if (activeBeadNum === 3) {
-          ctx.fillText(`🟢 PACIOREK 2/3 • Zdrowaś Maryjo o Nadzieję: „który przymnaża nam nadziei”`, width / 2, pillY + pillH / 2);
-        } else if (activeBeadNum === 4) {
-          ctx.fillText(`🔴 PACIOREK 3/3 • Zdrowaś Maryjo o Miłość: „który przymnaża nam miłości”`, width / 2, pillY + pillH / 2);
         } else {
-          ctx.fillText(`✨ KROK 4 • Modlitwa Uwielbienia (Chwała Ojcu)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`✨ Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
-      } else {
-        if (activeBeadNum === 0) {
-          ctx.fillText(`📖 KROK 1 • Rozważanie Tajemnicy oraz Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+      } else if (hasRosary) {
+        if (activeSec?.id === 'intro') {
+          ctx.fillText(`📖 KROK 1 • Informacje Wstępne i Zapowiedź Tajemnicy`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'scripture') {
+          ctx.fillText(`📜 KROK 1 • Słowo Boże`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'meditation') {
+          ctx.fillText(`✨ KROK 1 • Rozważanie Tajemnicy`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'our_father') {
+          ctx.fillText(`🙏 KROK 1 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
           const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';
           ctx.fillText(`📿 PACIOREK ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'glory_be') {
+          ctx.fillText(`✨ KROK 3 • Modlitwa Uwielbienia (Chwała Ojcu)`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'fatima') {
+          ctx.fillText(`🕊️ KROK 3 • Modlitwa Fatimska (O mój Jezu)`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'conclusion') {
+          ctx.fillText(`📜 KROK 3 • Modlitwa na Zakończenie / Wezwania do Czynu`, width / 2, pillY + pillH / 2);
         } else {
-          ctx.fillText(`🕊️ KROK 3 • Modlitwa Uwielbienia (Chwała Ojcu) oraz Modlitwa Fatimska (O mój Jezu)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🕊️ KROK 3 • Modlitwa Uwielbienia oraz Zakończenie Tajemnicy`, width / 2, pillY + pillH / 2);
         }
+      } else {
+        ctx.fillText(`📖 ${activeSec?.title || 'Czytanie'} • ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
       }
       ctx.restore();
 
       headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PIONOWYM WYŚRODKOWANIEM BEZ ZNIKANIA TEKSTU
+    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PERFEKCYJNYM WYŚWIETLANIEM BEZ ZNIKANIA TEKSTU
     const words = previewMode === 'sample' 
       ? activeBroadcastItem.words.slice(0, 45) 
       : activeBroadcastItem.words;
     const wordsTotal = words.length;
 
     if (wordsTotal > 0) {
-      // Wyjściowy rozmiar czcionki i marginesy
-      let renderFontSize = Math.round(height * (hasRosary ? 0.045 : 0.050));
-      let renderLineHeight = Math.round(renderFontSize * 1.44);
-
       const marginLeft = Math.round(width * 0.05); // 96px na 1080p, 64px na 720p
       const marginRight = marginLeft;
       const maxTextWidth = width - (marginLeft + marginRight);
 
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.040 : 0.052));
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.038 : 0.050));
       const footerTop = height - 87; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
 
@@ -524,7 +548,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       const zoneBottom = footerTop - bottomPadding;
       const zoneHeight = Math.max(140, zoneBottom - zoneTop);
 
-      // Budowanie tokenów linii
       interface WordToken {
         text: string;
         wordIdx: number;
@@ -536,37 +559,31 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
+      // Aktywna jednostka modlitewna/akapitowa do wyświetlenia
+      const activeSec = (previewMode !== 'sample' && activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
+        ? (activeBroadcastItem.sections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx) || activeBroadcastItem.sections[0])
+        : null;
+
+      const displayStartWordIdx = activeSec ? activeSec.startWordIdx : 0;
+      const displayEndWordIdx = activeSec ? Math.min(activeSec.endWordIdx, wordsTotal - 1) : (wordsTotal - 1);
+      const displayWordTexts = words.slice(displayStartWordIdx, displayEndWordIdx + 1);
+
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
 
-      const isPrayerOrSectionStart = (wIdx: number) => {
-        if (wIdx === 0) return true;
-        if (lineBreakIndicesSet.has(wIdx)) return true;
-        const w = words[wIdx]?.toLowerCase() || '';
-        const nextW = words[wIdx + 1]?.toLowerCase() || '';
-        if (w === 'rozważanie:' || (w === 'rozważanie' && nextW.endsWith(':'))) return true;
-        if ((w === 'modlitwa' && (nextW === 'pańska:' || nextW === 'pańska')) || (w === 'ojcze' && nextW.startsWith('nasz'))) return true;
-        if (w === 'zdrowaś' && nextW.startsWith('maryjo')) return true;
-        if (w === 'chwała' && nextW.startsWith('ojcu')) return true;
-        if (w === 'o' && nextW === 'mój' && (words[wIdx + 2]?.toLowerCase() || '').startsWith('jezu')) return true;
-        if (w === 'znak' && nextW.startsWith('krzyż')) return true;
-        if (w === 'antyfona' || (w === 'witaj' && nextW.startsWith('królow'))) return true;
-        if (w === 'skład' || (w === 'wierzę' && nextW.startsWith('w'))) return true;
-        return false;
-      };
-
-      // Pomocnik do podziału słów na linie dla danego rozmiaru czcionki
-      const buildLinesForFontSize = (fSize: number) => {
+      // Pomocnik dzielenia słów danej sekcji na linie dla zadanego rozmiaru czcionki
+      const buildLinesForSection = (fSize: number) => {
         ctx.font = `600 ${fSize}px "Newsreader", Georgia, serif`;
         const spaceW = ctx.measureText(' ').width;
         const builtLines: LineItem[] = [];
         let curLineTokens: WordToken[] = [];
         let curWordsWidth = 0;
 
-        for (let i = 0; i < wordsTotal; i++) {
-          const wordText = words[i];
-          const isSectionStart = isPrayerOrSectionStart(i);
+        for (let i = 0; i < displayWordTexts.length; i++) {
+          const globalIdx = displayStartWordIdx + i;
+          const wordText = displayWordTexts[i];
+          const isExplicitLineBreak = i > 0 && lineBreakIndicesSet.has(globalIdx);
 
-          if (isSectionStart && curLineTokens.length > 0) {
+          if (isExplicitLineBreak && curLineTokens.length > 0) {
             builtLines.push({
               tokens: curLineTokens,
               hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
@@ -590,7 +607,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             curWordsWidth = 0;
           }
 
-          curLineTokens.push({ text: wordText, wordIdx: i, width: wordW });
+          curLineTokens.push({ text: wordText, wordIdx: globalIdx, width: wordW });
           curWordsWidth += wordW;
         }
 
@@ -601,94 +618,47 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             isParagraphEnd: true
           });
         }
+
         return { builtLines, spaceW };
       };
 
-      let { builtLines: allLines, spaceW: standardSpaceWidth } = buildLinesForFontSize(renderFontSize);
+      // DYNAMICZNY ROZMIAR CZCIONKI:
+      // Gwarantuje, że CAŁA treść bieżącej modlitwy / akapitu mieści się w 100% na ekranie!
+      // Żadne słowa ani linijki NIE ZNIKAJĄ i NIE SĄ UCIĘTE podczas odmawiania modlitwy.
+      let renderFontSize = Math.round(height * (hasRosary ? 0.046 : 0.052));
+      let renderLineHeight = Math.round(renderFontSize * 1.46);
 
-      // WYBÓR LINII DO WYŚWIETLENIA BEZ ZNIKANIA PRZECZYTANYCH SŁÓW:
-      let targetSectionLines: LineItem[] = allLines;
+      let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
-      if (hasRosary && rosarySegments && rosarySegments.length > 0) {
-        const activeSeg = rosarySegments.find(
-          s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
-        ) || rosarySegments[0];
-
-        const segLines = allLines.filter(l => 
-          l.tokens.some(t => t.wordIdx >= activeSeg.startWordIdx && t.wordIdx <= activeSeg.endWordIdx)
-        );
-
-        if (segLines.length > 0) {
-          // Dla segmentu 0 zwykłego różańca (Rozważanie + Ojcze nasz):
-          const ourFatherLineIdx = segLines.findIndex(l => 
-            l.tokens.some(t => {
-              const txt = t.text.toLowerCase();
-              return txt.includes('ojcze') || (txt.includes('modlitwa') && l.tokens.some(t2 => t2.text.toLowerCase().includes('pańska')));
-            })
-          );
-
-          const isInsideOurFather = activeSeg.beadIndex === 0 && ourFatherLineIdx !== -1 && 
-            activeWordIdx >= segLines[ourFatherLineIdx].tokens[0].wordIdx;
-
-          if (isInsideOurFather) {
-            targetSectionLines = segLines.slice(ourFatherLineIdx);
-          } else if (activeSeg.beadIndex === 0 && ourFatherLineIdx !== -1) {
-            targetSectionLines = segLines.slice(0, ourFatherLineIdx);
-          } else {
-            targetSectionLines = segLines;
+      if (sectionLines.length > 0) {
+        const requiredH = (sectionLines.length - 1) * renderLineHeight + renderFontSize;
+        if (requiredH > zoneHeight) {
+          const candidateLineH = Math.floor(zoneHeight / sectionLines.length);
+          const minAcceptableLineH = Math.round(height * (hasRosary ? 0.033 : 0.036));
+          if (candidateLineH >= minAcceptableLineH) {
+            renderLineHeight = candidateLineH;
+            renderFontSize = Math.round(candidateLineH / 1.44);
+            const recomputed = buildLinesForSection(renderFontSize);
+            sectionLines = recomputed.builtLines;
+            standardSpaceWidth = recomputed.spaceW;
           }
         }
       }
 
-      // DYNAMICZNE DOPASOWANIE CZCIONKI:
-      // Jeśli bieżąca modlitwa ma np. 7-10 linii, delikatnie dopasowujemy wysokość linii,
-      // tak aby całość zmieściła się w strefie i żadne linijki nie były ucinane!
-      if (targetSectionLines.length > 5 && targetSectionLines.length <= 11) {
-        const candidateLineH = Math.floor(zoneHeight / targetSectionLines.length);
-        const minAcceptableLineH = Math.round(height * 0.038);
-        if (candidateLineH >= minAcceptableLineH && candidateLineH < renderLineHeight) {
-          renderLineHeight = candidateLineH;
-          renderFontSize = Math.round(candidateLineH / 1.4);
-          // Ponowne przeliczenie linii dla dopasowanego rozmiaru czcionki
-          const recomputed = buildLinesForFontSize(renderFontSize);
-          standardSpaceWidth = recomputed.spaceW;
-          allLines = recomputed.builtLines;
-          if (hasRosary && rosarySegments && rosarySegments.length > 0) {
-            const activeSeg = rosarySegments.find(
-              s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
-            ) || rosarySegments[0];
-            const recomputedSegLines = allLines.filter(l => 
-              l.tokens.some(t => t.wordIdx >= activeSeg.startWordIdx && t.wordIdx <= activeSeg.endWordIdx)
-            );
-            if (recomputedSegLines.length > 0) {
-              const ofIdx = recomputedSegLines.findIndex(l => 
-                l.tokens.some(t => t.text.toLowerCase().includes('ojcze'))
-              );
-              if (activeSeg.beadIndex === 0 && ofIdx !== -1 && activeWordIdx >= recomputedSegLines[ofIdx].tokens[0].wordIdx) {
-                targetSectionLines = recomputedSegLines.slice(ofIdx);
-              } else if (activeSeg.beadIndex === 0 && ofIdx !== -1) {
-                targetSectionLines = recomputedSegLines.slice(0, ofIdx);
-              } else {
-                targetSectionLines = recomputedSegLines;
-              }
-            }
-          }
-        }
-      }
-
-      const visibleLinesCount = Math.max(3, Math.floor(zoneHeight / renderLineHeight));
+      // Bezpieczny podział na strony jeśli treść jest wyjątkowo długa (np. bardzo długi fragment czytania)
+      const maxLinesOnScreen = Math.max(3, Math.floor(zoneHeight / renderLineHeight));
       let displayLines: LineItem[] = [];
 
-      if (targetSectionLines.length <= visibleLinesCount) {
-        displayLines = targetSectionLines;
+      if (sectionLines.length <= maxLinesOnScreen) {
+        // Wszystkie linijki modlitwy/sekcji widoczne w całości!
+        displayLines = sectionLines;
       } else {
-        // Płynne przewijanie wyśrodkowane na bieżącej linii:
-        // Końcówka modlitwy i słowo "Amen" są ZAWSZE widoczne bez ucinania!
-        let activeIdx = targetSectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-        if (activeIdx === -1) activeIdx = 0;
-        const maxScroll = Math.max(0, targetSectionLines.length - visibleLinesCount);
-        const idealScroll = Math.max(0, Math.min(maxScroll, activeIdx - 1));
-        displayLines = targetSectionLines.slice(idealScroll, idealScroll + visibleLinesCount);
+        // Podział na pełne strony (page-by-page), bez stopniowego ucinania linijek na bieżąco!
+        let activeIdxInSec = sectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
+        if (activeIdxInSec === -1) activeIdxInSec = 0;
+        const pageIndex = Math.floor(activeIdxInSec / maxLinesOnScreen);
+        const startLine = pageIndex * maxLinesOnScreen;
+        displayLines = sectionLines.slice(startLine, startLine + maxLinesOnScreen);
       }
 
       // PIONOWE WYŚRODKOWANIE WIDOCZNYCH LINII W STREFIE NAPISÓW
@@ -698,11 +668,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       displayLines.forEach((line, lineIndex) => {
         const lineY = startY + lineIndex * renderLineHeight;
-        const isLastLineOfAll = line === allLines[allLines.length - 1];
+        const isLastLineOfSec = line === sectionLines[sectionLines.length - 1];
         const N = line.tokens.length;
 
         let gap = standardSpaceWidth;
-        if (N > 1 && !line.isParagraphEnd && !isLastLineOfAll) {
+        if (N > 1 && !line.isParagraphEnd && !isLastLineOfSec) {
           const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
           const remainingSpace = maxTextWidth - totalWordsW;
           const candidateGap = remainingSpace / (N - 1);
@@ -743,7 +713,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel, niezmienna i trwała
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel, niezmienna i trwała na czarnym tle
             ctx.save();
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#ffffff';
@@ -836,57 +806,74 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         const cached = clientTtsAudioCache.get(cacheKey);
         if (cached) return cached;
 
-        // A. Próba przez API /api/tts z format: 'json'
-        try {
-          const ttsRes = await fetch('/api/tts', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              text: clean,
-              lang: 'pl',
-              rate: lectorConfig.rate || 1.0,
-              pitch: lectorConfig.pitch || 1.0,
-              format: 'json'
-            })
-          });
+        // A. Próba przez API /api/tts z format: 'json' i wielokrotnym ponawianiem
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const ttsRes = await fetch('/api/tts', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                text: clean,
+                lang: 'pl',
+                rate: lectorConfig.rate || 1.0,
+                pitch: lectorConfig.pitch || 1.0,
+                format: 'json'
+              })
+            });
 
-          if (ttsRes.ok) {
-            const contentType = ttsRes.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-              const data = await ttsRes.json();
-              if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
-                const decodedList: AudioBuffer[] = [];
-                for (const b64 of data.chunks) {
-                  try {
-                    const bin = atob(b64);
-                    const bytes = new Uint8Array(bin.length);
-                    for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
-                    const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+            if (ttsRes.ok) {
+              const contentType = ttsRes.headers.get('content-type') || '';
+              if (contentType.includes('application/json')) {
+                const data = await ttsRes.json();
+                if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
+                  const decodedList: AudioBuffer[] = [];
+                  for (let cIdx = 0; cIdx < data.chunks.length; cIdx++) {
+                    const b64 = data.chunks[cIdx];
+                    let decoded: AudioBuffer | null = null;
+                    try {
+                      const bin = atob(b64);
+                      const bytes = new Uint8Array(bin.length);
+                      for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+                      if (bytes.length > 64) {
+                        decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+                      }
+                    } catch (eDec) {
+                      console.warn('Decode chunk warning:', eDec);
+                    }
+                    if (!decoded) {
+                      const fallbackText = data.textChunks?.[cIdx] || '';
+                      const wordsCnt = fallbackText.split(/\s+/).filter(Boolean).length || 5;
+                      const fallbackDuration = Math.max(1.0, wordsCnt * 0.44);
+                      decoded = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * fallbackDuration), audioCtx.sampleRate);
+                    }
                     decodedList.push(decoded);
-                  } catch (eDec) {
-                    console.warn('Decode chunk warning:', eDec);
+                  }
+                  if (decodedList.length > 0) {
+                    const combined = concatenateAudioBuffers(audioCtx, decodedList);
+                    if (combined) {
+                      clientTtsAudioCache.set(cacheKey, combined);
+                      return combined;
+                    }
                   }
                 }
-                if (decodedList.length > 0) {
-                  const combined = concatenateAudioBuffers(audioCtx, decodedList);
-                  if (combined) clientTtsAudioCache.set(cacheKey, combined);
-                  return combined;
+              } else {
+                const arrBuf = await ttsRes.arrayBuffer();
+                if (arrBuf && arrBuf.byteLength > 64) {
+                  const decoded = await audioCtx.decodeAudioData(arrBuf);
+                  if (decoded) {
+                    clientTtsAudioCache.set(cacheKey, decoded);
+                    return decoded;
+                  }
                 }
               }
-            } else {
-              const arrBuf = await ttsRes.arrayBuffer();
-              if (arrBuf && arrBuf.byteLength > 0) {
-                const decoded = await audioCtx.decodeAudioData(arrBuf);
-                if (decoded) clientTtsAudioCache.set(cacheKey, decoded);
-                return decoded;
-              }
             }
+          } catch (errApi) {
+            console.warn(`API /api/tts attempt ${attempt} failed:`, errApi);
           }
-        } catch (errApi) {
-          console.warn('API /api/tts call failed, trying direct fallback:', errApi);
+          if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 120));
         }
 
         // B. Rezerwowe bezpośrednie pobranie z Google TTS
@@ -902,8 +889,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 const directRes = await fetch(directUrl);
                 if (directRes.ok) {
                   const arrBuf = await directRes.arrayBuffer();
-                  chunkBuf = await audioCtx.decodeAudioData(arrBuf);
-                  break;
+                  if (arrBuf.byteLength > 64) {
+                    chunkBuf = await audioCtx.decodeAudioData(arrBuf);
+                    break;
+                  }
                 }
               } catch (eDir) {
                 console.warn(`Direct fetch attempt ${att} failed:`, eDir);
@@ -917,8 +906,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
           if (decodedDirectList.length > 0) {
             const combined = concatenateAudioBuffers(audioCtx, decodedDirectList);
-            if (combined) clientTtsAudioCache.set(cacheKey, combined);
-            return combined;
+            if (combined) {
+              clientTtsAudioCache.set(cacheKey, combined);
+              return combined;
+            }
           }
         } catch (errDirect) {
           console.warn('Direct fallback failed:', errDirect);
@@ -947,8 +938,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
       } else {
         // PEŁNA AUDYCJA: Pobieranie sekcja po sekcji
-        // Gwarantuje, że Chwała Ojcu i O mój Jezu ORAZ wszystkie 10 Zdrowaś Maryjo
-        // zostaną pobrane i odczytane przez lektora bez ucinania audio na końcu pliku!
         const sectionsToProcess = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
           ? activeBroadcastItem.sections
           : [{ id: 'full', title: 'Całość audycji', type: 'meditation' as const, text: activeBroadcastItem.speechText, startWordIdx: 0, endWordIdx: wordsTotal - 1 }];
@@ -962,8 +951,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
           let secAudio: AudioBuffer | null = null;
 
-          if (sec.text.length > 500) {
-            const subTexts = splitTextForTts(sec.text, 250);
+          if (sec.text.length > 400) {
+            const subTexts = splitTextForTts(sec.text, 200);
             const subBuffers: AudioBuffer[] = [];
             for (const sub of subTexts) {
               const buf = await fetchAudioForText(sub);
@@ -1007,6 +996,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           }
 
           currentTimelineOffset += secDuration;
+          if (sIdx + 1 < sectionsToProcess.length) {
+            await new Promise(r => setTimeout(r, 35));
+          }
         }
 
         // Dopełnienie ewentualnych brakujących słów poza sekcjami
