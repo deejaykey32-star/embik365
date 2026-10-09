@@ -399,7 +399,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
         ctx.fillStyle = isIntroActive ? '#ffd700' : isIntroDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText('Ojcze nasz', leftX, beadCenterY + largeRadius + 18);
+        ctx.fillText(
+          activeSec?.type === 'meditation'
+            ? 'Rozważanie'
+            : (activeSec?.id === 'our_father' ? 'Ojcze nasz' : (isIntroActive ? 'Rozważanie' : 'Rozważanie & Ojcze nasz')),
+          leftX,
+          beadCenterY + largeRadius + 18
+        );
 
         // C. 10 MAŁYCH PACIORKÓW: Zdrowaś Maryjo ze wstawką
         for (let b = 1; b <= 10; b++) {
@@ -508,7 +514,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.fillText(`✨ Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
       } else if (hasRosary) {
-        if (activeSec?.id === 'our_father') {
+        if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
+          ctx.fillText(`🕊️ Krok 1 • Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'our_father') {
           ctx.fillText(`🙏 Paciorek 1 • Ojcze nasz`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
           const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';

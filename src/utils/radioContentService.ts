@@ -175,16 +175,17 @@ export function calculateRosarySegmentsFromSections(
 ): RosaryBeadSegment[] {
   const segments: RosaryBeadSegment[] = [];
 
-  // 1. Krok 1 (Duży paciorek): Ojcze nasz (beadIndex === 0)
+  // 1. Krok 1 (Duży paciorek): Rozważanie & Ojcze nasz (beadIndex === 0)
   const introSections = sections.filter(s => s.beadIndex === 0);
   const introStart = introSections.length > 0 ? introSections[0].startWordIdx : 0;
   const introEnd = introSections.length > 0 ? introSections[introSections.length - 1].endWordIdx : 0;
 
+  const hasMeditation = introSections.some(s => s.type === 'meditation');
   segments.push({
     beadIndex: 0,
     beadType: 'large_intro',
-    label: 'Ojcze nasz',
-    subLabel: 'Modlitwa Pańska',
+    label: hasMeditation ? 'Rozważanie & Ojcze nasz' : 'Ojcze nasz',
+    subLabel: hasMeditation ? 'Krok 1: Rozważanie tajemnicy oraz Modlitwa Pańska' : 'Modlitwa Pańska',
     startWordIdx: introStart,
     endWordIdx: introEnd
   });
@@ -414,7 +415,8 @@ export function getRadioBroadcastItem(
     }));
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
-    // KROK 1: Komplet pełnych modlitw bez skrótów i bez nazw modlitw
+    // KROK 1: Rozważanie tajemnicy oraz komplet pełnych modlitw
+    const meditationRawText = `Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}. Rozważanie: ${mystery.med}`;
     const ojczeNaszText = OJCZE_NASZ_PELNY;
     const chwalaOjcuText = CHWALA_OJCU_PELNE;
     const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
@@ -429,6 +431,7 @@ export function getRadioBroadcastItem(
     }
 
     const sectionDefs: SectionDef[] = [
+      { id: 'meditation', title: `Rozważanie: ${mystery.t}`, type: 'meditation', beadIndex: 0, rawText: meditationRawText },
       { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
       ...smallBeadsData.map((b, idx) => ({
         id: `hail_mary_${idx + 1}`,
@@ -477,7 +480,10 @@ export function getRadioBroadcastItem(
     const speechText = normalizedSectionTexts.join('\n\n');
     const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
+    const meditationDisplay = `Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}\nRozważanie: ${mystery.med}`;
+
     const displayContent = [
+      meditationDisplay,
       OJCZE_NASZ_PELNY,
       ...dopowiedzeniaList,
       CHWALA_OJCU_PELNE,
@@ -695,6 +701,9 @@ export function getRadioBroadcastItem(
   const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
   const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
 
+  const explOrPassage = cleanExplanation || cleanPassage || '';
+  const meditationRawText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${explOrPassage ? ` ${explOrPassage}` : ''}`;
+
   interface SectionDef {
     id: string;
     title: string;
@@ -703,8 +712,9 @@ export function getRadioBroadcastItem(
     rawText: string;
   }
 
-  // Komplet pełnych modlitw bez skrótów i bez nazw modlitw
+  // Komplet pełnych modlitw z rozważaniem tajemnicy przed Ojcze nasz
   const sectionDefs: SectionDef[] = [
+    { id: 'meditation', title: `Rozważanie: ${rhzEntry.stageTitle}`, type: 'meditation', beadIndex: 0, rawText: meditationRawText },
     { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
     ...smallBeadsData.map((b, idx) => ({
       id: `hail_mary_${idx + 1}`,
@@ -753,6 +763,7 @@ export function getRadioBroadcastItem(
   const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
   const displayContent = [
+    meditationRawText,
     ojczeNaszText,
     ...beadsList,
     chwalaOjcuText,

@@ -461,11 +461,19 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                   Duży Paciorek Tajemnicy (Litera "N") — Modlitwa Pańska (Ojcze Nasz)
                 </span>
                 <button
-                  onClick={() => speakText('mystery_pater', rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text)}
+                  onClick={() => {
+                    const explText = rhzEntry.explanation || rhzEntry.passage || '';
+                    const fullPaterText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${explText ? ` ${explText}.` : ''} ${rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text}`;
+                    speakText('mystery_pater', fullPaterText);
+                  }}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
+                  title="Odsłuchaj lektorem (z rozważaniem tajemnicy)"
                 >
                   {activeSpeechId === 'mystery_pater' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
+              </div>
+              <div className="text-xs font-medium text-amber-800/90 dark:text-amber-300/90 italic border-l-2 border-amber-600/60 pl-3 py-1 bg-amber-500/10 rounded-r-lg mb-2">
+                <span className="font-bold not-italic">Rozważanie w tej tajemnicy:</span> {rhzEntry.stageTitle}
               </div>
               <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
                 {rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text}
