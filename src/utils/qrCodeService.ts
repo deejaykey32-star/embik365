@@ -63,6 +63,7 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   grafika: 'https://clck.ru/3Vr8B8',
   mapa: 'https://mapa-aon.pages.dev',
   histada: 'https://histada-app.pages.dev',
+  wideo: 'https://widokinaraj.pl/#wideo',
   ...FILE_CLCK_MAP
 };
 
@@ -185,6 +186,16 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
     sectionId: 'histada',
     category: 'Gry',
     createdAt: '2026-10-04'
+  },
+  {
+    id: 'qr_wideo',
+    title: 'Generator Wideo MP4 dla YouTube',
+    displayLabel: 'Zeskanuj, aby otworzyć generator filmów wideo YouTube',
+    shortUrl: 'https://widokinaraj.pl/#wideo',
+    fullUrl: 'https://widokinaraj.pl/#wideo',
+    sectionId: 'wideo',
+    category: 'Wideo & Multimedia',
+    createdAt: '2026-10-09'
   }
 ];
 

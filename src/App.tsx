@@ -13,6 +13,7 @@ import { PilgrimageMapView } from './components/PilgrimageMapView';
 import { HistadaView } from './components/HistadaView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
+import { VideoStudioView } from './components/VideoStudioView';
 import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
@@ -572,6 +573,13 @@ export default function App() {
             currentLang={currentLang}
             theme={theme}
           />
+        ) : activeSectionId === 'wideo' ? (
+          <VideoStudioView
+            key={`wideo-${currentLang}`}
+            onBackToHome={() => setActiveSectionId('info365')}
+            currentLang={currentLang}
+            theme={theme}
+          />
         ) : activeSectionId === 'grafika' ? (
           <MediaGallerySectionView
             key={`grafika-${currentLang}`}
@@ -626,8 +634,8 @@ export default function App() {
         <div className="max-w-4xl mx-auto space-y-1.5">
           <p className="font-heading-cinzel font-semibold text-[#423325] dark:text-[#f0f6fc]">
             {adminUser
-              ? 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Bio365 • Grafika365'
-              : 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Mapa • Histada • Grafika365'}
+              ? 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Bio365 • Radio 24/7 • Grafika365 • Wideo YouTube'
+              : 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Mapa • Histada • Radio 24/7 • Grafika365 • Wideo YouTube'}
           </p>
           <p>
             Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span>

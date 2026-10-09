@@ -118,7 +118,15 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'zasoby': 'grafika',
   'uploads': 'grafika',
   'galeria': 'grafika',
-  'materialy': 'grafika'
+  'materialy': 'grafika',
+
+  'wideo': 'wideo',
+  'video': 'wideo',
+  'mp4': 'wideo',
+  'youtube': 'wideo',
+  'generator': 'wideo',
+  'generator-wideo': 'wideo',
+  'studio-wideo': 'wideo'
 };
 
 /**

@@ -13,6 +13,7 @@ import {
   Gamepad2,
   Sparkles,
   Radio,
+  Video,
   EyeOff
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
@@ -41,7 +42,8 @@ const ICONS: Record<string, React.ElementType> = {
   Map,
   Gamepad2,
   Sparkles,
-  Radio
+  Radio,
+  Video
 };
 
 export const SectionNav: React.FC<Props> = ({

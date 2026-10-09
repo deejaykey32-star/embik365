@@ -137,9 +137,9 @@ export const SECTIONS: SectionMeta[] = [
     id: 'radio',
     name: 'Radio 24/7',
     shortTitle: 'Radio Internetowe',
-    subtitle: '4 stacje w pętli z lektorem AI i eksportem wideo na YouTube',
+    subtitle: '4 stacje w ciągłej pętli 24/7 z lektorem AI',
     type: 'info',
-    description: 'Internetowe Radio Widoki na Raj nadające w pętli 24/7 cztery stacje: Nowy RHZ (175 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni). Zawiera generator wideo MP4 na YouTube z czarnym tłem i napisami karaoke.',
+    description: 'Internetowe Radio Widoki na Raj nadające w pętli 24/7 cztery stacje: Nowy RHZ (175 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni) z automatycznym lektorem mowy i ciągłym podsłuchem eteru.',
     badge: 'Radio 24/7',
     icon: 'Radio',
     accentColor: '#e11d48',
@@ -156,6 +156,18 @@ export const SECTIONS: SectionMeta[] = [
     icon: 'Image',
     accentColor: '#c026d3', // fuchsia-600
     bgGradient: 'from-fuchsia-900/20 via-purple-800/10 to-transparent'
+  },
+  {
+    id: 'wideo',
+    name: 'Wideo YouTube',
+    shortTitle: 'Generator Wideo MP4',
+    subtitle: 'Generator wideo MP4 na YouTube z czarnym tłem, lektorem i napisami karaoke',
+    type: 'info',
+    description: 'Dedykowany generator plików wideo MP4 w jakości Full HD (1080p i 720p) dla serwisu YouTube: czarne tło, animacja koralików różańcowych RGBA/CMYK, automatyczny lektor syntezy mowy oraz zsynchronizowane napisy karaoke dla wszystkich 4 dzieł.',
+    badge: 'Wideo YouTube MP4',
+    icon: 'Video',
+    accentColor: '#dc2626', // red-600
+    bgGradient: 'from-red-950/20 via-rose-900/10 to-transparent'
   }
 ];
 
