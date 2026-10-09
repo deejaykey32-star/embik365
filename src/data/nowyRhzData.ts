@@ -14,7 +14,27 @@ export interface NowyRhzMystery {
   prayer: string;
 }
 
+export const TAJEMNICA_ZERO: NowyRhzMystery = {
+  day: 0,
+  t: 'Tajemnica 0',
+  sub: 'Modlitwy Wstępne Różańca Świętego',
+  ref: 'Znak Krzyża, Witaj Królowo, Wierzę w Boga Ojca, Ojcze nasz, Wiara, Nadzieja, Miłość, Chwała Ojcu',
+  med: 'Modlitwy początkowe rozpoczynające Różaniec Święty: Znak Krzyża Świętego, antyfona maryjna Witaj Królowo, Skład Apostolski (Wierzę w Boga Ojca wszechmogącego), Modlitwa Pańska (Ojcze nasz), trzy modlitwy Zdrowaś Maryjo z prośbą o pomnożenie cnót boskich oraz Modlitwa Uwielbienia (Chwała Ojcu). Wszystkie teksty odmawiane są w pełnym brzmieniu bez skrótów.',
+  cl: [
+    'który przymnaża nam wiary.',
+    'który przymnaża nam nadziei.',
+    'który przymnaża nam miłości.'
+  ],
+  stage: 0,
+  stageTitle: 'Wprowadzenie do Różańca Świętego',
+  part: 0,
+  partTitle: 'Modlitwy Wstępne',
+  inPart: 0,
+  prayer: 'Chwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen.'
+};
+
 export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
+  TAJEMNICA_ZERO,
   {
     "t": "Słowo stwarzające",
     "sub": "Stworzenie świata",

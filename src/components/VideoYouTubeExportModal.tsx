@@ -41,6 +41,9 @@ import {
   extractCleanWordsForKaraoke 
 } from '../utils/polishSpeechNormalizer';
 
+// In-memory client cache for decoded audio buffers to prevent repeated downloads
+const clientTtsAudioCache = new Map<string, AudioBuffer>();
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -82,7 +85,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
   // Aktywna stacja i bezpieczny numer dnia
   const activeStation = RADIO_STATIONS.find(s => s.id === selectedStationId) || RADIO_STATIONS[0];
-  const safeDayNumber = Math.max(1, Math.min(activeStation.totalDays, selectedDayNumber));
+  const minDay = selectedStationId === 'nowyrhz' ? 0 : 1;
+  const safeDayNumber = Math.max(minDay, Math.min(activeStation.totalDays, selectedDayNumber));
   const activeBroadcastItem: RadioBroadcastItem = useMemo(() => {
     return getRadioBroadcastItem(selectedStationId, safeDayNumber, selectedBibliaYear);
   }, [selectedStationId, safeDayNumber, selectedBibliaYear]);
@@ -98,7 +102,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   // Pełna lista wszystkich dni / tajemnic / wpisów dla wybranej stacji
   const allStationItems = useMemo(() => {
     const list: { day: number; title: string; subtitle: string; ref?: string }[] = [];
-    for (let d = 1; d <= activeStation.totalDays; d++) {
+    const startDay = selectedStationId === 'nowyrhz' ? 0 : 1;
+    for (let d = startDay; d <= activeStation.totalDays; d++) {
       const item = getRadioBroadcastItem(selectedStationId, d, selectedBibliaYear);
       list.push({
         day: d,
@@ -206,11 +211,12 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     let headerBottom = 200; // domyślna dolna krawędź nagłówka bez różańca
 
     if (hasRosary && rosarySegments) {
+      const isDayZero = selectedStationId === 'nowyrhz' && activeBroadcastItem.dayNumber === 0;
       // Znajdź aktywny segment na podstawie czytanego słowa
       const activeSeg = rosarySegments.find(
         s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
       ) || rosarySegments[0];
-      const activeBeadNum = activeSeg.beadIndex; // 0, 1..10, 11
+      const activeBeadNum = activeSeg.beadIndex; // 0..5 dla Tajemnicy 0, lub 0..11 dla dziesiątka
 
       const beadCenterY = Math.round(height * 0.245); // ~265px na 1080p
       const largeRadius = Math.round(height * 0.023); // ~25px na 1080p, ~16px na 720p
@@ -218,9 +224,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       const leftX = Math.round(width * 0.12);
       const rightX = Math.round(width * 0.88);
-      const smallStartX = Math.round(width * 0.22);
-      const smallEndX = Math.round(width * 0.78);
-      const smallStepX = (smallEndX - smallStartX) / 9;
 
       // A. Złoty sznur łączący paciorki w tle
       ctx.strokeStyle = 'rgba(217, 119, 6, 0.4)';
@@ -230,134 +233,227 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.lineTo(rightX, beadCenterY);
       ctx.stroke();
 
-      // B. PACIOREK 1 (DUŻY): Rozważanie i Ojcze nasz
-      const isIntroDone = activeBeadNum > 0;
-      const isIntroActive = activeBeadNum === 0;
+      if (isDayZero) {
+        // =========================================================
+        // WIZUALIZACJA DLA TAJEMNICY 0 (MODLITWY WSTĘPNE RÓŻAŃCA):
+        // Krzyżyk + Duży (Ojcze nasz) + 3 Małe (Wiara, Nadzieja, Miłość) + Duży (Chwała Ojcu)
+        // =========================================================
+        const t0CruxX = leftX;
+        const t0PaterX = Math.round(width * 0.31);
+        const t0FaithX = Math.round(width * 0.48);
+        const t0HopeX = Math.round(width * 0.60);
+        const t0LoveX = Math.round(width * 0.72);
+        const t0GloryX = rightX;
 
-      ctx.save();
-      if (isIntroActive) {
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 20;
-        ctx.fillStyle = '#f59e0b';
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-      } else if (isIntroDone) {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#059669'; // Ukończony (emerald)
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2;
-      } else {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#d97706';
-        ctx.lineWidth = 1.5;
-      }
-
-      ctx.beginPath();
-      ctx.arc(leftX, beadCenterY, isIntroActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      // Ikona/Tekst wewnątrz dużego paciorka
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${Math.round(largeRadius * 0.85)}px "Cinzel", Georgia, serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(isIntroDone ? '✓' : 'I', leftX, beadCenterY);
-      ctx.restore();
-
-      // Podpis pod dużym paciorkiem 1
-      ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
-      ctx.fillStyle = isIntroActive ? '#ffd700' : isIntroDone ? '#a7f3d0' : '#cbd5e1';
-      ctx.textAlign = 'center';
-      ctx.fillText('Rozważanie & Ojcze nasz', leftX, beadCenterY + largeRadius + 18);
-
-      // C. 10 MAŁYCH PACIORKÓW: Zdrowaś Maryjo ze wstawką
-      for (let b = 1; b <= 10; b++) {
-        const beadX = Math.round(smallStartX + (b - 1) * smallStepX);
-        const isBeadDone = activeBeadNum > b;
-        const isBeadActive = activeBeadNum === b;
-
+        // 1. KRZYŻYK: Znak Krzyża, Witaj Królowo, Wierzę w Boga
+        const isCruxActive = activeBeadNum === 0;
+        const isCruxDone = activeBeadNum > 0;
         ctx.save();
-        if (isBeadActive) {
-          ctx.shadowColor = '#ffd700';
-          ctx.shadowBlur = 18;
-          ctx.fillStyle = '#f59e0b';
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2.5;
-        } else if (isBeadDone) {
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = '#d97706'; // Ukończone małe paciorki - szlachetne złoto
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 1.5;
+        if (isCruxActive) {
+          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+          ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+        } else if (isCruxDone) {
+          ctx.fillStyle = '#059669'; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
         } else {
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = '#141d2b';
-          ctx.strokeStyle = '#475569';
-          ctx.lineWidth = 1;
+          ctx.fillStyle = '#1e293b'; ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5;
         }
-
         ctx.beginPath();
-        ctx.arc(beadX, beadCenterY, isBeadActive ? smallRadius + 3 : smallRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Numer paciorka
+        ctx.arc(t0CruxX, beadCenterY, isCruxActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(smallRadius * 0.95)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(isBeadDone ? '✓' : b.toString(), beadX, beadCenterY);
+        ctx.font = `bold ${Math.round(largeRadius * 0.95)}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(isCruxDone ? '✓' : '✝', t0CruxX, beadCenterY);
         ctx.restore();
 
-        // Etykieta numeru nad paciorkiem
-        ctx.font = `600 ${Math.round(height * 0.013)}px sans-serif`;
-        ctx.fillStyle = isBeadActive ? '#ffd700' : '#94a3b8';
+        ctx.font = `bold ${Math.round(height * 0.015)}px "Cinzel", serif`;
+        ctx.fillStyle = isCruxActive ? '#ffd700' : isCruxDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText(`#${b}`, beadX, beadCenterY - smallRadius - 8);
-      }
+        ctx.fillText('Krzyżyk • Wstęp', t0CruxX, beadCenterY + largeRadius + 18);
 
-      // D. PACIOREK 2 (DUŻY): Chwała Ojcu i O mój Jezu
-      const isConclDone = activeWordIdx >= activeBroadcastItem.words.length - 1;
-      const isConclActive = activeBeadNum === 11;
+        // 2. DUŻY PACIOREK: Ojcze nasz
+        const isPaterActive = activeBeadNum === 1;
+        const isPaterDone = activeBeadNum > 1;
+        ctx.save();
+        if (isPaterActive) {
+          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+          ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+        } else if (isPaterDone) {
+          ctx.fillStyle = '#059669'; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
+        } else {
+          ctx.fillStyle = '#1e293b'; ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5;
+        }
+        ctx.beginPath();
+        ctx.arc(t0PaterX, beadCenterY, isPaterActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(largeRadius * 0.85)}px "Cinzel", serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(isPaterDone ? '✓' : 'I', t0PaterX, beadCenterY);
+        ctx.restore();
 
-      ctx.save();
-      if (isConclActive) {
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 20;
-        ctx.fillStyle = '#f59e0b';
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-      } else if (isConclDone) {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#059669';
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2;
+        ctx.font = `bold ${Math.round(height * 0.015)}px "Cinzel", serif`;
+        ctx.fillStyle = isPaterActive ? '#ffd700' : isPaterDone ? '#a7f3d0' : '#cbd5e1';
+        ctx.textAlign = 'center';
+        ctx.fillText('Ojcze nasz', t0PaterX, beadCenterY + largeRadius + 18);
+
+        // 3. TRZY MAŁE PACIORKI: Wiara, Nadzieja, Miłość
+        const t0SmallBeads = [
+          { x: t0FaithX, num: 2, label: '1 • O wiarę', shortLabel: 'Wiara' },
+          { x: t0HopeX, num: 3, label: '2 • O nadzieję', shortLabel: 'Nadzieja' },
+          { x: t0LoveX, num: 4, label: '3 • O miłość', shortLabel: 'Miłość' }
+        ];
+
+        t0SmallBeads.forEach(b => {
+          const isBeadActive = activeBeadNum === b.num;
+          const isBeadDone = activeBeadNum > b.num;
+          ctx.save();
+          if (isBeadActive) {
+            ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 18;
+            ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
+          } else if (isBeadDone) {
+            ctx.fillStyle = '#d97706'; ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5;
+          } else {
+            ctx.fillStyle = '#141d2b'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+          }
+          ctx.beginPath();
+          ctx.arc(b.x, beadCenterY, isBeadActive ? smallRadius + 3 : smallRadius, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `bold ${Math.round(smallRadius * 0.95)}px sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(isBeadDone ? '✓' : (b.num - 1).toString(), b.x, beadCenterY);
+          ctx.restore();
+
+          ctx.font = `bold ${Math.round(height * 0.014)}px sans-serif`;
+          ctx.fillStyle = isBeadActive ? '#ffd700' : isBeadDone ? '#a7f3d0' : '#94a3b8';
+          ctx.textAlign = 'center';
+          ctx.fillText(b.shortLabel, b.x, beadCenterY + smallRadius + 18);
+        });
+
+        // 4. DUŻY PACIOREK: Chwała Ojcu
+        const isGloryActive = activeBeadNum === 5;
+        const isGloryDone = activeWordIdx >= activeBroadcastItem.words.length - 1;
+        ctx.save();
+        if (isGloryActive) {
+          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+          ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+        } else if (isGloryDone) {
+          ctx.fillStyle = '#059669'; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
+        } else {
+          ctx.fillStyle = '#1e293b'; ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5;
+        }
+        ctx.beginPath();
+        ctx.arc(t0GloryX, beadCenterY, isGloryActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(largeRadius * 0.85)}px "Cinzel", serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(isGloryDone ? '✓' : '✨', t0GloryX, beadCenterY);
+        ctx.restore();
+
+        ctx.font = `bold ${Math.round(height * 0.015)}px "Cinzel", serif`;
+        ctx.fillStyle = isGloryActive ? '#ffd700' : isGloryDone ? '#a7f3d0' : '#cbd5e1';
+        ctx.textAlign = 'center';
+        ctx.fillText('Chwała Ojcu', t0GloryX, beadCenterY + largeRadius + 18);
+
       } else {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#d97706';
-        ctx.lineWidth = 1.5;
+        // =========================================================
+        // WIZUALIZACJA DLA DNI 1..175 (DZIESIĄTEK RÓŻAŃCA):
+        // Duży (Rozważanie + Ojcze nasz) + 10 Małych (Zdrowaś Maryjo) + Duży (Chwała Ojcu + Fatima)
+        // =========================================================
+        const smallStartX = Math.round(width * 0.22);
+        const smallEndX = Math.round(width * 0.78);
+        const smallStepX = (smallEndX - smallStartX) / 9;
+
+        // B. PACIOREK 1 (DUŻY): Rozważanie i Ojcze nasz
+        const isIntroDone = activeBeadNum > 0;
+        const isIntroActive = activeBeadNum === 0;
+
+        ctx.save();
+        if (isIntroActive) {
+          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+          ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+        } else if (isIntroDone) {
+          ctx.fillStyle = '#059669'; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
+        } else {
+          ctx.fillStyle = '#1e293b'; ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5;
+        }
+        ctx.beginPath();
+        ctx.arc(leftX, beadCenterY, isIntroActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(largeRadius * 0.85)}px "Cinzel", Georgia, serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(isIntroDone ? '✓' : 'I', leftX, beadCenterY);
+        ctx.restore();
+
+        ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
+        ctx.fillStyle = isIntroActive ? '#ffd700' : isIntroDone ? '#a7f3d0' : '#cbd5e1';
+        ctx.textAlign = 'center';
+        ctx.fillText('Rozważanie & Ojcze nasz', leftX, beadCenterY + largeRadius + 18);
+
+        // C. 10 MAŁYCH PACIORKÓW: Zdrowaś Maryjo ze wstawką
+        for (let b = 1; b <= 10; b++) {
+          const beadX = Math.round(smallStartX + (b - 1) * smallStepX);
+          const isBeadDone = activeBeadNum > b;
+          const isBeadActive = activeBeadNum === b;
+
+          ctx.save();
+          if (isBeadActive) {
+            ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 18;
+            ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
+          } else if (isBeadDone) {
+            ctx.fillStyle = '#d97706'; ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5;
+          } else {
+            ctx.fillStyle = '#141d2b'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 1;
+          }
+          ctx.beginPath();
+          ctx.arc(beadX, beadCenterY, isBeadActive ? smallRadius + 3 : smallRadius, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `bold ${Math.round(smallRadius * 0.95)}px sans-serif`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(isBeadDone ? '✓' : b.toString(), beadX, beadCenterY);
+          ctx.restore();
+
+          ctx.font = `600 ${Math.round(height * 0.013)}px sans-serif`;
+          ctx.fillStyle = isBeadActive ? '#ffd700' : '#94a3b8';
+          ctx.textAlign = 'center';
+          ctx.fillText(`#${b}`, beadX, beadCenterY - smallRadius - 8);
+        }
+
+        // D. PACIOREK 2 (DUŻY): Chwała Ojcu i O mój Jezu
+        const isConclDone = activeWordIdx >= activeBroadcastItem.words.length - 1;
+        const isConclActive = activeBeadNum === 11;
+
+        ctx.save();
+        if (isConclActive) {
+          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
+          ctx.fillStyle = '#f59e0b'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+        } else if (isConclDone) {
+          ctx.fillStyle = '#059669'; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
+        } else {
+          ctx.fillStyle = '#1e293b'; ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5;
+        }
+        ctx.beginPath();
+        ctx.arc(rightX, beadCenterY, isConclActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(largeRadius * 0.85)}px "Cinzel", Georgia, serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(isConclDone ? '✓' : 'II', rightX, beadCenterY);
+        ctx.restore();
+
+        ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
+        ctx.fillStyle = isConclActive ? '#ffd700' : isConclDone ? '#a7f3d0' : '#cbd5e1';
+        ctx.textAlign = 'center';
+        ctx.fillText('Chwała Ojcu & O mój Jezu', rightX, beadCenterY + largeRadius + 18);
       }
 
-      ctx.beginPath();
-      ctx.arc(rightX, beadCenterY, isConclActive ? largeRadius + 3 : largeRadius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${Math.round(largeRadius * 0.85)}px "Cinzel", Georgia, serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(isConclDone ? '✓' : 'II', rightX, beadCenterY);
-      ctx.restore();
-
-      ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
-      ctx.fillStyle = isConclActive ? '#ffd700' : isConclDone ? '#a7f3d0' : '#cbd5e1';
-      ctx.textAlign = 'center';
-      ctx.fillText('Chwała Ojcu & O mój Jezu', rightX, beadCenterY + largeRadius + 18);
-
-      // E. BELKA INFORMACYJNA O AKTUALNYM PACIORKU (z podglądem wstawki po słowie Jezus)
+      // E. BELKA INFORMACYJNA O AKTUALNYM PACIORKU
       const pillY = beadCenterY + largeRadius + 44;
       ctx.save();
       ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
@@ -366,7 +462,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       const pillW = width - 180;
       const pillH = Math.round(height * 0.046);
       
-      // Zaokrąglony prostokąt belki
       ctx.beginPath();
       ctx.roundRect(90, pillY, pillW, pillH, 12);
       ctx.fill();
@@ -377,49 +472,59 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.font = `bold ${Math.round(height * 0.02)}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = '#ffd700';
 
-      if (activeBeadNum === 0) {
-        ctx.fillText(`📖 KROK 1 • Rozważanie Tajemnicy oraz Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
-      } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
-        const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';
-        ctx.fillText(`📿 PACIOREK ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
+      if (isDayZero) {
+        if (activeBeadNum === 0) {
+          ctx.fillText(`✝️ KROK 1 • Znak Krzyża Świętego, Witaj Królowo & Skład Apostolski`, width / 2, pillY + pillH / 2);
+        } else if (activeBeadNum === 1) {
+          ctx.fillText(`🙏 KROK 2 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+        } else if (activeBeadNum === 2) {
+          ctx.fillText(`🔵 PACIOREK 1/3 • Zdrowaś Maryjo o Wiarę: „który przymnaża nam wiary”`, width / 2, pillY + pillH / 2);
+        } else if (activeBeadNum === 3) {
+          ctx.fillText(`🟢 PACIOREK 2/3 • Zdrowaś Maryjo o Nadzieję: „który przymnaża nam nadziei”`, width / 2, pillY + pillH / 2);
+        } else if (activeBeadNum === 4) {
+          ctx.fillText(`🔴 PACIOREK 3/3 • Zdrowaś Maryjo o Miłość: „który przymnaża nam miłości”`, width / 2, pillY + pillH / 2);
+        } else {
+          ctx.fillText(`✨ KROK 4 • Modlitwa Uwielbienia (Chwała Ojcu)`, width / 2, pillY + pillH / 2);
+        }
       } else {
-        ctx.fillText(`🕊️ KROK 3 • Modlitwa Uwielbienia (Chwała Ojcu) oraz Modlitwa Fatimska (O mój Jezu)`, width / 2, pillY + pillH / 2);
+        if (activeBeadNum === 0) {
+          ctx.fillText(`📖 KROK 1 • Rozważanie Tajemnicy oraz Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+        } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
+          const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';
+          ctx.fillText(`📿 PACIOREK ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
+        } else {
+          ctx.fillText(`🕊️ KROK 3 • Modlitwa Uwielbienia (Chwała Ojcu) oraz Modlitwa Fatimska (O mój Jezu)`, width / 2, pillY + pillH / 2);
+        }
       }
       ctx.restore();
 
       headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PIONOWYM WYŚRODKOWANIEM
+    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PIONOWYM WYŚRODKOWANIEM BEZ ZNIKANIA TEKSTU
     const words = previewMode === 'sample' 
       ? activeBroadcastItem.words.slice(0, 45) 
       : activeBroadcastItem.words;
     const wordsTotal = words.length;
 
     if (wordsTotal > 0) {
-      // WIĘKSZA CZCIONKA: zwiększona o 4 pt (50px na 1080p z różańcem, 56px bez różańca)
-      const fontSize = Math.round(height * (hasRosary ? 0.0465 : 0.052));
-      const lineHeight = Math.round(fontSize * 1.48);
-      ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
+      // Wyjściowy rozmiar czcionki i marginesy
+      let renderFontSize = Math.round(height * (hasRosary ? 0.045 : 0.050));
+      let renderLineHeight = Math.round(renderFontSize * 1.44);
 
       const marginLeft = Math.round(width * 0.05); // 96px na 1080p, 64px na 720p
       const marginRight = marginLeft;
       const maxTextWidth = width - (marginLeft + marginRight);
-      const standardSpaceWidth = ctx.measureText(' ').width;
 
-      // WIĘKSZY ODSTĘP CZYTANEGO TEKSTU OD NAGŁÓWKA:
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.046 : 0.058)); // ~50px bezpiecznego odstępu
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.040 : 0.052));
       const footerTop = height - 87; // Krawędź górna stopki YouTube
-      const bottomPadding = Math.round(height * 0.025); // Bezpieczny margines nad stopką
+      const bottomPadding = Math.round(height * 0.020);
 
       const zoneTop = headerBottom + minHeaderGap;
       const zoneBottom = footerTop - bottomPadding;
-      const zoneHeight = Math.max(120, zoneBottom - zoneTop);
-      const visibleLinesCount = Math.max(3, Math.floor(zoneHeight / lineHeight));
+      const zoneHeight = Math.max(140, zoneBottom - zoneTop);
 
-      // Budowanie linii z pomiarem szerokości każdego słowa
+      // Budowanie tokenów linii
       interface WordToken {
         text: string;
         wordIdx: number;
@@ -431,10 +536,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
-      // Zbiór indeksów słów rozpoczynających nową modlitwę / sekcję
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
 
-      // Sprawdza, czy słowo o danym indeksie rozpoczyna nową modlitwę
       const isPrayerOrSectionStart = (wIdx: number) => {
         if (wIdx === 0) return true;
         if (lineBreakIndicesSet.has(wIdx)) return true;
@@ -445,84 +548,78 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         if (w === 'zdrowaś' && nextW.startsWith('maryjo')) return true;
         if (w === 'chwała' && nextW.startsWith('ojcu')) return true;
         if (w === 'o' && nextW === 'mój' && (words[wIdx + 2]?.toLowerCase() || '').startsWith('jezu')) return true;
-        if (w === 'modlitwa' && (nextW.startsWith('końcow') || nextW === 'na')) return true;
-        if (w === 'fragment' && nextW.startsWith('pism')) return true;
-        if (w === 'słowo' && nextW.startsWith('boż')) return true;
-        if (w === 'wezwania' && nextW === 'do') return true;
+        if (w === 'znak' && nextW.startsWith('krzyż')) return true;
+        if (w === 'antyfona' || (w === 'witaj' && nextW.startsWith('królow'))) return true;
+        if (w === 'skład' || (w === 'wierzę' && nextW.startsWith('w'))) return true;
         return false;
       };
 
-      const lines: LineItem[] = [];
-      let currentLineTokens: WordToken[] = [];
-      let currentWordsWidth = 0;
+      // Pomocnik do podziału słów na linie dla danego rozmiaru czcionki
+      const buildLinesForFontSize = (fSize: number) => {
+        ctx.font = `600 ${fSize}px "Newsreader", Georgia, serif`;
+        const spaceW = ctx.measureText(' ').width;
+        const builtLines: LineItem[] = [];
+        let curLineTokens: WordToken[] = [];
+        let curWordsWidth = 0;
 
-      for (let i = 0; i < wordsTotal; i++) {
-        const wordText = words[i];
-        const isSectionStart = isPrayerOrSectionStart(i);
+        for (let i = 0; i < wordsTotal; i++) {
+          const wordText = words[i];
+          const isSectionStart = isPrayerOrSectionStart(i);
 
-        // KAŻDA MODLITWA (Informacje wstępne, Rozważanie, Ojcze nasz, Zdrowaś Maryjo x 10, Chwała Ojcu, O mój Jezu)
-        // ROZPOCZYNA SIĘ OD NOWEJ LINII:
-        if (isSectionStart && currentLineTokens.length > 0) {
-          lines.push({
-            tokens: currentLineTokens,
-            hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx),
+          if (isSectionStart && curLineTokens.length > 0) {
+            builtLines.push({
+              tokens: curLineTokens,
+              hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
+              isParagraphEnd: true
+            });
+            curLineTokens = [];
+            curWordsWidth = 0;
+          }
+
+          const wordW = ctx.measureText(wordText).width;
+          const gapsCount = curLineTokens.length;
+          const testLineWidth = curWordsWidth + wordW + gapsCount * spaceW;
+
+          if (testLineWidth > maxTextWidth && curLineTokens.length > 0) {
+            builtLines.push({
+              tokens: curLineTokens,
+              hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
+              isParagraphEnd: false
+            });
+            curLineTokens = [];
+            curWordsWidth = 0;
+          }
+
+          curLineTokens.push({ text: wordText, wordIdx: i, width: wordW });
+          curWordsWidth += wordW;
+        }
+
+        if (curLineTokens.length > 0) {
+          builtLines.push({
+            tokens: curLineTokens,
+            hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
             isParagraphEnd: true
           });
-          currentLineTokens = [];
-          currentWordsWidth = 0;
         }
+        return { builtLines, spaceW };
+      };
 
-        const wordWidth = ctx.measureText(wordText).width;
-        const gapsCount = currentLineTokens.length;
-        const testLineWidth = currentWordsWidth + wordWidth + gapsCount * standardSpaceWidth;
-
-        if (testLineWidth > maxTextWidth && currentLineTokens.length > 0) {
-          lines.push({
-            tokens: currentLineTokens,
-            hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx),
-            isParagraphEnd: false
-          });
-          currentLineTokens = [];
-          currentWordsWidth = 0;
-        }
-
-        currentLineTokens.push({ text: wordText, wordIdx: i, width: wordWidth });
-        currentWordsWidth += wordWidth;
-      }
-
-      if (currentLineTokens.length > 0) {
-        lines.push({
-          tokens: currentLineTokens,
-          hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx),
-          isParagraphEnd: true
-        });
-      }
+      let { builtLines: allLines, spaceW: standardSpaceWidth } = buildLinesForFontSize(renderFontSize);
 
       // WYBÓR LINII DO WYŚWIETLENIA BEZ ZNIKANIA PRZECZYTANYCH SŁÓW:
-      let displayLines: LineItem[] = [];
+      let targetSectionLines: LineItem[] = allLines;
 
       if (hasRosary && rosarySegments && rosarySegments.length > 0) {
-        // Dla stacji różańcowych wybieramy linie należące do AKTUALNEGO PACIORKA:
         const activeSeg = rosarySegments.find(
           s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
         ) || rosarySegments[0];
 
-        const segLines = lines.filter(l => 
+        const segLines = allLines.filter(l => 
           l.tokens.some(t => t.wordIdx >= activeSeg.startWordIdx && t.wordIdx <= activeSeg.endWordIdx)
         );
 
-        if (activeSeg.beadIndex >= 1 && activeSeg.beadIndex <= 10) {
-          // DLA WSZYSTKICH 10 PACIORKÓW ZDROWAŚ MARYJO:
-          // Wszystkie linijki modlitwy (w tym początkowe "Zdrowaś Maryjo") POZOSTAJĄ W CAŁOŚCI WIDOCZNE!
-          // Żadne przeczytane słowo ani linijka NIE ZNIKA aż do ukończenia modlitwy danego paciorka!
-          displayLines = segLines;
-        } else if (activeSeg.beadIndex === 11) {
-          // DUŻY PACIOREK 2 (Chwała Ojcu & O mój Jezu):
-          // Obie modlitwy mieszczą się w całości i pozostają w 100% widoczne
-          displayLines = segLines;
-        } else {
-          // KROK 1 (Rozważanie + Ojcze nasz):
-          // Sprawdzamy czy czytana jest Modlitwa Pańska (Ojcze nasz), czy wstęp/rozważanie:
+        if (segLines.length > 0) {
+          // Dla segmentu 0 zwykłego różańca (Rozważanie + Ojcze nasz):
           const ourFatherLineIdx = segLines.findIndex(l => 
             l.tokens.some(t => {
               const txt = t.text.toLowerCase();
@@ -530,54 +627,80 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             })
           );
 
-          const isInsideOurFather = ourFatherLineIdx !== -1 && 
+          const isInsideOurFather = activeSeg.beadIndex === 0 && ourFatherLineIdx !== -1 && 
             activeWordIdx >= segLines[ourFatherLineIdx].tokens[0].wordIdx;
 
           if (isInsideOurFather) {
-            // W trakcie Modlitwy Pańskiej pokazujemy w całości modlitwę Ojcze nasz:
-            const ourFatherLines = segLines.slice(ourFatherLineIdx);
-            displayLines = ourFatherLines.length <= visibleLinesCount 
-              ? ourFatherLines 
-              : ourFatherLines.slice(0, visibleLinesCount);
-          } else if (segLines.length <= visibleLinesCount) {
-            displayLines = segLines;
+            targetSectionLines = segLines.slice(ourFatherLineIdx);
+          } else if (activeSeg.beadIndex === 0 && ourFatherLineIdx !== -1) {
+            targetSectionLines = segLines.slice(0, ourFatherLineIdx);
           } else {
-            // Wstęp i rozważanie: płynne przewijanie
-            let activeLineInSeg = segLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-            if (activeLineInSeg === -1) activeLineInSeg = 0;
-            const segScroll = Math.max(0, Math.min(segLines.length - visibleLinesCount, activeLineInSeg - 2));
-            displayLines = segLines.slice(segScroll, segScroll + visibleLinesCount);
+            targetSectionLines = segLines;
           }
-        }
-      } else {
-        // Dla audycji bez paciorków różańca (WnR365, Biblia365):
-        let activeLineIdx = lines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-        if (activeLineIdx === -1) activeLineIdx = 0;
-
-        if (lines.length <= visibleLinesCount) {
-          displayLines = lines;
-        } else {
-          // Zachowujemy co najmniej 3-4 przeczytane linijki powyżej bieżącego słowa
-          const scrollOffset = Math.max(0, Math.min(lines.length - visibleLinesCount, activeLineIdx - 3));
-          displayLines = lines.slice(scrollOffset, scrollOffset + visibleLinesCount);
         }
       }
 
-      // PIONOWE WYŚRODKOWANIE TEKSTU W STREFIE CZYTANIA:
-      // Blok aktualnie wyświetlanych linijek jest precyzyjnie centrowany w pionie
-      // pomiędzy nagłówkiem a stopką, z zachowaniem większego odstępu od nagłówka.
-      const totalBlockHeight = Math.max(fontSize, (displayLines.length - 1) * lineHeight + fontSize);
+      // DYNAMICZNE DOPASOWANIE CZCIONKI:
+      // Jeśli bieżąca modlitwa ma np. 7-10 linii, delikatnie dopasowujemy wysokość linii,
+      // tak aby całość zmieściła się w strefie i żadne linijki nie były ucinane!
+      if (targetSectionLines.length > 5 && targetSectionLines.length <= 11) {
+        const candidateLineH = Math.floor(zoneHeight / targetSectionLines.length);
+        const minAcceptableLineH = Math.round(height * 0.038);
+        if (candidateLineH >= minAcceptableLineH && candidateLineH < renderLineHeight) {
+          renderLineHeight = candidateLineH;
+          renderFontSize = Math.round(candidateLineH / 1.4);
+          // Ponowne przeliczenie linii dla dopasowanego rozmiaru czcionki
+          const recomputed = buildLinesForFontSize(renderFontSize);
+          standardSpaceWidth = recomputed.spaceW;
+          allLines = recomputed.builtLines;
+          if (hasRosary && rosarySegments && rosarySegments.length > 0) {
+            const activeSeg = rosarySegments.find(
+              s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
+            ) || rosarySegments[0];
+            const recomputedSegLines = allLines.filter(l => 
+              l.tokens.some(t => t.wordIdx >= activeSeg.startWordIdx && t.wordIdx <= activeSeg.endWordIdx)
+            );
+            if (recomputedSegLines.length > 0) {
+              const ofIdx = recomputedSegLines.findIndex(l => 
+                l.tokens.some(t => t.text.toLowerCase().includes('ojcze'))
+              );
+              if (activeSeg.beadIndex === 0 && ofIdx !== -1 && activeWordIdx >= recomputedSegLines[ofIdx].tokens[0].wordIdx) {
+                targetSectionLines = recomputedSegLines.slice(ofIdx);
+              } else if (activeSeg.beadIndex === 0 && ofIdx !== -1) {
+                targetSectionLines = recomputedSegLines.slice(0, ofIdx);
+              } else {
+                targetSectionLines = recomputedSegLines;
+              }
+            }
+          }
+        }
+      }
+
+      const visibleLinesCount = Math.max(3, Math.floor(zoneHeight / renderLineHeight));
+      let displayLines: LineItem[] = [];
+
+      if (targetSectionLines.length <= visibleLinesCount) {
+        displayLines = targetSectionLines;
+      } else {
+        // Płynne przewijanie wyśrodkowane na bieżącej linii:
+        // Końcówka modlitwy i słowo "Amen" są ZAWSZE widoczne bez ucinania!
+        let activeIdx = targetSectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
+        if (activeIdx === -1) activeIdx = 0;
+        const maxScroll = Math.max(0, targetSectionLines.length - visibleLinesCount);
+        const idealScroll = Math.max(0, Math.min(maxScroll, activeIdx - 1));
+        displayLines = targetSectionLines.slice(idealScroll, idealScroll + visibleLinesCount);
+      }
+
+      // PIONOWE WYŚRODKOWANIE WIDOCZNYCH LINII W STREFIE NAPISÓW
+      const totalBlockHeight = Math.max(renderFontSize, (displayLines.length - 1) * renderLineHeight + renderFontSize);
       const remainingZoneY = zoneHeight - totalBlockHeight;
-      const startY = zoneTop + Math.max(0, Math.round(remainingZoneY / 2)) + Math.round(fontSize * 0.85);
+      const startY = zoneTop + Math.max(0, Math.round(remainingZoneY / 2)) + Math.round(renderFontSize * 0.85);
 
       displayLines.forEach((line, lineIndex) => {
-        const lineY = startY + lineIndex * lineHeight;
-        const isLastLineOfAll = line === lines[lines.length - 1];
+        const lineY = startY + lineIndex * renderLineHeight;
+        const isLastLineOfAll = line === allLines[allLines.length - 1];
         const N = line.tokens.length;
 
-        // OBUSTRONNE WYJUSTOWANIE DO PRAWEJ I LEWEJ:
-        // Równomierne rozłożenie odstępów między słowami tak,
-        // aby początek linijki dotykał lewego marginesu, a koniec prawego marginesu.
         let gap = standardSpaceWidth;
         if (N > 1 && !line.isParagraphEnd && !isLastLineOfAll) {
           const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
@@ -597,14 +720,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           if (isCurrent) {
             // EFEKT KARAOKE: Świetliste złote podświetlenie aktywnego słowa
             ctx.save();
-            const padX = Math.round(fontSize * 0.16);
-            const padY = Math.round(fontSize * 0.12);
+            const padX = Math.round(renderFontSize * 0.16);
+            const padY = Math.round(renderFontSize * 0.12);
             const bgX = tokenX - padX;
-            const bgY = lineY - fontSize + Math.round(fontSize * 0.1);
+            const bgY = lineY - renderFontSize + Math.round(renderFontSize * 0.1);
             const bgW = token.width + padX * 2;
-            const bgH = fontSize + padY;
+            const bgH = renderFontSize + padY;
 
-            // Kapsułka świetlista w tle aktywnego słowa
             ctx.fillStyle = 'rgba(245, 158, 11, 0.28)';
             ctx.beginPath();
             ctx.roundRect(bgX, bgY, bgW, bgH, 6);
@@ -614,27 +736,26 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Złoty promienny tekst z aureolą
             ctx.shadowColor = '#f59e0b';
             ctx.shadowBlur = 14;
-            ctx.fillStyle = '#ffd700'; // Radiant gold
-            ctx.font = `bold ${fontSize}px "Newsreader", Georgia, serif`;
+            ctx.fillStyle = '#ffd700';
+            ctx.font = `bold ${renderFontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel, wyrazista i trwała, NIGDY NIE ZNIKA ANI NIE ROBI SIĘ CZARNA!
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel, niezmienna i trwała
             ctx.save();
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#ffffff'; // Niezmienna, czysta biel na czarnym tle
-            ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `600 ${renderFontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           } else {
-            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny srebrzysto-stalowy
+            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-400
             ctx.save();
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#94a3b8'; // Bardzo czytelny slate-400
-            ctx.font = `500 ${fontSize}px "Newsreader", Georgia, serif`;
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = `500 ${renderFontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           }
@@ -643,7 +764,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         });
       });
 
-      // Reset cieni po rysowaniu tekstu
       ctx.shadowBlur = 0;
     }
 
@@ -712,6 +832,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         const clean = txt.trim();
         if (!clean) return null;
 
+        const cacheKey = `${lectorConfig.rate || 1.0}:${clean.toLowerCase()}`;
+        const cached = clientTtsAudioCache.get(cacheKey);
+        if (cached) return cached;
+
         // A. Próba przez API /api/tts z format: 'json'
         try {
           const ttsRes = await fetch('/api/tts', {
@@ -747,13 +871,17 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                   }
                 }
                 if (decodedList.length > 0) {
-                  return concatenateAudioBuffers(audioCtx, decodedList);
+                  const combined = concatenateAudioBuffers(audioCtx, decodedList);
+                  if (combined) clientTtsAudioCache.set(cacheKey, combined);
+                  return combined;
                 }
               }
             } else {
               const arrBuf = await ttsRes.arrayBuffer();
               if (arrBuf && arrBuf.byteLength > 0) {
-                return await audioCtx.decodeAudioData(arrBuf);
+                const decoded = await audioCtx.decodeAudioData(arrBuf);
+                if (decoded) clientTtsAudioCache.set(cacheKey, decoded);
+                return decoded;
               }
             }
           }
@@ -788,7 +916,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           }
 
           if (decodedDirectList.length > 0) {
-            return concatenateAudioBuffers(audioCtx, decodedDirectList);
+            const combined = concatenateAudioBuffers(audioCtx, decodedDirectList);
+            if (combined) clientTtsAudioCache.set(cacheKey, combined);
+            return combined;
           }
         } catch (errDirect) {
           console.warn('Direct fallback failed:', errDirect);

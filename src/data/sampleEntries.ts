@@ -192,7 +192,7 @@ ${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim();
 
     case 'nowyRHZ': {
       const day175 = ((dayNumber - 1) % 175) + 1;
-      const mystery = NOWY_RHZ_MYSTERIES[day175 - 1] || NOWY_RHZ_MYSTERIES[0];
+      const mystery = NOWY_RHZ_MYSTERIES.find(m => m.day === day175) || NOWY_RHZ_MYSTERIES[day175] || NOWY_RHZ_MYSTERIES[0];
       const beadsFormatted = mystery.cl.map(cl => buildFullHailMary(cl)).join('\n\n');
 
       const fullNowyRhzContent = `Etap ${mystery.stage}: ${mystery.stageTitle}

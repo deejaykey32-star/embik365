@@ -844,8 +844,82 @@ app.post('/api/upload-base64', async (req, res) => {
     res.status(500).json({ error: err.message || 'Błąd zapisu pliku base64.' });
   }
 });
+// In-memory cache for TTS audio chunks to prevent repeated requests and rate limiting
+const ttsAudioCache = new Map<string, Buffer>();
 
+// TTS generation endpoint with intelligent caching & fallback
+app.post('/api/tts', async (req, res) => {
+  try {
+    const { text, lang = 'pl', format = 'mp3' } = req.body;
+    const rawText = (text || '').trim();
+    if (!rawText) {
+      return res.status(400).json({ error: 'Brak tekstu do odczytania.' });
+    }
 
+    const wantsJson = req.headers.accept?.includes('application/json') || format === 'json';
+    const textChunks = splitTextForTts(rawText, 140);
+    const validBuffers: Buffer[] = [];
+    const respondedTextChunks: string[] = [];
+
+    // Fallback MP3 frame
+    const SILENCE_FALLBACK = Buffer.from([
+      0xff, 0xfb, 0x90, 0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    ]);
+
+    for (let i = 0; i < textChunks.length; i++) {
+      const chunk = textChunks[i];
+      const cacheKey = `${lang}:${chunk.toLowerCase().trim()}`;
+      
+      let chunkBuf = ttsAudioCache.get(cacheKey);
+      if (!chunkBuf) {
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${encodeURIComponent(lang)}&client=tw-ob`;
+            const gRes = await fetch(ttsUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://translate.google.com/'
+              }
+            });
+            if (gRes.ok) {
+              const arrayBuf = await gRes.arrayBuffer();
+              if (arrayBuf.byteLength > 0) {
+                chunkBuf = Buffer.from(arrayBuf);
+                ttsAudioCache.set(cacheKey, chunkBuf);
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn(`TTS attempt ${attempt} for chunk "${chunk.substring(0, 30)}..." failed:`, e);
+          }
+          if (attempt < 3) await new Promise(r => setTimeout(r, 100 * attempt));
+        }
+      }
+
+      validBuffers.push(chunkBuf || SILENCE_FALLBACK);
+      respondedTextChunks.push(chunk);
+    }
+
+    if (wantsJson) {
+      const b64Chunks = validBuffers.map(b => b.toString('base64'));
+      return res.json({
+        success: true,
+        chunks: b64Chunks,
+        chunksCount: b64Chunks.length,
+        textChunks: respondedTextChunks
+      });
+    }
+
+    const combined = Buffer.concat(validBuffers);
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(combined);
+  } catch (err: any) {
+    console.error('Server TTS error:', err);
+    res.status(500).json({ error: err.message || 'Błąd serwera TTS' });
+  }
+});
 
 // Translation endpoint using Gemini API
 app.post('/api/translate', async (req, res) => {

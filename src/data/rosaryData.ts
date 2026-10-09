@@ -35,6 +35,18 @@ export interface RosaryModelDefinition {
 }
 
 export const COMMON_PRAYERS = {
+  signOfCross: {
+    name: 'Znak Krzyża Świętego',
+    text: 'W imię Ojca i Syna, i Ducha Świętego. Amen.'
+  },
+  hailHolyQueen: {
+    name: 'Witaj Królowo (Salve Regina)',
+    text: 'Witaj, Królowo, Matko miłosierdzia, życie, słodyczy i nadziejo nasza, witaj! Do Ciebie wołamy, wygnańcy, synowie Ewy; do Ciebie wzdychamy, jęcząc i płacząc w tej łez dolinie. Przeto, Orędowniczko nasza, one miłosierne oczy Twoje na nas zwróć, a Jezusa, błogosławiony owoc żywota Twojego, po tym wygnaniu nam okaż. O łaskawa, o litościwa, o słodka Panno Maryjo!'
+  },
+  credo: {
+    name: 'Wierzę w Boga Ojca (Skład Apostolski)',
+    text: 'Wierzę w Boga, Ojca wszechmogącego, Stworzyciela nieba i ziemi. I w Jezusa Chrystusa, Syna Jego jedynego, Pana naszego, który się począł z Ducha Świętego, narodził się z Maryi Panny, umęczon pod Ponckim Piłatem, ukrzyżowan, umarł i pogrzebion. Zstąpił do piekieł, trzeciego dnia zmartwychwstał. Wstąpił na niebiosa, siedzi po prawicy Boga Ojca wszechmogącego. Stamtąd przyjdzie sądzić żywych i umarłych. Wierzę w Ducha Świętego, święty Kościół powszechny, świętych obcowanie, grzechów odpuszczenie, ciała zmartwychwstanie, żywot wieczny. Amen.'
+  },
   cross: {
     name: 'Znak Krzyża & Wierzę w Boga (Skład Apostolski)',
     text: 'W imię Ojca i Syna, i Ducha Świętego. Amen.\n\nWierzę w Boga, Ojca wszechmogącego, Stworzyciela nieba i ziemi. I w Jezusa Chrystusa, Syna Jego jedynego, Pana naszego, który się począł z Ducha Świętego, narodził się z Maryi Panny, umęczon pod Ponckim Piłatem, ukrzyżowan, umarł i pogrzebion. Zstąpił do piekieł, trzeciego dnia zmartwychwstał. Wstąpił na niebiosa, siedzi po prawicy Boga Ojca wszechmogącego. Stamtąd przyjdzie sądzić żywych i umarłych. Wierzę w Ducha Świętego, święty Kościół powszechny, świętych obcowanie, grzechów odpuszczenie, ciała zmartwychwstanie, żywot wieczny. Amen.'
@@ -44,19 +56,19 @@ export const COMMON_PRAYERS = {
     text: 'Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.'
   },
   hailMaryFaith: {
-    name: 'Zdrowaś Maryjo — O wiarę (Paciorek #2 - módlmy się o wiarę)',
-    dopowiedzenie: 'który niech pomnaża naszą wiarę',
-    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech pomnaża naszą wiarę. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
+    name: 'Zdrowaś Maryjo — O wiarę (Paciorek #1 - który przymnaża nam wiary)',
+    dopowiedzenie: 'który przymnaża nam wiary',
+    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który przymnaża nam wiary. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryHope: {
-    name: 'Zdrowaś Maryjo — O nadzieję (Paciorek #3 - módlmy się o nadzieję)',
-    dopowiedzenie: 'który niech umacnia naszą nadzieję',
-    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech umacnia naszą nadzieję. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
+    name: 'Zdrowaś Maryjo — O nadzieję (Paciorek #2 - który przymnaża nam nadziei)',
+    dopowiedzenie: 'który przymnaża nam nadziei',
+    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który przymnaża nam nadziei. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   hailMaryLove: {
-    name: 'Zdrowaś Maryjo — O miłość (Paciorek #4 - módlmy się o miłość)',
-    dopowiedzenie: 'który niech rozpala naszą miłość',
-    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który niech rozpala naszą miłość. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
+    name: 'Zdrowaś Maryjo — O miłość (Paciorek #3 - który przymnaża nam miłości)',
+    dopowiedzenie: 'który przymnaża nam miłości',
+    text: 'Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus, który przymnaża nam miłości. Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.'
   },
   gloryBe: {
     name: 'Modlitwa Uwielbienia (Chwała Ojcu)',
