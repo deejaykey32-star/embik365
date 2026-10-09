@@ -203,13 +203,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     // Duży okrąg (Rozważanie i Ojcze nasz) + 10 małych paciorków (Zdrowaś Maryjo ze wstawką) + Duży okrąg (Chwała Ojcu i O mój Jezu)
     const rosarySegments = activeBroadcastItem.rosarySegments;
     const hasRosary = Boolean(rosarySegments && rosarySegments.length > 0);
-    let startY = 270;
-    let visibleLinesCount = 10;
+    let headerBottom = 200; // domyślna dolna krawędź nagłówka bez różańca
 
     if (hasRosary && rosarySegments) {
-      startY = Math.round(height * 0.365); // ~395px na 1080p
-      visibleLinesCount = 7;
-
       // Znajdź aktywny segment na podstawie czytanego słowa
       const activeSeg = rosarySegments.find(
         s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
@@ -390,17 +386,20 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.fillText(`🕊️ KROK 3 • Modlitwa Uwielbienia (Chwała Ojcu) oraz Modlitwa Fatimska (O mój Jezu)`, width / 2, pillY + pillH / 2);
       }
       ctx.restore();
+
+      headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE (Obustronne wyjustowanie do prawej i lewej + Złote podświetlenie)
+    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PIONOWYM WYŚRODKOWANIEM
     const words = previewMode === 'sample' 
       ? activeBroadcastItem.words.slice(0, 45) 
       : activeBroadcastItem.words;
     const wordsTotal = words.length;
 
     if (wordsTotal > 0) {
-      const fontSize = Math.round(height * (hasRosary ? 0.034 : 0.038)); // ~37px na 1080p przy różańcu
-      const lineHeight = Math.round(fontSize * 1.58);
+      // WIĘKSZA CZCIONKA: znacznie wyraźniejsza i majestatyczna na ekranach (46px na 1080p z różańcem, 52px bez)
+      const fontSize = Math.round(height * (hasRosary ? 0.043 : 0.048));
+      const lineHeight = Math.round(fontSize * 1.52);
       ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
@@ -409,6 +408,16 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       const marginRight = marginLeft;
       const maxTextWidth = width - (marginLeft + marginRight);
       const standardSpaceWidth = ctx.measureText(' ').width;
+
+      // WIĘKSZY ODSTĘP CZYTANEGO TEKSTU OD NAGŁÓWKA:
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.055 : 0.065)); // min. ~60px odstępu od belki
+      const footerTop = height - 87; // Krawędź górna stopki YouTube
+      const bottomPadding = Math.round(height * 0.03); // Bezpieczny margines nad stopką
+
+      const zoneTop = headerBottom + minHeaderGap;
+      const zoneBottom = footerTop - bottomPadding;
+      const zoneHeight = Math.max(120, zoneBottom - zoneTop);
+      const visibleLinesCount = Math.max(3, Math.floor(zoneHeight / lineHeight));
 
       // Budowanie linii z pomiarem szerokości każdego słowa
       interface WordToken {
@@ -509,7 +518,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           displayLines = segLines;
         } else {
           // Dla dłuższego KROKU 1 (Rozważanie + Ojcze nasz) przewijamy płynnie,
-          // ale ZAWSZE zachowując przeczytane linijki na górze (nie znikają od razu!):
+          // ale ZAWSZE zachowując przeczytane linijki na górze:
           let activeLineInSeg = segLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
           if (activeLineInSeg === -1) activeLineInSeg = 0;
           const segScroll = Math.max(0, Math.min(segLines.length - visibleLinesCount, activeLineInSeg - Math.floor(visibleLinesCount / 2)));
@@ -529,6 +538,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
       }
 
+      // PIONOWE WYŚRODKOWANIE TEKSTU W STREFIE CZYTANIA:
+      // Blok aktualnie wyświetlanych linijek jest precyzyjnie centrowany w pionie
+      // pomiędzy nagłówkiem a stopką, z zachowaniem większego odstępu od nagłówka.
+      const totalBlockHeight = Math.max(fontSize, (displayLines.length - 1) * lineHeight + fontSize);
+      const remainingZoneY = zoneHeight - totalBlockHeight;
+      const startY = zoneTop + Math.max(0, Math.round(remainingZoneY / 2)) + Math.round(fontSize * 0.85);
+
       displayLines.forEach((line, lineIndex) => {
         const lineY = startY + lineIndex * lineHeight;
         const isLastLineOfAll = line === lines[lines.length - 1];
@@ -537,7 +553,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         // OBUSTRONNE WYJUSTOWANIE DO PRAWEJ I LEWEJ:
         // Równomierne rozłożenie odstępów między słowami tak,
         // aby początek linijki dotykał lewego marginesu, a koniec prawego marginesu.
-        // Jeśli linijka to koniec modlitwy/akapitu (isParagraphEnd), nie rozciągamy jej sztucznie.
         let gap = standardSpaceWidth;
         if (N > 1 && !line.isParagraphEnd && !isLastLineOfAll) {
           const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
@@ -557,10 +572,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           if (isCurrent) {
             // EFEKT KARAOKE: Świetliste złote podświetlenie aktywnego słowa
             ctx.save();
-            const padX = 6;
-            const padY = 4;
+            const padX = Math.round(fontSize * 0.16);
+            const padY = Math.round(fontSize * 0.12);
             const bgX = tokenX - padX;
-            const bgY = lineY - fontSize + 3;
+            const bgY = lineY - fontSize + Math.round(fontSize * 0.1);
             const bgW = token.width + padX * 2;
             const bgH = fontSize + padY;
 
@@ -652,10 +667,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     setRecordingStatus('Pobieranie pełnej ścieżki dźwiękowej Lektora AI (TTS)...');
 
     try {
-      // 1. Wybór tekstu do odczytania (próbka 45 słów lub cała audycja)
-      const textToSpeak = previewMode === 'sample' 
-        ? activeBroadcastItem.words.slice(0, 45).join(' ') 
-        : activeBroadcastItem.speechText;
+      // 1. Wybór słów docelowych
       const targetWords = previewMode === 'sample' 
         ? activeBroadcastItem.words.slice(0, 45) 
         : activeBroadcastItem.words;
@@ -670,117 +682,192 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       audioContextRef.current = audioCtx;
       const audioDest = audioCtx.createMediaStreamDestination();
 
-      // 3. Pobranie audio głosu Lektora z serwera /api/tts z precyzyjną informacją o chunkach
-      let audioBuffer: AudioBuffer | null = null;
-      let chunkAudioInfos: { text: string; duration: number }[] = [];
+      // Pomocnik do pobrania audio dla pojedynczego fragmentu z /api/tts oraz bezpośredniego fallbacku
+      const fetchAudioForText = async (txt: string): Promise<AudioBuffer | null> => {
+        const clean = txt.trim();
+        if (!clean) return null;
 
-      try {
-        const ttsRes = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            text: textToSpeak,
-            lang: 'pl',
-            rate: lectorConfig.rate || 1.0,
-            pitch: lectorConfig.pitch || 1.0,
-            format: 'json'
-          })
-        });
+        // A. Próba przez API /api/tts z format: 'json'
+        try {
+          const ttsRes = await fetch('/api/tts', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              text: clean,
+              lang: 'pl',
+              rate: lectorConfig.rate || 1.0,
+              pitch: lectorConfig.pitch || 1.0,
+              format: 'json'
+            })
+          });
 
-        if (ttsRes.ok) {
-          const contentType = ttsRes.headers.get('content-type') || '';
-          if (contentType.includes('application/json')) {
-            const data = await ttsRes.json();
-            if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
-              const textChunksList: string[] = (Array.isArray(data.textChunks) && data.textChunks.length === data.chunks.length)
-                ? data.textChunks
-                : splitTextForTts(textToSpeak, 140).slice(0, data.chunks.length);
-
-              const decodedChunks: AudioBuffer[] = [];
-              for (let i = 0; i < data.chunks.length; i++) {
-                try {
-                  const b64 = data.chunks[i];
-                  const bin = atob(b64);
-                  const bytes = new Uint8Array(bin.length);
-                  for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
-                  const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
-                  decodedChunks.push(decoded);
-                  chunkAudioInfos.push({
-                    text: textChunksList[i] || '',
-                    duration: decoded.duration
-                  });
-                } catch (e) {
-                  console.warn('Decode chunk warning in video generator:', e);
+          if (ttsRes.ok) {
+            const contentType = ttsRes.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const data = await ttsRes.json();
+              if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
+                const decodedList: AudioBuffer[] = [];
+                for (const b64 of data.chunks) {
+                  try {
+                    const bin = atob(b64);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+                    const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+                    decodedList.push(decoded);
+                  } catch (eDec) {
+                    console.warn('Decode chunk warning:', eDec);
+                  }
+                }
+                if (decodedList.length > 0) {
+                  return concatenateAudioBuffers(audioCtx, decodedList);
                 }
               }
-              if (decodedChunks.length > 0) {
-                audioBuffer = concatenateAudioBuffers(audioCtx, decodedChunks);
+            } else {
+              const arrBuf = await ttsRes.arrayBuffer();
+              if (arrBuf && arrBuf.byteLength > 0) {
+                return await audioCtx.decodeAudioData(arrBuf);
               }
+            }
+          }
+        } catch (errApi) {
+          console.warn('API /api/tts call failed, trying direct fallback:', errApi);
+        }
+
+        // B. Rezerwowe bezpośrednie pobranie z Google TTS
+        try {
+          const subChunks = splitTextForTts(clean, 140);
+          const decodedDirectList: AudioBuffer[] = [];
+
+          for (const sub of subChunks) {
+            let chunkBuf: AudioBuffer | null = null;
+            for (let att = 1; att <= 2; att++) {
+              try {
+                const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(sub)}&tl=pl&client=tw-ob`;
+                const directRes = await fetch(directUrl);
+                if (directRes.ok) {
+                  const arrBuf = await directRes.arrayBuffer();
+                  chunkBuf = await audioCtx.decodeAudioData(arrBuf);
+                  break;
+                }
+              } catch (eDir) {
+                console.warn(`Direct fetch attempt ${att} failed:`, eDir);
+              }
+              if (att < 2) await new Promise(r => setTimeout(r, 80));
+            }
+            if (chunkBuf) {
+              decodedDirectList.push(chunkBuf);
+            }
+          }
+
+          if (decodedDirectList.length > 0) {
+            return concatenateAudioBuffers(audioCtx, decodedDirectList);
+          }
+        } catch (errDirect) {
+          console.warn('Direct fallback failed:', errDirect);
+        }
+
+        return null;
+      };
+
+      let audioBuffer: AudioBuffer | null = null;
+      const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
+
+      if (previewMode === 'sample') {
+        setRecordingStatus('Pobieranie próbki głosu Lektora AI (45 słów)...');
+        const sampleText = targetWords.join(' ');
+        audioBuffer = await fetchAudioForText(sampleText);
+        const totalDuration = audioBuffer ? audioBuffer.duration : 18;
+
+        const weights = targetWords.map((w, idx) => calculateWordAcousticWeight(w, idx === targetWords.length - 1));
+        const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+        let acc = 0;
+        for (let i = 0; i < targetWords.length; i++) {
+          const start = (acc / totalWeight) * totalDuration;
+          acc += weights[i];
+          const end = (acc / totalWeight) * totalDuration;
+          wordTimings.push({ wordIdx: i, start, end });
+        }
+      } else {
+        // PEŁNA AUDYCJA: Pobieranie sekcja po sekcji
+        // Gwarantuje, że Chwała Ojcu i O mój Jezu ORAZ wszystkie 10 Zdrowaś Maryjo
+        // zostaną pobrane i odczytane przez lektora bez ucinania audio na końcu pliku!
+        const sectionsToProcess = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
+          ? activeBroadcastItem.sections
+          : [{ id: 'full', title: 'Całość audycji', type: 'meditation' as const, text: activeBroadcastItem.speechText, startWordIdx: 0, endWordIdx: wordsTotal - 1 }];
+
+        const allSectionBuffers: AudioBuffer[] = [];
+        let currentTimelineOffset = 0;
+
+        for (let sIdx = 0; sIdx < sectionsToProcess.length; sIdx++) {
+          const sec = sectionsToProcess[sIdx];
+          setRecordingStatus(`Pobieranie głosu Lektora: ${sec.title} (${sIdx + 1}/${sectionsToProcess.length})...`);
+
+          let secAudio: AudioBuffer | null = null;
+
+          if (sec.text.length > 500) {
+            const subTexts = splitTextForTts(sec.text, 250);
+            const subBuffers: AudioBuffer[] = [];
+            for (const sub of subTexts) {
+              const buf = await fetchAudioForText(sub);
+              if (buf) subBuffers.push(buf);
+            }
+            if (subBuffers.length > 0) {
+              secAudio = concatenateAudioBuffers(audioCtx, subBuffers);
             }
           } else {
-            const arrBuf = await ttsRes.arrayBuffer();
-            if (arrBuf && arrBuf.byteLength > 0) {
-              audioBuffer = await audioCtx.decodeAudioData(arrBuf);
-              chunkAudioInfos = [{ text: textToSpeak, duration: audioBuffer.duration }];
+            secAudio = await fetchAudioForText(sec.text);
+          }
+
+          const secWords = targetWords.slice(sec.startWordIdx, sec.endWordIdx + 1);
+          const wordsCountInSec = secWords.length;
+
+          if (!secAudio) {
+            const fallbackDuration = Math.max(1.5, wordsCountInSec * 0.44);
+            secAudio = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * fallbackDuration), audioCtx.sampleRate);
+          }
+
+          allSectionBuffers.push(secAudio);
+          const secDuration = secAudio.duration;
+
+          if (wordsCountInSec > 0) {
+            const weights = secWords.map((w, idx) => calculateWordAcousticWeight(w, idx === wordsCountInSec - 1));
+            const totalSecWeight = weights.reduce((a, b) => a + b, 0) || 1;
+            let accSecWeight = 0;
+
+            for (let w = 0; w < wordsCountInSec; w++) {
+              const globalIdx = sec.startWordIdx + w;
+              const wStart = currentTimelineOffset + (accSecWeight / totalSecWeight) * secDuration;
+              accSecWeight += weights[w];
+              const wEnd = currentTimelineOffset + (accSecWeight / totalSecWeight) * secDuration;
+
+              wordTimings.push({
+                wordIdx: globalIdx,
+                start: wStart,
+                end: Math.min(currentTimelineOffset + secDuration, wEnd)
+              });
             }
           }
+
+          currentTimelineOffset += secDuration;
         }
-      } catch (err) {
-        console.warn('Endpoint /api/tts niedostępny w generatorze wideo, próba bezpośredniego pobrania:', err);
-      }
 
-      // Rezerwowe bezpośrednie pobranie jeśli proxy nie odpowiedziało
-      // Dzielimy cały tekst na małe fragmenty (do 140 znaków) i pobieramy WSZYSTKIE,
-      // nigdy nie ucinając tekstu do 180 znaków (co powodowało ucięcie audio do 4 sekund)!
-      if (!audioBuffer) {
-        setRecordingStatus('Pobieranie pełnej ścieżki audio w trybie bezpośrednim (bez limitów)...');
-        try {
-          const directChunks = splitTextForTts(textToSpeak, 140);
-          const decodedChunks: AudioBuffer[] = [];
+        // Dopełnienie ewentualnych brakujących słów poza sekcjami
+        let highestWordIdx = wordTimings.length > 0 ? Math.max(...wordTimings.map(t => t.wordIdx)) : -1;
+        while (highestWordIdx + 1 < targetWords.length) {
+          highestWordIdx++;
+          wordTimings.push({
+            wordIdx: highestWordIdx,
+            start: currentTimelineOffset,
+            end: currentTimelineOffset + 0.15
+          });
+        }
+        wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
 
-          for (let i = 0; i < directChunks.length; i += 3) {
-            const batch = directChunks.slice(i, i + 3);
-            const batchRes = await Promise.all(
-              batch.map(async (chunk) => {
-                try {
-                  const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=pl&client=tw-ob`;
-                  const directRes = await fetch(directUrl);
-                  if (directRes.ok) {
-                    const arrBuf = await directRes.arrayBuffer();
-                    return await audioCtx.decodeAudioData(arrBuf);
-                  }
-                } catch (e2) {
-                  console.warn('Direct chunk fetch failed:', e2);
-                }
-                return null;
-              })
-            );
-
-            for (let bIdx = 0; bIdx < batchRes.length; bIdx++) {
-              const b = batchRes[bIdx];
-              const chunkText = batch[bIdx];
-              if (b) {
-                decodedChunks.push(b);
-                chunkAudioInfos.push({
-                  text: chunkText,
-                  duration: b.duration
-                });
-              }
-            }
-
-            if (i + 3 < directChunks.length) {
-              await new Promise(r => setTimeout(r, 40));
-            }
-          }
-
-          if (decodedChunks.length > 0) {
-            audioBuffer = concatenateAudioBuffers(audioCtx, decodedChunks);
-          }
-        } catch (eFallback) {
-          console.warn('Direct multi-chunk fallback error:', eFallback);
+        if (allSectionBuffers.length > 0) {
+          audioBuffer = concatenateAudioBuffers(audioCtx, allSectionBuffers);
         }
       }
 
@@ -820,6 +907,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       };
 
       const finalAudioDuration = audioBuffer ? audioBuffer.duration : Math.max(20, wordsTotal * 0.44);
+      const totalDuration = finalAudioDuration;
       setRecordedDuration(finalAudioDuration);
 
       recorder.onstop = async () => {
@@ -827,7 +915,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         let finalBlob = rawBlob;
 
         // Jeśli format to WebM, wstrzykujemy precyzyjny nagłówek Duration (EBML):
-        // To eliminuje błąd, gdy odtwarzacz pokazuje 4 sekundy lub 0:00 zamiast pełnych kilku minut!
         const effectiveDurationSec = finalAudioDuration || lastElapsedRef.current || 1;
         const actualDurationMs = Math.round(effectiveDurationSec * 1000);
         setRecordedDuration(effectiveDurationSec);
@@ -851,89 +938,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         setRecordProgress(100);
         setRecordingStatus('✅ Wideo z lektorem i pełnym czasem trwania gotowe do pobrania!');
       };
-
-      // 6. PRECYZYJNA SYNCHRONIZACJA SŁOWO PO SŁOWIE OPARTA O CHUNKI AUDIO TTS:
-      // Wiążemy każde słowo z dokładnym oknem czasowym audio odpowiedniego fragmentu.
-      // Wyklucza to jakiekolwiek opóźnienia i rozjeżdżanie się tekstu w stosunku do lektora!
-      const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
-      const totalDuration = audioBuffer ? audioBuffer.duration : Math.max(20, wordsTotal * 0.44);
-
-      if (chunkAudioInfos.length > 0) {
-        let globalWordIdx = 0;
-        let currentChunkStartTime = 0;
-
-        for (let cIdx = 0; cIdx < chunkAudioInfos.length; cIdx++) {
-          const chunk = chunkAudioInfos[cIdx];
-          const chunkWords = extractCleanWordsForKaraoke(chunk.text);
-          const isLastChunk = cIdx === chunkAudioInfos.length - 1;
-
-          // Liczba słów przypadająca na ten chunk (ostatni chunk przejmuje wszystkie ewentualne pozostałe słowa)
-          const wordsCountInChunk = isLastChunk 
-            ? Math.max(1, targetWords.length - globalWordIdx)
-            : (chunkWords.length > 0 ? chunkWords.length : 1);
-
-          const chunkTargetWords: string[] = [];
-          for (let k = 0; k < wordsCountInChunk && globalWordIdx + k < targetWords.length; k++) {
-            chunkTargetWords.push(targetWords[globalWordIdx + k]);
-          }
-
-          if (chunkTargetWords.length === 0) {
-            currentChunkStartTime += chunk.duration;
-            continue;
-          }
-
-          // Fonetyczne ważenie sylab i pauz akustycznych tylko w ramach TEGO małego chunka audio (2-4 sekundy)
-          const weights = chunkTargetWords.map((w, idx) => {
-            const isChunkEnd = idx === chunkTargetWords.length - 1;
-            return calculateWordAcousticWeight(w, isChunkEnd);
-          });
-          const totalChunkWeight = weights.reduce((a, b) => a + b, 0) || 1;
-
-          let accWeightInChunk = 0;
-          for (let wIdx = 0; wIdx < chunkTargetWords.length; wIdx++) {
-            const wStart = currentChunkStartTime + (accWeightInChunk / totalChunkWeight) * chunk.duration;
-            accWeightInChunk += weights[wIdx];
-            const wEnd = currentChunkStartTime + (accWeightInChunk / totalChunkWeight) * chunk.duration;
-
-            wordTimings.push({
-              wordIdx: globalWordIdx,
-              start: wStart,
-              end: Math.min(currentChunkStartTime + chunk.duration, wEnd)
-            });
-
-            globalWordIdx++;
-          }
-
-          currentChunkStartTime += chunk.duration;
-        }
-
-        // Dopełnienie ewentualnych brakujących słów
-        while (globalWordIdx < targetWords.length) {
-          wordTimings.push({
-            wordIdx: globalWordIdx,
-            start: currentChunkStartTime,
-            end: currentChunkStartTime + 0.15
-          });
-          globalWordIdx++;
-        }
-
-        wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
-      } else {
-        // Rezerwowe ważenie jeśli audio było pojedynczym plikiem lub symulowane
-        const weights = targetWords.map((w, idx) => {
-          const isLast = idx === targetWords.length - 1;
-          return calculateWordAcousticWeight(w, isLast);
-        });
-        const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
-
-        let acc = 0;
-        for (let i = 0; i < targetWords.length; i++) {
-          const start = (acc / totalWeight) * totalDuration;
-          acc += weights[i];
-          const end = (acc / totalWeight) * totalDuration;
-          wordTimings.push({ wordIdx: i, start, end });
-        }
-      }
 
       // 7. Uruchomienie odtwarzania ścieżki lektora i rejestracji
       if (audioBuffer) {

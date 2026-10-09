@@ -663,32 +663,45 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       }
 
       const targetLang = (body.lang || 'pl').toLowerCase();
-      const textChunks = splitTextForTts(rawText, 140).slice(0, 150);
+      const textChunks = splitTextForTts(rawText, 150);
       const validBuffers: ArrayBuffer[] = [];
+      const respondedTextChunks: string[] = [];
+
+      // Minimalna ramka ciszy MP3 na wypadek nieodwracalnego błędu pojedynczego fragmentu
+      const SILENCE_FALLBACK_U8 = new Uint8Array([
+        0xff, 0xfb, 0x90, 0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+      ]);
 
       for (let i = 0; i < textChunks.length; i += 3) {
         const batch = textChunks.slice(i, i + 3);
         const batchRes = await Promise.all(
           batch.map(async (chunk) => {
-            try {
-              const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
-              const ttsRes = await fetch(ttsUrl, {
-                headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            for (let attempt = 1; attempt <= 2; attempt++) {
+              try {
+                const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
+                const ttsRes = await fetch(ttsUrl, {
+                  headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                  }
+                });
+                if (ttsRes.ok) {
+                  return await ttsRes.arrayBuffer();
                 }
-              });
-              if (ttsRes.ok) {
-                return await ttsRes.arrayBuffer();
+              } catch (e) {
+                console.warn(`TTS chunk attempt ${attempt} failed:`, e);
               }
-            } catch (e) {
-              console.warn('TTS chunk fetch failed:', e);
+              if (attempt < 2) await new Promise(r => setTimeout(r, 100));
             }
-            return null;
+            return SILENCE_FALLBACK_U8.buffer.slice(0);
           })
         );
 
-        for (const b of batchRes) {
-          if (b && b.byteLength > 0) validBuffers.push(b);
+        for (let idx = 0; idx < batchRes.length; idx++) {
+          const b = batchRes[idx];
+          const chunkText = batch[idx];
+          validBuffers.push((b && b.byteLength > 0) ? b : SILENCE_FALLBACK_U8.buffer.slice(0));
+          respondedTextChunks.push(chunkText);
         }
 
         if (i + 3 < textChunks.length) {
@@ -713,7 +726,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
             success: true, 
             chunks: b64Chunks, 
             chunksCount: b64Chunks.length,
-            textChunks: textChunks.slice(0, b64Chunks.length)
+            textChunks: respondedTextChunks
           }), {
             headers: {
               ...corsHeaders,

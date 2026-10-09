@@ -275,35 +275,48 @@ app.post('/api/tts', async (req, res) => {
 
     const targetLang = (req.body?.lang || 'pl').toLowerCase();
     
-    // Bezpieczny podział na fragmenty (maks 140 znaków) dla Google TTS bez limitów
-    const limitedChunks = splitTextForTts(rawText, 140).slice(0, 150);
+    // Bezpieczny podział na fragmenty (maks 150 znaków) dla Google TTS bez sztucznego obcinania
+    const limitedChunks = splitTextForTts(rawText, 150);
     const buffers: Buffer[] = [];
+    const textChunks: string[] = [];
+
+    // Minimalna ramka ciszy MP3 na wypadek nieodwracalnego błędu pojedynczego fragmentu
+    const SILENCE_FALLBACK = Buffer.from([
+      0xff, 0xfb, 0x90, 0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    ]);
 
     // Pobieranie w małych pakietach po 3 fragmenty z mikro-pauzą, aby zapobiec blokadom rate-limit (HTTP 429)
     for (let i = 0; i < limitedChunks.length; i += 3) {
       const batch = limitedChunks.slice(i, i + 3);
       const batchRes = await Promise.all(
         batch.map(async (chunk) => {
-          try {
-            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
-            const response = await fetch(ttsUrl, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+              const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${targetLang}&client=tw-ob`;
+              const response = await fetch(ttsUrl, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+              });
+              if (response.ok) {
+                const arrBuf = await response.arrayBuffer();
+                return Buffer.from(arrBuf);
               }
-            });
-            if (response.ok) {
-              const arrBuf = await response.arrayBuffer();
-              return Buffer.from(arrBuf);
+            } catch (e) {
+              console.warn(`Local TTS chunk attempt ${attempt} failed:`, e);
             }
-          } catch (e) {
-            console.warn('Local TTS chunk fetch failed:', e);
+            if (attempt < 2) await new Promise(r => setTimeout(r, 100));
           }
-          return null;
+          return SILENCE_FALLBACK;
         })
       );
 
-      for (const b of batchRes) {
-        if (b && b.length > 0) buffers.push(b);
+      for (let idx = 0; idx < batchRes.length; idx++) {
+        const b = batchRes[idx];
+        const chunkText = batch[idx];
+        buffers.push(b && b.length > 0 ? b : SILENCE_FALLBACK);
+        textChunks.push(chunkText);
       }
 
       if (i + 3 < limitedChunks.length) {
@@ -321,7 +334,7 @@ app.post('/api/tts', async (req, res) => {
           success: true,
           chunks: buffers.map(b => b.toString('base64')),
           chunksCount: buffers.length,
-          textChunks: limitedChunks.slice(0, buffers.length)
+          textChunks
         });
       }
 
