@@ -709,7 +709,12 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
             return btoa(binary);
           });
 
-          return new Response(JSON.stringify({ success: true, chunks: b64Chunks, chunksCount: b64Chunks.length }), {
+          return new Response(JSON.stringify({ 
+            success: true, 
+            chunks: b64Chunks, 
+            chunksCount: b64Chunks.length,
+            textChunks: textChunks.slice(0, b64Chunks.length)
+          }), {
             headers: {
               ...corsHeaders,
               'Content-Type': 'application/json',

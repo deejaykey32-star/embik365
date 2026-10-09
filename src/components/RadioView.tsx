@@ -589,7 +589,7 @@ export const RadioView: React.FC<Props> = ({
                   </div>
                 )}
 
-                <p className="whitespace-pre-line">
+                <p className="whitespace-pre-line text-justify leading-relaxed" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                   {broadcastItem.displayContent || broadcastItem.speechText}
                 </p>
               </div>

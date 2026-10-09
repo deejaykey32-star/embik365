@@ -37,7 +37,8 @@ import {
 import ysFixWebmDuration from 'fix-webm-duration';
 import { 
   splitTextForTts, 
-  calculateWordAcousticWeight 
+  calculateWordAcousticWeight,
+  extractCleanWordsForKaraoke 
 } from '../utils/polishSpeechNormalizer';
 
 interface Props {
@@ -391,20 +392,29 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.restore();
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE (Zaznaczenie aktualnie wypowiadanego słowa)
-    const words = activeBroadcastItem.words;
-    if (words.length > 0) {
+    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE (Obustronne wyjustowanie do prawej i lewej + Złote podświetlenie)
+    const words = previewMode === 'sample' 
+      ? activeBroadcastItem.words.slice(0, 45) 
+      : activeBroadcastItem.words;
+    const wordsTotal = words.length;
+
+    if (wordsTotal > 0) {
       const fontSize = Math.round(height * (hasRosary ? 0.034 : 0.038)); // ~37px na 1080p przy różańcu
-      const lineHeight = Math.round(fontSize * 1.55);
+      const lineHeight = Math.round(fontSize * 1.58);
       ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
       ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
 
-      const maxTextWidth = width - 180;
+      const marginLeft = Math.round(width * 0.05); // 96px na 1080p, 64px na 720p
+      const marginRight = marginLeft;
+      const maxTextWidth = width - (marginLeft + marginRight);
+      const standardSpaceWidth = ctx.measureText(' ').width;
 
-      // Budowanie linii ze słów z zapamiętywaniem indeksu każdego słowa
+      // Budowanie linii z pomiarem szerokości każdego słowa
       interface WordToken {
         text: string;
         wordIdx: number;
+        width: number;
       }
       interface LineItem {
         tokens: WordToken[];
@@ -413,24 +423,27 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       const lines: LineItem[] = [];
       let currentLineTokens: WordToken[] = [];
-      let currentLineWidth = 0;
+      let currentWordsWidth = 0;
 
-      for (let i = 0; i < words.length; i++) {
-        const wordText = words[i] + ' ';
+      for (let i = 0; i < wordsTotal; i++) {
+        const wordText = words[i];
         const wordWidth = ctx.measureText(wordText).width;
+        const gapsCount = currentLineTokens.length;
+        const testLineWidth = currentWordsWidth + wordWidth + gapsCount * standardSpaceWidth;
 
-        if (currentLineWidth + wordWidth > maxTextWidth && currentLineTokens.length > 0) {
+        if (testLineWidth > maxTextWidth && currentLineTokens.length > 0) {
           lines.push({
             tokens: currentLineTokens,
             hasActiveWord: currentLineTokens.some(t => t.wordIdx === activeWordIdx)
           });
           currentLineTokens = [];
-          currentLineWidth = 0;
+          currentWordsWidth = 0;
         }
 
-        currentLineTokens.push({ text: wordText, wordIdx: i });
-        currentLineWidth += wordWidth;
+        currentLineTokens.push({ text: wordText, wordIdx: i, width: wordWidth });
+        currentWordsWidth += wordWidth;
       }
+
       if (currentLineTokens.length > 0) {
         lines.push({
           tokens: currentLineTokens,
@@ -442,41 +455,79 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       let activeLineIdx = lines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
       if (activeLineIdx === -1) activeLineIdx = 0;
 
-      // Okno przewijania linii (auto-scroll: utrzymuje aktywną linię na wysokości 2-3 pozycji)
-      const scrollOffset = Math.max(0, activeLineIdx - 3);
+      // Okno przewijania linii (auto-scroll: utrzymuje aktywną linię na 2-3 pozycji)
+      const scrollOffset = Math.max(0, activeLineIdx - 2);
       const displayLines = lines.slice(scrollOffset, scrollOffset + visibleLinesCount);
 
       displayLines.forEach((line, lineIndex) => {
         const lineY = startY + lineIndex * lineHeight;
-        let tokenX = 90;
+        const globalLineIdx = scrollOffset + lineIndex;
+        const isLastLine = globalLineIdx === lines.length - 1;
+        const N = line.tokens.length;
+
+        // OBUSTRONNE WYJUSTOWANIE DO PRAWEJ I LEWEJ:
+        // Równomierne rozłożenie odstępów między słowami tak,
+        // aby początek linijki dotykał lewego marginesu, a koniec prawego marginesu.
+        let gap = standardSpaceWidth;
+        if (N > 1 && !isLastLine) {
+          const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
+          const remainingSpace = maxTextWidth - totalWordsW;
+          const candidateGap = remainingSpace / (N - 1);
+          if (candidateGap >= standardSpaceWidth * 0.5 && candidateGap <= standardSpaceWidth * 2.8) {
+            gap = candidateGap;
+          }
+        }
+
+        let tokenX = marginLeft;
 
         line.tokens.forEach((token) => {
           const isCurrent = token.wordIdx === activeWordIdx;
           const isSpoken = token.wordIdx < activeWordIdx;
 
           if (isCurrent) {
-            // EFEKT KARAOKE: Złoty podświetlony akcent ze świetlistą poświatą!
+            // EFEKT KARAOKE: Świetliste złote podświetlenie aktywnego słowa
+            ctx.save();
+            const padX = 6;
+            const padY = 4;
+            const bgX = tokenX - padX;
+            const bgY = lineY - fontSize + 3;
+            const bgW = token.width + padX * 2;
+            const bgH = fontSize + padY;
+
+            // Kapsułka świetlista w tle aktywnego słowa
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.22)';
+            ctx.beginPath();
+            ctx.roundRect(bgX, bgY, bgW, bgH, 6);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Złoty promienny tekst z aureolą
             ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = 14;
+            ctx.shadowBlur = 16;
             ctx.fillStyle = '#ffd700'; // Radiant gold
-            ctx.font = `bold ${fontSize + 2}px "Newsreader", Georgia, serif`;
+            ctx.font = `bold ${fontSize}px "Newsreader", Georgia, serif`;
+            ctx.fillText(token.text, tokenX, lineY);
+            ctx.restore();
           } else if (isSpoken) {
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#f1f5f9'; // Czysty biały (już przeczytany)
+            ctx.fillStyle = '#f8fafc'; // Czysty biały (przeczytany)
             ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
+            ctx.fillText(token.text, tokenX, lineY);
           } else {
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#64748b'; // Stonowany srebrzysty (przyszły)
+            ctx.fillStyle = '#718096'; // Czytelny, stonowany srebrzysto-stalowy (przyszły)
             ctx.font = `500 ${fontSize}px "Newsreader", Georgia, serif`;
+            ctx.fillText(token.text, tokenX, lineY);
           }
 
-          ctx.fillText(token.text, tokenX, lineY);
-          const tWidth = ctx.measureText(token.text).width;
-          tokenX += tWidth;
+          tokenX += token.width + gap;
         });
       });
 
-      // Reset cieni
+      // Reset cieni po rysowaniu tekstu
       ctx.shadowBlur = 0;
     }
 
@@ -496,10 +547,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.font = `500 ${Math.round(height * 0.02)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
-    const wordsTotal = activeBroadcastItem.words.length;
-    const currentProgressPercent = wordsTotal > 0 ? Math.round((activeWordIdx / wordsTotal) * 100) : 0;
+    const currentProgressPercent = wordsTotal > 0 ? Math.round((Math.min(activeWordIdx + 1, wordsTotal) / wordsTotal) * 100) : 0;
     ctx.fillText(
-      `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays} • Słowo ${activeWordIdx + 1}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
+      `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays} • Słowo ${Math.min(activeWordIdx + 1, wordsTotal)}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
       width - 80,
       height - 38
     );
@@ -544,8 +594,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       audioContextRef.current = audioCtx;
       const audioDest = audioCtx.createMediaStreamDestination();
 
-      // 3. Pobranie audio głosu Lektora z serwera /api/tts z obsługą wieloczęściową
+      // 3. Pobranie audio głosu Lektora z serwera /api/tts z precyzyjną informacją o chunkach
       let audioBuffer: AudioBuffer | null = null;
+      let chunkAudioInfos: { text: string; duration: number }[] = [];
+
       try {
         const ttsRes = await fetch('/api/tts', {
           method: 'POST',
@@ -567,14 +619,23 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           if (contentType.includes('application/json')) {
             const data = await ttsRes.json();
             if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
+              const textChunksList: string[] = (Array.isArray(data.textChunks) && data.textChunks.length === data.chunks.length)
+                ? data.textChunks
+                : splitTextForTts(textToSpeak, 140).slice(0, data.chunks.length);
+
               const decodedChunks: AudioBuffer[] = [];
-              for (const b64 of data.chunks) {
+              for (let i = 0; i < data.chunks.length; i++) {
                 try {
+                  const b64 = data.chunks[i];
                   const bin = atob(b64);
                   const bytes = new Uint8Array(bin.length);
-                  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                  for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
                   const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
                   decodedChunks.push(decoded);
+                  chunkAudioInfos.push({
+                    text: textChunksList[i] || '',
+                    duration: decoded.duration
+                  });
                 } catch (e) {
                   console.warn('Decode chunk warning in video generator:', e);
                 }
@@ -587,6 +648,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             const arrBuf = await ttsRes.arrayBuffer();
             if (arrBuf && arrBuf.byteLength > 0) {
               audioBuffer = await audioCtx.decodeAudioData(arrBuf);
+              chunkAudioInfos = [{ text: textToSpeak, duration: audioBuffer.duration }];
             }
           }
         }
@@ -621,8 +683,16 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               })
             );
 
-            for (const b of batchRes) {
-              if (b) decodedChunks.push(b);
+            for (let bIdx = 0; bIdx < batchRes.length; bIdx++) {
+              const b = batchRes[bIdx];
+              const chunkText = batch[bIdx];
+              if (b) {
+                decodedChunks.push(b);
+                chunkAudioInfos.push({
+                  text: chunkText,
+                  duration: b.duration
+                });
+              }
             }
 
             if (i + 3 < directChunks.length) {
@@ -706,7 +776,90 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         setRecordingStatus('✅ Wideo z lektorem i pełnym czasem trwania gotowe do pobrania!');
       };
 
-      // 6. Uruchomienie odtwarzania ścieżki lektora i rejestracji
+      // 6. PRECYZYJNA SYNCHRONIZACJA SŁOWO PO SŁOWIE OPARTA O CHUNKI AUDIO TTS:
+      // Wiążemy każde słowo z dokładnym oknem czasowym audio odpowiedniego fragmentu.
+      // Wyklucza to jakiekolwiek opóźnienia i rozjeżdżanie się tekstu w stosunku do lektora!
+      const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
+      const totalDuration = audioBuffer ? audioBuffer.duration : Math.max(20, wordsTotal * 0.44);
+
+      if (chunkAudioInfos.length > 0) {
+        let globalWordIdx = 0;
+        let currentChunkStartTime = 0;
+
+        for (let cIdx = 0; cIdx < chunkAudioInfos.length; cIdx++) {
+          const chunk = chunkAudioInfos[cIdx];
+          const chunkWords = extractCleanWordsForKaraoke(chunk.text);
+          const isLastChunk = cIdx === chunkAudioInfos.length - 1;
+
+          // Liczba słów przypadająca na ten chunk (ostatni chunk przejmuje wszystkie ewentualne pozostałe słowa)
+          const wordsCountInChunk = isLastChunk 
+            ? Math.max(1, targetWords.length - globalWordIdx)
+            : (chunkWords.length > 0 ? chunkWords.length : 1);
+
+          const chunkTargetWords: string[] = [];
+          for (let k = 0; k < wordsCountInChunk && globalWordIdx + k < targetWords.length; k++) {
+            chunkTargetWords.push(targetWords[globalWordIdx + k]);
+          }
+
+          if (chunkTargetWords.length === 0) {
+            currentChunkStartTime += chunk.duration;
+            continue;
+          }
+
+          // Fonetyczne ważenie sylab i pauz akustycznych tylko w ramach TEGO małego chunka audio (2-4 sekundy)
+          const weights = chunkTargetWords.map((w, idx) => {
+            const isChunkEnd = idx === chunkTargetWords.length - 1;
+            return calculateWordAcousticWeight(w, isChunkEnd);
+          });
+          const totalChunkWeight = weights.reduce((a, b) => a + b, 0) || 1;
+
+          let accWeightInChunk = 0;
+          for (let wIdx = 0; wIdx < chunkTargetWords.length; wIdx++) {
+            const wStart = currentChunkStartTime + (accWeightInChunk / totalChunkWeight) * chunk.duration;
+            accWeightInChunk += weights[wIdx];
+            const wEnd = currentChunkStartTime + (accWeightInChunk / totalChunkWeight) * chunk.duration;
+
+            wordTimings.push({
+              wordIdx: globalWordIdx,
+              start: wStart,
+              end: Math.min(currentChunkStartTime + chunk.duration, wEnd)
+            });
+
+            globalWordIdx++;
+          }
+
+          currentChunkStartTime += chunk.duration;
+        }
+
+        // Dopełnienie ewentualnych brakujących słów
+        while (globalWordIdx < targetWords.length) {
+          wordTimings.push({
+            wordIdx: globalWordIdx,
+            start: currentChunkStartTime,
+            end: currentChunkStartTime + 0.15
+          });
+          globalWordIdx++;
+        }
+
+        wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
+      } else {
+        // Rezerwowe ważenie jeśli audio było pojedynczym plikiem lub symulowane
+        const weights = targetWords.map((w, idx) => {
+          const isLast = idx === targetWords.length - 1;
+          return calculateWordAcousticWeight(w, isLast);
+        });
+        const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+
+        let acc = 0;
+        for (let i = 0; i < targetWords.length; i++) {
+          const start = (acc / totalWeight) * totalDuration;
+          acc += weights[i];
+          const end = (acc / totalWeight) * totalDuration;
+          wordTimings.push({ wordIdx: i, start, end });
+        }
+      }
+
+      // 7. Uruchomienie odtwarzania ścieżki lektora i rejestracji
       if (audioBuffer) {
         setRecordingStatus('Trwa nagrywanie wideo z pełnym głosem Lektora AI i synchronizacją słów...');
 
@@ -717,82 +870,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         // Dźwięk trafia ZARÓWNO do pliku wideo (audioDest), jak i do odsłuchu na głośnikach (destination)
         sourceNode.connect(audioDest);
         sourceNode.connect(audioCtx.destination);
-
-        const totalDuration = audioBuffer.duration;
-        const rosarySegments = activeBroadcastItem.rosarySegments;
-        const hasRosary = Boolean(rosarySegments && rosarySegments.length > 0 && previewMode === 'full');
-
-        // PRECYZYJNY PODZIAŁ CZASU Z UWZGLĘDNIENIEM SYLAB, PAUZ AKUSTYCZNYCH I SEGMENTÓW RÓŻAŃCA:
-        // Zapobiega opóźnieniom tekstu w stosunku do lektora po kilku słowach!
-        const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
-
-        if (hasRosary && rosarySegments) {
-          // A. RÓŻANIEC: Dedykowane okna czasowe per paciorek (0 = Intro, 1..10 = Dziesiątka, 11 = Zakończenie)
-          // Zapobiega jakiejkolwiek akumulacji opóźnień między paciorkami!
-          interface SegmentWeightInfo {
-            seg: typeof rosarySegments[0];
-            weights: { wordIdx: number; weight: number }[];
-            totalSegWeight: number;
-          }
-
-          const segInfos: SegmentWeightInfo[] = rosarySegments.map((seg) => {
-            const weights: { wordIdx: number; weight: number }[] = [];
-            let totalSegWeight = 0;
-            for (let j = seg.startWordIdx; j <= seg.endWordIdx && j < targetWords.length; j++) {
-              const isSegEnd = j === seg.endWordIdx;
-              const w = calculateWordAcousticWeight(targetWords[j], isSegEnd);
-              weights.push({ wordIdx: j, weight: w });
-              totalSegWeight += w;
-            }
-            if (totalSegWeight <= 0) totalSegWeight = 1;
-            return { seg, weights, totalSegWeight };
-          });
-
-          const totalAllSegsWeight = segInfos.reduce((acc, s) => acc + s.totalSegWeight, 0);
-
-          let currentSegStartTime = 0;
-          for (let sIdx = 0; sIdx < segInfos.length; sIdx++) {
-            const sInfo = segInfos[sIdx];
-            const segDuration = (sInfo.totalSegWeight / totalAllSegsWeight) * totalDuration;
-            const segEndTime = (sIdx === segInfos.length - 1) 
-              ? totalDuration 
-              : currentSegStartTime + segDuration;
-
-            let accWeightInSeg = 0;
-            for (let wIdx = 0; wIdx < sInfo.weights.length; wIdx++) {
-              const item = sInfo.weights[wIdx];
-              const wStart = currentSegStartTime + (accWeightInSeg / sInfo.totalSegWeight) * segDuration;
-              accWeightInSeg += item.weight;
-              const wEnd = currentSegStartTime + (accWeightInSeg / sInfo.totalSegWeight) * segDuration;
-
-              wordTimings.push({
-                wordIdx: item.wordIdx,
-                start: wStart,
-                end: Math.min(totalDuration, wEnd)
-              });
-            }
-
-            currentSegStartTime = segEndTime;
-          }
-
-          wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
-        } else {
-          // B. OGÓLNY TEKST (Biblia / WnR / Próbka):
-          // Ważenie fonetyczne sylab z uwzględnieniem pauz interpunkcyjnych (przecinki, kropki)
-          const weights = targetWords.map((w, idx) => {
-            const isLast = idx === targetWords.length - 1;
-            return calculateWordAcousticWeight(w, isLast);
-          });
-          const totalWeight = weights.reduce((a, b) => a + b, 0);
-
-          let acc = 0;
-          for (let i = 0; i < targetWords.length; i++) {
-            const start = (acc / totalWeight) * totalDuration;
-            acc += weights[i];
-            const end = (acc / totalWeight) * totalDuration;
-            wordTimings.push({ wordIdx: i, start, end });
-          }
-        }
 
         recorder.start(100);
         sourceNode.start(0);
@@ -805,12 +882,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           
           let activeIdx = 0;
           for (let i = 0; i < wordTimings.length; i++) {
-            if (elapsed >= wordTimings[i].start && elapsed < wordTimings[i].end) {
+            if (elapsed >= wordTimings[i].start) {
               activeIdx = i;
+            } else {
               break;
             }
           }
-          if (elapsed >= totalDuration) {
+          if (elapsed >= totalDuration && wordTimings.length > 0) {
             activeIdx = wordsTotal - 1;
           }
 
@@ -846,10 +924,18 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           const progress = Math.min(99, Math.round((elapsed / wordsDurationSec) * 100));
           setRecordProgress(progress);
 
-          const activeIdx = Math.min(
-            wordsTotal - 1,
-            Math.floor((elapsed / wordsDurationSec) * wordsTotal)
-          );
+          let activeIdx = 0;
+          for (let i = 0; i < wordTimings.length; i++) {
+            if (elapsed >= wordTimings[i].start) {
+              activeIdx = i;
+            } else {
+              break;
+            }
+          }
+          if (elapsed >= wordsDurationSec && wordTimings.length > 0) {
+            activeIdx = wordsTotal - 1;
+          }
+
           setCurrentWordIndex(activeIdx);
           drawVideoFrame(activeIdx, elapsed);
 

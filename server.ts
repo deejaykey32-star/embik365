@@ -320,7 +320,8 @@ app.post('/api/tts', async (req, res) => {
         return res.json({
           success: true,
           chunks: buffers.map(b => b.toString('base64')),
-          chunksCount: buffers.length
+          chunksCount: buffers.length,
+          textChunks: limitedChunks.slice(0, buffers.length)
         });
       }
 
