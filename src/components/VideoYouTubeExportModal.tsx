@@ -34,6 +34,11 @@ import {
   LectorConfig, 
   concatenateAudioBuffers 
 } from '../utils/audioLectorService';
+import ysFixWebmDuration from 'fix-webm-duration';
+import { 
+  splitTextForTts, 
+  calculateWordAcousticWeight 
+} from '../utils/polishSpeechNormalizer';
 
 interface Props {
   isOpen: boolean;
@@ -63,12 +68,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const [renderedVideoUrl, setRenderedVideoUrl] = useState<string | null>(null);
   const [recordingStatus, setRecordingStatus] = useState<string>('Gotowy do generowania');
   const [previewMode, setPreviewMode] = useState<'full' | 'sample'>('full');
+  const [recordedDuration, setRecordedDuration] = useState<number>(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const activeAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const lastElapsedRef = useRef<number>(0);
 
   const lectorConfig = getLectorConfig();
 
@@ -588,16 +595,46 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       }
 
       // Rezerwowe bezpośrednie pobranie jeśli proxy nie odpowiedziało
+      // Dzielimy cały tekst na małe fragmenty (do 140 znaków) i pobieramy WSZYSTKIE,
+      // nigdy nie ucinając tekstu do 180 znaków (co powodowało ucięcie audio do 4 sekund)!
       if (!audioBuffer) {
+        setRecordingStatus('Pobieranie pełnej ścieżki audio w trybie bezpośrednim (bez limitów)...');
         try {
-          const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToSpeak.slice(0, 180))}&tl=pl&client=tw-ob`;
-          const directRes = await fetch(directUrl);
-          if (directRes.ok) {
-            const arrBuf = await directRes.arrayBuffer();
-            audioBuffer = await audioCtx.decodeAudioData(arrBuf);
+          const directChunks = splitTextForTts(textToSpeak, 140);
+          const decodedChunks: AudioBuffer[] = [];
+
+          for (let i = 0; i < directChunks.length; i += 3) {
+            const batch = directChunks.slice(i, i + 3);
+            const batchRes = await Promise.all(
+              batch.map(async (chunk) => {
+                try {
+                  const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=pl&client=tw-ob`;
+                  const directRes = await fetch(directUrl);
+                  if (directRes.ok) {
+                    const arrBuf = await directRes.arrayBuffer();
+                    return await audioCtx.decodeAudioData(arrBuf);
+                  }
+                } catch (e2) {
+                  console.warn('Direct chunk fetch failed:', e2);
+                }
+                return null;
+              })
+            );
+
+            for (const b of batchRes) {
+              if (b) decodedChunks.push(b);
+            }
+
+            if (i + 3 < directChunks.length) {
+              await new Promise(r => setTimeout(r, 40));
+            }
           }
-        } catch (e2) {
-          console.warn('Direct fallback failed:', e2);
+
+          if (decodedChunks.length > 0) {
+            audioBuffer = concatenateAudioBuffers(audioCtx, decodedChunks);
+          }
+        } catch (eFallback) {
+          console.warn('Direct multi-chunk fallback error:', eFallback);
         }
       }
 
@@ -609,14 +646,18 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ];
       const combinedStream = new MediaStream(combinedTracks);
 
-      // 5. Konfiguracja MediaRecorder dla YouTube MP4
+      // 5. Konfiguracja MediaRecorder dla YouTube (VP9/Opus w WebM z łatką EBML Duration)
       let mimeType = 'video/webm;codecs=vp9,opus';
-      if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
+      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
+        mimeType = 'video/webm;codecs=vp9,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+        mimeType = 'video/webm;codecs=vp8,opus';
+      } else if (MediaRecorder.isTypeSupported('video/webm')) {
+        mimeType = 'video/webm';
+      } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
         mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
       } else if (MediaRecorder.isTypeSupported('video/mp4')) {
         mimeType = 'video/mp4';
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-        mimeType = 'video/webm;codecs=vp8,opus';
       }
 
       const recorder = new MediaRecorder(combinedStream, {
@@ -632,40 +673,125 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
       };
 
-      recorder.onstop = () => {
-        const finalBlob = new Blob(chunks, { type: mimeType });
+      const finalAudioDuration = audioBuffer ? audioBuffer.duration : Math.max(20, wordsTotal * 0.44);
+      setRecordedDuration(finalAudioDuration);
+
+      recorder.onstop = async () => {
+        const rawBlob = new Blob(chunks, { type: mimeType });
+        let finalBlob = rawBlob;
+
+        // Jeśli format to WebM, wstrzykujemy precyzyjny nagłówek Duration (EBML):
+        // To eliminuje błąd, gdy odtwarzacz pokazuje 4 sekundy lub 0:00 zamiast pełnych kilku minut!
+        const effectiveDurationSec = finalAudioDuration || lastElapsedRef.current || 1;
+        const actualDurationMs = Math.round(effectiveDurationSec * 1000);
+        setRecordedDuration(effectiveDurationSec);
+
+        if (mimeType.includes('webm')) {
+          try {
+            finalBlob = await new Promise<Blob>((resolve) => {
+              ysFixWebmDuration(rawBlob, actualDurationMs, (fixed: Blob) => {
+                resolve(fixed);
+              });
+            });
+          } catch (fixErr) {
+            console.warn('fixWebmDuration warning:', fixErr);
+          }
+        }
+
         setRenderedBlob(finalBlob);
         const url = URL.createObjectURL(finalBlob);
         setRenderedVideoUrl(url);
         setIsRecording(false);
         setRecordProgress(100);
-        setRecordingStatus('✅ Wideo MP4 z głosem lektora gotowe do pobrania i publikacji na YouTube!');
+        setRecordingStatus('✅ Wideo z lektorem i pełnym czasem trwania gotowe do pobrania!');
       };
 
       // 6. Uruchomienie odtwarzania ścieżki lektora i rejestracji
       if (audioBuffer) {
-        setRecordingStatus('Trwa nagrywanie wideo z pełnym głosem Lektora AI i podświetlaniem słów...');
+        setRecordingStatus('Trwa nagrywanie wideo z pełnym głosem Lektora AI i synchronizacją słów...');
 
         const sourceNode = audioCtx.createBufferSource();
         sourceNode.buffer = audioBuffer;
         activeAudioSourceRef.current = sourceNode;
 
-        // Dźwięk trafia ZARÓWNO do pliku MP4 (audioDest), jak i do odsłuchu na głośnikach (destination)
+        // Dźwięk trafia ZARÓWNO do pliku wideo (audioDest), jak i do odsłuchu na głośnikach (destination)
         sourceNode.connect(audioDest);
         sourceNode.connect(audioCtx.destination);
 
-        // Precyzyjny podział czasu trwania audio proporcjonalnie do długości słów
         const totalDuration = audioBuffer.duration;
-        const wordWeights = targetWords.map(w => Math.max(1, w.length));
-        const totalWeight = wordWeights.reduce((a, b) => a + b, 0);
+        const rosarySegments = activeBroadcastItem.rosarySegments;
+        const hasRosary = Boolean(rosarySegments && rosarySegments.length > 0 && previewMode === 'full');
 
+        // PRECYZYJNY PODZIAŁ CZASU Z UWZGLĘDNIENIEM SYLAB, PAUZ AKUSTYCZNYCH I SEGMENTÓW RÓŻAŃCA:
+        // Zapobiega opóźnieniom tekstu w stosunku do lektora po kilku słowach!
         const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
-        let acc = 0;
-        for (let i = 0; i < targetWords.length; i++) {
-          const start = (acc / totalWeight) * totalDuration;
-          acc += wordWeights[i];
-          const end = (acc / totalWeight) * totalDuration;
-          wordTimings.push({ wordIdx: i, start, end });
+
+        if (hasRosary && rosarySegments) {
+          // A. RÓŻANIEC: Dedykowane okna czasowe per paciorek (0 = Intro, 1..10 = Dziesiątka, 11 = Zakończenie)
+          // Zapobiega jakiejkolwiek akumulacji opóźnień między paciorkami!
+          interface SegmentWeightInfo {
+            seg: typeof rosarySegments[0];
+            weights: { wordIdx: number; weight: number }[];
+            totalSegWeight: number;
+          }
+
+          const segInfos: SegmentWeightInfo[] = rosarySegments.map((seg) => {
+            const weights: { wordIdx: number; weight: number }[] = [];
+            let totalSegWeight = 0;
+            for (let j = seg.startWordIdx; j <= seg.endWordIdx && j < targetWords.length; j++) {
+              const isSegEnd = j === seg.endWordIdx;
+              const w = calculateWordAcousticWeight(targetWords[j], isSegEnd);
+              weights.push({ wordIdx: j, weight: w });
+              totalSegWeight += w;
+            }
+            if (totalSegWeight <= 0) totalSegWeight = 1;
+            return { seg, weights, totalSegWeight };
+          });
+
+          const totalAllSegsWeight = segInfos.reduce((acc, s) => acc + s.totalSegWeight, 0);
+
+          let currentSegStartTime = 0;
+          for (let sIdx = 0; sIdx < segInfos.length; sIdx++) {
+            const sInfo = segInfos[sIdx];
+            const segDuration = (sInfo.totalSegWeight / totalAllSegsWeight) * totalDuration;
+            const segEndTime = (sIdx === segInfos.length - 1) 
+              ? totalDuration 
+              : currentSegStartTime + segDuration;
+
+            let accWeightInSeg = 0;
+            for (let wIdx = 0; wIdx < sInfo.weights.length; wIdx++) {
+              const item = sInfo.weights[wIdx];
+              const wStart = currentSegStartTime + (accWeightInSeg / sInfo.totalSegWeight) * segDuration;
+              accWeightInSeg += item.weight;
+              const wEnd = currentSegStartTime + (accWeightInSeg / sInfo.totalSegWeight) * segDuration;
+
+              wordTimings.push({
+                wordIdx: item.wordIdx,
+                start: wStart,
+                end: Math.min(totalDuration, wEnd)
+              });
+            }
+
+            currentSegStartTime = segEndTime;
+          }
+
+          wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
+        } else {
+          // B. OGÓLNY TEKST (Biblia / WnR / Próbka):
+          // Ważenie fonetyczne sylab z uwzględnieniem pauz interpunkcyjnych (przecinki, kropki)
+          const weights = targetWords.map((w, idx) => {
+            const isLast = idx === targetWords.length - 1;
+            return calculateWordAcousticWeight(w, isLast);
+          });
+          const totalWeight = weights.reduce((a, b) => a + b, 0);
+
+          let acc = 0;
+          for (let i = 0; i < targetWords.length; i++) {
+            const start = (acc / totalWeight) * totalDuration;
+            acc += weights[i];
+            const end = (acc / totalWeight) * totalDuration;
+            wordTimings.push({ wordIdx: i, start, end });
+          }
         }
 
         recorder.start(100);
@@ -675,6 +801,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         const renderLoop = () => {
           if (!recorder || recorder.state !== 'recording') return;
           const elapsed = Math.max(0, audioCtx.currentTime - startAudioTime);
+          lastElapsedRef.current = elapsed;
           
           let activeIdx = 0;
           for (let i = 0; i < wordTimings.length; i++) {
@@ -708,13 +835,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       } else {
         // Fallback: symulacja z syntetyczną ścieżką w przypadku braku połączenia
         setRecordingStatus('Generowanie wideo w trybie syntezy autonomicznej...');
-        const wordsDurationSec = Math.max(15, wordsTotal * 0.42);
+        const wordsDurationSec = Math.max(20, wordsTotal * 0.44);
         recorder.start(100);
         const startTime = Date.now();
 
         const renderLoopFallback = () => {
           if (!recorder || recorder.state !== 'recording') return;
           const elapsed = (Date.now() - startTime) / 1000;
+          lastElapsedRef.current = elapsed;
           const progress = Math.min(99, Math.round((elapsed / wordsDurationSec) * 100));
           setRecordProgress(progress);
 
@@ -780,11 +908,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const handleDownloadVideo = () => {
     if (!renderedVideoUrl) return;
 
+    const isMp4 = renderedBlob?.type.includes('mp4');
+    const ext = isMp4 ? 'mp4' : 'webm';
     const safeTitle = (activeBroadcastItem.headlineTitle || 'video')
       .toLowerCase()
       .replace(/[^a-z0-9а-яąęćłńóśźż]+/gi, '_')
       .slice(0, 40);
-    const filename = `youtube_${activeBroadcastItem.stationId}_dzien_${activeBroadcastItem.dayNumber}_${safeTitle}.mp4`;
+    const filename = `youtube_${activeBroadcastItem.stationId}_dzien_${activeBroadcastItem.dayNumber}_${safeTitle}.${ext}`;
 
     const a = document.createElement('a');
     a.href = renderedVideoUrl;
@@ -1135,19 +1265,27 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           {/* Gotowe wideo podgląd po nagraniu */}
           {renderedVideoUrl && (
             <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 space-y-3 animate-fade-in">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-emerald-300 font-bold text-sm">
                   <Check className="w-4 h-4" />
-                  <span>Plik wideo MP4 został pomyślnie wygenerowany!</span>
+                  <span>Plik wideo dla YouTube został pomyślnie wygenerowany!</span>
                 </div>
-                <span className="text-xs text-slate-400 font-mono">
-                  {renderedBlob ? `${(renderedBlob.size / 1024 / 1024).toFixed(2)} MB` : ''}
-                </span>
+                <div className="flex items-center gap-2 text-xs font-mono">
+                  {recordedDuration > 0 && (
+                    <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
+                      Czas: {Math.floor(recordedDuration / 60)}m {Math.floor(recordedDuration % 60).toString().padStart(2, '0')}s
+                    </span>
+                  )}
+                  <span className="text-slate-400">
+                    {renderedBlob ? `${(renderedBlob.size / 1024 / 1024).toFixed(2)} MB (${renderedBlob.type.includes('mp4') ? 'MP4' : 'WebM'})` : ''}
+                  </span>
+                </div>
               </div>
               <video
                 src={renderedVideoUrl}
                 controls
-                className="w-full max-h-52 rounded-xl bg-black border border-slate-800"
+                preload="metadata"
+                className="w-full max-h-56 rounded-xl bg-black border border-slate-800"
               />
             </div>
           )}

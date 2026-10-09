@@ -550,3 +550,93 @@ export function extractCleanWordsForKaraoke(normalizedText: string): string[] {
     .map(w => w.trim())
     .filter(w => w.length > 0);
 }
+
+/**
+ * Dzieli tekst na bezpieczne fragmenty dla silnika Google TTS (maksymalnie 140 znaków).
+ * Dzieli według zdań (.!?), a dłuższe zdania według klauzul (,;:) oraz granic słów.
+ * Gwarantuje, że żaden fragment nie przekroczy limitu znaków i nie zostanie odrzucony przez TTS.
+ */
+export function splitTextForTts(text: string, maxChunkLen: number = 140): string[] {
+  if (!text || !text.trim()) return [];
+  const clean = text
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // 1. Podział na zdania
+  const rawSentences = clean.split(/(?<=[.!?\n])\s+/).filter(s => s.trim().length > 0);
+  const chunks: string[] = [];
+
+  for (const sentence of rawSentences) {
+    if (sentence.length <= maxChunkLen) {
+      chunks.push(sentence);
+      continue;
+    }
+
+    // 2. Podział długiego zdania po przecinkach, średnikach, dwukropkach
+    const clauses = sentence.split(/(?<=[,;:])\s+/).filter(c => c.trim().length > 0);
+    let currentClause = '';
+
+    for (const clause of clauses) {
+      if (clause.length > maxChunkLen) {
+        // Jeśli pojedyncza klauzula jest za długa, dzielimy bezpiecznie po słowach
+        const words = clause.split(/\s+/).filter(Boolean);
+        let curWordChunk = '';
+        for (const w of words) {
+          if (!curWordChunk) {
+            curWordChunk = w;
+          } else if ((curWordChunk + ' ' + w).length <= maxChunkLen) {
+            curWordChunk += ' ' + w;
+          } else {
+            chunks.push(curWordChunk);
+            curWordChunk = w;
+          }
+        }
+        if (curWordChunk) chunks.push(curWordChunk);
+      } else if (!currentClause) {
+        currentClause = clause;
+      } else if ((currentClause + ' ' + clause).length <= maxChunkLen) {
+        currentClause += ' ' + clause;
+      } else {
+        chunks.push(currentClause);
+        currentClause = clause;
+      }
+    }
+    if (currentClause) {
+      chunks.push(currentClause);
+    }
+  }
+
+  return chunks.filter(c => c.trim().length > 0);
+}
+
+/**
+ * Oblicza wagę czasu trwania słowa w oparciu o fonetykę polską (samogłoski/sylaby)
+ * oraz naturalne pauzy akustyczne na interpunkcję i przejścia modlitewne w różańcu.
+ */
+export function calculateWordAcousticWeight(word: string, isSegmentEnd: boolean = false): number {
+  if (!word) return 1;
+  const cleanWord = word.replace(/[^a-ząćęłńóśźżA-ZĄĆĘŁŃÓŚŹŻ0-9]/g, '');
+  const vowels = (cleanWord.match(/[aąeęioóuyAĄEĘIOÓUY]/g) || []).length;
+  
+  // 1. Bazowa waga fonetyczna:
+  // Krótkie słowa ("w", "z", "i", "do", "Ty") trwają ~0.20-0.25s, nie ułamek milisekundy
+  let weight = Math.max(1.8, vowels * 1.1 + Math.max(1, cleanWord.length * 0.15));
+
+  // 2. Akustyczna pauza na przecinek, średnik, dwukropek (~0.35s - 0.45s)
+  if (/[,;:]$/.test(word)) {
+    weight += 2.4;
+  }
+  
+  // 3. Akustyczna pauza na koniec zdania (. ! ?) (~0.70s - 0.90s)
+  if (/[.!?]$/.test(word)) {
+    weight += 4.5;
+  }
+
+  // 4. Koniec paciorka różańca (przejście między modlitwami) (~1.2s)
+  if (isSegmentEnd) {
+    weight += 6.0;
+  }
+
+  return weight;
+}

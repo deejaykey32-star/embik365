@@ -68,6 +68,53 @@ function splitTextIntoSmartChunks(text: string, maxChunkLen: number = 1000): str
   return finalChunks.filter(c => c.trim().length > 0);
 }
 
+function splitTextForTts(text: string, maxChunkLen: number = 140): string[] {
+  if (!text || !text.trim()) return [];
+  const clean = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const rawSentences = clean.split(/(?<=[.!?\n])\s+/).filter(s => s.trim().length > 0);
+  const chunks: string[] = [];
+
+  for (const sentence of rawSentences) {
+    if (sentence.length <= maxChunkLen) {
+      chunks.push(sentence);
+      continue;
+    }
+
+    const clauses = sentence.split(/(?<=[,;:])\s+/).filter(c => c.trim().length > 0);
+    let currentClause = '';
+
+    for (const clause of clauses) {
+      if (clause.length > maxChunkLen) {
+        const words = clause.split(/\s+/).filter(Boolean);
+        let curWordChunk = '';
+        for (const w of words) {
+          if (!curWordChunk) {
+            curWordChunk = w;
+          } else if ((curWordChunk + ' ' + w).length <= maxChunkLen) {
+            curWordChunk += ' ' + w;
+          } else {
+            chunks.push(curWordChunk);
+            curWordChunk = w;
+          }
+        }
+        if (curWordChunk) chunks.push(curWordChunk);
+      } else if (!currentClause) {
+        currentClause = clause;
+      } else if ((currentClause + ' ' + clause).length <= maxChunkLen) {
+        currentClause += ' ' + clause;
+      } else {
+        chunks.push(currentClause);
+        currentClause = clause;
+      }
+    }
+    if (currentClause) {
+      chunks.push(currentClause);
+    }
+  }
+
+  return chunks.filter(c => c.trim().length > 0);
+}
+
 async function serverTranslateText(text: string, targetLang: string): Promise<string> {
   if (!text || !text.trim() || targetLang === 'pl') return text;
 
@@ -616,7 +663,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       }
 
       const targetLang = (body.lang || 'pl').toLowerCase();
-      const textChunks = splitTextIntoSmartChunks(rawText, 180).slice(0, 60);
+      const textChunks = splitTextForTts(rawText, 140).slice(0, 150);
       const validBuffers: ArrayBuffer[] = [];
 
       for (let i = 0; i < textChunks.length; i += 3) {
@@ -642,6 +689,10 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
 
         for (const b of batchRes) {
           if (b && b.byteLength > 0) validBuffers.push(b);
+        }
+
+        if (i + 3 < textChunks.length) {
+          await new Promise(r => setTimeout(r, 40));
         }
       }
 

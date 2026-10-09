@@ -27,6 +27,7 @@ const publicDataDir = path.join(process.cwd(), 'public', 'data');
 });
 
 import { GoogleGenAI } from '@google/genai';
+import { splitTextForTts } from './src/utils/polishSpeechNormalizer';
 
 // Initialize Gemini client lazily
 let aiClient: GoogleGenAI | null = null;
@@ -274,21 +275,8 @@ app.post('/api/tts', async (req, res) => {
 
     const targetLang = (req.body?.lang || 'pl').toLowerCase();
     
-    // Podział na mniejsze fragmenty (do 180 znaków)
-    const sentences = rawText.match(/[^.!?\n]+[.!?\n]+/g) || [rawText];
-    const textChunks: string[] = [];
-    let current = '';
-    for (const s of sentences) {
-      if (!current) current = s.trim();
-      else if ((current + ' ' + s.trim()).length <= 180) current += ' ' + s.trim();
-      else {
-        textChunks.push(current);
-        current = s.trim();
-      }
-    }
-    if (current) textChunks.push(current);
-
-    const limitedChunks = textChunks.slice(0, 60);
+    // Bezpieczny podział na fragmenty (maks 140 znaków) dla Google TTS bez limitów
+    const limitedChunks = splitTextForTts(rawText, 140).slice(0, 150);
     const buffers: Buffer[] = [];
 
     // Pobieranie w małych pakietach po 3 fragmenty z mikro-pauzą, aby zapobiec blokadom rate-limit (HTTP 429)
