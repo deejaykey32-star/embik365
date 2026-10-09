@@ -392,7 +392,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
         ctx.fillStyle = isIntroActive ? '#ffd700' : isIntroDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText('Rozważanie & Ojcze nasz', leftX, beadCenterY + largeRadius + 18);
+        ctx.fillText('Ojcze nasz', leftX, beadCenterY + largeRadius + 18);
 
         // C. 10 MAŁYCH PACIORKÓW: Zdrowaś Maryjo ze wstawką
         for (let b = 1; b <= 10; b++) {
@@ -478,48 +478,42 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       if (isDayZero) {
         if (activeSec?.id === 'sign_of_cross') {
-          ctx.fillText(`✝️ KROK 1 • Znak Krzyża Świętego`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`✝️ Krok 1 • Znak Krzyża Świętego`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'hail_holy_queen') {
-          ctx.fillText(`👑 KROK 1 • Antyfona: Witaj Królowo (Salve Regina)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`👑 Krok 1 • Witaj Królowo`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'credo') {
-          ctx.fillText(`🛡️ KROK 1 • Skład Apostolski (Wierzę w Boga Ojca)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🛡️ Krok 1 • Wierzę w Boga Ojca`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'our_father') {
-          ctx.fillText(`🙏 KROK 2 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🙏 Krok 2 • Ojcze nasz`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'hail_mary_faith') {
-          ctx.fillText(`🔵 PACIOREK 1/3 • Zdrowaś Maryjo o Wiarę: „który przymnaża nam wiary”`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🔵 Paciorek 1/3 • O Wiarę: „który przymnaża nam wiary”`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'hail_mary_hope') {
-          ctx.fillText(`🟢 PACIOREK 2/3 • Zdrowaś Maryjo o Nadzieję: „który przymnaża nam nadziei”`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🟢 Paciorek 2/3 • O Nadzieję: „który przymnaża nam nadziei”`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'hail_mary_love') {
-          ctx.fillText(`🔴 PACIOREK 3/3 • Zdrowaś Maryjo o Miłość: „który przymnaża nam miłości”`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🔴 Paciorek 3/3 • O Miłość: „który przymnaża nam miłości”`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'glory_be') {
-          ctx.fillText(`✨ KROK 4 • Modlitwa Uwielbienia (Chwała Ojcu)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`✨ Krok 4 • Chwała Ojcu`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum === 0) {
-          ctx.fillText(`✝️ KROK 1 • Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`✝️ Krok 1 • Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum === 1) {
-          ctx.fillText(`🙏 KROK 2 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🙏 Krok 2 • Ojcze nasz`, width / 2, pillY + pillH / 2);
         } else {
           ctx.fillText(`✨ Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
       } else if (hasRosary) {
-        if (activeSec?.id === 'intro') {
-          ctx.fillText(`📖 KROK 1 • Informacje Wstępne i Zapowiedź Tajemnicy`, width / 2, pillY + pillH / 2);
-        } else if (activeSec?.id === 'scripture') {
-          ctx.fillText(`📜 KROK 1 • Słowo Boże`, width / 2, pillY + pillH / 2);
-        } else if (activeSec?.id === 'meditation') {
-          ctx.fillText(`✨ KROK 1 • Rozważanie Tajemnicy`, width / 2, pillY + pillH / 2);
-        } else if (activeSec?.id === 'our_father') {
-          ctx.fillText(`🙏 KROK 1 • Modlitwa Pańska (Ojcze nasz)`, width / 2, pillY + pillH / 2);
+        if (activeSec?.id === 'our_father') {
+          ctx.fillText(`🙏 Paciorek 1 • Ojcze nasz`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
           const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';
-          ctx.fillText(`📿 PACIOREK ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`📿 Paciorek ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'glory_be') {
-          ctx.fillText(`✨ KROK 3 • Modlitwa Uwielbienia (Chwała Ojcu)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`✨ Paciorek 12 • Chwała Ojcu`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'fatima') {
-          ctx.fillText(`🕊️ KROK 3 • Modlitwa Fatimska (O mój Jezu)`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🕊️ Paciorek 12 • O mój Jezu`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'conclusion') {
-          ctx.fillText(`📜 KROK 3 • Modlitwa na Zakończenie / Wezwania do Czynu`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`📜 Modlitwa na Zakończenie`, width / 2, pillY + pillH / 2);
         } else {
-          ctx.fillText(`🕊️ KROK 3 • Modlitwa Uwielbienia oraz Zakończenie Tajemnicy`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`📿 Dziesiątek Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
       } else {
         ctx.fillText(`📖 ${activeSec?.title || 'Czytanie'} • ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
@@ -570,10 +564,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
 
+      // Czcionka i rodzina krojów (zapewnia stabilny pomiar w Canvasie)
+      const FONT_FAMILY = '"Newsreader", Georgia, Cambria, "Times New Roman", serif';
+
       // Pomocnik dzielenia słów danej sekcji na linie dla zadanego rozmiaru czcionki
       const buildLinesForSection = (fSize: number) => {
-        ctx.font = `600 ${fSize}px "Newsreader", Georgia, serif`;
-        const spaceW = ctx.measureText(' ').width;
+        ctx.font = `600 ${fSize}px ${FONT_FAMILY}`;
+        const spaceW = Math.max(Math.ceil(ctx.measureText(' ').width), Math.round(fSize * 0.28));
         const builtLines: LineItem[] = [];
         let curLineTokens: WordToken[] = [];
         let curWordsWidth = 0;
@@ -593,7 +590,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             curWordsWidth = 0;
           }
 
-          const wordW = ctx.measureText(wordText).width;
+          const wordW = Math.ceil(ctx.measureText(wordText).width);
           const gapsCount = curLineTokens.length;
           const testLineWidth = curWordsWidth + wordW + gapsCount * spaceW;
 
@@ -623,10 +620,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       };
 
       // DYNAMICZNY ROZMIAR CZCIONKI:
-      // Gwarantuje, że CAŁA treść bieżącej modlitwy / akapitu mieści się w 100% na ekranie!
-      // Żadne słowa ani linijki NIE ZNIKAJĄ i NIE SĄ UCIĘTE podczas odmawiania modlitwy.
+      // Gwarantuje, że CAŁA treść bieżącej modlitwy mieści się w 100% na ekranie!
       let renderFontSize = Math.round(height * (hasRosary ? 0.046 : 0.052));
-      let renderLineHeight = Math.round(renderFontSize * 1.46);
+      let renderLineHeight = Math.round(renderFontSize * 1.50);
 
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
@@ -637,7 +633,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           const minAcceptableLineH = Math.round(height * (hasRosary ? 0.033 : 0.036));
           if (candidateLineH >= minAcceptableLineH) {
             renderLineHeight = candidateLineH;
-            renderFontSize = Math.round(candidateLineH / 1.44);
+            renderFontSize = Math.round(candidateLineH / 1.48);
             const recomputed = buildLinesForSection(renderFontSize);
             sectionLines = recomputed.builtLines;
             standardSpaceWidth = recomputed.spaceW;
@@ -645,15 +641,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
       }
 
-      // Bezpieczny podział na strony jeśli treść jest wyjątkowo długa (np. bardzo długi fragment czytania)
+      // Bezpieczny podział na strony jeśli treść jest długa
       const maxLinesOnScreen = Math.max(3, Math.floor(zoneHeight / renderLineHeight));
       let displayLines: LineItem[] = [];
 
       if (sectionLines.length <= maxLinesOnScreen) {
-        // Wszystkie linijki modlitwy/sekcji widoczne w całości!
         displayLines = sectionLines;
       } else {
-        // Podział na pełne strony (page-by-page), bez stopniowego ucinania linijek na bieżąco!
         let activeIdxInSec = sectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
         if (activeIdxInSec === -1) activeIdxInSec = 0;
         const pageIndex = Math.floor(activeIdxInSec / maxLinesOnScreen);
@@ -671,12 +665,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         const isLastLineOfSec = line === sectionLines[sectionLines.length - 1];
         const N = line.tokens.length;
 
+        // Bezpieczny odstęp między słowami (nigdy mniejszy niż standardSpaceWidth)
         let gap = standardSpaceWidth;
         if (N > 1 && !line.isParagraphEnd && !isLastLineOfSec) {
           const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
           const remainingSpace = maxTextWidth - totalWordsW;
           const candidateGap = remainingSpace / (N - 1);
-          if (candidateGap >= standardSpaceWidth * 0.5 && candidateGap <= standardSpaceWidth * 2.5) {
+          // Odstęp może być tylko rozszerzany do 1.8x, NIGDY zmniejszany poniżej 1.0x standardSpaceWidth
+          if (candidateGap >= standardSpaceWidth && candidateGap <= standardSpaceWidth * 1.8) {
             gap = candidateGap;
           }
         }
@@ -687,13 +683,16 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           const isCurrent = token.wordIdx === activeWordIdx;
           const isSpoken = token.wordIdx < activeWordIdx;
 
+          // Stała czcionka dla spójnego pomiaru i renderowania
+          ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
+
           if (isCurrent) {
-            // EFEKT KARAOKE: Świetliste złote podświetlenie aktywnego słowa
+            // EFEKT KARAOKE: Eleganckie złote tło bez zmiany szerokości liter (nie nachodzi na sąsiednie słowa)
             ctx.save();
-            const padX = Math.round(renderFontSize * 0.16);
+            const padX = Math.min(Math.round(gap * 0.25), 5);
             const padY = Math.round(renderFontSize * 0.12);
             const bgX = tokenX - padX;
-            const bgY = lineY - renderFontSize + Math.round(renderFontSize * 0.1);
+            const bgY = lineY - renderFontSize + Math.round(renderFontSize * 0.12);
             const bgW = token.width + padX * 2;
             const bgH = renderFontSize + padY;
 
@@ -702,22 +701,20 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.roundRect(bgX, bgY, bgW, bgH, 6);
             ctx.fill();
 
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.75)';
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
             ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = 14;
+            ctx.shadowBlur = 12;
             ctx.fillStyle = '#ffd700';
-            ctx.font = `bold ${renderFontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel, niezmienna i trwała na czarnym tle
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel
             ctx.save();
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#ffffff';
-            ctx.font = `600 ${renderFontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           } else {
@@ -725,7 +722,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.save();
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#94a3b8';
-            ctx.font = `500 ${renderFontSize}px "Newsreader", Georgia, serif`;
             ctx.fillText(token.text, tokenX, lineY);
             ctx.restore();
           }
@@ -782,6 +778,15 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     setRecordingStatus('Pobieranie pełnej ścieżki dźwiękowej Lektora AI (TTS)...');
 
     try {
+      // 0. Upewnienie się, że wszystkie czcionki webowe są w pełni załadowane przed rysowaniem klatek
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (e) {
+          // ignore font load warning
+        }
+      }
+
       // 1. Wybór słów docelowych
       const targetWords = previewMode === 'sample' 
         ? activeBroadcastItem.words.slice(0, 45) 

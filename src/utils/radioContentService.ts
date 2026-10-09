@@ -175,7 +175,7 @@ export function calculateRosarySegmentsFromSections(
 ): RosaryBeadSegment[] {
   const segments: RosaryBeadSegment[] = [];
 
-  // 1. Krok 1 (Duży paciorek): Informacje wstępne, Rozważanie i Ojcze nasz (beadIndex === 0)
+  // 1. Krok 1 (Duży paciorek): Ojcze nasz (beadIndex === 0)
   const introSections = sections.filter(s => s.beadIndex === 0);
   const introStart = introSections.length > 0 ? introSections[0].startWordIdx : 0;
   const introEnd = introSections.length > 0 ? introSections[introSections.length - 1].endWordIdx : 0;
@@ -183,8 +183,8 @@ export function calculateRosarySegmentsFromSections(
   segments.push({
     beadIndex: 0,
     beadType: 'large_intro',
-    label: 'Rozważanie & Ojcze nasz',
-    subLabel: 'Krok 1: Rozważanie Tajemnicy oraz Modlitwa Pańska',
+    label: 'Ojcze nasz',
+    subLabel: 'Modlitwa Pańska',
     startWordIdx: introStart,
     endWordIdx: introEnd
   });
@@ -259,8 +259,6 @@ export function getRadioBroadcastItem(
       const zdrowasMiloscRaw = buildFullHailMary('który przymnaża nam miłości');
       const chwalaOjcuRaw = CHWALA_OJCU_PELNE;
 
-      const introInfoText = 'Nowy Różaniec Historii Zbawienia. Tajemnica zero. Modlitwy wstępne Różańca Świętego.';
-
       interface SectionDef {
         id: string;
         title: string;
@@ -269,16 +267,16 @@ export function getRadioBroadcastItem(
         rawText: string;
       }
 
+      // Komplet pełnych modlitw bez skrótów i bez nazw modlitw
       const sectionDefs: SectionDef[] = [
-        { id: 'intro', title: 'Informacje wstępne', type: 'intro', beadIndex: 0, rawText: introInfoText },
-        { id: 'sign_of_cross', title: 'Znak Krzyża Świętego', type: 'scripture', beadIndex: 0, rawText: `Znak Krzyża Świętego: ${znakKrzyzaRaw}` },
-        { id: 'hail_holy_queen', title: 'Witaj Królowo (Salve Regina)', type: 'meditation', beadIndex: 0, rawText: `Antyfona maryjna Witaj Królowo: ${witajKrolowoRaw}` },
-        { id: 'credo', title: 'Skład Apostolski (Wierzę w Boga Ojca)', type: 'meditation', beadIndex: 0, rawText: `Skład Apostolski: ${credoRaw}` },
-        { id: 'our_father', title: 'Modlitwa Pańska (Ojcze nasz)', type: 'our_father', beadIndex: 1, rawText: `Modlitwa Pańska: ${ojczeNaszRaw}` },
-        { id: 'hail_mary_faith', title: 'Zdrowaś Maryjo — O wiarę', type: 'hail_mary', beadIndex: 2, rawText: `Paciorek pierwszy. Módlmy się o przymnożenie wiary: ${zdrowasWiaraRaw}` },
-        { id: 'hail_mary_hope', title: 'Zdrowaś Maryjo — O nadzieję', type: 'hail_mary', beadIndex: 3, rawText: `Paciorek drugi. Módlmy się o przymnożenie nadziei: ${zdrowasNadziejaRaw}` },
-        { id: 'hail_mary_love', title: 'Zdrowaś Maryjo — O miłość', type: 'hail_mary', beadIndex: 4, rawText: `Paciorek trzeci. Módlmy się o przymnożenie miłości: ${zdrowasMiloscRaw}` },
-        { id: 'glory_be', title: 'Modlitwa Uwielbienia (Chwała Ojcu)', type: 'glory_be', beadIndex: 5, rawText: `Modlitwa Uwielbienia: ${chwalaOjcuRaw}` }
+        { id: 'sign_of_cross', title: 'Znak Krzyża', type: 'scripture', beadIndex: 0, rawText: znakKrzyzaRaw },
+        { id: 'hail_holy_queen', title: 'Witaj Królowo', type: 'meditation', beadIndex: 0, rawText: witajKrolowoRaw },
+        { id: 'credo', title: 'Wierzę w Boga', type: 'meditation', beadIndex: 0, rawText: credoRaw },
+        { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 1, rawText: ojczeNaszRaw },
+        { id: 'hail_mary_faith', title: 'Zdrowaś Maryjo o Wiarę', type: 'hail_mary', beadIndex: 2, rawText: zdrowasWiaraRaw },
+        { id: 'hail_mary_hope', title: 'Zdrowaś Maryjo o Nadzieję', type: 'hail_mary', beadIndex: 3, rawText: zdrowasNadziejaRaw },
+        { id: 'hail_mary_love', title: 'Zdrowaś Maryjo o Miłość', type: 'hail_mary', beadIndex: 4, rawText: zdrowasMiloscRaw },
+        { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 5, rawText: chwalaOjcuRaw }
       ];
 
       const cleanWords: string[] = [];
@@ -322,15 +320,15 @@ export function getRadioBroadcastItem(
           label: 'Krzyżyk: Znak Krzyża, Witaj Królowo, Wierzę w Boga',
           subLabel: 'Wstęp modlitwy różańcowej',
           startWordIdx: sections[0].startWordIdx,
-          endWordIdx: sections[3].endWordIdx
+          endWordIdx: sections[2].endWordIdx
         },
         {
           beadIndex: 1,
           beadType: 'large_intro',
           label: 'Duży paciorek: Ojcze nasz',
           subLabel: 'Modlitwa Pańska',
-          startWordIdx: sections[4].startWordIdx,
-          endWordIdx: sections[4].endWordIdx
+          startWordIdx: sections[3].startWordIdx,
+          endWordIdx: sections[3].endWordIdx
         },
         {
           beadIndex: 2,
@@ -338,8 +336,8 @@ export function getRadioBroadcastItem(
           label: 'Paciorek 1: O wiarę',
           subLabel: 'Zdrowaś Maryjo',
           insertion: 'który przymnaża nam wiary',
-          startWordIdx: sections[5].startWordIdx,
-          endWordIdx: sections[5].endWordIdx
+          startWordIdx: sections[4].startWordIdx,
+          endWordIdx: sections[4].endWordIdx
         },
         {
           beadIndex: 3,
@@ -347,8 +345,8 @@ export function getRadioBroadcastItem(
           label: 'Paciorek 2: O nadzieję',
           subLabel: 'Zdrowaś Maryjo',
           insertion: 'który przymnaża nam nadziei',
-          startWordIdx: sections[6].startWordIdx,
-          endWordIdx: sections[6].endWordIdx
+          startWordIdx: sections[5].startWordIdx,
+          endWordIdx: sections[5].endWordIdx
         },
         {
           beadIndex: 4,
@@ -356,29 +354,28 @@ export function getRadioBroadcastItem(
           label: 'Paciorek 3: O miłość',
           subLabel: 'Zdrowaś Maryjo',
           insertion: 'który przymnaża nam miłości',
-          startWordIdx: sections[7].startWordIdx,
-          endWordIdx: sections[7].endWordIdx
+          startWordIdx: sections[6].startWordIdx,
+          endWordIdx: sections[6].endWordIdx
         },
         {
           beadIndex: 5,
           beadType: 'large_conclusion',
           label: 'Duży paciorek: Chwała Ojcu',
           subLabel: 'Modlitwa Uwielbienia',
-          startWordIdx: sections[8].startWordIdx,
-          endWordIdx: sections[8].endWordIdx
+          startWordIdx: sections[7].startWordIdx,
+          endWordIdx: sections[7].endWordIdx
         }
       ];
 
       const displayContent = [
-        `✝️ ${znakKrzyzaRaw}`,
-        `\n👑 Witaj Królowo (Salve Regina):\n${witajKrolowoRaw}`,
-        `\n🛡️ Skład Apostolski (Wierzę w Boga Ojca):\n${credoRaw}`,
-        `\n🙏 Modlitwa Pańska:\n${ojczeNaszRaw}`,
-        `\n📿 Trzy modlitwy o cnoty Boskie:`,
-        `1. Paciorek pierwszy (o wiarę):\n${zdrowasWiaraRaw}`,
-        `2. Paciorek drugi (o nadzieję):\n${zdrowasNadziejaRaw}`,
-        `3. Paciorek trzeci (o miłość):\n${zdrowasMiloscRaw}`,
-        `\n✨ ${chwalaOjcuRaw}`
+        znakKrzyzaRaw,
+        witajKrolowoRaw,
+        credoRaw,
+        ojczeNaszRaw,
+        zdrowasWiaraRaw,
+        zdrowasNadziejaRaw,
+        zdrowasMiloscRaw,
+        chwalaOjcuRaw
       ].join('\n\n');
 
       return {
@@ -417,20 +414,11 @@ export function getRadioBroadcastItem(
     }));
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
-    // KROK 1: Informacje wstępne, Rozważanie, Ojcze nasz - każda sekcja zaczyna się od nowej linii!
-    const introInfoText = [
-      `Nowy Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} ze stu siedemdziesięciu pięciu.`,
-      `Etap ${stageOrdSpoken}: ${mystery.stageTitle}.`,
-      `Część ${partOrdSpoken}: ${mystery.partTitle}.`,
-      `Tajemnica: ${mystery.t}. ${mystery.sub}.`,
-      `Fragment Pisma Świętego: ${bibRefSpoken}.`
-    ].join(' ');
-
-    const rozwazanieText = `Rozważanie: ${mystery.med}`;
-    const ojczeNaszText = `Modlitwa Pańska: ${OJCZE_NASZ_PELNY}`;
+    // KROK 1: Komplet pełnych modlitw bez skrótów i bez nazw modlitw
+    const ojczeNaszText = OJCZE_NASZ_PELNY;
     const chwalaOjcuText = CHWALA_OJCU_PELNE;
     const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
-    const modlitwaKoncowaText = mystery.prayer ? `Modlitwa na zakończenie: ${mystery.prayer}` : '';
+    const modlitwaKoncowaText = mystery.prayer ? mystery.prayer.replace(/^Modlitwa na zakończenie:\s*/i, '').trim() : '';
 
     interface SectionDef {
       id: string;
@@ -441,9 +429,7 @@ export function getRadioBroadcastItem(
     }
 
     const sectionDefs: SectionDef[] = [
-      { id: 'intro', title: 'Informacje wstępne', type: 'intro', beadIndex: 0, rawText: introInfoText },
-      { id: 'meditation', title: 'Rozważanie', type: 'meditation', beadIndex: 0, rawText: rozwazanieText },
-      { id: 'our_father', title: 'Modlitwa Pańska (Ojcze nasz)', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
+      { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
       ...smallBeadsData.map((b, idx) => ({
         id: `hail_mary_${idx + 1}`,
         title: `Zdrowaś Maryjo #${idx + 1}`,
@@ -492,14 +478,12 @@ export function getRadioBroadcastItem(
     const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
     const displayContent = [
-      `📖 Źródło: ${mystery.ref} (${bibRefSpoken})`,
-      `\n✨ Rozważanie:\n${mystery.med}`,
-      `\n🙏 Modlitwa Pańska:\n${OJCZE_NASZ_PELNY}`,
-      `\n📿 Dziesiątka Różańca Świętego:\n` + dopowiedzeniaList.join('\n\n'),
-      `\n✨ ${CHWALA_OJCU_PELNE}`,
-      `\n🕊️ ${MODLITWA_FATIMSKA_PELNA}`,
-      mystery.prayer ? `\n🙏 Modlitwa końcowa:\n${mystery.prayer}` : ''
-    ].join('\n');
+      OJCZE_NASZ_PELNY,
+      ...dopowiedzeniaList,
+      CHWALA_OJCU_PELNE,
+      MODLITWA_FATIMSKA_PELNA,
+      ...(modlitwaKoncowaText ? [modlitwaKoncowaText] : [])
+    ].join('\n\n');
 
     return {
       stationId: 'nowyrhz',
@@ -707,16 +691,9 @@ export function getRadioBroadcastItem(
   });
   const beadsList = smallBeadsData.map(b => b.text);
 
-  const introInfoText = [
-    `Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`,
-    rhzEntry.stageTitle
-  ].join(' ');
-  const slowoBozeText = `Słowo Boże: ${cleanPassage}`;
-  const rozwazanieText = `Rozważanie: ${cleanExplanation}`;
-  const ojczeNaszText = `Modlitwa Pańska: ${cleanOurFather || OJCZE_NASZ_PELNY}`;
+  const ojczeNaszText = cleanOurFather || OJCZE_NASZ_PELNY;
   const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
   const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
-  const wezwaniaText = callsText ? `Wezwania do czynu: ${callsText}` : '';
 
   interface SectionDef {
     id: string;
@@ -726,11 +703,9 @@ export function getRadioBroadcastItem(
     rawText: string;
   }
 
+  // Komplet pełnych modlitw bez skrótów i bez nazw modlitw
   const sectionDefs: SectionDef[] = [
-    { id: 'intro', title: 'Informacje wstępne', type: 'intro', beadIndex: 0, rawText: introInfoText },
-    { id: 'scripture', title: 'Słowo Boże', type: 'scripture', beadIndex: 0, rawText: slowoBozeText },
-    { id: 'meditation', title: 'Rozważanie', type: 'meditation', beadIndex: 0, rawText: rozwazanieText },
-    { id: 'our_father', title: 'Modlitwa Pańska (Ojcze nasz)', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
+    { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
     ...smallBeadsData.map((b, idx) => ({
       id: `hail_mary_${idx + 1}`,
       title: `Zdrowaś Maryjo #${idx + 1}`,
@@ -739,8 +714,7 @@ export function getRadioBroadcastItem(
       rawText: b.text
     })),
     { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
-    { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText },
-    ...(wezwaniaText ? [{ id: 'conclusion', title: 'Wezwania do czynu', type: 'conclusion' as const, beadIndex: 11, rawText: wezwaniaText }] : [])
+    { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText }
   ];
 
   const cleanWords: string[] = [];
@@ -779,14 +753,11 @@ export function getRadioBroadcastItem(
   const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
   const displayContent = [
-    `📖 Słowo Boże:\n${cleanPassage}`,
-    `\n✨ Rozważanie:\n${cleanExplanation}`,
-    `\n🙏 Modlitwa Pańska:\n${cleanOurFather || OJCZE_NASZ_PELNY}`,
-    `\n📿 Dziesiątka Różańca Świętego:\n` + beadsList.join('\n\n'),
-    `\n✨ ${cleanGloryBe || CHWALA_OJCU_PELNE}`,
-    `\n🕊️ ${cleanFatima || MODLITWA_FATIMSKA_PELNA}`,
-    callsText ? `\n🔥 Wezwania do czynu:\n${callsText}` : ''
-  ].join('\n');
+    ojczeNaszText,
+    ...beadsList,
+    chwalaOjcuText,
+    oMojJezuText
+  ].join('\n\n');
 
   return {
     stationId: 'rhz365',

@@ -166,12 +166,10 @@ ${rhz?.explanation || ''}
 Trzy Wezwania do Działania:
 ${callsFormatted}
 
-Modlitwa Pańska:
 ${cleanOurFather || OJCZE_NASZ_PELNY}
 
 ${beadsFormatted}
 
-Uwielbienie i Prośba:
 ${rhz?.gloryBe || CHWALA_OJCU_PELNE}
 ${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim();
 
@@ -205,15 +203,13 @@ ${mystery.ref}
 Rozważanie:
 ${mystery.med}
 
-Modlitwa Pańska:
 ${OJCZE_NASZ_PELNY}
 
 ${beadsFormatted}
 
-Uwielbienie i Prośba:
 ${CHWALA_OJCU_PELNE}
 ${MODLITWA_FATIMSKA_PELNA}
-${mystery.prayer ? `\nModlitwa na zakończenie:\n${mystery.prayer}` : ''}`.trim();
+${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim();
 
       return {
         id: `nowyRHZ-${cycleDate.dateKey}`,

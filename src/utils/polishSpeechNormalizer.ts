@@ -420,13 +420,16 @@ export function normalizePolishTextForSpeech(rawText: string): string {
   text = text.replace(/Rozdział\s+(\d+)\b/gi, (_, n) => `Rozdział ${numberToPolishOrdinal(parseInt(n, 10), 'm')}`);
   text = text.replace(/Rok\s+(\d+)\b/gi, (_, n) => `Rok ${numberToPolishOrdinal(parseInt(n, 10), 'm')}`);
 
-  // 6. Rozwinięcie numeracji dopowiedzeń różańcowych:
-  // "1. Zdrowaś Maryjo" -> "Dopowiedzenie pierwsze: Zdrowaś Maryjo"
-  // "10. Zdrowaś Maryjo" -> "Dopowiedzenie dziesiąte: Zdrowaś Maryjo"
-  text = text.replace(/(?:^|\n|\.\s*)(\d{1,2})\.\s*Zdrowaś\s*Maryjo/gi, (_, n) => {
-    const num = parseInt(n, 10);
-    return `. Dopowiedzenie ${numberToPolishOrdinal(num, 'n')}: Zdrowaś Maryjo`;
-  });
+  // 6. Usunięcie numeracji dopowiedzeń różańcowych i nazw modlitw (tylko komplet modlitw bez nazw):
+  text = text.replace(/(?:^|\n|\.\s*|\b)#?\d{1,2}\.\s*Zdrowaś\s*Maryjo/gi, 'Zdrowaś Maryjo');
+
+  // Usunięcie nagłówków i nazw modlitw z tekstu
+  text = text.replace(/(?:^|\n|\.\s*)(?:Modlitwa Pańska|Modlitwa Uwielbienia|Modlitwa Fatimska|Antyfona maryjna|Skład Apostolski|Znak Krzyża Świętego|Znak Krzyża|Modlitwa na zakończenie|Modlitwa końcowa)\s*(?:\([^)]*\))?\s*:\s*/gi, ' ');
+  text = text.replace(/10\s+Osobnych\s+Modlitw\s+Zdrowaś\s+Maryjo\s*\([^)]*\)/gi, ' ');
+  text = text.replace(/10\s+Paciorków\s+z\s+dopowiedzeniami[^:\n]*:\s*/gi, ' ');
+  text = text.replace(/Paciorek\s+\w+\.\s*Módlmy\s+się\s+o\s+przymnożenie\s+\w+:\s*/gi, ' ');
+  text = text.replace(/Uwielbienie\s+i\s+Prośba:\s*/gi, ' ');
+  text = text.replace(/\.{3,}/g, '...');
 
   // 7. Rozwinięcie sigli i odnośników biblijnych (np. Rdz 1, 1-31; Mt 5, 3-12)
   for (const [abbr, fullName] of Object.entries(BIBLICAL_BOOKS_MAP)) {
@@ -551,7 +554,7 @@ export function extractCleanWordsForKaraoke(normalizedText: string): string[] {
     .replace(/[\n\r\t]+/g, ' ')
     .split(/\s+/)
     .map(w => w.trim())
-    .filter(w => w.length > 0);
+    .filter(w => w.length > 0 && w !== '.' && w !== ',' && w !== ':' && w !== ';');
 }
 
 /**
