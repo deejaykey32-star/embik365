@@ -397,9 +397,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     const wordsTotal = words.length;
 
     if (wordsTotal > 0) {
-      // WIĘKSZA CZCIONKA: znacznie wyraźniejsza i majestatyczna na ekranach (46px na 1080p z różańcem, 52px bez)
-      const fontSize = Math.round(height * (hasRosary ? 0.043 : 0.048));
-      const lineHeight = Math.round(fontSize * 1.52);
+      // WIĘKSZA CZCIONKA: zwiększona o 4 pt (50px na 1080p z różańcem, 56px bez różańca)
+      const fontSize = Math.round(height * (hasRosary ? 0.0465 : 0.052));
+      const lineHeight = Math.round(fontSize * 1.48);
       ctx.font = `600 ${fontSize}px "Newsreader", Georgia, serif`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
@@ -410,9 +410,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       const standardSpaceWidth = ctx.measureText(' ').width;
 
       // WIĘKSZY ODSTĘP CZYTANEGO TEKSTU OD NAGŁÓWKA:
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.055 : 0.065)); // min. ~60px odstępu od belki
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.046 : 0.058)); // ~50px bezpiecznego odstępu
       const footerTop = height - 87; // Krawędź górna stopki YouTube
-      const bottomPadding = Math.round(height * 0.03); // Bezpieczny margines nad stopką
+      const bottomPadding = Math.round(height * 0.025); // Bezpieczny margines nad stopką
 
       const zoneTop = headerBottom + minHeaderGap;
       const zoneBottom = footerTop - bottomPadding;
@@ -503,8 +503,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       if (hasRosary && rosarySegments && rosarySegments.length > 0) {
         // Dla stacji różańcowych wybieramy linie należące do AKTUALNEGO PACIORKA:
-        // Wszystkie 10 paciorków Zdrowaś Maryjo mają po 3-4 linijki, które MIESZCZĄ SIĘ W CAŁOŚCI na ekranie.
-        // Dzięki temu przeczytane słowa NIGDY NIE ZNIKAJĄ podczas odmawiania paciorka!
         const activeSeg = rosarySegments.find(
           s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
         ) || rosarySegments[0];
@@ -513,16 +511,43 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           l.tokens.some(t => t.wordIdx >= activeSeg.startWordIdx && t.wordIdx <= activeSeg.endWordIdx)
         );
 
-        if (segLines.length <= visibleLinesCount) {
-          // Cała modlitwa mieści się na ekranie bez przewijania – wszystkie przeczytane słowa pozostają widoczne!
+        if (activeSeg.beadIndex >= 1 && activeSeg.beadIndex <= 10) {
+          // DLA WSZYSTKICH 10 PACIORKÓW ZDROWAŚ MARYJO:
+          // Wszystkie linijki modlitwy (w tym początkowe "Zdrowaś Maryjo") POZOSTAJĄ W CAŁOŚCI WIDOCZNE!
+          // Żadne przeczytane słowo ani linijka NIE ZNIKA aż do ukończenia modlitwy danego paciorka!
+          displayLines = segLines;
+        } else if (activeSeg.beadIndex === 11) {
+          // DUŻY PACIOREK 2 (Chwała Ojcu & O mój Jezu):
+          // Obie modlitwy mieszczą się w całości i pozostają w 100% widoczne
           displayLines = segLines;
         } else {
-          // Dla dłuższego KROKU 1 (Rozważanie + Ojcze nasz) przewijamy płynnie,
-          // ale ZAWSZE zachowując przeczytane linijki na górze:
-          let activeLineInSeg = segLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-          if (activeLineInSeg === -1) activeLineInSeg = 0;
-          const segScroll = Math.max(0, Math.min(segLines.length - visibleLinesCount, activeLineInSeg - Math.floor(visibleLinesCount / 2)));
-          displayLines = segLines.slice(segScroll, segScroll + visibleLinesCount);
+          // KROK 1 (Rozważanie + Ojcze nasz):
+          // Sprawdzamy czy czytana jest Modlitwa Pańska (Ojcze nasz), czy wstęp/rozważanie:
+          const ourFatherLineIdx = segLines.findIndex(l => 
+            l.tokens.some(t => {
+              const txt = t.text.toLowerCase();
+              return txt.includes('ojcze') || (txt.includes('modlitwa') && l.tokens.some(t2 => t2.text.toLowerCase().includes('pańska')));
+            })
+          );
+
+          const isInsideOurFather = ourFatherLineIdx !== -1 && 
+            activeWordIdx >= segLines[ourFatherLineIdx].tokens[0].wordIdx;
+
+          if (isInsideOurFather) {
+            // W trakcie Modlitwy Pańskiej pokazujemy w całości modlitwę Ojcze nasz:
+            const ourFatherLines = segLines.slice(ourFatherLineIdx);
+            displayLines = ourFatherLines.length <= visibleLinesCount 
+              ? ourFatherLines 
+              : ourFatherLines.slice(0, visibleLinesCount);
+          } else if (segLines.length <= visibleLinesCount) {
+            displayLines = segLines;
+          } else {
+            // Wstęp i rozważanie: płynne przewijanie
+            let activeLineInSeg = segLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
+            if (activeLineInSeg === -1) activeLineInSeg = 0;
+            const segScroll = Math.max(0, Math.min(segLines.length - visibleLinesCount, activeLineInSeg - 2));
+            displayLines = segLines.slice(segScroll, segScroll + visibleLinesCount);
+          }
         }
       } else {
         // Dla audycji bez paciorków różańca (WnR365, Biblia365):
