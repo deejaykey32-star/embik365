@@ -225,6 +225,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ) || rosarySegments[0];
       const activeBeadNum = activeSeg.beadIndex; // 0..5 dla Tajemnicy 0, lub 0..11 dla dziesiątka
 
+      const activeSec = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
+        ? (activeBroadcastItem.sections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx) || activeBroadcastItem.sections[0])
+        : null;
+
       const beadCenterY = Math.round(height * 0.245); // ~265px na 1080p
       const largeRadius = Math.round(height * 0.023); // ~25px na 1080p, ~16px na 720p
       const smallRadius = Math.round(height * 0.013); // ~14px na 1080p, ~9px na 720p
@@ -485,9 +489,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.font = `bold ${Math.round(height * 0.02)}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = '#ffd700';
 
-      const activeSec = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
-        ? (activeBroadcastItem.sections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx) || activeBroadcastItem.sections[0])
-        : null;
 
       if (isDayZero) {
         if (activeSec?.id === 'sign_of_cross') {
