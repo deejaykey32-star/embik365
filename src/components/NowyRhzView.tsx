@@ -198,8 +198,8 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           id: `seq_m${m.day}_scripture`,
           dayNumber: m.day,
           title: `Tajemnica ${mNum}: ${m.t} • Słowo Boże`,
-          subtitle: `Fragment Pisma Świętego: ${m.ref}`,
-          text: `Fragment Pisma Świętego dla Tajemnicy ${mNum}. Sigla: ${m.ref}.\n${scripturePassage}`
+          subtitle: `Etap ${m.stage}: ${m.stageTitle} • Część ${m.part}: ${m.partTitle}`,
+          text: `Etap ${m.stage}: ${m.stageTitle}. Część ${m.part}: ${m.partTitle}. Tajemnica ${mNum}: ${m.t} – ${m.sub}.\nFragment Pisma Świętego: ${m.ref}.\n${scripturePassage}`
         });
       }
       q.push({
@@ -837,7 +837,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                   <span>Fragment Pisma Świętego: {m.ref}</span>
                 </span>
                 <button
-                  onClick={() => speakText(`speech_passage_${m.day}`, `Fragment Pisma Świętego: ${m.ref}.\n${m.passage || m.ref}`)}
+                  onClick={() => speakText(`speech_passage_${m.day}`, `Etap ${m.stage}: ${m.stageTitle}. Część ${m.part}: ${m.partTitle}. Tajemnica ${m.inPart || m.day}: ${m.t} – ${m.sub}.\nFragment Pisma Świętego: ${m.ref}.\n${m.passage || m.ref}`)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
                   title="Odsłuchaj lektorem tekst Pisma Świętego"
                 >

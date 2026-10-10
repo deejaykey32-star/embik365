@@ -420,7 +420,8 @@ export function getRadioBroadcastItem(
     }));
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
-    // KROK 1: Pismo Święte, Rozważanie tajemnicy oraz komplet pełnych modlitw
+    // KROK 1: Informacja z nagłówka, Pismo Święte, Rozważanie tajemnicy oraz komplet pełnych modlitw
+    const introHeaderRaw = `Etap ${mystery.stage}: ${mystery.stageTitle}. Część ${mystery.part}: ${mystery.partTitle}. Tajemnica ${mystery.inPart || safeDay}: ${mystery.t} – ${mystery.sub}.`;
     const scriptureRaw = mystery.passage || (mystery.ref ? `Pismo Święte: ${mystery.ref}` : '');
     const meditationRawText = `Rozważanie tajemnicy: ${mystery.t} – ${mystery.sub}. ${mystery.med}`;
     const ojczeNaszText = OJCZE_NASZ_PELNY;
@@ -438,6 +439,13 @@ export function getRadioBroadcastItem(
     }
 
     const sectionDefs: SectionDef[] = [
+      {
+        id: 'intro',
+        title: `Etap ${mystery.stage} • Część ${mystery.part} • Tajemnica ${mystery.inPart || safeDay}`,
+        type: 'intro',
+        beadIndex: 0,
+        rawText: introHeaderRaw
+      },
       ...(scriptureRaw ? [{
         id: 'scripture',
         title: `Pismo Święte: ${mystery.ref}`,
@@ -496,8 +504,10 @@ export function getRadioBroadcastItem(
     const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
     const meditationDisplay = `Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}\nRozważanie: ${mystery.med}`;
+    const displayHeader = `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle} • Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}`;
 
     const displayContent = [
+      displayHeader,
       ...(scriptureRaw ? [scriptureRaw] : []),
       meditationDisplay,
       OJCZE_NASZ_PELNY,
@@ -547,7 +557,7 @@ export function getRadioBroadcastItem(
     const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
     const spokenDate = normalizePolishTextForSpeech(entry.displayDate || '');
 
-    const introInfoText = `Widoki na Raj. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${spokenDate}.`;
+    const introInfoText = `Widoki na Raj. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. Data: ${spokenDate}. Rozdział: ${cleanTitle}.`;
     const titleText = cleanTitle;
     const contentParagraphs = cleanContent.split(/\n+/).map(p => p.trim()).filter(Boolean);
 
@@ -601,6 +611,11 @@ export function getRadioBroadcastItem(
     }
 
     const speechText = normalizedSectionTexts.join('\n\n');
+    const displayHeader = `Widoki na Raj • Dzień ${safeDay} z 365 • ${entry.displayDate}\nRozdział: ${cleanTitle}`;
+    const displayContent = [
+      displayHeader,
+      cleanContent
+    ].join('\n\n');
 
     return {
       stationId: 'wnr365',
@@ -612,7 +627,7 @@ export function getRadioBroadcastItem(
       subtitle: `Widoki na Raj • Blog duchowy Dominika Kuty`,
       reference: entry.displayDate,
       speechText,
-      displayContent: cleanContent,
+      displayContent,
       words: cleanWords,
       lineBreakWordIndices,
       sections
@@ -625,10 +640,11 @@ export function getRadioBroadcastItem(
     const headlineTitle = `${bibliaEntry.bookTitle} (Rozdział ${bibliaEntry.chapter}) – ${bibliaEntry.title || bibliaEntry.passage}`;
 
     const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
+    const yearOrdSpoken = numberToPolishOrdinal(bibliaYear, 'm');
     const chapterOrdSpoken = numberToPolishOrdinal(bibliaEntry.chapter, 'm');
     const bibRefSpoken = expandBiblicalReference(bibliaEntry.passage);
 
-    const introInfoText = `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${dayOrdSpoken}. Księga: ${bibliaEntry.bookTitle}, rozdział ${chapterOrdSpoken}. Fragment: ${bibRefSpoken}.`;
+    const introInfoText = `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. Rok ${yearOrdSpoken}. Czytany tekst z Biblii: ${bibliaEntry.bookTitle}, rozdział ${chapterOrdSpoken}. Fragment: ${bibRefSpoken}.`;
     const titleText = bibliaEntry.title ? `Temat: ${bibliaEntry.title}.` : '';
     const contentParagraphs = cleanContent.split(/\n+/).map(p => p.trim()).filter(Boolean);
 
@@ -682,6 +698,11 @@ export function getRadioBroadcastItem(
     }
 
     const speechText = normalizedSectionTexts.join('\n\n');
+    const displayHeader = `Biblia365 i Apokryfy • Dzień ${safeDay} • Rok ${bibliaYear}\nCzytany tekst z Biblii: ${bibliaEntry.bookTitle}, Rozdział ${bibliaEntry.chapter} (${bibliaEntry.passage})`;
+    const displayContent = [
+      displayHeader,
+      cleanContent
+    ].join('\n\n');
 
     return {
       stationId: 'biblia365',
@@ -693,7 +714,7 @@ export function getRadioBroadcastItem(
       subtitle: `${bibliaEntry.category} • Fragment: ${bibliaEntry.passage}`,
       reference: bibliaEntry.passage,
       speechText,
-      displayContent: cleanContent,
+      displayContent,
       words: cleanWords,
       lineBreakWordIndices,
       sections
@@ -728,6 +749,7 @@ export function getRadioBroadcastItem(
   const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
   const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
 
+  const introHeaderRaw = `${rhzEntry.stageTitle}.`;
   const scriptureRawText = cleanPassage ? `Fragment Pisma Świętego:\n${cleanPassage}` : '';
   const meditationRawText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${cleanExplanation ? `\n${cleanExplanation}` : ''}`;
   const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
@@ -740,8 +762,9 @@ export function getRadioBroadcastItem(
     rawText: string;
   }
 
-  // Komplet pełnych modlitw z Pismem Świętym i rozważaniem tajemnicy przed Ojcze nasz oraz Pod Twoją obronę na zakończenie
+  // Komplet pełnych modlitw z nagłówkiem tajemnicy, Pismem Świętym i rozważaniem tajemnicy przed Ojcze nasz oraz Pod Twoją obronę na zakończenie
   const sectionDefs: SectionDef[] = [
+    { id: 'intro', title: rhzEntry.stageTitle, type: 'intro', beadIndex: 0, rawText: introHeaderRaw },
     ...(scriptureRawText ? [{ id: 'scripture', title: `Pismo Święte: ${rhzEntry.stageTitle}`, type: 'scripture' as const, beadIndex: 0, rawText: scriptureRawText }] : []),
     { id: 'meditation', title: `Rozważanie: ${rhzEntry.stageTitle}`, type: 'meditation' as const, beadIndex: 0, rawText: meditationRawText },
     { id: 'our_father', title: 'Ojcze nasz', type: 'our_father' as const, beadIndex: 0, rawText: ojczeNaszText },
@@ -793,6 +816,7 @@ export function getRadioBroadcastItem(
   const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
   const displayContent = [
+    introHeaderRaw,
     ...(scriptureRawText ? [scriptureRawText] : []),
     meditationRawText,
     ojczeNaszText,

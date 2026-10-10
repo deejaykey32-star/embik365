@@ -401,7 +401,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                     <span>Pismo Święte:</span>
                   </span>
                   <button
-                    onClick={() => speakText('refl_passage', rhzEntry.passage)}
+                    onClick={() => speakText('refl_passage', `${rhzEntry.stageTitle}.\n\n${rhzEntry.passage}`)}
                     className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
                   >
                     {activeSpeechId === 'refl_passage' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}

@@ -316,10 +316,12 @@ export function expandBiblicalReference(ref: string): string {
   if (!ref) return '';
   let text = ref.trim();
 
-  // Wyszukaj prefiks książki (np. "1 Sm", "2 Kor", "Rdz", "Mt", "Ps")
+  // Wyszukaj prefiks książki (np. "1 Sm", "2 Kor", "Rdz", "Mt", "Ps" lub pełną nazwę "Księga Rodzaju")
   for (const [abbr, fullName] of Object.entries(BIBLICAL_BOOKS_MAP)) {
-    // Regex dopasowujący sigla np. Rdz 1, 1-31 lub 1 Kor 13, 1-13
-    const regex = new RegExp(`(?:^|\\b)${abbr}\\s*(\\d+)(?:\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?)?`, 'i');
+    const escapedFull = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Regex dopasowujący sigla np. Rdz 1, 1-31, Księga Rodzaju Rdz 1, 1-31, Księga Rodzaju 1, 1-31
+    const regex = new RegExp(`(?:^|\\b)(?:${escapedFull}\\s+)?(?:${escapedAbbr}|${escapedFull})\\s*(\\d+)(?:\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?)?`, 'i');
     const match = text.match(regex);
     if (match) {
       const chapterNum = parseInt(match[1], 10);
@@ -345,6 +347,13 @@ export function expandBiblicalReference(ref: string): string {
       text = text.replace(match[0], expanded);
       break;
     }
+  }
+
+  // De-duplikacja podwójnych nazw ksiąg (np. "Księga Rodzaju Księga Rodzaju" -> "Księga Rodzaju")
+  for (const [, fullName] of Object.entries(BIBLICAL_BOOKS_MAP)) {
+    const escapedFull = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const dupRegex = new RegExp(`\\b(${escapedFull})[,\\s]+\\1\\b`, 'gui');
+    text = text.replace(dupRegex, '$1');
   }
 
   return text;
@@ -439,9 +448,13 @@ export function normalizePolishTextForSpeech(rawText: string): string {
   text = text.replace(/Uwielbienie\s+i\s+Prośba:\s*/gi, ' ');
   text = text.replace(/\.{3,}/g, '...');
 
-  // 7. Rozwinięcie sigli i odnośników biblijnych (np. Rdz 1, 1-31; Mt 5, 3-12)
+  // 7. Rozwinięcie sigli i odnośników biblijnych (np. Rdz 1, 1-31; Mt 5, 3-12; Księga Rodzaju 1, 1-31; Księga Rodzaju Rdz 1, 1-31)
   for (const [abbr, fullName] of Object.entries(BIBLICAL_BOOKS_MAP)) {
-    const regex = new RegExp(`(?<!\\p{L})${abbr}\\s+(\\d+)\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?(?!\\p{L})`, 'gui');
+    const escapedFull = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Wzorzec dopasowujący sigla z wersetami (np. "Księga Rodzaju Rdz 1, 1-31", "Księga Rodzaju 1, 1-31", "Rdz 1, 1-31")
+    const regex = new RegExp(`(?:${escapedFull}\\s+)?(?<!\\p{L})(?:${escapedAbbr}|${escapedFull})\\s+(\\d+)\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?(?!\\p{L})`, 'gui');
     text = text.replace(regex, (_, ch, v1, v2) => {
       const chNum = parseInt(ch, 10);
       const v1Num = parseInt(v1, 10);
@@ -457,8 +470,8 @@ export function normalizePolishTextForSpeech(rawText: string): string {
       }
     });
 
-    // Rozdział bez wersetów np. "Ps 23"
-    const regexChapterOnly = new RegExp(`(?<!\\p{L})${abbr}\\s+(\\d+)(?!\\p{L})`, 'gui');
+    // Rozdział bez wersetów np. "Ps 23", "Księga Rodzaju 1", "Księga Rodzaju Rdz 1"
+    const regexChapterOnly = new RegExp(`(?:${escapedFull}\\s+)?(?<!\\p{L})(?:${escapedAbbr}|${escapedFull})\\s+(\\d+)(?!\\p{L})`, 'gui');
     text = text.replace(regexChapterOnly, (_, ch) => {
       const chNum = parseInt(ch, 10);
       const isPsalm = abbr.toLowerCase() === 'ps';
@@ -466,6 +479,14 @@ export function normalizePolishTextForSpeech(rawText: string): string {
       return `${fullName}, ${term} ${numberToPolishOrdinal(chNum, 'm')}`;
     });
   }
+
+  // 7b. De-duplikacja powtórzonych nazw ksiąg biblijnych (np. "Księga Rodzaju Księga Rodzaju" -> "Księga Rodzaju")
+  for (const [, fullName] of Object.entries(BIBLICAL_BOOKS_MAP)) {
+    const escapedFull = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const dupRegex = new RegExp(`\\b(${escapedFull})[,\\s]+\\1\\b`, 'gui');
+    text = text.replace(dupRegex, '$1');
+  }
+  text = text.replace(/\b(Księga\s+Rodzaju)\s+\1\b/gi, '$1');
 
   // 8. Rozwinięcie polskich skrótów kościelnych i językowych
   text = text.replace(/(?<!\p{L})św\.\s*(?=[A-ZĄĆĘŁŃÓŚŹŻ])/gu, 'świętego ');

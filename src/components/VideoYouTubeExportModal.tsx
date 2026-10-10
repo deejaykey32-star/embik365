@@ -533,7 +533,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.fillText(`✨ Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
       } else if (hasRosary) {
-        if (activeSec?.id === 'scripture' || activeSec?.type === 'scripture') {
+        if (activeSec?.id === 'intro' || activeSec?.type === 'intro') {
+          ctx.fillText(`ℹ️ ${activeBroadcastItem.subtitle || activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'scripture' || activeSec?.type === 'scripture') {
           ctx.fillText(`📖 Słowo Boże • ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
           ctx.fillText(`🕊️ Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
