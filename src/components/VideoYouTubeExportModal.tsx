@@ -533,19 +533,21 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.fillText(`✨ Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
       } else if (hasRosary) {
-        if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
-          ctx.fillText(`🕊️ Krok 1 • Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+        if (activeSec?.id === 'scripture' || activeSec?.type === 'scripture') {
+          ctx.fillText(`📖 Słowo Boże • ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
+          ctx.fillText(`🕊️ Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'our_father') {
-          ctx.fillText(`🙏 Paciorek 1 • Ojcze nasz`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🙏 Krok 1 • Ojcze nasz`, width / 2, pillY + pillH / 2);
         } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
           const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';
           ctx.fillText(`📿 Paciorek ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'glory_be') {
-          ctx.fillText(`✨ Paciorek 12 • Chwała Ojcu`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`✨ Krok 11 • Chwała Ojcu`, width / 2, pillY + pillH / 2);
         } else if (activeSec?.id === 'fatima') {
-          ctx.fillText(`🕊️ Paciorek 12 • O mój Jezu`, width / 2, pillY + pillH / 2);
-        } else if (activeSec?.id === 'conclusion') {
-          ctx.fillText(`📜 Modlitwa na Zakończenie`, width / 2, pillY + pillH / 2);
+          ctx.fillText(`🕊️ Krok 12 • O mój Jezu`, width / 2, pillY + pillH / 2);
+        } else if (activeSec?.id === 'sub_tuum' || activeSec?.type === 'conclusion') {
+          ctx.fillText(`🛡️ Modlitwa na Zakończenie Części • Pod Twoją obronę`, width / 2, pillY + pillH / 2);
         } else {
           ctx.fillText(`📿 Dziesiątek Różańca Świętego`, width / 2, pillY + pillH / 2);
         }
@@ -641,7 +643,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       const effectiveStartIdx = displayWordTexts.length > 0 ? displayStartWordIdx : 0;
 
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
-      const FONT_FAMILY = '"Newsreader", Georgia, Cambria, "Times New Roman", serif';
+      const FONT_FAMILY = '"Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
       // Pomocnik dzielenia słów danej sekcji na linie dla zadanego rozmiaru czcionki
       const buildLinesForSection = (fSize: number) => {
@@ -649,7 +651,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `600 ${fSize}px ${FONT_FAMILY}`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        const spaceW = Math.max(Math.ceil(ctx.measureText(' ').width), Math.round(fSize * 0.28));
+        const spaceW = Math.max(Math.ceil(ctx.measureText(' ').width) + 3, Math.round(fSize * 0.30));
         const builtLines: LineItem[] = [];
         let curLineTokens: WordToken[] = [];
         let curWordsWidth = 0;
@@ -669,7 +671,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             curWordsWidth = 0;
           }
 
-          const wordW = Math.ceil(ctx.measureText(wordText).width);
+          const wordW = Math.ceil(ctx.measureText(wordText).width) + 2;
           const gapsCount = curLineTokens.length;
           const testLineWidth = curWordsWidth + wordW + gapsCount * spaceW;
 
@@ -768,14 +770,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
 
           if (isCurrent) {
-            // EFEKT KARAOKE: Eleganckie złote tło dokładnie wokół aktywnego słowa
+            // EFEKT KARAOKE: Eleganckie złociste tło o podwyższonym kontraście, bez rozmywania liter
             const padX = Math.min(Math.round(standardSpaceWidth * 0.35), 8);
-            const bgH = Math.round(renderFontSize * 1.25);
+            const bgH = Math.round(renderFontSize * 1.28);
             const bgX = tokenX - padX;
             const bgY = Math.round(lineY - bgH / 2);
             const bgW = token.width + padX * 2;
 
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.28)';
+            ctx.fillStyle = 'rgba(217, 119, 6, 0.40)';
             ctx.beginPath();
             ctx.roundRect(bgX, bgY, bgW, bgH, 8);
             ctx.fill();
@@ -784,18 +786,27 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = 12;
-            ctx.fillStyle = '#ffd700';
+            // Ostry, ciemny cień pod literami zapewnia 100% czytelności polskich znaków diakrytycznych
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.fillStyle = '#fef08a';
             ctx.fillText(token.text, tokenX, lineY);
           } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel, wyraźna i czytelna
-            ctx.shadowBlur = 0;
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel z delikatnym cieniem kontrastowym
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
             ctx.fillStyle = '#ffffff';
             ctx.fillText(token.text, tokenX, lineY);
           } else {
             // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-300
-            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+            ctx.shadowBlur = 2;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
             ctx.fillStyle = '#cbd5e1';
             ctx.fillText(token.text, tokenX, lineY);
           }

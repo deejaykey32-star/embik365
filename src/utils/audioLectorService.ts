@@ -99,7 +99,7 @@ export const ONLINE_VOICES: OnlineVoiceOption[] = [
 ];
 
 const STORAGE_KEY = 'drogowskazy_lector_config';
-const MIGRATION_KEY = 'drogowskazy_lector_online_default_v2';
+const MIGRATION_KEY = 'drogowskazy_lector_online_default_v3';
 
 export const DEFAULT_LECTOR_CONFIG: LectorConfig = {
   mode: 'online',
@@ -107,7 +107,7 @@ export const DEFAULT_LECTOR_CONFIG: LectorConfig = {
   gender: 'male',
   localVoiceURI: '',
   onlineVoiceId: 'pl-AI-Jan',
-  rate: 1.0,
+  rate: 1.1,
   pitch: 1.0,
   volume: 1.0
 };
@@ -121,6 +121,10 @@ export function getLectorConfig(): LectorConfig {
       const parsed = JSON.parse(saved);
       // Użytkownik ma zawsze tryb 'online' (płynny lektor AI w chmurze bez zacinania):
       parsed.mode = 'online';
+      // Domyślna szybkość lektora online 1.1:
+      if (!migrationDone || parsed.rate === 1.0 || typeof parsed.rate !== 'number') {
+        parsed.rate = 1.1;
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_LECTOR_CONFIG, ...parsed, mode: 'online' }));
       localStorage.setItem(MIGRATION_KEY, 'true');
       return { ...DEFAULT_LECTOR_CONFIG, ...parsed, mode: 'online' };

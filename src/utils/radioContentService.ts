@@ -157,6 +157,9 @@ export const CHWALA_OJCU_PELNE =
 export const MODLITWA_FATIMSKA_PELNA = 
   'O mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.';
 
+export const POD_TWOJA_OBRONE_PELNE = 
+  'Pod Twoją obronę uciekamy się, święta Boża Rodzicielko, naszymi prośbami racz nie gardzić w potrzebach naszych, ale od wszelakich złych przygód racz nas zawsze wybawiać, Panno chwalebna i błogosławiona. O Pani nasza, Orędowniczko nasza, Pośredniczko nasza, Pocieszycielko nasza. Z Synem swoim nas pojednaj, Synowi swojemu nas polecaj, swojemu Synowi nas oddawaj. Amen.';
+
 /**
  * Buduje kompletną modlitwę Zdrowaś Maryjo z dopowiedzeniem oraz drugą częścią Święta Maryjo
  */
@@ -277,7 +280,8 @@ export function getRadioBroadcastItem(
         { id: 'hail_mary_faith', title: 'Zdrowaś Maryjo o Wiarę', type: 'hail_mary', beadIndex: 2, rawText: zdrowasWiaraRaw },
         { id: 'hail_mary_hope', title: 'Zdrowaś Maryjo o Nadzieję', type: 'hail_mary', beadIndex: 3, rawText: zdrowasNadziejaRaw },
         { id: 'hail_mary_love', title: 'Zdrowaś Maryjo o Miłość', type: 'hail_mary', beadIndex: 4, rawText: zdrowasMiloscRaw },
-        { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 5, rawText: chwalaOjcuRaw }
+        { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 5, rawText: chwalaOjcuRaw },
+        { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion', beadIndex: 5, rawText: POD_TWOJA_OBRONE_PELNE }
       ];
 
       const cleanWords: string[] = [];
@@ -361,10 +365,10 @@ export function getRadioBroadcastItem(
         {
           beadIndex: 5,
           beadType: 'large_conclusion',
-          label: 'Duży paciorek: Chwała Ojcu',
-          subLabel: 'Modlitwa Uwielbienia',
+          label: 'Zakończenie: Chwała Ojcu i Pod Twoją obronę',
+          subLabel: 'Uwielbienie i Pod Twoją obronę',
           startWordIdx: sections[7].startWordIdx,
-          endWordIdx: sections[7].endWordIdx
+          endWordIdx: sections[sections.length - 1].endWordIdx
         }
       ];
 
@@ -376,7 +380,8 @@ export function getRadioBroadcastItem(
         zdrowasWiaraRaw,
         zdrowasNadziejaRaw,
         zdrowasMiloscRaw,
-        chwalaOjcuRaw
+        chwalaOjcuRaw,
+        POD_TWOJA_OBRONE_PELNE
       ].join('\n\n');
 
       return {
@@ -415,11 +420,13 @@ export function getRadioBroadcastItem(
     }));
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
-    // KROK 1: Rozważanie tajemnicy oraz komplet pełnych modlitw
-    const meditationRawText = `Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}. Rozważanie: ${mystery.med}`;
+    // KROK 1: Pismo Święte, Rozważanie tajemnicy oraz komplet pełnych modlitw
+    const scriptureRaw = mystery.passage || (mystery.ref ? `Pismo Święte: ${mystery.ref}` : '');
+    const meditationRawText = `Rozważanie tajemnicy: ${mystery.t} – ${mystery.sub}. ${mystery.med}`;
     const ojczeNaszText = OJCZE_NASZ_PELNY;
     const chwalaOjcuText = CHWALA_OJCU_PELNE;
     const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
+    const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
     const modlitwaKoncowaText = mystery.prayer ? mystery.prayer.replace(/^Modlitwa na zakończenie:\s*/i, '').trim() : '';
 
     interface SectionDef {
@@ -431,6 +438,13 @@ export function getRadioBroadcastItem(
     }
 
     const sectionDefs: SectionDef[] = [
+      ...(scriptureRaw ? [{
+        id: 'scripture',
+        title: `Pismo Święte: ${mystery.ref}`,
+        type: 'scripture' as const,
+        beadIndex: 0,
+        rawText: scriptureRaw
+      }] : []),
       { id: 'meditation', title: `Rozważanie: ${mystery.t}`, type: 'meditation', beadIndex: 0, rawText: meditationRawText },
       { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
       ...smallBeadsData.map((b, idx) => ({
@@ -442,6 +456,7 @@ export function getRadioBroadcastItem(
       })),
       { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
       { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText },
+      { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion', beadIndex: 11, rawText: podTwojaObroneText },
       ...(modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
     ];
 
@@ -483,11 +498,13 @@ export function getRadioBroadcastItem(
     const meditationDisplay = `Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}\nRozważanie: ${mystery.med}`;
 
     const displayContent = [
+      ...(scriptureRaw ? [scriptureRaw] : []),
       meditationDisplay,
       OJCZE_NASZ_PELNY,
       ...dopowiedzeniaList,
       CHWALA_OJCU_PELNE,
       MODLITWA_FATIMSKA_PELNA,
+      POD_TWOJA_OBRONE_PELNE,
       ...(modlitwaKoncowaText ? [modlitwaKoncowaText] : [])
     ].join('\n\n');
 
@@ -701,8 +718,9 @@ export function getRadioBroadcastItem(
   const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
   const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
 
-  const explOrPassage = cleanExplanation || cleanPassage || '';
-  const meditationRawText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${explOrPassage ? ` ${explOrPassage}` : ''}`;
+  const scriptureRawText = cleanPassage ? `Fragment Pisma Świętego:\n${cleanPassage}` : '';
+  const meditationRawText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${cleanExplanation ? `\n${cleanExplanation}` : ''}`;
+  const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
 
   interface SectionDef {
     id: string;
@@ -712,10 +730,11 @@ export function getRadioBroadcastItem(
     rawText: string;
   }
 
-  // Komplet pełnych modlitw z rozważaniem tajemnicy przed Ojcze nasz
+  // Komplet pełnych modlitw z Pismem Świętym i rozważaniem tajemnicy przed Ojcze nasz oraz Pod Twoją obronę na zakończenie
   const sectionDefs: SectionDef[] = [
-    { id: 'meditation', title: `Rozważanie: ${rhzEntry.stageTitle}`, type: 'meditation', beadIndex: 0, rawText: meditationRawText },
-    { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
+    ...(scriptureRawText ? [{ id: 'scripture', title: `Pismo Święte: ${rhzEntry.stageTitle}`, type: 'scripture' as const, beadIndex: 0, rawText: scriptureRawText }] : []),
+    { id: 'meditation', title: `Rozważanie: ${rhzEntry.stageTitle}`, type: 'meditation' as const, beadIndex: 0, rawText: meditationRawText },
+    { id: 'our_father', title: 'Ojcze nasz', type: 'our_father' as const, beadIndex: 0, rawText: ojczeNaszText },
     ...smallBeadsData.map((b, idx) => ({
       id: `hail_mary_${idx + 1}`,
       title: `Zdrowaś Maryjo #${idx + 1}`,
@@ -723,8 +742,9 @@ export function getRadioBroadcastItem(
       beadIndex: idx + 1,
       rawText: b.text
     })),
-    { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
-    { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText }
+    { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be' as const, beadIndex: 11, rawText: chwalaOjcuText },
+    { id: 'fatima', title: 'O mój Jezu', type: 'fatima' as const, beadIndex: 11, rawText: oMojJezuText },
+    { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion' as const, beadIndex: 11, rawText: podTwojaObroneText }
   ];
 
   const cleanWords: string[] = [];
@@ -763,11 +783,13 @@ export function getRadioBroadcastItem(
   const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
   const displayContent = [
+    ...(scriptureRawText ? [scriptureRawText] : []),
     meditationRawText,
     ojczeNaszText,
     ...beadsList,
     chwalaOjcuText,
-    oMojJezuText
+    oMojJezuText,
+    podTwojaObroneText
   ].join('\n\n');
 
   return {

@@ -43,7 +43,8 @@ import {
   MODLITWA_FATIMSKA_PELNA,
   ZNAK_KRZYZ_PELNY,
   WITAJ_KROLOWO_PELNE,
-  WIERZE_W_BOGA_PELNE
+  WIERZE_W_BOGA_PELNE,
+  POD_TWOJA_OBRONE_PELNE
 } from '../utils/radioContentService';
 import { 
   playLectorSpeech, 
@@ -191,12 +192,22 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
 
     mysteriesList.forEach((m, mIdx) => {
       const mNum = mIdx + 1;
+      const scripturePassage = m.passage || m.ref;
+      if (scripturePassage) {
+        q.push({
+          id: `seq_m${m.day}_scripture`,
+          dayNumber: m.day,
+          title: `Tajemnica ${mNum}: ${m.t} • Słowo Boże`,
+          subtitle: `Fragment Pisma Świętego: ${m.ref}`,
+          text: `Fragment Pisma Świętego dla Tajemnicy ${mNum}. Sigla: ${m.ref}.\n${scripturePassage}`
+        });
+      }
       q.push({
         id: `seq_m${m.day}_intro`,
         dayNumber: m.day,
-        title: `Tajemnica ${mNum}: ${m.t}`,
+        title: `Tajemnica ${mNum}: ${m.t} • Rozważanie`,
         subtitle: `${m.sub} • Rozważanie`,
-        text: `Tajemnica ${mNum}: ${m.t}. ${m.sub}. Fragment Pisma Świętego: ${m.ref}. Rozważanie: ${m.med}`
+        text: `Rozważanie tajemnicy: ${m.t}. ${m.sub}.\n${m.med}`
       });
       q.push({
         id: `seq_m${m.day}_pater`,
@@ -225,12 +236,21 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
         q.push({
           id: `seq_m${m.day}_prayer`,
           dayNumber: m.day,
-          title: `Tajemnica ${mNum} • Modlitwa końcowa`,
+          title: `Tajemnica ${mNum} • Modlitwa części`,
           subtitle: m.partTitle,
           text: m.prayer
         });
       }
     });
+
+    if (mysteriesList.length > 0) {
+      q.push({
+        id: 'seq_conclusion_sub_tuum',
+        title: 'Zakończenie części Różańca • Pod Twoją obronę',
+        subtitle: 'Starożytna antyfona do Bogurodzicy',
+        text: POD_TWOJA_OBRONE_PELNE
+      });
+    }
 
     return q;
   };
@@ -809,7 +829,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           </div>
 
           {/* Pismo Święte */}
-          {m.ref && (
+          {(m.passage || m.ref) && (
             <div className="p-4 sm:p-5 rounded-2xl bg-[#faf5ee] dark:bg-[#16202e] border-l-4 border-amber-600 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -817,15 +837,15 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                   <span>Fragment Pisma Świętego: {m.ref}</span>
                 </span>
                 <button
-                  onClick={() => speakText(`speech_passage_${m.day}`, `Fragment Pisma Świętego: ${m.ref}`)}
+                  onClick={() => speakText(`speech_passage_${m.day}`, `Fragment Pisma Świętego: ${m.ref}.\n${m.passage || m.ref}`)}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
-                  title="Odsłuchaj lektorem"
+                  title="Odsłuchaj lektorem tekst Pisma Świętego"
                 >
                   {activeSpeechId === `speech_passage_${m.day}` ? <VolumeX className="w-4 h-4 text-amber-600" /> : <Volume2 className="w-4 h-4" />}
                 </button>
               </div>
-              <p className={`font-serif-book italic text-[#473729] dark:text-amber-100 ${fontClass}`}>
-                {m.ref}
+              <p className={`font-serif-book italic text-[#473729] dark:text-amber-100 text-justify leading-relaxed ${fontClass}`}>
+                {m.passage || m.ref}
               </p>
             </div>
           )}
@@ -860,13 +880,12 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
               </span>
               <button
                 onClick={() => {
-                  const spokenWithMed = m.med
-                    ? `Tajemnica ${m.day > 0 ? `${m.day}: ` : ''}${m.t} – ${m.sub}. Rozważanie: ${m.med}. ${OJCZE_NASZ_PELNY}`
-                    : OJCZE_NASZ_PELNY;
+                  const passageLead = m.passage ? `Fragment Pisma Świętego: ${m.ref}. ${m.passage}. ` : (m.ref ? `Pismo Święte: ${m.ref}. ` : '');
+                  const spokenWithMed = `Tajemnica ${m.day > 0 ? `${m.day}: ` : ''}${m.t} – ${m.sub}. ${passageLead}${m.med ? `Rozważanie: ${m.med}. ` : ''}${OJCZE_NASZ_PELNY}`;
                   speakText(`speech_pater_${m.day}`, spokenWithMed);
                 }}
                 className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
-                title="Odsłuchaj lektorem (z rozważaniem tajemnicy)"
+                title="Odsłuchaj lektorem (z Pismem Świętym i rozważaniem tajemnicy)"
               >
                 {activeSpeechId === `speech_pater_${m.day}` ? <VolumeX className="w-4 h-4 text-amber-600" /> : <Volume2 className="w-4 h-4" />}
               </button>
@@ -1085,6 +1104,35 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
               </p>
             </div>
           )}
+
+          {/* Modlitwa "Pod Twoją obronę" po każdej części różańca */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/25 border border-amber-500/35 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <span>Modlitwa na Zakończenie Części • Pod Twoją obronę:</span>
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => copyText(`sub_tuum_${m.day}`, POD_TWOJA_OBRONE_PELNE)}
+                  className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
+                  title="Kopiuj modlitwę"
+                >
+                  {copiedId === `sub_tuum_${m.day}` ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => speakText(`speech_sub_tuum_${m.day}`, POD_TWOJA_OBRONE_PELNE)}
+                  className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
+                  title="Odsłuchaj modlitwę Pod Twoją obronę"
+                >
+                  {activeSpeechId === `speech_sub_tuum_${m.day}` ? <VolumeX className="w-4 h-4 text-amber-600" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <p className={`font-serif-book text-[#3a2e22] dark:text-[#f8fafc] text-justify leading-relaxed ${fontClass}`}>
+              {POD_TWOJA_OBRONE_PELNE}
+            </p>
+          </div>
         </div>
       </div>
     );

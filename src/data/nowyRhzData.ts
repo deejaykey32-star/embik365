@@ -4,6 +4,7 @@ export interface NowyRhzMystery {
   t: string;
   sub: string;
   ref: string;
+  passage?: string;
   med: string;
   cl: string[];
   stage: number;
@@ -19,6 +20,7 @@ export const TAJEMNICA_ZERO: NowyRhzMystery = {
   t: 'Tajemnica 0',
   sub: 'Modlitwy Wstępne Różańca Świętego',
   ref: 'Znak Krzyża, Witaj Królowo, Wierzę w Boga Ojca, Ojcze nasz, Wiara, Nadzieja, Miłość, Chwała Ojcu',
+  passage: '(Modlitwy Wstępne Różańca Świętego) W imię Ojca i Syna, i Ducha Świętego. Amen. Witaj, Królowo, Matko miłosierdzia, życie, słodyczy i nadziejo nasza, witaj! Wierzę w Boga, Ojca wszechmogącego, Stworzyciela nieba i ziemi.',
   med: 'Modlitwy początkowe rozpoczynające Różaniec Święty: Znak Krzyża Świętego, antyfona maryjna Witaj Królowo, Skład Apostolski (Wierzę w Boga Ojca wszechmogącego), Modlitwa Pańska (Ojcze nasz), trzy modlitwy Zdrowaś Maryjo z prośbą o pomnożenie cnót boskich oraz Modlitwa Uwielbienia (Chwała Ojcu). Wszystkie teksty odmawiane są w pełnym brzmieniu bez skrótów.',
   cl: [
     'który przymnaża nam wiary.',
@@ -58,7 +60,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Początku",
     "inPart": 1,
     "prayer": "Panie Jezu, Słowo Ojca, przez Ciebie wszystko się stało i w Tobie wszystko ma istnienie. Prosimy Cię, odnów w nas obraz Boży zraniony przez grzech. Ulecz naszą nieufność i wyprowadź nas z ukrycia, gdy wstydzimy się przed Tobą. Bądź naszą arką ocalenia pośród wód tego świata i przypominaj nam, że Twoja obietnica jest silniejsza niż każdy upadek. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 1
+    "day": 1,
+    "passage": "(Księga Rodzaju Rdz 1,1–2,3) Na początku Bóg stworzył niebo i ziemię. Ziemia zaś była bezładem i pustkowiem: ciemność była nad powierzchnią bezmiaru wód, a Duch Boży unosił się nad wodami. Wtedy Bóg rzekł: \"Niechaj się stanie światłość!\" I stała się światłość. Bóg widząc, że światłość jest dobra, oddzielił ją od ciemności. I nazwał Bóg światłość dniem, a ciemność nazwał nocą. I tak upłynął wieczór i poranek - dzień pierwszy. A potem Bóg rzekł: \"Niechaj powstanie sklepienie w środku wód i niechaj ono oddzieli jedne wody od drugich!\" Uczyniwszy to sklepienie, Bóg oddzielił wody pod sklepieniem od wód ponad sklepieniem; a gdy tak się stało, Bóg nazwał to sklepienie niebem. I tak upłynął wieczór i poranek - dzień drugi.\n\n(Ewangelia według św. Jana J 1,1-3) Na początku było Słowo, a Słowo było u Boga, i Bogiem było Słowo. Ono było na początku u Boga. Wszystko przez Nie się stało, a bez Niego nic się nie stało, co się stało."
   },
   {
     "t": "Tchnienie życia",
@@ -83,7 +86,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Początku",
     "inPart": 2,
     "prayer": "Panie Jezu, Słowo Ojca, przez Ciebie wszystko się stało i w Tobie wszystko ma istnienie. Prosimy Cię, odnów w nas obraz Boży zraniony przez grzech. Ulecz naszą nieufność i wyprowadź nas z ukrycia, gdy wstydzimy się przed Tobą. Bądź naszą arką ocalenia pośród wód tego świata i przypominaj nam, że Twoja obietnica jest silniejsza niż każdy upadek. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 2
+    "day": 2,
+    "passage": "(Księga Rodzaju Rdz 1,26-31) A wreszcie rzekł Bóg: \"Uczyńmy człowieka na Nasz obraz, podobnego Nam. Niech panuje nad rybami morskimi, nad ptactwem powietrznym, nad bydłem, nad ziemią i nad wszystkimi zwierzętami pełzającymi po ziemi!\" Stworzył więc Bóg człowieka na swój obraz, na obraz Boży go stworzył: stworzył mężczyznę i niewiastę. Po czym Bóg im błogosławił, mówiąc do nich: \"Bądźcie płodni i rozmnażajcie się, abyście zaludnili ziemię i uczynili ją sobie poddaną; abyście panowali nad rybami morskimi, nad ptactwem powietrznym i nad wszystkimi zwierzętami pełzającymi po ziemi\". I rzekł Bóg: \"Oto wam daję wszelką roślinę przynoszącą ziarno po całej ziemi i wszelkie drzewo, którego owoc ma w sobie nasienie: dla was będą one pokarmem. A dla wszelkiego zwierzęcia polnego i dla wszelkiego ptactwa w powietrzu, i dla wszystkiego, co się porusza po ziemi i ma w sobie pierwiastek życia, będzie pokarmem wszelka trawa zielona\". I stało się tak. A Bóg widział, że wszystko, co uczynił, było bardzo dobre. I tak upłynął wieczór i poranek - dzień szósty.\n\n(Księga Rodzaju 2,7-25) wtedy to Pan Bóg ulepił człowieka z prochu ziemi i tchnął w jego nozdrza tchnienie życia, wskutek czego stał się człowiek istotą żywą. A zasadziwszy ogród w Eden na wschodzie, Pan Bóg umieścił tam człowieka, którego ulepił. Na rozkaz Pana Boga wyrosły z gleby wszelkie drzewa miłe z wyglądu i smaczny owoc rodzące oraz drzewo życia w środku tego ogrodu i drzewo poznania dobra i zła. Z Edenu zaś wypływała rzeka, aby nawadniać ów ogród, i stamtąd się rozdzielała, dając początek czterem rzekom. Nazwa pierwszej - Piszon; jest to ta, która okrąża cały kraj Chawila, gdzie się znajduje złoto. A złoto owej krainy jest znakomite; tam jest także wonna żywica i kamień czerwony. Nazwa drugiej rzeki - Gichon; okrąża ona cały kraj - Kusz. Nazwa rzeki trzeciej - Chiddekel; płynie ona na wschód od Aszszuru. Rzeka czwarta - to Perat."
   },
   {
     "t": "Rana nieufności",
@@ -108,7 +112,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Początku",
     "inPart": 3,
     "prayer": "Panie Jezu, Słowo Ojca, przez Ciebie wszystko się stało i w Tobie wszystko ma istnienie. Prosimy Cię, odnów w nas obraz Boży zraniony przez grzech. Ulecz naszą nieufność i wyprowadź nas z ukrycia, gdy wstydzimy się przed Tobą. Bądź naszą arką ocalenia pośród wód tego świata i przypominaj nam, że Twoja obietnica jest silniejsza niż każdy upadek. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 3
+    "day": 3,
+    "passage": "(Księga Rodzaju Rdz 3,1-13) A wąż był bardziej przebiegły niż wszystkie zwierzęta lądowe, które Pan Bóg stworzył. On to rzekł do niewiasty: \"Czy rzeczywiście Bóg powiedział: Nie jedzcie owoców ze wszystkich drzew tego ogrodu?\" Niewiasta odpowiedziała wężowi: \"Owoce z drzew tego ogrodu jeść możemy, tylko o owocach z drzewa, które jest w środku ogrodu, Bóg powiedział: Nie wolno wam jeść z niego, a nawet go dotykać, abyście nie pomarli\". Wtedy rzekł wąż do niewiasty: \"Na pewno nie umrzecie! Ale wie Bóg, że gdy spożyjecie owoc z tego drzewa, otworzą się wam oczy i tak jak Bóg będziecie znali dobro i zło\". Wtedy niewiasta spostrzegła, że drzewo to ma owoce dobre do jedzenia, że jest ono rozkoszą dla oczu i że owoce tego drzewa nadają się do zdobycia wiedzy. Zerwała zatem z niego owoc, skosztowała i dała swemu mężowi, który był z nią: a on zjadł. A wtedy otworzyły się im obojgu oczy i poznali, że są nadzy; spletli więc gałązki figowe i zrobili sobie przepaski. Gdy zaś mężczyzna i jego żona usłyszeli kroki Pana Boga przechadzającego się po ogrodzie, w porze kiedy był powiew wiatru, skryli się przed Panem Bogiem wśród drzew ogrodu."
   },
   {
     "t": "Pierwsza obietnica",
@@ -133,7 +138,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Początku",
     "inPart": 4,
     "prayer": "Panie Jezu, Słowo Ojca, przez Ciebie wszystko się stało i w Tobie wszystko ma istnienie. Prosimy Cię, odnów w nas obraz Boży zraniony przez grzech. Ulecz naszą nieufność i wyprowadź nas z ukrycia, gdy wstydzimy się przed Tobą. Bądź naszą arką ocalenia pośród wód tego świata i przypominaj nam, że Twoja obietnica jest silniejsza niż każdy upadek. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 4
+    "day": 4,
+    "passage": "(Księga Rodzaju Rdz 3,14-24) Wtedy Pan Bóg rzekł do węża: \"Ponieważ to uczyniłeś, bądź przeklęty wśród wszystkich zwierząt domowych i polnych; na brzuchu będziesz się czołgał i proch będziesz jadł po wszystkie dni twego istnienia. Wprowadzam nieprzyjaźń między ciebie i niewiastę, pomiędzy potomstwo twoje a potomstwo jej: ono zmiażdży ci głowę, a ty zmiażdżysz mu piętę\". Do niewiasty powiedział: \"Obarczę cię niezmiernie wielkim trudem twej brzemienności, w bólu będziesz rodziła dzieci, ku twemu mężowi będziesz kierowała swe pragnienia, on zaś będzie panował nad tobą\". Do mężczyzny zaś [Bóg] rzekł: \"Ponieważ posłuchałeś swej żony i zjadłeś z drzewa, co do którego dałem ci rozkaz w słowach: Nie będziesz z niego jeść - przeklęta niech będzie ziemia z twego powodu: w trudzie będziesz zdobywał od niej pożywienie dla siebie po wszystkie dni twego życia. Cierń i oset będzie ci ona rodziła, a przecież pokarmem twym są płody roli. W pocie więc oblicza twego będziesz musiał zdobywać pożywienie, póki nie wrócisz do ziemi, z której zostałeś wzięty; bo prochem jesteś i w proch się obrócisz!\" Mężczyzna dał swej żonie imię Ewa, bo ona stała się matką wszystkich żyjących. Pan Bóg sporządził dla mężczyzny i dla jego żony odzienie ze skór i przyodział ich."
   },
   {
     "t": "Arka ocalenia",
@@ -158,7 +164,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Początku",
     "inPart": 5,
     "prayer": "Panie Jezu, Słowo Ojca, przez Ciebie wszystko się stało i w Tobie wszystko ma istnienie. Prosimy Cię, odnów w nas obraz Boży zraniony przez grzech. Ulecz naszą nieufność i wyprowadź nas z ukrycia, gdy wstydzimy się przed Tobą. Bądź naszą arką ocalenia pośród wód tego świata i przypominaj nam, że Twoja obietnica jest silniejsza niż każdy upadek. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 5
+    "day": 5,
+    "passage": "(Księga Rodzaju Rdz 6,5–9,17) Kiedy zaś Pan widział, że wielka jest niegodziwość ludzi na ziemi i że usposobienie ich jest wciąż złe, żałował, że stworzył ludzi na ziemi, i zasmucił się. Wreszcie Pan rzekł: \"Zgładzę ludzi, których stworzyłem, z powierzchni ziemi: ludzi, bydło, zwierzęta pełzające i ptaki powietrzne, bo żal mi, że ich stworzyłem\". [Tylko] Noego Pan darzył życzliwością. Oto dzieje Noego. Noe, człowiek prawy, wyróżniał się nieskazitelnością wśród współczesnych sobie ludzi; w przyjaźni z Bogiem żył Noe. A Noe był ojcem trzech synów: Sema, Chama i Jafeta. Ziemia została skażona w oczach Boga. Gdy Bóg widział, iż ziemia jest skażona, że wszyscy ludzie postępują na ziemi niegodziwie,\n\n(Pierwszy List Piotrowy 1 P 3,20-21) niegdyś nieposłusznym, gdy za dni Noego cierpliwość Boża oczekiwała, a budowana była arka, w której niewielu, to jest osiem dusz, zostało uratowanych przez wodę. Teraz również zgodnie z tym wzorem ratuje was ona we chrzcie nie przez obmycie brudu cielesnego, ale przez zwróconą do Boga prośbę o dobre sumienie, dzięki zmartwychwstaniu Jezusa Chrystusa."
   },
   {
     "t": "Wyjście w nieznane",
@@ -183,7 +190,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wiary",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś spełnieniem obietnic danych Abrahamowi, Izaakowi i Jakubowi. Prosimy Cię, daj nam wiarę, która wyrusza w drogę na Twoje słowo, choć nie zna jej celu. Naucz nas oddawać Ci to, co najdroższe, wytrwale zmagać się w modlitwie i przebaczać tym, którzy nas skrzywdzili. Niech wszystko, co trudne w naszym życiu, Twoja moc obróci w dobro. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 6
+    "day": 6,
+    "passage": "(Księga Rodzaju Rdz 12,1-9) Pan rzekł do Abrama: \"Wyjdź z twojej ziemi rodzinnej i z domu twego ojca do kraju, który ci ukażę. Uczynię bowiem z ciebie wielki naród, będę ci błogosławił i twoje imię rozsławię: staniesz się błogosławieństwem. Będę błogosławił tym, którzy ciebie błogosławić będą, a tym, którzy tobie będą złorzeczyli, i ja będę złorzeczył. Przez ciebie będą otrzymywały błogosławieństwo ludy całej ziemi\". Abram udał się w drogę, jak mu Pan rozkazał, a z nim poszedł i Lot. Abram miał siedemdziesiąt pięć lat, gdy wyszedł z Charanu. I zabrał Abram z sobą swoją żonę Saraj, swego bratanka Lota i cały dobytek, jaki obaj posiadali, oraz służbę, którą nabyli w Charanie, i wyruszyli, aby się udać do Kanaanu. Gdy zaś przybyli do Kanaanu, Abram przeszedł przez ten kraj aż do pewnej miejscowości koło Sychem, do dębu More. - A w kraju tym mieszkali wówczas Kananejczycy. - Pan, ukazawszy się Abramowi, rzekł: \"Twojemu potomstwu oddaję właśnie tę ziemię\". Abram zbudował tam ołtarz dla Pana, który mu się ukazał. Stamtąd zaś przeniósł się na wzgórze na wschód od Betel i rozbił swój namiot pomiędzy Betel od zachodu i Aj od wschodu. Tam również zbudował ołtarz dla Pana i wzywał imienia Jego.\n\n(List do Hebrajczyków Hbr 11,8) Przez wiarę ten, którego nazwano Abrahamem, usłuchał wezwania Bożego, by wyruszyć do ziemi, którą miał objąć w posiadanie. Wyszedł nie wiedząc, dokąd idzie."
   },
   {
     "t": "Gwiazdy obietnicy",
@@ -208,7 +216,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wiary",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś spełnieniem obietnic danych Abrahamowi, Izaakowi i Jakubowi. Prosimy Cię, daj nam wiarę, która wyrusza w drogę na Twoje słowo, choć nie zna jej celu. Naucz nas oddawać Ci to, co najdroższe, wytrwale zmagać się w modlitwie i przebaczać tym, którzy nas skrzywdzili. Niech wszystko, co trudne w naszym życiu, Twoja moc obróci w dobro. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 7
+    "day": 7,
+    "passage": "(Księga Rodzaju Rdz 15,1-6) Po tych wydarzeniach Pan tak powiedział do Abrama podczas widzenia: \"Nie obawiaj się, Abramie, bo Ja jestem twoim obrońcą; nagroda twoja będzie sowita\". Abram rzekł: \"O Panie, mój Boże, na cóż mi ona, skoro zbliżam się do kresu mego życia, nie mając potomka; przyszłym zaś spadkobiercą mojej majętności jest Damasceńczyk Eliezer\". I mówił: \"Ponieważ nie dałeś mi potomka, ten właśnie zrodzony u mnie sługa mój, zostanie moim spadkobiercą\". Ale oto usłyszał słowa: \"Nie on będzie twoim spadkobiercą, lecz ten po tobie dziedziczyć będzie, który od ciebie będzie pochodził\". I poleciwszy Abramowi wyjść z namiotu, rzekł: \"Spójrz na niebo i policz gwiazdy, jeśli zdołasz to uczynić\"; potem dodał: \"Tak liczne będzie twoje potomstwo\". Abram uwierzył i Pan poczytał mu to za zasługę.\n\n(Księga Rodzaju 17,1-8) A gdy Abram miał dziewięćdziesiąt dziewięć lat, ukazał mu się Pan i rzekł do niego: \"Jam jest Bóg Wszechmogący. Służ Mi i bądź nieskazitelny, chcę bowiem zawrzeć moje przymierze pomiędzy Mną a tobą i dać ci niezmiernie liczne potomstwo\". Abram padł na oblicze, a Bóg tak do niego mówił: \"Oto moje przymierze z tobą: staniesz się ojcem mnóstwa narodów. Nie będziesz więc odtąd nazywał się Abram, lecz imię twoje będzie Abraham, bo uczynię ciebie ojcem mnóstwa narodów. Sprawię, że będziesz niezmiernie płodny, tak że staniesz się ojcem narodów i pochodzić będą od ciebie królowie. Przymierze moje, które zawieram pomiędzy Mną a tobą oraz twoim potomstwem, będzie trwało z pokolenia w pokolenie jako przymierze wieczne, abym był Bogiem twoim, a potem twego potomstwa. I oddaję tobie i twym przyszłym potomkom kraj, w którym przebywasz, cały kraj Kanaan, jako własność na wieki, i będę ich Bogiem\".\n\n(List do Rzymian Rz 4,18-22) On to wbrew nadziei uwierzył nadziei, że stanie się ojcem wielu narodów zgodnie z tym, co było powiedziane: takie będzie twoje potomstwo. I nie zachwiał się w wierze, choć stwierdził, że ciało jego jest już obumarłe - miał już prawie sto lat - i że obumarłe jest łono Sary. I nie okazał wahania ani niedowierzania co do obietnicy Bożej, ale się wzmocnił w wierze. Oddał przez to chwałę Bogu i był przekonany, że mocen jest On również wypełnić, co obiecał. Dlatego też poczytano mu to za sprawiedliwość."
   },
   {
     "t": "Ofiara na Moria",
@@ -233,7 +242,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wiary",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś spełnieniem obietnic danych Abrahamowi, Izaakowi i Jakubowi. Prosimy Cię, daj nam wiarę, która wyrusza w drogę na Twoje słowo, choć nie zna jej celu. Naucz nas oddawać Ci to, co najdroższe, wytrwale zmagać się w modlitwie i przebaczać tym, którzy nas skrzywdzili. Niech wszystko, co trudne w naszym życiu, Twoja moc obróci w dobro. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 8
+    "day": 8,
+    "passage": "(Księga Rodzaju Rdz 22,1-19) A po tych wydarzeniach Bóg wystawił Abrahama na próbę. Rzekł do niego: \"Abrahamie!\" A gdy on odpowiedział: \"Oto jestem\" - powiedział: \"Weź twego syna jedynego, którego miłujesz, Izaaka, idź do kraju Moria i tam złóż go w ofierze na jednym z pagórków, jakie ci wskażę\". Nazajutrz rano Abraham osiodłał swego osła, zabrał z sobą dwóch swych ludzi i syna Izaaka, narąbał drzewa do spalenia ofiary i ruszył w drogę do miejscowości, o której mu Bóg powiedział. Na trzeci dzień Abraham, spojrzawszy, dostrzegł z daleka ową miejscowość. I wtedy rzekł do swych sług: \"Zostańcie tu z osłem, ja zaś i chłopiec pójdziemy tam, aby oddać pokłon Bogu, a potem wrócimy do was\". Abraham, zabrawszy drwa do spalenia ofiary, włożył je na syna swego Izaaka, wziął do ręki ogień i nóż, po czym obaj się oddalili. Izaak odezwał się do swego ojca Abrahama: \"Ojcze mój!\" A gdy ten rzekł: \"Oto jestem, mój synu\" - zapytał: \"Oto ogień i drwa, a gdzież jest jagnię na całopalenie?\" Abraham odpowiedział: \"Bóg upatrzy sobie jagnię na całopalenie, synu mój\". I szli obydwaj dalej.\n\n(Ewangelia według św. Jana J 3,16) Tak bowiem Bóg umiłował świat, że Syna swego Jednorodzonego dał, aby każdy, kto w Niego wierzy, nie zginął, ale miał życie wieczne."
   },
   {
     "t": "Zmaganie nocy",
@@ -258,7 +268,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wiary",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś spełnieniem obietnic danych Abrahamowi, Izaakowi i Jakubowi. Prosimy Cię, daj nam wiarę, która wyrusza w drogę na Twoje słowo, choć nie zna jej celu. Naucz nas oddawać Ci to, co najdroższe, wytrwale zmagać się w modlitwie i przebaczać tym, którzy nas skrzywdzili. Niech wszystko, co trudne w naszym życiu, Twoja moc obróci w dobro. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 9
+    "day": 9,
+    "passage": "(Księga Rodzaju Rdz 28,10-22) Kiedy Jakub wyszedłszy z Beer-Szeby wędrował do Charanu, trafił na jakieś miejsce i tam się zatrzymał na nocleg, gdy słońce już zaszło. Wziął więc z tego miejsca kamień i podłożył go sobie pod głowę, układając się do snu na tym właśnie miejscu. We śnie ujrzał drabinę opartą na ziemi, sięgającą swym wierzchołkiem nieba, oraz aniołów Bożych, którzy wchodzili w górę i schodzili na dół. A oto Pan stał na jej szczycie i mówił: \"Ja jestem Pan, Bóg Abrahama i Bóg Izaaka. Ziemię, na której leżysz, oddaję tobie i twemu potomstwu. A potomstwo twe będzie tak liczne jak proch ziemi, ty zaś rozprzestrzenisz się na zachód i na wschód, na północ i na południe; wszystkie plemiona ziemi otrzymają błogosławieństwo przez ciebie i przez twych potomków. Ja jestem z tobą i będę cię strzegł, gdziekolwiek się udasz; a potem sprowadzę cię do tego kraju. Bo nie opuszczę cię, dopóki nie spełnię tego, co ci obiecuję\". A gdy Jakub zbudził się ze snu, pomyślał: \"Prawdziwie Pan jest na tym miejscu, a ja nie wiedziałem\". I zdjęty trwogą rzekł: \"O, jakże miejsce to przejmuje grozą! Prawdziwie jest to dom Boga i brama nieba!\"\n\n(Księga Rodzaju 32,23-33) Ale tej jeszcze nocy wstał i zabrawszy obie swe żony, dwie ich niewolnice i jedenaścioro dzieci, przeprawił się przez bród potoku Jabbok. A gdy ich przeprawił przez ten potok, przeniósł również [na drugi brzeg] to, co posiadał. Gdy zaś wrócił i został sam jeden, ktoś zmagał się z nim aż do wschodu jutrzenki, a widząc, że nie może go pokonać, dotknął jego stawu biodrowego i wywichnął Jakubowi ten staw podczas zmagania się z nim. A wreszcie rzekł: \"Puść mnie, bo już wschodzi zorza!\" Jakub odpowiedział: \"Nie puszczę cię, dopóki mi nie pobłogosławisz!\" Wtedy [tamten] go zapytał: \"Jakie masz imię?\" On zaś rzekł: \"Jakub\". Powiedział: \"Odtąd nie będziesz się zwał Jakub, lecz Izrael, bo walczyłeś z Bogiem i z ludźmi, i zwyciężyłeś\". Potem Jakub rzekł: \"Powiedz mi, proszę, jakie jest Twe imię?\" Ale on odpowiedział: \"Czemu pytasz mnie o imię?\" - i pobłogosławił go na owym miejscu.\n\n(Ewangelia według św. Jana J 1,51) Potem powiedział do niego: \"Zaprawdę, zaprawdę, powiadam wam: Ujrzycie niebiosa otwarte i aniołów Bożych wstępujących i zstępujących na Syna Człowieczego\"."
   },
   {
     "t": "Przebaczenie, które ocala",
@@ -283,7 +294,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wiary",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś spełnieniem obietnic danych Abrahamowi, Izaakowi i Jakubowi. Prosimy Cię, daj nam wiarę, która wyrusza w drogę na Twoje słowo, choć nie zna jej celu. Naucz nas oddawać Ci to, co najdroższe, wytrwale zmagać się w modlitwie i przebaczać tym, którzy nas skrzywdzili. Niech wszystko, co trudne w naszym życiu, Twoja moc obróci w dobro. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 10
+    "day": 10,
+    "passage": "(Księga Rodzaju Rdz 37) Jakub mieszkał w kraju, w którym zatrzymał się jego ojciec, czyli w Kanaanie. Oto są dzieje potomków Jakuba. Józef jako chłopiec siedemnastoletni wraz ze swymi braćmi, synami żon jego ojca Bilhy i Zilpy, pasał trzody. Doniósł on ojcu, że źle mówiono o tych jego synach. Izrael miłował Józefa najbardziej ze wszystkich swych synów, gdyż urodził mu się on w podeszłych jego latach. Sprawił mu też długą szatę z rękawami. Bracia Józefa widząc, że ojciec kocha go bardziej niż wszystkich, tak go znienawidzili, że nie mogli zdobyć się na to, aby przyjaźnie z nim porozmawiać. Pewnego razu Józef miał sen. I gdy opowiedział go braciom swym, ci zapałali jeszcze większą nienawiścią do niego. Mówił im bowiem: \"Posłuchajcie, jaki miałem sen. Śniło mi się, że wiązaliśmy snopy w środku pola i wtedy snop mój podniósł się i stanął, a snopy wasze otoczyły go kołem i oddały mu pokłon\". Rzekli mu bracia: \"Czyż miałbyś jako król panować nad nami i rządzić nami jak władca?\" I jeszcze bardziej go nienawidzili z powodu jego snów i wypowiedzi.\n\n(Księga Rodzaju 45,1-15) Józef nie mógł opanować swego wzruszenia i wobec wszystkich, którzy tam byli, zawołał: \"Niechaj wszyscy stąd wyjdą!\" Nikogo nie było z nim, gdy Józef dał się poznać swym braciom. Wybuchnąwszy głośnym płaczem, tak że aż usłyszeli Egipcjanie oraz dworzanie faraona, rzekł do swych braci: \"Ja jestem Józef! Czy ojciec mój jeszcze żyje?\" Ale bracia nie byli w stanie mu odpowiedzieć, gdyż się go zlękli. On zaś rzekł do nich: \"Zbliżcie się do mnie!\" A gdy oni się zbliżyli, powtórzył: \"Ja jestem Józef, brat wasz, to ja jestem tym, którego sprzedaliście do Egiptu. Ale teraz nie smućcie się i nie wyrzucajcie sobie, żeście mnie sprzedali. Bo dla waszego ocalenia od śmierci Bóg wysłał mnie tu przed wami. Oto już dwa lata trwa głód w tym kraju, a jeszcze zostało pięć lat, podczas których nie będzie orki ani żniwa. Bóg mnie wysłał przed wami, aby wam zapewnić potomstwo na ziemi i abyście przeżyli dzięki wielkiemu wybawieniu. Zatem nie wyście mnie tu posłali, lecz Bóg, który też uczynił mnie doradcą faraona, panem całego jego domu i władcą całego Egiptu.\n\n(Księga Rodzaju 50,15-21) Bracia Józefa zdając sobie sprawę z tego, że ojciec ich nie żyje, myśleli: \"Na pewno Józef będzie nas teraz prześladował i odpłaci nam za wszystkie krzywdy, które mu wyrządziliśmy!\" Toteż kazali powiedzieć Józefowi: \"Ojciec twój dał przed śmiercią takie polecenie: Powiedzcie Józefowi tak: Racz przebaczyć braciom twym wykroczenie i winę ich, wyrządzili ci bowiem krzywdę. Teraz przeto daruj łaskawie winę nam, którzy czcimy Boga twojego ojca!\" Józef rozpłakał się, gdy mu to powtórzono. Wtedy bracia już sami poszli do Józefa i upadłszy przez nim rzekli: \"Jesteśmy twoimi niewolnikami\". Lecz Józef powiedział do nich: \"Nie bójcie się. Czyż ja jestem na miejscu Boga? Wy niegdyś knuliście zło przeciwko mnie, Bóg jednak zamierzył to jako dobro, żeby sprawić to, co jest dzisiaj, że przeżył wielki naród. Teraz więc nie bójcie się: będę żywił was i dzieci wasze\". I tak ich pocieszał, przemawiając do nich serdecznie."
   },
   {
     "t": "Ogień, który nie spala",
@@ -308,7 +320,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wyzwolenia",
     "inPart": 1,
     "prayer": "Panie Jezu, Baranku Paschalny, Ty wyprowadzasz nas z każdej niewoli. Prosimy Cię, przeprowadź nas przez morze naszych lęków i grzechów, karm nas Chlebem z nieba na pustyni codzienności i wypisz w naszych sercach swoje przykazania. Naucz nas żyć w wolności dzieci Bożych i nie wracać do niewoli, z której nas wyzwoliłeś. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 11
+    "day": 11,
+    "passage": "(Księga Wyjścia Wj 3,1-15) Gdy Mojżesz pasał owce swego teścia, Jetry, kapłana Madianitów, zaprowadził [pewnego razu] owce w głąb pustyni i przyszedł do góry Bożej Horeb. Wtedy ukazał mu się Anioł Pański w płomieniu ognia, ze środka krzewu. [Mojżesz] widział, jak krzew płonął ogniem, a nie spłonął od niego. Wtedy Mojżesz powiedział do siebie: \"Podejdę, żeby się przyjrzeć temu niezwykłemu zjawisku. Dlaczego krzew się nie spala?\" Gdy zaś Pan ujrzał, że [Mojżesz] podchodził, żeby się przyjrzeć, zawołał <Bóg do> niego ze środka krzewu: \"Mojżeszu, Mojżeszu!\" On zaś odpowiedział: \"Oto jestem\". Rzekł mu [Bóg]: \"Nie zbliżaj się tu! Zdejm sandały z nóg, gdyż miejsce, na którym stoisz, jest ziemią świętą\". Powiedział jeszcze Pan: \"Jestem Bogiem ojca twego, Bogiem Abrahama, Bogiem Izaaka i Bogiem Jakuba\". Mojżesz zasłonił twarz, bał się bowiem zwrócić oczy na Boga. Pan mówił: \"Dosyć napatrzyłem się na udrękę ludu mego w Egipcie i nasłuchałem się narzekań jego na ciemięzców, znam więc jego uciemiężenie. Zstąpiłem, aby go wyrwać z ręki Egiptu i wyprowadzić z tej ziemi do ziemi żyznej i przestronnej, do ziemi, która opływa w mleko i miód, na miejsce Kananejczyka, Chetyty, Amoryty, Peryzzyty, Chiwwity i Jebusyty."
   },
   {
     "t": "Krew Baranka",
@@ -333,7 +346,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wyzwolenia",
     "inPart": 2,
     "prayer": "Panie Jezu, Baranku Paschalny, Ty wyprowadzasz nas z każdej niewoli. Prosimy Cię, przeprowadź nas przez morze naszych lęków i grzechów, karm nas Chlebem z nieba na pustyni codzienności i wypisz w naszych sercach swoje przykazania. Naucz nas żyć w wolności dzieci Bożych i nie wracać do niewoli, z której nas wyzwoliłeś. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 12
+    "day": 12,
+    "passage": "(Księga Wyjścia Wj 12,1-28) Pan powiedział do Mojżesza i Aarona w ziemi egipskiej: \"Miesiąc ten będzie dla was początkiem miesięcy, będzie pierwszym miesiącem roku! Powiedzcie całemu zgromadzeniu Izraela tak: Dziesiątego dnia tego miesiąca niech się każdy postara o baranka dla rodziny, o baranka dla domu. Jeśliby zaś rodzina była za mała do spożycia baranka, to niech się postara o niego razem ze swym sąsiadem, który mieszka najbliżej jego domu, aby była odpowiednia liczba osób. Liczyć je zaś będziecie dla spożycia baranka według tego, co każdy może spożyć. Baranek będzie bez skazy, samiec, jednoroczny; wziąć możecie jagnię albo koźlę. Będziecie go strzec aż do czternastego dnia tego miesiąca, a wtedy zabije go całe zgromadzenie Izraela o zmierzchu. I wezmą krew baranka, i pokropią nią odrzwia i progi domu, w którym będą go spożywać. I tej samej nocy spożyją mięso pieczone w ogniu, spożyją je z chlebem niekwaszonym i gorzkimi ziołami.\n\n(Pierwszy List do Koryntian 1 Kor 5,7) Wyrzućcie więc stary kwas, abyście się stali nowym ciastem, jako że przaśni jesteście. Chrystus bowiem został złożony w ofierze jako nasza Pascha."
   },
   {
     "t": "Droga przez morze",
@@ -358,7 +372,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wyzwolenia",
     "inPart": 3,
     "prayer": "Panie Jezu, Baranku Paschalny, Ty wyprowadzasz nas z każdej niewoli. Prosimy Cię, przeprowadź nas przez morze naszych lęków i grzechów, karm nas Chlebem z nieba na pustyni codzienności i wypisz w naszych sercach swoje przykazania. Naucz nas żyć w wolności dzieci Bożych i nie wracać do niewoli, z której nas wyzwoliłeś. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 13
+    "day": 13,
+    "passage": "(Księga Wyjścia Wj 14,1–15,21) Pan przemówił do Mojżesza tymi słowami: \"Rozkaż Izraelitom, niech zawrócą i niech rozbiją obóz pod Pi-Hachirot pomiędzy Migdol a morzem, naprzeciw Baal-Sefon. Rozbijcie namioty naprzeciw tego miejsca nad morzem. Faraon powie wtedy: Izraelici zabłądzili w kraju, a pustynia zamknęła im drogę. Uczynię upartym serce faraona, i urządzi pościg za wami. Wtedy okażę potęgę moją nad faraonem i nad całym jego wojskiem. Poznają wówczas Egipcjanie, że Ja jestem Pan\". I uczynili w ten sposób. Gdy doniesiono królowi egipskiemu o ucieczce ludu, zmieniło się usposobienie faraona i jego sług względem niego i rzekli: \"Cóżeśmy uczynili pozwalając Izraelowi opuścić naszą służbę?\" Rozkazał wówczas faraon zaprzęgać swoje rydwany i zabrał ludzi swoich ze sobą. Wziął sześćset rydwanów wyborowych oraz wszystkie inne rydwany egipskie, a na każdym z nich byli dzielni wojownicy. Pan uczynił upartym serce faraona, króla egipskiego, który urządził pościg za Izraelitami. Ci jednak wyszli z podniesioną ręką.\n\n(Pierwszy List do Koryntian 1 Kor 10,1-2) Nie chciałbym, bracia, żebyście nie wiedzieli, że nasi ojcowie wszyscy, co prawda zostawali pod obłokiem, wszyscy przeszli przez morze i wszyscy byli ochrzczeni w [imię] Mojżesza, w obłoku i w morzu;"
   },
   {
     "t": "Chleb z nieba",
@@ -383,7 +398,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wyzwolenia",
     "inPart": 4,
     "prayer": "Panie Jezu, Baranku Paschalny, Ty wyprowadzasz nas z każdej niewoli. Prosimy Cię, przeprowadź nas przez morze naszych lęków i grzechów, karm nas Chlebem z nieba na pustyni codzienności i wypisz w naszych sercach swoje przykazania. Naucz nas żyć w wolności dzieci Bożych i nie wracać do niewoli, z której nas wyzwoliłeś. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 14
+    "day": 14,
+    "passage": "(Księga Wyjścia Wj 16) Następnie wyruszyli z Elim. Przybyło zaś całe zgromadzenie Izraelitów na pustynię Sin, położoną między Elim a Synajem, piętnastego dnia drugiego miesiąca od ich wyjścia z ziemi egipskiej. I zaczęło szemrać na pustyni całe zgromadzenie Izraelitów przeciw Mojżeszowi i przeciw Aaronowi. Izraelici mówili im: \"Obyśmy pomarli z ręki Pana w ziemi egipskiej, gdzieśmy zasiadali przed garnkami mięsa i jadali chleb do sytości! Wyprowadziliście nas na tę pustynię, aby głodem umorzyć całą tę rzeszę\". Pan powiedział wówczas do Mojżesza: \"Oto ześlę wam chleb z nieba, na kształt deszczu. I będzie wychodził lud, i każdego dnia będzie zbierał według potrzeby dziennej. Chcę ich także doświadczyć, czy pójdą za moimi rozkazami czy też nie. Lecz w dniu szóstym zrobią zapas tego, co przyniosą, a będzie to podwójna ilość tego, co będą zbierać codziennie\". Mojżesz i Aaron powiedzieli do społeczności Izraelitów: \"Tego wieczora ujrzycie, że to Pan wyprowadził was z ziemi egipskiej. A rano ujrzycie chwałę Pana, gdyż usłyszał On, że szemrzecie przeciw Panu. Czymże my jesteśmy, że szemrzecie przeciw nam?\" Mojżesz powiedział: \"Wieczorem Pan da wam mięso do jedzenia, a rano chleb do sytości, bo słyszał Pan szemranie wasze przeciw Niemu. Czymże bowiem my jesteśmy? Nie szemraliście przeciwko nam, ale przeciw Panu!\"\n\n(Księga Wyjścia 17,1-7) Całe zgromadzenie Izraelitów wyruszyło na rozkaz Pana z pustyni Sin, aby przebyć dalsze etapy. Potem rozbili obóz w Refidim, gdzie lud nie miał wody do picia. I kłócił się lud z Mojżeszem mówiąc: \"Daj nam wody do picia!\" Mojżesz odpowiedział im: \"Czemu kłócicie się ze mną? I czemu wystawiacie Pana na próbę?\" Ale lud pragnął tam wody i dlatego szemrał przeciw Mojżeszowi i mówił: \"Czy po to wyprowadziłeś nas z Egiptu, aby nas, nasze dzieci i nasze bydło wydać na śmierć z pragnienia?\" Mojżesz wołał wtedy do Pana i mówił: \"Co mam uczynić z tym ludem? Niewiele brakuje, a ukamienują mnie!\" Pan odpowiedział Mojżeszowi: \"Wyjdź przed lud i weź kilku ze starszych Izraela ze sobą. Weź w rękę laskę, którą uderzyłeś Nil, i idź. Oto Ja stanę przed tobą na skale, na Horebie. Uderzysz w skałę, a wypłynie z niej woda, i lud zaspokoi swe pragnienie\". Mojżesz uczynił tak na oczach starszyzny izraelskiej. I nazwał to miejsce Massa i Meriba, ponieważ tutaj kłócili się Izraelici i wystawiali Pana na próbę, mówiąc: \"Czy też Pan jest rzeczywiście wśród nas, czy nie?\"\n\n(Ewangelia według św. Jana J 6,31-35) Ojcowie nasi jedli mannę na pustyni, jak napisano: Dał im do jedzenia chleb z nieba\". Rzekł do nich Jezus: \"Zaprawdę, zaprawdę, powiadam wam: Nie Mojżesz dał wam chleb z nieba, ale dopiero Ojciec mój da wam prawdziwy chleb z nieba. Albowiem chlebem Bożym jest Ten, który z nieba zstępuje i życie daje światu\". Rzekli więc do Niego: \"Panie, dawaj nam zawsze tego chleba!\" Odpowiedział im Jezus: \"Jam jest chleb życia. Kto do Mnie przychodzi, nie będzie łaknął; a kto we Mnie wierzy, nigdy pragnąć nie będzie."
   },
   {
     "t": "Słowa Przymierza",
@@ -408,7 +424,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Wyzwolenia",
     "inPart": 5,
     "prayer": "Panie Jezu, Baranku Paschalny, Ty wyprowadzasz nas z każdej niewoli. Prosimy Cię, przeprowadź nas przez morze naszych lęków i grzechów, karm nas Chlebem z nieba na pustyni codzienności i wypisz w naszych sercach swoje przykazania. Naucz nas żyć w wolności dzieci Bożych i nie wracać do niewoli, z której nas wyzwoliłeś. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 15
+    "day": 15,
+    "passage": "(Księga Wyjścia Wj 19–20) Było to w trzecim miesiącu od wyjścia Izraelitów z Egiptu; w tym dniu przybyli [oni] na pustynię Synaj. Wyruszyli z Refidim, a po przybyciu na pustynię Synaj rozbili obóz na pustyni. Izrael obozował tam naprzeciw góry. Mojżesz wstąpił wtedy do Boga, a Pan zawołał na niego z góry i powiedział: \"Tak powiesz domowi Jakuba i to oznajmisz Izraelitom: Wyście widzieli, co uczyniłem Egiptowi, jak niosłem was na skrzydłach orlich i przywiodłem was do Mnie. Teraz jeśli pilnie słuchać będziecie głosu mego i strzec mojego przymierza, będziecie szczególną moją własnością pośród wszystkich narodów, gdyż do Mnie należy cała ziemia. Lecz wy będziecie Mi królestwem kapłanów i ludem świętym. Takie to słowa powiedz Izraelitom\". Mojżesz powrócił i zwołał starszych ludu, i przedstawił im wszystko, co mu Pan nakazał. Wtedy cały lud jednogłośnie powiedział: \"Uczynimy wszystko, co Pan nakazał\". Mojżesz przekazał Panu słowa ludu.\n\n(Ewangelia według św. Mateusza Mt 5,17) Nie sądźcie, że przyszedłem znieść Prawo albo Proroków. Nie przyszedłem znieść, ale wypełnić."
   },
   {
     "t": "Przejście przez wody",
@@ -433,7 +450,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Obietnicy",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty prowadzisz nas do Ziemi Obiecanej, jak niegdyś prowadziłeś swój lud. Prosimy Cię, daj nam odwagę pierwszego kroku, cierpliwość w modlitwie i ufność w Twoją moc, która objawia się w naszej słabości. Naucz nas wierności w trudnych chwilach i serca, które słucha. Mów, Panie, bo słudzy Twoi słuchają. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 16
+    "day": 16,
+    "passage": "(Księga Jozuego Joz 3–4) Wczesnym rankiem Jozue i wszyscy Izraelici wyruszyli z Szittim, przybyli nad Jordan i przenocowali tam przed przeprawą. Po upływie trzech dni przeszli zwierzchnicy przez obóz i wydali polecenie ludowi: \"Gdy ujrzycie Arkę Przymierza Pana, Boga waszego, i niosących ją kapłanów-lewitów, wyruszcie i wy z waszego postoju i postępujcie za nią. Zostawcie jednak przestrzeń około dwu tysięcy łokci między sobą a arką i nie zbliżajcie się do niej! Tak więc poznacie drogę, którą macie iść, bo nigdy nią nie szliście\". Wtedy rzekł Jozue do ludu: \"Oczyśćcie się, gdyż jutro Pan sprawi cuda wśród was\". Następnie powiedział Jozue do kapłanów: \"Weźcie Arkę Przymierza i idźcie na czele ludu\". Ci wzięli Arkę Przymierza i wyszli na czoło pochodu. Pan oznajmił Jozuemu: \"Dziś pocznę wywyższać cię w oczach całego Izraela, aby poznano, że jak byłem z Mojżeszem, tak będę i z tobą. Ty zaś dasz następujące polecenie kapłanom niosącym Arkę Przymierza: Skoro dojdziecie do brzegu wód Jordanu, w Jordanie się zatrzymajcie\"."
   },
   {
     "t": "Mury, które padają",
@@ -458,7 +476,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Obietnicy",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty prowadzisz nas do Ziemi Obiecanej, jak niegdyś prowadziłeś swój lud. Prosimy Cię, daj nam odwagę pierwszego kroku, cierpliwość w modlitwie i ufność w Twoją moc, która objawia się w naszej słabości. Naucz nas wierności w trudnych chwilach i serca, które słucha. Mów, Panie, bo słudzy Twoi słuchają. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 17
+    "day": 17,
+    "passage": "(Księga Jozuego Joz 6) Jerycho było silnie umocnione i zamknięte przed Izraelitami. Nikt nie wychodził ani nie wchodził. I rzekł Pan do Jozuego: \"Spójrz, Ja daję w twoje ręce Jerycho wraz z jego królem i dzielnymi wojownikami. Wy wszyscy, uzbrojeni mężowie, będziecie okrążali miasto codziennie jeden raz. Uczynisz tak przez sześć dni. Siedmiu kapłanów niech niesie przed Arką siedem trąb z rogów baranich. Siódmego dnia okrążycie miasto siedmiokrotnie, a kapłani zagrają na trąbach. Gdy więc zabrzmi przeciągle róg barani i usłyszycie głos trąby, niech cały lud wzniesie gromki okrzyk wojenny, a mur miasta rozpadnie się na miejscu i lud wkroczy, każdy wprost przed siebie\". Jozue, syn Nuna, wezwał kapłanów i rzekł im: \"Weźcie Arkę Przymierza a siedmiu kapłanów niech weźmie siedem trąb z rogów baranich przed Arką Pańską\". Po czym rozkazał ludowi: \"Wyruszcie i okrążcie miasto, a zbrojni wojownicy niech idą przed Arką Pańską\". I stało się, jak Jozue rozkazał ludowi. Siedmiu kapłanów, niosących przed Panem siedem trąb z rogów baranich, wyruszyło grając na trąbach, Arka zaś Przymierza Pańskiego szła za nimi.\n\n(List do Hebrajczyków Hbr 11,30-31) Przez wiarę upadły mury Jerycha, gdy je obchodzili dokoła w ciągu siedmiu dni. Przez wiarę nierządnica Rachab nie zginęła razem z niewierzącymi, bo przyjęła gościnnie wysłanych na zwiady."
   },
   {
     "t": "Moc w słabości",
@@ -483,7 +502,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Obietnicy",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty prowadzisz nas do Ziemi Obiecanej, jak niegdyś prowadziłeś swój lud. Prosimy Cię, daj nam odwagę pierwszego kroku, cierpliwość w modlitwie i ufność w Twoją moc, która objawia się w naszej słabości. Naucz nas wierności w trudnych chwilach i serca, które słucha. Mów, Panie, bo słudzy Twoi słuchają. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 18
+    "day": 18,
+    "passage": "(Księga Sędziów Sdz 6–7) Izraelici [znów] czynili to, co złe w oczach Pana, i Pan wydał ich na siedem lat w ręce Madianitów. A ręka Madianitów zaciążyła nad Izraelitami, tak że przed Madianitami kopali sobie schronienia w górach, jaskinie i miejsca obronne. Zdarzało się, że ledwie Izraelici co zasiali, przychodzili Madianici i Amalekici oraz lud ze wschodu słońca i napadali na nich, a rozbijając obozy naprzeciwko nich, niszczyli plony ziemi aż ku granicom Gazy. Nie pozostawiali Izraelowi żadnych środków do życia - ani owiec, ani wołów, ani osłów. Zjawiali się bowiem wraz ze stadami i namiotami, a przychodzili tak tłumnie jak szarańcza: liczba ich i wielbłądów była niezwykle wielka. Tak wpadali do kraju, aby go pustoszyć. Madianici wtrącili więc Izraela w wielką nędzę. Poczęli zatem Izraelici wołać do Pana. A gdy Izraelici wołali do Pana z powodu Madianitów, Pan wysłał Izraelitom proroka, który im rzekł: \"To mówi Pan, Bóg Izraela: Oto Ja was wyprowadziłem z Egiptu i Ja was wywiodłem z domu niewoli.\n\n(Drugi List do Koryntian 2 Kor 12,9) lecz [Pan] mi powiedział: \"Wystarczy ci mojej łaski. Moc bowiem w słabości się doskonali\". Najchętniej więc będę się chlubił z moich słabości, aby zamieszkała we mnie moc Chrystusa."
   },
   {
     "t": "Wierność cudzoziemki",
@@ -508,7 +528,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Obietnicy",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty prowadzisz nas do Ziemi Obiecanej, jak niegdyś prowadziłeś swój lud. Prosimy Cię, daj nam odwagę pierwszego kroku, cierpliwość w modlitwie i ufność w Twoją moc, która objawia się w naszej słabości. Naucz nas wierności w trudnych chwilach i serca, które słucha. Mów, Panie, bo słudzy Twoi słuchają. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 19
+    "day": 19,
+    "passage": "(Księga Rut Rt 1–4) W czasach, gdy rządzili sędziowie, nastał głód w kraju. Z Betlejem judzkiego wyszedł pewien człowiek ze swoją żoną i swymi dwoma synami, aby osiedlić się w ziemi Moabu. Nazywał się ten człowiek Elimelek, jego żona - Noemi, jego dwaj synowie - Machlon i Kilion. Byli oni Efratejczykami z Betlejem judzkiego. Przybyli na ziemię Moabu i tam zamieszkali. Elimelek, mąż Noemi, zmarł, a Noemi pozostała ze swymi dwoma synami. Oni wzięli sobie za żony Moabitki: jedna nazywała się Orpa, druga nazywała się Rut. Mieszkali tam około dziesięciu lat. Obaj - tak Machlon, jak i Kilion - również zmarli, a kobieta pozostała, przeżywszy obu swych synów i swego męża. Wyruszyła więc Noemi i z nią jej synowe, aby wrócić z ziemi Moabu, ponieważ usłyszała w ziemi Moabu, że Pan nawiedził swój lud, dając mu chleb. Wyszła z tej miejscowości, którą tam zamieszkiwała, obie jej synowe z nią, i wyruszyły w drogę powrotną do ziemi Judy. Powiedziała Noemi do obu swych synowych: \"Odejdźcie, wróćcie każda do domu swej matki, a Pan niech postępuje z wami według swej dobroci, tak jak wy postępowałyście wobec zmarłych i wobec mnie!\n\n(Ewangelia według św. Mateusza Mt 1,5) Salmon ojcem Booza, a matką była Rachab. Booz był ojcem Obeda, a matką była Rut. Obed był ojcem Jessego,"
   },
   {
     "t": "Słuchające serce",
@@ -533,7 +554,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Obietnicy",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty prowadzisz nas do Ziemi Obiecanej, jak niegdyś prowadziłeś swój lud. Prosimy Cię, daj nam odwagę pierwszego kroku, cierpliwość w modlitwie i ufność w Twoją moc, która objawia się w naszej słabości. Naucz nas wierności w trudnych chwilach i serca, które słucha. Mów, Panie, bo słudzy Twoi słuchają. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 20
+    "day": 20,
+    "passage": "(Pierwsza Księga Samuela 1 Sm 1–3) Był pewien człowiek w Ramataim, Sufita z górskiej okolicy Efraima, imieniem Elkana, syn Jerochama, syna Elihu, syna Tochu, syna Sufa Efratyty. Miał on dwie żony: jednej było na imię Anna, a drugiej Peninna. Peninna miała dzieci, natomiast Anna ich nie miała. Corocznie człowiek ten udawał się z miasta swego do Szilo, aby oddać pokłon i złożyć ofiarę dla Pana Zastępów. Byli tam dwaj synowie Helego: Chofni i Pinchas - kapłani Pana. Pewnego dnia Elkana składał ofiarę. Dał wtedy żonie swej Peninnie, wszystkim jej synom i córkom po części ze składanej ofiary. Również Annie dał część, lecz podwójną, gdyż Annę bardzo miłował, mimo że Pan zamknął jej łono. Jej współzawodniczka przymnażała jej smutku, aby ją rozjątrzyć z tego powodu, że Pan zamknął jej łono. I tak się działo przez wiele lat. Ile razy szła do świątyni Pana, [tamta] dokuczała jej w ten sposób. Anna więc płakała i nie jadła. I rzekł do niej jej mąż, Elkana: \"Anno, czemu płaczesz? Dlaczego nie jesz? Czemu się twoje serce smuci? Czyż ja nie znaczę dla ciebie więcej niż dziesięciu synów?\""
   },
   {
     "t": "Wybór pasterza",
@@ -558,7 +580,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Królestwa",
     "inPart": 1,
     "prayer": "Panie Jezu, Synu Dawida, Twoje królestwo nie będzie miało końca. Prosimy Cię, patrz na nasze serca, a nie na pozory. Gdy upadamy, przyślij nam proroka i daj łaskę skruchy; gdy jesteśmy zmęczeni jak Eliasz, nakarm nas chlebem na drogę; gdy płaczemy na wygnaniu, przypomnij nam, że masz wobec nas zamiary pełne pokoju. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 21
+    "day": 21,
+    "passage": "(Pierwsza Księga Samuela 1 Sm 16,1-13) Rzekł Pan do Samuela: \"Dokąd będziesz się smucił z powodu Saula? Uznałem go przecież za niegodnego, by panował nad Izraelem. Napełnij oliwą twój róg i idź: Posyłam cię do Jessego Betlejemity, gdyż między jego synami upatrzyłem sobie króla\". Samuel odrzekł: \"Jakże pójdę? Usłyszy o tym Saul i zabije mnie\". Pan odpowiedział: \"Weźmiesz ze sobą jałowicę i będziesz mówił: \"Przybywam złożyć ofiarę Panu\". Zaprosisz więc Jessego na ucztę ofiarną, a Ja wtedy powiem ci, co masz robić: wtedy namaścisz tego, którego ci wskażę\". Samuel uczynił tak, jak polecił mu Pan, i udał się do Betlejem. Naprzeciw niego wyszła przelękniona starszyzna miasta. [Jeden z nich] zapytał: \"Czy twe przybycie oznacza pokój?\" Odpowiedział: \"Pokój. Przybyłem złożyć ofiarę Panu. Oczyśćcie się i chodźcie złożyć ze mną ofiarę!\" Oczyścił też Jessego i jego synów i zaprosił ich na ofiarę. Kiedy przybyli, spostrzegł Eliaba i mówił: \"Z pewnością przed Panem jest jego pomazaniec\". Pan jednak rzekł do Samuela: \"Nie zważaj ani na jego wygląd, ani na wysoki wzrost, gdyż nie wybrałem go, nie tak bowiem człowiek widzi <jak widzi Bóg>, bo człowiek patrzy na to, co widoczne dla oczu, Pan natomiast patrzy na serce\". Następnie Jesse przywołał Abinadaba i przedstawił go Samuelowi, ale ten rzekł: \"Ten też nie został wybrany przez Pana\".\n\n(Pierwsza Księga Samuela 17) Filistyni zgromadzili swe wojska na wojnę: zebrali się w Soko, leżącym w ziemi Judy, a obóz rozbili między Soko i Azeka niedaleko od Efes-Dammim. Natomiast Saul i Izraelici zgromadzili się i rozłożyli obozem w Dolinie Terebintu, przygotowując się do walki z Filistynami. Filistyni stali u zbocza jednej góry, po jednej stronie, Izraelici zaś na zboczu innej góry, po drugiej stronie, a oddzielała ich dolina. Wtedy wystąpił z obozu filistyńskiego pewien harcownik imieniem Goliat, pochodzący z Gat. Był wysoki na sześć łokci i jedną piędź. Na głowie miał hełm z brązu, ubrany zaś był w łuskowy pancerz z brązu o wadze pięciu tysięcy syklów. Miał również na nogach nagolenice z brązu oraz brązowy, zakrzywiony nóż w ręku. Drzewce włóczni jego było jak wał tkacki, a jej grot ważył sześćset syklów żelaza. Poprzedzał go też [giermek] niosący tarczę. Stanąwszy naprzeciw, krzyknął w kierunku wojsk izraelskich te słowa: \"Po co się ustawiacie w szyku bojowym? Czyż ja nie jestem Filistynem, a wy sługami Saula? Wybierzcie spośród siebie człowieka, który by przeciwko mnie wystąpił."
   },
   {
     "t": "Dom na wieki",
@@ -583,7 +606,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Królestwa",
     "inPart": 2,
     "prayer": "Panie Jezu, Synu Dawida, Twoje królestwo nie będzie miało końca. Prosimy Cię, patrz na nasze serca, a nie na pozory. Gdy upadamy, przyślij nam proroka i daj łaskę skruchy; gdy jesteśmy zmęczeni jak Eliasz, nakarm nas chlebem na drogę; gdy płaczemy na wygnaniu, przypomnij nam, że masz wobec nas zamiary pełne pokoju. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 22
+    "day": 22,
+    "passage": "(Druga Księga Samuela 2 Sm 7,1-17) Gdy król zamieszkał w swoim domu, a Pan poskromił wokoło wszystkich jego wrogów, rzekł król do proroka Natana: \"Spójrz, ja mieszkam w pałacu cedrowym, a Arka Boża mieszka w namiocie\". Natan powiedział do króla: \"Uczyń wszystko, co zamierzasz w sercu, gdyż Pan jest z tobą\". Lecz tej samej nocy Pan skierował do Natana następujące słowa: \"Idź i powiedz mojemu słudze, Dawidowi: To mówi Pan: Czy ty zbudujesz Mi dom na mieszkanie? Nie mieszkałem bowiem w domu od dnia, w którym wywiodłem z Egiptu synów Izraela, aż do dziś dnia. Przebywałem w namiocie albo przybytku. Przez czas, gdy wędrowałem z całym Izraelem, czy choćby do jednego z sędziów izraelskich, którym nakazałem paść mój lud, Izraela, przemówiłem kiedykolwiek słowami: Dlaczego nie zbudowaliście Mi domu cedrowego? A teraz przemówisz do sługi mojego, Dawida: To mówi Pan Zastępów: Zabrałem cię z pastwiska spośród owiec, abyś był władcą nad ludem moim, nad Izraelem.\n\n(Ewangelia według św. Łukasza Łk 1,32-33) Będzie On wielki i będzie nazwany Synem Najwyższego, a Pan Bóg da Mu tron Jego praojca, Dawida. Będzie panował nad domem Jakuba na wieki, a Jego panowaniu nie będzie końca\"."
   },
   {
     "t": "Skrucha króla",
@@ -608,7 +632,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Królestwa",
     "inPart": 3,
     "prayer": "Panie Jezu, Synu Dawida, Twoje królestwo nie będzie miało końca. Prosimy Cię, patrz na nasze serca, a nie na pozory. Gdy upadamy, przyślij nam proroka i daj łaskę skruchy; gdy jesteśmy zmęczeni jak Eliasz, nakarm nas chlebem na drogę; gdy płaczemy na wygnaniu, przypomnij nam, że masz wobec nas zamiary pełne pokoju. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 23
+    "day": 23,
+    "passage": "(Druga Księga Samuela 2 Sm 11–12) Na początku roku, gdy królowie zwykli wychodzić na wojnę, Dawid wyprawił Joaba i swoje sługi wraz z całym Izraelem. Spustoszyli oni [ziemię] Ammonitów i oblegali Rabba. Dawid natomiast pozostał w Jerozolimie. Pewnego wieczora Dawid, podniósłszy się z posłania i chodząc po tarasie swego królewskiego pałacu, zobaczył z tarasu kąpiącą się kobietę. Kobieta była bardzo piękna. Dawid zasięgnął wiadomości o tej kobiecie. Powiedziano mu: \"To jest Batszeba, córka Eliama, żona Uriasza Chetyty\". Wysłał więc Dawid posłańców, by ją sprowadzili. A gdy przyszła do niego, spał z nią. A ona oczyściła się od swej nieczystości i wróciła do domu. Kobieta ta poczęła, posłała więc, by dać znać Dawidowi: \"Jestem brzemienna\". Wtedy Dawid wyprawił posłańca do Joaba: \"Przyślij do mnie Uriasza Chetytę\". Joab posłał więc Uriasza do Dawida. Kiedy Uriasz do niego przyszedł, Dawid wypytywał się o powodzenie Joaba, ludu i walki. Następnie rzekł Dawid Uriaszowi: \"Wstąp do swojego domu i umyj sobie nogi!\" Uriasz opuścił pałac królewski, a za nim niesiono dar ze stołu króla.\n\n(Księga Psalmów Ps 51) Kierownikowi chóru. Psalm. Dawida, gdy przybył do niego prorok Natan po jego grzechu z Batszebą. Zmiłuj się nade mną, Boże, w swojej łaskawości, w ogromie swego miłosierdzia wymaż moją nieprawość! Obmyj mnie zupełnie z mojej winy i oczyść mnie z grzechu mojego! Uznaję bowiem moją nieprawość, a grzech mój jest zawsze przede mną. Tylko przeciw Tobie zgrzeszyłem i uczyniłem, co złe jest przed Tobą, tak że się okazujesz sprawiedliwym w swym wyroku i prawym w swoim osądzie. Oto zrodzony jestem w przewinieniu i w grzechu poczęła mnie matka. Oto Ty masz upodobanie w ukrytej prawdzie, naucz mnie tajników mądrości."
   },
   {
     "t": "Ogień z nieba",
@@ -633,7 +658,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Królestwa",
     "inPart": 4,
     "prayer": "Panie Jezu, Synu Dawida, Twoje królestwo nie będzie miało końca. Prosimy Cię, patrz na nasze serca, a nie na pozory. Gdy upadamy, przyślij nam proroka i daj łaskę skruchy; gdy jesteśmy zmęczeni jak Eliasz, nakarm nas chlebem na drogę; gdy płaczemy na wygnaniu, przypomnij nam, że masz wobec nas zamiary pełne pokoju. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 24
+    "day": 24,
+    "passage": "(Pierwsza Księga Królew 1 Krl 18,20-40) Achab rozesłał polecenie wszystkim Izraelitom i zgromadził proroków na górze Karmel. Wówczas Eliasz zbliżył się do całego ludu i rzekł: \"Dopókiż będziecie chwiać się na obie strony? Jeżeli Jahwe jest [prawdziwym] Bogiem, to Jemu służcie, a jeżeli Baal, to służcie jemu!\" Na to nie odpowiedzieli mu ani słowa. Wtedy Eliasz przemówił do ludu: \"Tylko ja sam ocalałem jako prorok Pański, proroków zaś Baala jest czterystu pięćdziesięciu. Wobec tego niech nam dadzą dwa młode cielce. Oni niech wybiorą sobie jednego cielca i porąbią go oraz niech go umieszczą na drwach, ale ognia niech nie podkładają! Ja zaś oprawię drugiego cielca oraz umieszczę na drwach i też ognia nie podłożę. Potem wy będziecie wzywać imienia waszego boga, a następnie ja będę wzywać imienia Pana, aby okazało się, że ten Bóg, który odpowie ogniem, jest [naprawdę] Bogiem\". Cały lud, odpowiadając na to, zawołał: \"Dobry pomysł!\" Eliasz więc rzekł do proroków Baala: \"Wybierzcie sobie jednego młodego cielca i zacznijcie pierwsi, bo was jest więcej. Następnie wzywajcie imienia waszego boga, ale ognia nie podkładajcie!\" Wzięli więc cielca i oprawili go, a potem wzywali imienia Baala od rana aż do południa, wołając: \"O Baalu, odpowiedz nam!\" Ale nie było ani głosu, ani odpowiedzi. Zaczęli więc tańczyć przyklękając przy ołtarzu, który przygotowali. Kiedy zaś nastało południe, Eliasz szydził z nich, mówiąc: \"Wołajcie głośniej, bo to bóg! Więc może zamyślony albo jest zajęty, albo udaje się w drogę. Może on śpi, więc niech się obudzi!\"\n\n(Pierwsza Księga Królew 19,9-13) Tan wszedł do pewnej groty, gdzie przenocował. Wtedy Pan skierował do niego słowo i przemówił: \"Co ty tu robisz, Eliaszu?\" A on odpowiedział: \"Żarliwością rozpaliłem się o chwałę Pana, Boga Zastępów, gdyż Izraelici opuścili Twoje przymierze, rozwalili Twoje ołtarze i Twoich proroków zabili mieczem. Tak że ja sam tylko zostałem, a oni godzą jeszcze i na moje życie\". Wtedy rzekł: \"Wyjdź, aby stanąć na górze wobec Pana!\" A oto Pan przechodził. Gwałtowna wichura rozwalająca góry i druzgocąca skały [szła] przed Panem; ale Pan nie był w wichurze. A po wichurze - trzęsienie ziemi: Pan nie był w trzęsieniu ziemi. Po trzęsieniu ziemi powstał ogień: Pan nie był w ogniu. A po tym ogniu - szmer łagodnego powiewu. Kiedy tylko Eliasz go usłyszał, zasłoniwszy twarz płaszczem, wyszedł i stanął przy wejściu do groty. A wtedy rozległ się głos mówiący do niego: \"Co ty tu robisz, Eliaszu?\""
   },
   {
     "t": "Płacz nad rzekami Babilonu",
@@ -658,7 +684,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Królestwa",
     "inPart": 5,
     "prayer": "Panie Jezu, Synu Dawida, Twoje królestwo nie będzie miało końca. Prosimy Cię, patrz na nasze serca, a nie na pozory. Gdy upadamy, przyślij nam proroka i daj łaskę skruchy; gdy jesteśmy zmęczeni jak Eliasz, nakarm nas chlebem na drogę; gdy płaczemy na wygnaniu, przypomnij nam, że masz wobec nas zamiary pełne pokoju. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 25
+    "day": 25,
+    "passage": "(Druga Księga Królew 2 Krl 25) W dziewiątym roku jego panowania, dziesiątego miesiąca i dziesiątego dnia miesiąca przybył król babiloński, Nabuchodonozor, wraz z całym swoim wojskiem przeciw Jerozolimie, obległ ją, budując dokoła niej wały oblężnicze. Miasto było oblężone aż do jedenastego roku [panowania] króla Sedecjasza. [W czwartym zaś miesiącu], dziewiątego dnia miesiąca, kiedy głód srożył się w mieście i nie było już chleba dla ludu kraju, uczyniono wyłom w mieście. Wszyscy wojownicy uciekli z miasta nocą przez bramę między podwójnym murem powyżej ogrodów królewskich. Chaldejczycy zaś znajdowali się dokoła miasta. Wyszli więc drogą prowadzącą ku Arabie. Wojsko chaldejskie ścigało króla i dopędziło go na stepie Jerycha, całe zaś jego wojsko opuściło go idąc w rozsypkę. Pojmali więc króla i zaprowadzili go do króla babilońskiego, do Ribla, i wydali na niego wyrok. Synów Sedecjasza wymordowano na jego oczach, a [król babiloński] rozkazał wyłupić oczy Sedecjaszowi i zakuć go w podwójne kajdany z brązu. Następnie uprowadził go do Babilonu. W piątym zaś miesiącu, siódmego dnia miesiąca - był to dziewiętnasty rok [panowania] króla babilońskiego, Nabuchodonozora - wkroczył do Jerozolimy Nebuzaradan, dowódca straży przybocznej, sługa króla babilońskiego.\n\n(Księga Psalmów Ps 137) Nad rzekami Babilonu - tam myśmy siedzieli i płakali, kiedyśmy wspominali Syjon. Na topolach tamtej krainy zawiesiliśmy nasze harfy. Bo tam żądali od nas pieśni ci, którzy nas uprowadzili, pieśni radości ci, którzy nas uciskali: \"Zaśpiewajcie nam jakąś z pieśni syjońskich!\" Jakże możemy śpiewać pieśń Pańską w obcej krainie? Jeruzalem, jeśli zapomnę o tobie, niech uschnie moja prawica! Niech język mi przyschnie do podniebienia, jeśli nie będę pamiętał o tobie, jeśli nie postawię Jeruzalem ponad największą moją radość. Przypomnij, Panie, synom Edomu, dzień Jeruzalem, kiedy oni mówili: \"Burzcie, burzcie - aż do jej fundamentów!\" Córo Babilonu, niszczycielko, szczęśliwy, kto ci odpłaci za zło, jakie nam wyrządziłaś!\n\n(Księga Jeremiasza Jr 29,11) Jestem bowiem świadomy zamiarów, jakie zamyślam co do was - wyrocznia Pana - zamiarów pełnych pokoju, a nie zguby, by zapewnić wam przyszłość, jakiej oczekujecie."
   },
   {
     "t": "Wierność w stracie",
@@ -683,7 +710,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Cierpienia",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty sam przeszedłeś przez cierpienie i znasz każdy ludzki ból. Prosimy Cię za wszystkich, którzy jak Hiob tracą wszystko i nie rozumieją dlaczego. Przyjmij ich krzyk jako modlitwę, chroń ich przed fałszywymi pocieszycielami i daj im spotkać Ciebie — żyjącego Odkupiciela. Nas zaś naucz być przy cierpiących z pokorą i milczeniem miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 26
+    "day": 26,
+    "passage": "(Księga Hioba Hi 1–2) Żył w ziemi Us człowiek imieniem Hiob. Był to mąż sprawiedliwy, prawy, bogobojny i unikający zła. Miał siedmiu synów i trzy córki. Majętność jego stanowiło siedem tysięcy owiec, trzy tysiące wielbłądów, pięćset jarzm wołów, pięćset oślic oraz wielka liczba służby. Był najwybitniejszym człowiekiem spośród wszystkich ludzi Wschodu. Synowie jego mieli zwyczaj udawania się na ucztę, którą każdy z nich urządzał po kolei we własnym domu w dniu oznaczonym. Zapraszali też swoje trzy siostry, by jadły i piły z nimi. Gdy przeminął czas ucztowania, Hiob dbał o to, by dokonywać ich oczyszczenia. Wstawał wczesnym rankiem i składał całopalenie stosownie do ich liczby. Bo mówił Hiob do siebie: \"Może moi synowie zgrzeszyli i złorzeczyli Bogu w swym sercu?\" Hiob zawsze tak postępował. Zdarzyło się pewnego dnia, gdy synowie Boży udawali się, by stanąć przed Panem, że i szatan też poszedł z nimi. I rzekł Bóg do szatana: \"Skąd przychodzisz?\" Szatan odrzekł Panu: \"Przemierzałem ziemię i wędrowałem po niej\". Mówi Pan do szatana: \"A zwróciłeś uwagę na sługę mego, Hioba? Bo nie ma na całej ziemi drugiego, kto by tak był prawy, sprawiedliwy, bogobojny i unikający grzechu jak on\"."
   },
   {
     "t": "Krzyk bólu",
@@ -708,7 +736,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Cierpienia",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty sam przeszedłeś przez cierpienie i znasz każdy ludzki ból. Prosimy Cię za wszystkich, którzy jak Hiob tracą wszystko i nie rozumieją dlaczego. Przyjmij ich krzyk jako modlitwę, chroń ich przed fałszywymi pocieszycielami i daj im spotkać Ciebie — żyjącego Odkupiciela. Nas zaś naucz być przy cierpiących z pokorą i milczeniem miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 27
+    "day": 27,
+    "passage": "(Księga Hioba Hi 3) Wreszcie Hiob otworzył usta i przeklinał swój dzień. Hiob zabrał głos i tak mówił: \"Niech przepadnie dzień mego urodzenia i noc, gdy powiedziano: \"Poczęty mężczyzna\". Niech dzień ten zamieni się w ciemność, niech nie dba o niego Bóg w górze. Niechaj nie świeci mu światło, niechaj pochłoną go mrok i ciemności. Niechaj się chmurą zasępi, niech targnie się nań nawałnica. Niech noc tę praciemność ogarnie i niech ją z dni roku wymażą, niech do miesięcy nie wchodzi! O, niech ta noc bezpłodną się stanie i niechaj nie zazna wesela! Niech ją przeklną złorzeczący dniowi, którzy są zdolni obudzić Lewiatana.\n\n(Księga Hioba 7,11-21) Ja ust ujarzmić nie mogę, mówić chcę w utrapieniu, narzekać w boleści mej duszy. Czy jestem morzem lub smokiem głębiny, żeś straże przy mnie postawił? Myślałem: Wypocznę na łóżku, posłanie to trosk mych powiernik. Lecz Ty mnie snami przestraszasz, przerażasz mnie widziadłami. Moja dusza wybrała uduszenie, a śmierć - moje członki. Zginę. Nie będę żył wiecznie. Zostaw mnie - dni me jak tchnienie. A kim jest człowiek, abyś go cenił i zwracał ku niemu swe serce? Czemu go badać co ranka? Na co doświadczać co chwilę?"
   },
   {
     "t": "Pustka słów",
@@ -733,7 +762,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Cierpienia",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty sam przeszedłeś przez cierpienie i znasz każdy ludzki ból. Prosimy Cię za wszystkich, którzy jak Hiob tracą wszystko i nie rozumieją dlaczego. Przyjmij ich krzyk jako modlitwę, chroń ich przed fałszywymi pocieszycielami i daj im spotkać Ciebie — żyjącego Odkupiciela. Nas zaś naucz być przy cierpiących z pokorą i milczeniem miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 28
+    "day": 28,
+    "passage": "(Księga Hioba Hi 2,11-13) Usłyszeli trzej przyjaciele Hioba o wszystkim, co na niego spadło, i przyszli, każdy z nich z miejscowości swojej: Elifaz z Temanu. Bildad z Szuach i Sofar z Naamy. Porozumieli się, by przyjść, boleć nad nim i pocieszać go. Skoro jednak spojrzeli z daleka, nie mogli go poznać. Podnieśli swój głos i zapłakali. Każdy z nich rozdarł swe szaty i rzucał proch w górę na głowę. Siedzieli z nim na ziemi siedem dni i siedem nocy, nikt nie wyrzekł słowa, bo widzieli ogrom jego bólu.\n\n(Księga Hioba 4,1-9) Teraz zabrał głos Elifaz z Temanu i tak rzekł: \"Wolno pomówić? Przykro ci? Lecz któż się wstrzyma od słów stwierdzonych doświadczeniem? Tyś przecież wielu pouczał, wzmacniałeś omdlałe ręce, twe słowa krzepiły słabych, wspierałeś kolana zachwiane. Gdy teraz przyszło na ciebie, tyś słaby, strwożony, gdy ciebie dotknęło. Czy bogobojność już nie jest twą ufnością, a nadzieją - doskonałość dróg twoich? Przypomnij, czy zginął kto prawy? Gdzie sprawiedliwych zgładzono? O ile wiadomo, złoczyńca, który sieje nieprawość, zbiera z niej plon.\n\n(Księga Hioba 42,7-9) Skoro Pan te słowa powiedział do Hioba, przemówił i do Elifaza z Temanu: \"Zapłonąłem gniewem na ciebie i na dwóch przyjaciół twoich, bo nie mówiliście o Mnie prawdy, jak sługa mój, Hiob. Weźcie teraz siedem młodych cielców i siedem baranów, idźcie do sługi mego, Hioba, i złóżcie ofiarę całopalną za siebie. Mój sługa, Hiob, będzie się za was modlił. Ze względu na niego nic złego wam nie zrobię, choć nie mówiliście prawdy o Mnie, jak sługa mój, Hiob\". Poszli więc, Elifaz z Temanu, Bildad z Szuach i Sofar z Naamy. Uczynili, jak mówił im Pan, a Pan miał wzgląd na Hioba."
   },
   {
     "t": "Nadzieja wbrew nadziei",
@@ -758,7 +788,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Cierpienia",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty sam przeszedłeś przez cierpienie i znasz każdy ludzki ból. Prosimy Cię za wszystkich, którzy jak Hiob tracą wszystko i nie rozumieją dlaczego. Przyjmij ich krzyk jako modlitwę, chroń ich przed fałszywymi pocieszycielami i daj im spotkać Ciebie — żyjącego Odkupiciela. Nas zaś naucz być przy cierpiących z pokorą i milczeniem miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 29
+    "day": 29,
+    "passage": "(Księga Hioba Hi 19,23-27) Któż zdoła utrwalić me słowa, potrafi je w księdze umieścić? Żelaznym rylcem, diamentem, na skale je wyryć na wieki? Lecz ja wiem: Wybawca mój żyje, na ziemi wystąpi jako ostatni. Potem me szczątki skórą odzieje, i ciałem swym Boga zobaczę. To właśnie ja Go zobaczę, moje oczy ujrzą, nie kto inny; moje nerki już mdleją z tęsknoty."
   },
   {
     "t": "Spotkanie w burzy",
@@ -783,7 +814,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Cierpienia",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty sam przeszedłeś przez cierpienie i znasz każdy ludzki ból. Prosimy Cię za wszystkich, którzy jak Hiob tracą wszystko i nie rozumieją dlaczego. Przyjmij ich krzyk jako modlitwę, chroń ich przed fałszywymi pocieszycielami i daj im spotkać Ciebie — żyjącego Odkupiciela. Nas zaś naucz być przy cierpiących z pokorą i milczeniem miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 30
+    "day": 30,
+    "passage": "(Księga Hioba Hi 38,1-11) I z wichru Pan odpowiedział Hiobowi tymi słowami: \"Któż tu zaciemnić chce zamiar słowami nierozumnymi? Przepasz no biodra jak mocarz! Będę cię pytał - pouczysz Mnie. Gdzieś był, gdy zakładałem ziemię? Powiedz, jeżeli znasz mądrość. Kto wybadał jej przestworza? Wiesz, kto ją sznurem wymierzył? Na czym się słupy wspierają? Kto założył jej kamień węgielny ku uciesze porannych gwiazd, ku radości wszystkich synów Bożych? Kto bramą zamknął morze, gdy wyszło z łona wzburzone,\n\n(Księga Hioba 42,1-6) Hiob na to odpowiedział Panu, i rzekł: \"Wiem, że Ty wszystko możesz, co zamyślasz, potrafisz uczynić. Kto przesłania zamiar nierozumnie? O rzeczach wzniosłych mówiłem. To zbyt cudowne. Ja nie rozumiem. Posłuchaj, proszę. Pozwól mi mówić! Chcę spytać. Racz odpowiedzieć! Dotąd Cię znałem ze słyszenia, obecnie ujrzałem Cię wzrokiem, stąd odwołuję, co powiedziałem, kajam się w prochu i w popiele\"."
   },
   {
     "t": "Modlitwa ufności",
@@ -808,7 +840,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Modlitwy",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty modliłeś się Psalmami i na krzyżu wołałeś ich słowami. Prosimy Cię, naucz nas modlić się tak jak Ty: z ufnością dziecka, ze szczerością w opuszczeniu, ze skruchą po upadku, z zachwytem nad tym, że jesteśmy poznani i kochani, i z radosnym uwielbieniem. Niech nasze życie stanie się psalmem na chwałę Ojca. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 31
+    "day": 31,
+    "passage": "(Księga Psalmów Ps 23) Psalm. Dawidowy. Pan jest moim pasterzem, nie brak mi niczego. Pozwala mi leżeć na zielonych pastwiskach. Prowadzi mnie nad wody, gdzie mogę odpocząć: orzeźwia moją duszę. Wiedzie mnie po właściwych ścieżkach przez wzgląd na swoje imię. Chociażbym chodził ciemną doliną, zła się nie ulęknę, bo Ty jesteś ze mną. Twój kij i Twoja laska są tym, co mnie pociesza. Stół dla mnie zastawiasz wobec mych przeciwników; namaszczasz mi głowę olejkiem; mój kielich jest przeobfity. Tak, dobroć i łaska pójdą w ślad za mną przez wszystkie dni mego życia i zamieszkam w domu Pańskim po najdłuższe czasy. PROLOG\n\n(Ewangelia według św. Jana J 10,11) Ja jestem dobrym pasterzem. Dobry pasterz daje życie swoje za owce."
   },
   {
     "t": "Modlitwa opuszczenia",
@@ -833,7 +866,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Modlitwy",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty modliłeś się Psalmami i na krzyżu wołałeś ich słowami. Prosimy Cię, naucz nas modlić się tak jak Ty: z ufnością dziecka, ze szczerością w opuszczeniu, ze skruchą po upadku, z zachwytem nad tym, że jesteśmy poznani i kochani, i z radosnym uwielbieniem. Niech nasze życie stanie się psalmem na chwałę Ojca. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 32
+    "day": 32,
+    "passage": "(Księga Psalmów Ps 22) Kierownikowi chóru. Na modłę pieśni: \"Łania o świcie\". Psalm. Dawidowy. Boże mój, Boże mój, czemuś mnie opuścił? Daleko od mego Wybawcy słowa mego jęku. Boże mój, wołam przez dzień, a nie odpowiadasz, [wołam] i nocą, a nie zaznaję pokoju. A przecież Ty mieszkasz w świątyni, Chwało Izraela! Tobie zaufali nasi przodkowie, zaufali, a Tyś ich uwolnił; do Ciebie wołali i zostali zbawieni, Tobie ufali i nie doznali wstydu. Ja zaś jestem robak, a nie człowiek, pośmiewisko ludzkie i wzgardzony u ludu. Szydzą ze mnie wszyscy, którzy na mnie patrzą, rozwierają wargi, potrząsają głową:\n\n(Ewangelia według św. Mateusza Mt 27,46) Około godziny dziewiątej Jezus zawołał donośnym głosem: \"Eli, Eli, lema sabachthani?\", to znaczy Boże mój, Boże mój, czemuś Mnie opuścił?"
   },
   {
     "t": "Modlitwa skruchy",
@@ -858,7 +892,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Modlitwy",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty modliłeś się Psalmami i na krzyżu wołałeś ich słowami. Prosimy Cię, naucz nas modlić się tak jak Ty: z ufnością dziecka, ze szczerością w opuszczeniu, ze skruchą po upadku, z zachwytem nad tym, że jesteśmy poznani i kochani, i z radosnym uwielbieniem. Niech nasze życie stanie się psalmem na chwałę Ojca. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 33
+    "day": 33,
+    "passage": "(Księga Psalmów Ps 51) Kierownikowi chóru. Psalm. Dawida, gdy przybył do niego prorok Natan po jego grzechu z Batszebą. Zmiłuj się nade mną, Boże, w swojej łaskawości, w ogromie swego miłosierdzia wymaż moją nieprawość! Obmyj mnie zupełnie z mojej winy i oczyść mnie z grzechu mojego! Uznaję bowiem moją nieprawość, a grzech mój jest zawsze przede mną. Tylko przeciw Tobie zgrzeszyłem i uczyniłem, co złe jest przed Tobą, tak że się okazujesz sprawiedliwym w swym wyroku i prawym w swoim osądzie. Oto zrodzony jestem w przewinieniu i w grzechu poczęła mnie matka. Oto Ty masz upodobanie w ukrytej prawdzie, naucz mnie tajników mądrości."
   },
   {
     "t": "Modlitwa poznania",
@@ -883,7 +918,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Modlitwy",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty modliłeś się Psalmami i na krzyżu wołałeś ich słowami. Prosimy Cię, naucz nas modlić się tak jak Ty: z ufnością dziecka, ze szczerością w opuszczeniu, ze skruchą po upadku, z zachwytem nad tym, że jesteśmy poznani i kochani, i z radosnym uwielbieniem. Niech nasze życie stanie się psalmem na chwałę Ojca. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 34
+    "day": 34,
+    "passage": "(Księga Psalmów Ps 139) Kierownikowi chóru. Dawidowy. Psalm. Panie, przenikasz i znasz mnie, Ty wiesz, kiedy siadam i wstaję. Z daleka przenikasz moje zamysły, widzisz moje działanie i mój spoczynek i wszystkie moje drogi są Ci znane. Choć jeszcze nie ma słowa na języku: Ty, Panie, już znasz je w całości. Ty ogarniasz mnie zewsząd i kładziesz na mnie swą rękę. Zbyt dziwna jest dla mnie Twa wiedza, zbyt wzniosła: nie mogę jej pojąć. Gdzież się oddalę przed Twoim duchem? Gdzie ucieknę od Twego oblicza? Gdy wstąpię do nieba, tam jesteś; jesteś przy mnie, gdy się w Szeolu położę."
   },
   {
     "t": "Modlitwa uwielbienia",
@@ -908,7 +944,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Modlitwy",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty modliłeś się Psalmami i na krzyżu wołałeś ich słowami. Prosimy Cię, naucz nas modlić się tak jak Ty: z ufnością dziecka, ze szczerością w opuszczeniu, ze skruchą po upadku, z zachwytem nad tym, że jesteśmy poznani i kochani, i z radosnym uwielbieniem. Niech nasze życie stanie się psalmem na chwałę Ojca. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 35
+    "day": 35,
+    "passage": "(Księga Psalmów Ps 148) Alleluja. Chwalcie Pana z niebios, chwalcie Go na wysokościach! Chwalcie Go, wszyscy Jego aniołowie, chwalcie Go, wszystkie Jego zastępy! Chwalcie Go, słońce i księżycu, chwalcie Go, wszystkie gwiazdy świecące. Chwalcie Go, nieba najwyższe i wody, co są ponad niebem: niech imię Pana wychwalają, On bowiem nakazał i zostały stworzone, utwierdził je na zawsze, na wieki; nadał im prawo, które nie przeminie. Chwalcie Pana z ziemi, potwory i wszystkie morskie głębiny, ogniu i gradzie, śniegu i mgło, gwałtowny huraganie, co pełnisz Jego słowo,\n\n(Księga Psalmów 150) Alleluja. Chwalcie Boga w Jego świątyni, chwalcie Go na wyniosłym Jego nieboskłonie! Chwalcie Go za potężne Jego czyny, chwalcie Go za wielką Jego potęgę! Chwalcie Go dźwiękiem rogu, chwalcie Go na harfie i cytrze! Chwalcie Go bębnem i tańcem, chwalcie Go na strunach i flecie! Chwalcie Go na cymbałach dźwięcznych, chwalcie Go na cymbałach brzęczących: Wszystko, co żyje, niech chwali Pana! Alleluja. PROLOG"
   },
   {
     "t": "Początek mądrości",
@@ -933,7 +970,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Mądrości",
     "inPart": 1,
     "prayer": "Panie Jezu, Mądrości Ojca, Ty byłeś przy Nim, gdy stwarzał świat, i znajdowałeś radość wśród ludzi. Prosimy Cię, daj nam dar bojaźni Bożej i serce rozumne, które ufa Ci bardziej niż własnemu rozsądkowi. Prowadź nasze ścieżki i nie pozwól, byśmy szukali mądrości z dala od Ciebie. Gdy przyjdzie nasza godzina, przyjmij nasze dusze w swoje ręce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 36
+    "day": 36,
+    "passage": "(Księga Przysłówiec Prz 1,7) Podstawą wiedzy jest bojaźń Pańska, lecz głupcy odrzucają mądrość i karność.\n\n(Księga Przysłówiec 9,10) Treścią mądrości jest bojaźń Pańska, rozsądkiem - poznanie Świętego."
   },
   {
     "t": "Zaufanie",
@@ -958,7 +996,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Mądrości",
     "inPart": 2,
     "prayer": "Panie Jezu, Mądrości Ojca, Ty byłeś przy Nim, gdy stwarzał świat, i znajdowałeś radość wśród ludzi. Prosimy Cię, daj nam dar bojaźni Bożej i serce rozumne, które ufa Ci bardziej niż własnemu rozsądkowi. Prowadź nasze ścieżki i nie pozwól, byśmy szukali mądrości z dala od Ciebie. Gdy przyjdzie nasza godzina, przyjmij nasze dusze w swoje ręce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 37
+    "day": 37,
+    "passage": "(Księga Przysłówiec Prz 3,1-12) Synu mój, nie zapomnij mych nauk, twoje serce niech strzeże nakazów, bo wiele dni i lat życia i pełnię ci szczęścia przyniosą: Niech miłość i wierność cię strzeże; przymocuj je sobie do szyi, na tablicy serca je zapisz, a znajdziesz życzliwość i łaskę w oczach Boga i ludzi. Z całego serca Bogu zaufaj, nie polegaj na swoim rozsądku, myśl o Nim na każdej drodze, a On twe ścieżki wyrówna. Nie bądź mądrym we własnych oczach, Boga się bój, zła unikaj: to ciału zapewni zdrowie, a pokrzepienie twym kościom."
   },
   {
     "t": "Mądrość stwórcza",
@@ -983,7 +1022,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Mądrości",
     "inPart": 3,
     "prayer": "Panie Jezu, Mądrości Ojca, Ty byłeś przy Nim, gdy stwarzał świat, i znajdowałeś radość wśród ludzi. Prosimy Cię, daj nam dar bojaźni Bożej i serce rozumne, które ufa Ci bardziej niż własnemu rozsądkowi. Prowadź nasze ścieżki i nie pozwól, byśmy szukali mądrości z dala od Ciebie. Gdy przyjdzie nasza godzina, przyjmij nasze dusze w swoje ręce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 38
+    "day": 38,
+    "passage": "(Księga Przysłówiec Prz 8,22-31) Pan mnie stworzył, swe arcydzieło, jako początek swej mocy, od dawna, od wieków jestem stworzona, od początku, nim ziemia powstała. Przed oceanem istnieć zaczęłam, przed źródłami pełnymi wody; zanim góry zostały założone, przed pagórkami zaczęłam istnieć; nim ziemię i pola uczynił - początek pyłu na ziemi. Gdy niebo umacniał, z Nim byłam, gdy kreślił sklepienie nad bezmiarem wód, gdy w górze utwierdzał obłoki, gdy źródła wielkiej otchłani umacniał, gdy morzu stawiał granice, by wody z brzegów nie wyszły, gdy kreślił fundamenty pod ziemię.\n\n(List do Kolosian Kol 1,15-17) On jest obrazem Boga niewidzialnego - Pierworodnym wobec każdego stworzenia, bo w Nim zostało wszystko stworzone: i to, co w niebiosach, i to, co na ziemi, byty widzialne i niewidzialne, czy Trony, czy Panowania, czy Zwierzchności, czy Władze. Wszystko przez Niego i dla Niego zostało stworzone. On jest przed wszystkim i wszystko w Nim ma istnienie."
   },
   {
     "t": "Pokój sprawiedliwych",
@@ -1008,7 +1048,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Mądrości",
     "inPart": 4,
     "prayer": "Panie Jezu, Mądrości Ojca, Ty byłeś przy Nim, gdy stwarzał świat, i znajdowałeś radość wśród ludzi. Prosimy Cię, daj nam dar bojaźni Bożej i serce rozumne, które ufa Ci bardziej niż własnemu rozsądkowi. Prowadź nasze ścieżki i nie pozwól, byśmy szukali mądrości z dala od Ciebie. Gdy przyjdzie nasza godzina, przyjmij nasze dusze w swoje ręce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 39
+    "day": 39,
+    "passage": "(Księga Mądrości Mdr 3,1-9) A dusze sprawiedliwych są w ręku Boga i nie dosięgnie ich męka. Zdało się oczom głupich, że pomarli, zejście ich poczytano za nieszczęście i odejście od nas za unicestwienie, a oni trwają w pokoju. Choć nawet w ludzkim rozumieniu doznali kaźni, nadzieja ich pełna jest nieśmiertelności. Po nieznacznym skarceniu dostąpią dóbr wielkich, Bóg ich bowiem doświadczył i znalazł ich godnymi siebie. Doświadczył ich jak złoto w tyglu i przyjął ich jak całopalną ofiarę. W dzień nawiedzenia swego zajaśnieją i rozbiegną się jak iskry po ściernisku. Będą sądzić ludy, zapanują nad narodami, a Pan królować będzie nad nimi na wieki."
   },
   {
     "t": "Prośba o mądrość",
@@ -1033,7 +1074,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Mądrości",
     "inPart": 5,
     "prayer": "Panie Jezu, Mądrości Ojca, Ty byłeś przy Nim, gdy stwarzał świat, i znajdowałeś radość wśród ludzi. Prosimy Cię, daj nam dar bojaźni Bożej i serce rozumne, które ufa Ci bardziej niż własnemu rozsądkowi. Prowadź nasze ścieżki i nie pozwól, byśmy szukali mądrości z dala od Ciebie. Gdy przyjdzie nasza godzina, przyjmij nasze dusze w swoje ręce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 40
+    "day": 40,
+    "passage": "(Księga Mądrości Mdr 9) Boże przodków i Panie miłosierdzia, któryś wszystko uczynił swoim słowem i w Mądrości swojej stworzyłeś człowieka, by panował nad stworzeniami, co przez Ciebie się stały, by władał światem w świętości i sprawiedliwości i w prawości serca sądy sprawował - dajże mi Mądrość, co dzieli tron z Tobą, i nie wyłączaj mnie z liczby swych dzieci! Bom sługa Twój, syn Twojej służebnicy, człowiek niemocny i krótkowieczny, zbyt słaby, by pojąć sprawiedliwość i prawa. Choćby zresztą był ktoś doskonały między ludźmi, jeśli mu braknie mądrości od Ciebie - za nic będzie poczytany. Wybrałeś mnie na króla swojego ludu i na sędziego synów swoich i córek. Kazałeś zbudować świątynię na górze swej świętej i ołtarz w mieście swego zamieszkania - obraz Namiotu świętego, któryś zgotował od początku.\n\n(Pierwsza Księga Królew 1 Krl 3,5-14) W Gibeonie Pan ukazał się Salomonowi w nocy, we śnie. Wtedy rzekł Bóg: \"Proś o to, co mam ci dać\". A Salomon odrzekł: \"Tyś okazywał Twemu słudze Dawidowi, memu ojcu, wielką łaskę, bo postępował wobec Ciebie szczerze, sprawiedliwie i w prostocie serca. Ponadto zachowałeś dla niego tę wielką łaskę, że dałeś mu syna, zasiadającego na jego tronie po dziś dzień. Teraz więc, o Panie, Boże mój, Tyś ustanowił królem Twego sługę w miejsce Dawida, mego ojca, a ja jestem bardzo młody. Brak mi doświadczenia! Ponadto Twój sługa jest pośród Twego ludu, któryś wybrał, ludu mnogiego, którego nie da się zliczyć ani też spisać, z powodu jego mnóstwa. Racz więc dać Twemu słudze serce pełne rozsądku do sądzenia Twego ludu i rozróżniania dobra od zła, bo któż zdoła sądzić ten lud Twój tak liczny?\" Spodobało się Panu, że właśnie o to Salomon poprosił. Bóg więc mu powiedział: \"Ponieważ poprosiłeś o to, a nie poprosiłeś dla siebie o długie życie ani też o bogactwa, i nie poprosiłeś o zgubę twoich nieprzyjaciół, ale poprosiłeś dla siebie o umiejętność rozstrzygania spraw sądowych, więc spełniam twoje pragnienie i daję ci serce mądre i rozsądne, takie, że podobnego tobie przed tobą nie było i po tobie nie będzie."
   },
   {
     "t": "Marność",
@@ -1058,7 +1100,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sensu",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś sensem wszystkiego, co przemija. Prosimy Cię, uwolnij nas od pogoni za wiatrem i naucz nas szukać skarbu, który nie przemija. Daj nam przyjmować każdy czas jako Twój dar, wytrwać w próbach i z miłością czcić naszych rodziców. Niech nasze życie, krótkie jak oddech, stanie się pamięcią o Stwórcy. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 41
+    "day": 41,
+    "passage": "(Księga Kohelet Koh 1,2-11) Marność nad marnościami, powiada Kohelet, marność nad marnościami - wszystko marność. Cóż przyjdzie człowiekowi z całego trudu, jaki zadaje sobie pod słońcem? Pokolenie przychodzi i pokolenie odchodzi, a ziemia trwa po wszystkie czasy. Słońce wschodzi i zachodzi, i na miejsce swoje spieszy z powrotem, i znowu tam wschodzi. Ku południowi ciągnąc i ku północy wracając, kolistą drogą wieje wiatr i znowu wraca na drogę swojego krążenia. Wszystkie rzeki płyną do morza, a morze wcale nie wzbiera; do miejsca, do którego rzeki płyną, zdążają one bezustannie. Mówienie jest wysiłkiem: nie zdoła człowiek wyrazić [wszystkiego] słowami. Nie nasyci się oko patrzeniem ani ucho napełni słuchaniem. To, co było, jest tym, co będzie, a to, co się stało, jest tym, co znowu się stanie: więc nic zgoła nowego nie ma pod słońcem.\n\n(Księga Kohelet 2,1-11) Powiedziałem sobie: \"Nuże! Doświadczę radości i zażyję szczęścia!\" Lecz i to jest marność. O śmiechu powiedziałem: \"Szaleństwo!\", a o radości: \"Cóż to ona daje?\" Postanowiłem w sercu swoim krzepić ciało moje winem - choć rozum miał zostać moim mądrym przewodnikiem - i oddać się głupocie, aż zobaczę, co dla ludzi jest szczęściem, które gotują sobie pod niebem, dopóki trwają dni ich życia. Dokonałem wielkich dzieł: zbudowałem sobie domy, zasadziłem sobie winnice, założyłem ogrody i parki i nasadziłem w nich wszelkich drzew owocowych. Urządziłem sobie zbiorniki na wodę, by nią nawadniać gaj bogaty w drzewa. Nabyłem niewolników i niewolnice i miałem niewolników urodzonych w domu. Posiadałem też wielkie stada bydła i owiec, większe niż wszyscy, co byli przede mną w Jeruzalem. Nagromadziłem też sobie srebra i złota, i skarby królów i krain. Nabyłem śpiewaków i śpiewaczki oraz rozkosze synów ludzkich: kobiet wiele."
   },
   {
     "t": "Czas",
@@ -1083,7 +1126,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sensu",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś sensem wszystkiego, co przemija. Prosimy Cię, uwolnij nas od pogoni za wiatrem i naucz nas szukać skarbu, który nie przemija. Daj nam przyjmować każdy czas jako Twój dar, wytrwać w próbach i z miłością czcić naszych rodziców. Niech nasze życie, krótkie jak oddech, stanie się pamięcią o Stwórcy. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 42
+    "day": 42,
+    "passage": "(Księga Kohelet Koh 3,1-15) Wszystko ma swój czas, i jest wyznaczona godzina na wszystkie sprawy pod niebem: Jest czas rodzenia i czas umierania, czas sadzenia i czas wyrywania tego, co zasadzono, czas zabijania i czas leczenia, czas burzenia i czas budowania, czas płaczu i czas śmiechu, czas zawodzenia i czas pląsów, czas rzucania kamieni i czas ich zbierania, czas pieszczot cielesnych i czas wstrzymywania się od nich, czas szukania i czas tracenia, czas zachowania i czas wyrzucania, czas rozdzierania i czas zszywania, czas milczenia i czas mówienia, czas miłowania i czas nienawiści, czas wojny i czas pokoju."
   },
   {
     "t": "Pamięć o Stwórcy",
@@ -1108,7 +1152,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sensu",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś sensem wszystkiego, co przemija. Prosimy Cię, uwolnij nas od pogoni za wiatrem i naucz nas szukać skarbu, który nie przemija. Daj nam przyjmować każdy czas jako Twój dar, wytrwać w próbach i z miłością czcić naszych rodziców. Niech nasze życie, krótkie jak oddech, stanie się pamięcią o Stwórcy. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 43
+    "day": 43,
+    "passage": "(Księga Kohelet Koh 11,9–12,14) Ciesz się, młodzieńcze, w młodości swojej, a serce twoje niech się rozwesela za dni młodości twojej. I chodź drogami serca swego i za tym, co oczy twe pociąga; lecz wiedz, że z tego wszystkiego będzie cię sądził Bóg! Więc usuń przygnębienie ze swego serca i oddal ból od twego ciała, bo młodość jak zorza poranna szybko przemija. Pomnij jednak na Stwórcę swego w dniach swej młodości, zanim jeszcze nadejdą dni niedoli i przyjdą lata, o których powiesz: \"Nie mam w nich upodobania\"; zanim zaćmi się słońce i światło, i księżyc, i gwiazdy, i chmury powrócą po deszczu; w czasie, gdy trząść się będą stróże domu, i uginać się będą silni mężowie, i będą ustawały [kobiety] mielące, bo ich ubędzie, i zaćmią się patrzące w oknach; i zamkną się drzwi na ulicę, podczas gdy łoskot młyna przycichnie i podniesie się do głosu ptaka, i wszystkie śpiewy przymilkną; odczuwać się nawet będzie lęk przed wyżyną i strach na drodze; i drzewo migdałowe zakwitnie, i ociężałą stanie się szarańcza, i pękać będą kapary; bo zdążać będzie człowiek do swego wiecznego domu i kręcić się już będą po ulicy płaczki; zanim się przerwie srebrny sznur i stłucze się czara złota, i dzban się rozbije u źródła, i w studnię kołowrót złamany wpadnie;"
   },
   {
     "t": "Próba",
@@ -1133,7 +1178,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sensu",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś sensem wszystkiego, co przemija. Prosimy Cię, uwolnij nas od pogoni za wiatrem i naucz nas szukać skarbu, który nie przemija. Daj nam przyjmować każdy czas jako Twój dar, wytrwać w próbach i z miłością czcić naszych rodziców. Niech nasze życie, krótkie jak oddech, stanie się pamięcią o Stwórcy. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 44
+    "day": 44,
+    "passage": "(Księga Syracha Syr 2,1-11) Synu, jeżeli masz zamiar służyć Panu, przygotuj swą duszę na doświadczenie! Zachowaj spokój serca i bądź cierpliwy, a nie trać równowagi w czasie utrapienia! Przylgnij do Niego, a nie odstępuj, abyś był wywyższony w twoim dniu ostatnim. Przyjmij wszystko, co przyjdzie na ciebie, a w zmiennych losach utrapienia bądź wytrzymały! Bo w ogniu doświadcza się złoto, a ludzi miłych Bogu - w piecu utrapienia. Bądź Mu wierny, a On zajmie się tobą, prostuj swe drogi i Jemu zaufaj! Którzy boicie się Pana, oczekujcie Jego zmiłowania, nie zbaczajcie z drogi, abyście nie upadli. Którzy boicie się Pana, zawierzcie Mu, a nie przepadnie wasza zapłata."
   },
   {
     "t": "Czcij ojca i matkę",
@@ -1158,7 +1204,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sensu",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś sensem wszystkiego, co przemija. Prosimy Cię, uwolnij nas od pogoni za wiatrem i naucz nas szukać skarbu, który nie przemija. Daj nam przyjmować każdy czas jako Twój dar, wytrwać w próbach i z miłością czcić naszych rodziców. Niech nasze życie, krótkie jak oddech, stanie się pamięcią o Stwórcy. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 45
+    "day": 45,
+    "passage": "(Księga Syracha Syr 3,1-16) Mnie, ojca, posłuchajcie, dzieci, i tak postępujcie, abyście były zbawione. Albowiem Pan uczcił ojca przez dzieci, a prawa matki nad synami utwierdził. Kto czci ojca, zyskuje odpuszczenie grzechów, a kto szanuje matkę, jakby skarby gromadził. Kto czci ojca, radość mieć będzie z dzieci, a w czasie modlitwy swej będzie wysłuchany. Kto szanuje ojca, długo żyć będzie, a kto posłuszny jest Panu, da wytchnienie swej matce: jak panom służy tym, co go zrodzili. Czynem i słowem czcij ojca swego, aby spoczęło na tobie jego błogosławieństwo.\n\n(Ewangelia według św. Łukasza Łk 2,51) Potem poszedł z nimi i wrócił do Nazaretu; i był im poddany. A Matka Jego chowała wiernie wszystkie te wspomnienia w swym sercu."
   },
   {
     "t": "Wezwanie Umiłowanego",
@@ -1183,7 +1230,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłości",
     "inPart": 1,
     "prayer": "Panie Jezu, Oblubieńcze naszych dusz, Ty pierwszy nas umiłowałeś i wołasz nas: „Powstań i pójdź”. Prosimy Cię, rozpal w nas tęsknotę, która szuka Ciebie dniem i nocą. Połóż swoją pieczęć na naszych sercach, oczyść je i uczyń ogrodem, w którym zamieszkasz. Naucz nas miłości silniejszej niż śmierć i szacunku dla każdego życia, które kochasz. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 46
+    "day": 46,
+    "passage": "(Pieśń Pieśni Pnp 2,8-14) Cicho! Ukochany mój! Oto on! Oto nadchodzi! Biegnie przez góry, skacze po pagórkach. Umiłowany mój podobny do gazeli, do młodego jelenia. Oto stoi za naszym murem, patrzy przez okno, zagląda przez kraty. Miły mój odzywa się i mówi do mnie: \"Powstań, przyjaciółko ma, piękna ma, i pójdź! Bo oto minęła już zima, deszcz ustał i przeszedł. Na ziemi widać już kwiaty, nadszedł czas przycinania winnic, i głos synogarlicy już słychać w naszej krainie. Drzewo figowe wydało zawiązki owoców i winne krzewy kwitnące już pachną. Powstań, przyjaciółko ma, piękna ma, i pójdź! Gołąbko ma, [ukryta] w zagłębieniach skały, w szczelinach przepaści, ukaż mi swą twarz, daj mi usłyszeć swój głos! Bo słodki jest głos twój i twarz pełna wdzięku\"."
   },
   {
     "t": "Szukanie",
@@ -1208,7 +1256,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłości",
     "inPart": 2,
     "prayer": "Panie Jezu, Oblubieńcze naszych dusz, Ty pierwszy nas umiłowałeś i wołasz nas: „Powstań i pójdź”. Prosimy Cię, rozpal w nas tęsknotę, która szuka Ciebie dniem i nocą. Połóż swoją pieczęć na naszych sercach, oczyść je i uczyń ogrodem, w którym zamieszkasz. Naucz nas miłości silniejszej niż śmierć i szacunku dla każdego życia, które kochasz. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 47
+    "day": 47,
+    "passage": "(Pieśń Pieśni Pnp 3,1-4) Na łożu mym nocą szukałam umiłowanego mej duszy, szukałam go, lecz nie znalazłam. \"Wstanę, po mieście chodzić będę, wśród ulic i placów, szukać będę ukochanego mej duszy\". Szukałam go, lecz nie znalazłam. Spotkali mnie strażnicy, którzy obchodzą miasto. \"Czyście widzieli miłego duszy mej?\" Zaledwie ich minęłam, znalazłam umiłowanego mej duszy, pochwyciłam go i nie puszczę, aż go wprowadzę do domu mej matki, do komnaty mej rodzicielki.\n\n(Ewangelia według św. Jana J 20,11-16) Maria Magdalena natomiast stała przed grobem płacząc. A kiedy [tak] płakała, nachyliła się do grobu i ujrzała dwóch aniołów w bieli, siedzących tam, gdzie leżało ciało Jezusa - jednego w miejscu głowy, drugiego w miejscu nóg. I rzekli do niej: \"Niewiasto, czemu płaczesz?\" Odpowiedziała im: \"Zabrano Pana mego i nie wiem, gdzie Go położono\". Gdy to powiedziała, odwróciła się i ujrzała stojącego Jezusa, ale nie wiedziała, że to Jezus. Rzekł do niej Jezus: \"Niewiasto, czemu płaczesz? Kogo szukasz?\" Ona zaś sądząc, że to jest ogrodnik, powiedziała do Niego: \"Panie, jeśli ty Go przeniosłeś, powiedz mi, gdzie Go położyłeś, a ja Go wezmę\". Jezus rzekł do niej: \"Mario!\" A ona obróciwszy się powiedziała do Niego po hebrajsku: \"Rabbuni\", to znaczy: Nauczycielu!"
   },
   {
     "t": "Ogród zamknięty",
@@ -1233,7 +1282,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłości",
     "inPart": 3,
     "prayer": "Panie Jezu, Oblubieńcze naszych dusz, Ty pierwszy nas umiłowałeś i wołasz nas: „Powstań i pójdź”. Prosimy Cię, rozpal w nas tęsknotę, która szuka Ciebie dniem i nocą. Połóż swoją pieczęć na naszych sercach, oczyść je i uczyń ogrodem, w którym zamieszkasz. Naucz nas miłości silniejszej niż śmierć i szacunku dla każdego życia, które kochasz. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 48
+    "day": 48,
+    "passage": "(Pieśń Pieśni Pnp 4,7-12) Cała piękna jesteś, przyjaciółko moja, i nie ma w tobie skazy. Z Libanu przyjdź, oblubienico, z Libanu przyjdź i zbliż się! Zstąp ze szczytu Amany, z wierzchołka Seniru i Hermonu, z jaskiń lwów, z gór lampartów. Oczarowałaś me serce, siostro ma, oblubienico, oczarowałaś me serce jednym spojrzeniem twych oczu, jednym paciorkiem twych naszyjników. Jak piękna jest miłość twoja, siostro ma, oblubienico, o ileż słodsza jest miłość twoja od wina, a zapach olejków twych nad wszystkie balsamy! Miodem najświeższym ociekają wargi twe, oblubienico, miód i mleko pod twoim językiem, a zapach twoich szat jak woń Libanu. Ogrodem zamkniętym jesteś, siostro ma, oblubienico, ogrodem zamkniętym, źródłem zapieczętowanym.\n\n(Ewangelia według św. Łukasza Łk 1,28) Anioł wszedł do Niej i rzekł: \"Bądź pozdrowiona, pełna łaski, Pan z Tobą, \"."
   },
   {
     "t": "Pieczęć na sercu",
@@ -1258,7 +1308,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłości",
     "inPart": 4,
     "prayer": "Panie Jezu, Oblubieńcze naszych dusz, Ty pierwszy nas umiłowałeś i wołasz nas: „Powstań i pójdź”. Prosimy Cię, rozpal w nas tęsknotę, która szuka Ciebie dniem i nocą. Połóż swoją pieczęć na naszych sercach, oczyść je i uczyń ogrodem, w którym zamieszkasz. Naucz nas miłości silniejszej niż śmierć i szacunku dla każdego życia, które kochasz. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 49
+    "day": 49,
+    "passage": "(Pieśń Pieśni Pnp 8,6-7) Połóż mię jak pieczęć na twoim sercu, jak pieczęć na twoim ramieniu, bo jak śmierć potężna jest miłość, a zazdrość jej nieprzejednana jak Szeol, żar jej to żar ognia, płomień Pański. Wody wielkie nie zdołają ugasić miłości, nie zatopią jej rzeki. Jeśliby kto oddał za miłość całe bogactwo swego domu, pogardzą nim tylko.\n\n(Ewangelia według św. Jana J 15,13) Nikt nie ma większej miłości od tej, gdy ktoś życie swoje oddaje za przyjaciół swoich."
   },
   {
     "t": "Miłośnik życia",
@@ -1283,7 +1334,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłości",
     "inPart": 5,
     "prayer": "Panie Jezu, Oblubieńcze naszych dusz, Ty pierwszy nas umiłowałeś i wołasz nas: „Powstań i pójdź”. Prosimy Cię, rozpal w nas tęsknotę, która szuka Ciebie dniem i nocą. Połóż swoją pieczęć na naszych sercach, oczyść je i uczyń ogrodem, w którym zamieszkasz. Naucz nas miłości silniejszej niż śmierć i szacunku dla każdego życia, które kochasz. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 50
+    "day": 50,
+    "passage": "(Księga Mądrości Mdr 11,21–12,1) Potężnie działać zawsze jest w Twej mocy i któż się oprze potędze Twojego ramienia? Świat cały przy Tobie jak ziarnko na szali, kropla rosy porannej, co spadła na ziemię. Nad wszystkim masz litość, bo wszystko w Twej mocy, i oczy zamykasz na grzechy ludzi, by się nawrócili. Miłujesz bowiem wszystkie stworzenia, niczym się nie brzydzisz, co uczyniłeś, bo gdybyś miał coś w nienawiści, nie byłbyś tego uczynił. Jakżeby coś trwać mogło, gdybyś Ty tego nie chciał? Jak by się zachowało, czego byś nie wezwał? Oszczędzasz wszystko, bo to wszystko Twoje, Panie, miłośniku życia! Bo we wszystkim jest Twoje nieśmiertelne tchnienie."
   },
   {
     "t": "Oczyszczone wargi",
@@ -1308,7 +1360,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nawrócenia",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty przemawiałeś przez proroków, wzywając swój lud do nawrócenia. Prosimy Cię, oczyść nasze wargi i serca, abyśmy mogli odpowiedzieć: „Oto ja, poślij mnie”. Wyprowadź nas na pustynię i mów do naszego serca. Naucz nas łączyć modlitwę ze sprawiedliwością, rozdzierać serca, a nie szaty, i radować się z każdego grzesznika, który wraca do Ciebie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 51
+    "day": 51,
+    "passage": "(Księga Izajasza Iz 6,1-8) W roku śmierci króla Ozjasza ujrzałem Pana siedzącego na wysokim i wyniosłym tronie, a tren Jego szaty wypełniał świątynię. Serafiny stały ponad Nim; każdy z nich miał po sześć skrzydeł; dwoma zakrywał swą twarz, dwoma okrywał swoje nogi, a dwoma latał. I wołał jeden do drugiego: \"Święty, Święty, Święty jest Pan Zastępów. Cała ziemia pełna jest Jego chwały\". Od głosu tego, który wołał, zadrgały futryny drzwi, a świątynia napełniła się dymem. I powiedziałem: \"Biada mi! Jestem zgubiony! Wszak jestem mężem o nieczystych wargach i mieszkam pośród ludu o nieczystych wargach, a oczy moje oglądały Króla, Pana Zastępów!\" Wówczas przyleciał do mnie jeden z serafinów, trzymając w ręce węgiel, który kleszczami wziął z ołtarza. Dotknął nim ust moich i rzekł: \"Oto dotknęło to twoich warg: twoja wina jest zmazana, zgładzony twój grzech\". I usłyszałem głos Pana mówiącego: \"Kogo mam posłać? Kto by Nam poszedł?\" Odpowiedziałem: \"Oto ja, poślij mnie!\""
   },
   {
     "t": "Wierna miłość",
@@ -1333,7 +1386,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nawrócenia",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty przemawiałeś przez proroków, wzywając swój lud do nawrócenia. Prosimy Cię, oczyść nasze wargi i serca, abyśmy mogli odpowiedzieć: „Oto ja, poślij mnie”. Wyprowadź nas na pustynię i mów do naszego serca. Naucz nas łączyć modlitwę ze sprawiedliwością, rozdzierać serca, a nie szaty, i radować się z każdego grzesznika, który wraca do Ciebie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 52
+    "day": 52,
+    "passage": "(Księga Ozeasza Oz 2,16-25) Dlatego chcę ją przynęcić, na pustynię ją wyprowadzić i mówić jej do serca. Oddam jej znowu winnice, dolinę Akor uczynię bramą nadziei - i będzie Mi tam uległa jak za dni swej młodości, gdy wychodziła z egipskiego kraju. I stanie się w owym dniu - wyrocznia Pana - że nazwie Mnie: \"Mąż mój\", a już nie powie: \"Mój Baal\". Usunę z jej ust imiona Baalów i już nie będzie wymawiać ich imion. W owym dniu zawrę z nią przymierze, ze zwierzem polnym i ptactwem powietrznym, i z tym, co pełza po ziemi. Łuk, miecz i wojnę wyniszczę z jej kraju, i pozwolę jej żyć bezpiecznie. I poślubię cię sobie [znowu] na wieki, poślubię przez sprawiedliwość i prawo, przez miłość i miłosierdzie. Poślubię cię sobie przez wierność, a poznasz Pana. W owym dniu - wyrocznia Pana, odpowiem na pragnienia niebios, a one odpowiedzą na pragnienia ziemi;\n\n(Księga Ozeasza 11,1-9) Miłowałem Izraela, gdy jeszcze był dzieckiem, i syna swego wezwałem z Egiptu. Im bardziej ich wzywałem, tym dalej odchodzili ode Mnie, a składali ofiary Baalom i bożkom palili kadzidła. A przecież Ja uczyłem chodzić Efraima, na swe ramiona ich brałem; oni zaś nie rozumieli, że troszczyłem się o nich. Pociągnąłem ich ludzkimi więzami, a były to więzy miłości. Byłem dla nich jak ten, co podnosi do swego policzka niemowlę - schyliłem się ku niemu i nakarmiłem go. Powrócą do Egiptu i Aszszur będzie ich królem, bo się nie chcieli nawrócić. Miecz będzie szalał w ich miastach, wyniszczy ich dzieci, a nawet pożre ich twierdze. Mój lud jest skłonny odpaść ode Mnie - wzywa imienia Baala, lecz on im nie przyjdzie z pomocą. Jakże cię mogę porzucić, Efraimie, i jak opuścić ciebie, Izraelu? Jakże cię mogę równać z Admą i uczynić podobnym do Seboim? Moje serce na to się wzdryga i rozpalają się moje wnętrzności."
   },
   {
     "t": "Sprawiedliwość jak potok",
@@ -1358,7 +1412,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nawrócenia",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty przemawiałeś przez proroków, wzywając swój lud do nawrócenia. Prosimy Cię, oczyść nasze wargi i serca, abyśmy mogli odpowiedzieć: „Oto ja, poślij mnie”. Wyprowadź nas na pustynię i mów do naszego serca. Naucz nas łączyć modlitwę ze sprawiedliwością, rozdzierać serca, a nie szaty, i radować się z każdego grzesznika, który wraca do Ciebie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 53
+    "day": 53,
+    "passage": "(Księga Amosa Am 5,14-24) Szukajcie dobra, a nie zła, abyście żyli. Wtedy Pan, Bóg Zastępów, będzie z wami, tak jak to mówicie. Miejcie w nienawiści zło, a miłujcie dobro! Wymierzajcie w bramie sprawiedliwość! Może ulituje się Pan, Bóg Zastępów, nad Resztą pokolenia Józefa. Dlatego tak mówi Pan, Bóg Zastępów, Panujący: Na wszystkich placach będzie lament, na wszystkich ulicach krzyczeć będą: \"Biada, biada!\" Wzywać będą rolnika do żałoby, do lamentowania - umiejących jęczeć. We wszystkich winnicach będzie narzekanie, bo przejdę pośród ciebie - rzekł Pan. Biada oczekującym dnia Pańskiego. Cóż wam po dniu Pańskim? On jest ciemnością a nie światłem. Jakby uciekał człowiek przed lwem, a trafił na niedźwiedzia; jakby skrył się do domu i oparł się ręką o ścianę, a ukąsił go wąż. Przecież dzień Pański jest ciemnością, a nie światłem, mrokiem, a nie ma w nim jasności? Nienawidzę, brzydzę się waszymi świętami. Nie będę miał upodobania w waszych uroczystych zebraniach.\n\n(Ewangelia według św. Mateusza Mt 25,40) A Król im odpowie: \"Zaprawdę, powiadam wam: Wszystko, co uczyniliście jednemu z tych braci moich najmniejszych, Mnieście uczynili\"."
   },
   {
     "t": "Rozdarte serce",
@@ -1383,7 +1438,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nawrócenia",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty przemawiałeś przez proroków, wzywając swój lud do nawrócenia. Prosimy Cię, oczyść nasze wargi i serca, abyśmy mogli odpowiedzieć: „Oto ja, poślij mnie”. Wyprowadź nas na pustynię i mów do naszego serca. Naucz nas łączyć modlitwę ze sprawiedliwością, rozdzierać serca, a nie szaty, i radować się z każdego grzesznika, który wraca do Ciebie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 54
+    "day": 54,
+    "passage": "(Księga Joela Jl 2,12-13) \"Przeto i teraz jeszcze - wyrocznia Pana: Nawróćcie się do Mnie całym swym sercem, przez post i płacz, i lament\". Rozdzierajcie jednak serca wasze, a nie szaty! Nawróćcie się do Pana Boga waszego! On bowiem jest łaskawy, miłosierny, nieskory do gniewu i wielki w łaskawości, a lituje się na widok niedoli.\n\n(Księga Joela 3,1-2) I wyleję potem Ducha mego na wszelkie ciało, a synowie wasi i córki wasze prorokować będą, starcy wasi będą śnili, a młodzieńcy wasi będą mieli widzenia. Nawet na niewolników i niewolnice wyleję Ducha mego w owych dniach."
   },
   {
     "t": "Miłosierdzie bez granic",
@@ -1408,7 +1464,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nawrócenia",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty przemawiałeś przez proroków, wzywając swój lud do nawrócenia. Prosimy Cię, oczyść nasze wargi i serca, abyśmy mogli odpowiedzieć: „Oto ja, poślij mnie”. Wyprowadź nas na pustynię i mów do naszego serca. Naucz nas łączyć modlitwę ze sprawiedliwością, rozdzierać serca, a nie szaty, i radować się z każdego grzesznika, który wraca do Ciebie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 55
+    "day": 55,
+    "passage": "(Księga Jonasza Jon 1–4) Pan skierował do Jonasza, syna Amittaja, te słowa: \"Wstań, idź do Niniwy - wielkiego miasta - i upomnij ją, albowiem nieprawość jej dotarła przed moje oblicze\". A Jonasz wstał, aby uciec do Tarszisz przed Panem. Zszedł do Jafy, znalazł okręt płynący do Tarszisz, uiścił należną opłatę i wsiadł na niego, by udać się nim do Tarszisz, daleko od Pana. Ale Pan zesłał na morze gwałtowny wiatr, i powstała wielka burza na morzu, tak że okrętowi groziło rozbicie. Przerazili się więc żeglarze i każdy wołał do swego bóstwa; rzucili w morze ładunek, który był na okręcie, by uczynić go lżejszym. Jonasz zaś zszedł w głąb wnętrza okrętu, położył się i twardo zasnął. Przystąpił więc do niego dowódca żeglarzy i rzekł mu: \"Dlaczego ty śpisz? Wstań, wołaj do Boga twego, może wspomni Bóg na nas i nie zginiemy\". Mówili też [żeglarze] jeden do drugiego: \"Chodźcie, rzućmy losy, a dowiemy się, z powodu kogo to właśnie nieszczęście [spadło] na nas\". I rzucili losy, a los padł na Jonasza. Rzekli więc do niego: \"Powiedzże nam, <z jakiego powodu ta klęska przyszła na nas?> Jaki jest twój zawód? Skąd pochodzisz? Jaki jest twój kraj? Z którego jesteś narodu?\"\n\n(Ewangelia według św. Mateusza Mt 12,40-41) Albowiem jak Jonasz był trzy dni i trzy noce we wnętrznościach wielkiej ryby, tak Syn Człowieczy będzie trzy dni i trzy noce w łonie ziemi. Ludzie z Niniwy powstaną na sądzie przeciw temu plemieniu i potępią je; ponieważ oni wskutek nawoływania Jonasza się nawrócili, a oto tu jest coś więcej niż Jonasz."
   },
   {
     "t": "Bóg z nami",
@@ -1433,7 +1490,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Zapowiedzi",
     "inPart": 1,
     "prayer": "Panie Jezu, Emmanuelu, Ty jesteś spełnieniem zapowiedzi proroków. Prosimy Cię, rozprosz ciemności naszego życia swoim światłem, napełnij nas darami Ducha, który na Tobie spoczywa, i naucz nas kochać to, co małe, jak Betlejem. Przyjdź do nas jako Król pokorny i łagodny i zaprowadź pokój w naszych sercach, rodzinach i narodach. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 56
+    "day": 56,
+    "passage": "(Księga Izajasza Iz 7,10-14) I znowu Pan przemówił do Achaza tymi słowami: \"Proś dla siebie o znak od Pana, Boga twego, czy to głęboko w Szeolu, czy to wysoko w górze!\" Lecz Achaz odpowiedział: \"Nie będę prosił, i nie będę wystawiał Pana na próbę\". Wtedy rzekł [Izajasz]: \"Słuchajcie więc, domu Dawidowy: Czyż mało wam naprzykrzać się ludziom, iż naprzykrzacie się także mojemu Bogu? Dlatego Pan sam da wam znak: Oto Panna pocznie i porodzi Syna, i nazwie Go imieniem Emmanuel.\n\n(Ewangelia według św. Mateusza Mt 1,22-23) A stało się to wszystko, aby się wypełniło słowo Pańskie powiedziane przez Proroka: Oto Dziewica pocznie i porodzi Syna, któremu nadadzą imię Emmanuel, to znaczy: \"Bóg z nami\"."
   },
   {
     "t": "Światło w ciemności",
@@ -1458,7 +1516,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Zapowiedzi",
     "inPart": 2,
     "prayer": "Panie Jezu, Emmanuelu, Ty jesteś spełnieniem zapowiedzi proroków. Prosimy Cię, rozprosz ciemności naszego życia swoim światłem, napełnij nas darami Ducha, który na Tobie spoczywa, i naucz nas kochać to, co małe, jak Betlejem. Przyjdź do nas jako Król pokorny i łagodny i zaprowadź pokój w naszych sercach, rodzinach i narodach. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 57
+    "day": 57,
+    "passage": "(Księga Izajasza Iz 9,1-6) Naród kroczący w ciemnościach ujrzał światłość wielką; nad mieszkańcami kraju mroków światło zabłysło. Pomnożyłeś radość, zwiększyłeś wesele. Rozradowali się przed Tobą, jak się radują we żniwa, jak się weselą przy podziale łupu. Bo złamałeś jego ciężkie jarzmo i drążek na jego ramieniu, pręt jego ciemięzcy jak w dniu porażki Madianitów. Bo każdy but pieszego żołnierza, każdy płaszcz zbroczony krwią, pójdą na spalenie, na pastwę ognia. Albowiem Dziecię nam się narodziło, Syn został nam dany, na Jego barkach spoczęła władza. Nazwano Go imieniem: Przedziwny Doradca, Bóg Mocny, Odwieczny Ojciec, Książę Pokoju. Wielkie będzie Jego panowanie w pokoju bez granic na tronie Dawida i nad Jego królestwem, które On utwierdzi i umocni prawem i sprawiedliwością, odtąd i na wieki. Zazdrosna miłość Pana Zastępów tego dokona."
   },
   {
     "t": "Duch spoczywa na Nim",
@@ -1483,7 +1542,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Zapowiedzi",
     "inPart": 3,
     "prayer": "Panie Jezu, Emmanuelu, Ty jesteś spełnieniem zapowiedzi proroków. Prosimy Cię, rozprosz ciemności naszego życia swoim światłem, napełnij nas darami Ducha, który na Tobie spoczywa, i naucz nas kochać to, co małe, jak Betlejem. Przyjdź do nas jako Król pokorny i łagodny i zaprowadź pokój w naszych sercach, rodzinach i narodach. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 58
+    "day": 58,
+    "passage": "(Księga Izajasza Iz 11,1-10) I wyrośnie różdżka z pnia Jessego, wypuści się odrośl z jego korzeni. I spocznie na niej Duch Pański, duch mądrości i rozumu, duch rady i męstwa, duch wiedzy i bojaźni Pańskiej. Upodoba sobie w bojaźni Pańskiej. Nie będzie sądził z pozorów ni wyrokował według pogłosek; raczej rozsądzi biednych sprawiedliwie i pokornym w kraju wyda słuszny wyrok. Rózgą swoich ust uderzy gwałtownika, tchnieniem swoich warg uśmierci bezbożnego. Sprawiedliwość będzie mu pasem na biodrach, a wierność przepasaniem lędźwi. Wtedy wilk zamieszka wraz z barankiem, pantera z koźlęciem razem leżeć będą, cielę i lew paść się będą społem i mały chłopiec będzie je poganiał. Krowa i niedźwiedzica przestawać będą przyjaźnie, młode ich razem będą legały. Lew też jak wół będzie jadał słomę. Niemowlę igrać będzie na norze kobry, dziecko włoży swą rękę do kryjówki żmii."
   },
   {
     "t": "Wielkość małości",
@@ -1508,7 +1568,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Zapowiedzi",
     "inPart": 4,
     "prayer": "Panie Jezu, Emmanuelu, Ty jesteś spełnieniem zapowiedzi proroków. Prosimy Cię, rozprosz ciemności naszego życia swoim światłem, napełnij nas darami Ducha, który na Tobie spoczywa, i naucz nas kochać to, co małe, jak Betlejem. Przyjdź do nas jako Król pokorny i łagodny i zaprowadź pokój w naszych sercach, rodzinach i narodach. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 59
+    "day": 59,
+    "passage": "(Księga Micheasza Mi 5,1-4) A ty, Betlejem Efrata, najmniejsze jesteś wśród plemion judzkich! Z ciebie mi wyjdzie Ten, który będzie władał w Izraelu, a pochodzenie Jego od początku, od dni wieczności. Przeto [Pan] wyda ich aż do czasu, kiedy porodzi mająca porodzić. Wtedy reszta braci Jego powróci do synów Izraela. Powstanie On i paść będzie mocą Pańską, w majestacie imienia Pana Boga swego. Osiądą wtedy, bo odtąd rozciągnie swą potęgę aż po krańce ziemi. A Ten będzie pokojem. Jeśli Asyria wtargnie do naszego kraju, jeśli stąpać będzie po naszych pałacach, wzbudzimy przeciw niej siedmiu pasterzy i ośmiu książąt ludu.\n\n(Ewangelia według św. Mateusza Mt 2,5-6) Ci mu odpowiedzieli: \"W Betlejem judzkim, bo tak napisał Prorok: A ty, Betlejem, ziemio Judy, nie jesteś zgoła najlichsze spośród głównych miast Judy, albowiem z ciebie wyjdzie władca, który będzie pasterzem ludu mego, Izraela\"."
   },
   {
     "t": "Król pokorny",
@@ -1533,7 +1594,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Zapowiedzi",
     "inPart": 5,
     "prayer": "Panie Jezu, Emmanuelu, Ty jesteś spełnieniem zapowiedzi proroków. Prosimy Cię, rozprosz ciemności naszego życia swoim światłem, napełnij nas darami Ducha, który na Tobie spoczywa, i naucz nas kochać to, co małe, jak Betlejem. Przyjdź do nas jako Król pokorny i łagodny i zaprowadź pokój w naszych sercach, rodzinach i narodach. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 60
+    "day": 60,
+    "passage": "(Księga Zachariasza Za 9,9-10) Raduj się wielce, Córo Syjonu, wołaj radośnie, Córo Jeruzalem! Oto Król twój idzie do ciebie, sprawiedliwy i zwycięski. Pokorny - jedzie na osiołku, na oślątku, źrebięciu oślicy. On zniszczy rydwany w Efraimie i konie w Jeruzalem, łuk wojenny strzaska w kawałki, pokój ludom obwieści. Jego władztwo sięgać będzie od morza do morza, od brzegów Rzeki aż po krańce ziemi.\n\n(Ewangelia według św. Mateusza Mt 21,1-9) Gdy się przybliżyli do Jerozolimy i przyszli do Betfage na Górze Oliwnej, wtedy Jezus posłał dwóch uczniów i rzekł im: \"Idźcie do wsi, która jest przed wami, a zaraz znajdziecie oślicę uwiązaną i źrebię z nią. Odwiążcie je i przyprowadźcie do Mnie! A gdyby wam kto co mówił, powiecie: \"Pan ich potrzebuje, a zaraz je puści\"\". Stało się to, żeby się spełniło słowo Proroka: Powiedzcie Córze Syjońskiej: Oto Król twój przychodzi do Ciebie łagodny, siedzący na osiołku, źrebięciu oślicy. Uczniowie poszli i uczynili, jak im Jezus polecił. Przyprowadzili oślicę i źrebię i położyli na nie swe płaszcze, a On usiadł na nich. A ogromny tłum słał swe płaszcze na drodze, inni obcinali gałązki z drzew i ścielili na drodze."
   },
   {
     "t": "Znany przed narodzeniem",
@@ -1558,7 +1620,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Przymierza",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty zawarłeś z nami Nowe Przymierze we własnej Krwi. Prosimy Cię, wypisz swoje Prawo w naszych sercach. Bądź Garncarzem, który cierpliwie lepi nas na nowo, i dodaj nam odwagi, abyśmy jak Jeremiasz mówili prawdę, nawet gdy jest odrzucana. Niech każdego poranka odnawia się w nas pewność Twojej wierności. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 61
+    "day": 61,
+    "passage": "(Księga Jeremiasza Jr 1,4-10) Pan skierował do mnie następujące słowo: \"Zanim ukształtowałem cię w łonie matki, znałem cię, nim przyszedłeś na świat, poświęciłem cię, prorokiem dla narodów ustanowiłem cię\". I rzekłem: \"Ach, Panie Boże, przecież nie umiem mówić, bo jestem młodzieńcem!\" Pan zaś odpowiedział mi: \"Nie mów: \"Jestem młodzieńcem\", gdyż pójdziesz, do kogokolwiek cię poślę, i będziesz mówił, cokolwiek tobie polecę. Nie lękaj się ich, bo jestem z tobą, by cię chronić\" - wyrocznia Pana. I wyciągnąwszy rękę, dotknął Pan moich ust i rzekł mi: \"Oto kładę moje słowa w twoje usta. Spójrz, daję ci dzisiaj władzę nad narodami i nad królestwami, byś wyrywał i obalał, byś niszczył i burzył, byś budował i sadził\"."
   },
   {
     "t": "Glina w ręku Garncarza",
@@ -1583,7 +1646,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Przymierza",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty zawarłeś z nami Nowe Przymierze we własnej Krwi. Prosimy Cię, wypisz swoje Prawo w naszych sercach. Bądź Garncarzem, który cierpliwie lepi nas na nowo, i dodaj nam odwagi, abyśmy jak Jeremiasz mówili prawdę, nawet gdy jest odrzucana. Niech każdego poranka odnawia się w nas pewność Twojej wierności. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 62
+    "day": 62,
+    "passage": "(Księga Jeremiasza Jr 18,1-6) Słowo, które Pan oznajmił Jeremiaszowi: \"Wstań i zejdź do domu garncarza; tam usłyszysz moje słowa\". Zstąpiłem więc do domu garncarza, on zaś pracował właśnie przy kole. Jeżeli naczynie, które wyrabiał, uległo zniekształceniu, jak to się zdarza z gliną w ręku garncarza, wyrabiał z niego inne naczynie, jak tylko podobało się garncarzowi. Wtedy Pan skierował do mnie następujące słowo: \"Czy nie mogę postąpić z wami, domu Izraela, jak ten garncarz? - wyrocznia Pana. Oto bowiem jak glina w ręku garncarza, tak jesteście wy, domu Izraela, w moim ręku.\n\n(List do Rzymian Rz 9,20-21) Człowiecze! Kimże ty jesteś, byś mógł się spierać z Bogiem? Czyż może naczynie gliniane zapytać tego, kto je ulepił: \"Dlaczego mnie takim uczyniłeś?\" Czyż garncarz nie ma mocy nad gliną i nie może z tej samej zaprawy zrobić jednego naczynia ozdobnego, drugiego zaś na użytek niezaszczytny?"
   },
   {
     "t": "Prorok odrzucony",
@@ -1608,7 +1672,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Przymierza",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty zawarłeś z nami Nowe Przymierze we własnej Krwi. Prosimy Cię, wypisz swoje Prawo w naszych sercach. Bądź Garncarzem, który cierpliwie lepi nas na nowo, i dodaj nam odwagi, abyśmy jak Jeremiasz mówili prawdę, nawet gdy jest odrzucana. Niech każdego poranka odnawia się w nas pewność Twojej wierności. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 63
+    "day": 63,
+    "passage": "(Księga Jeremiasza Jr 20,7-9) Uwiodłeś mnie, Panie, a ja pozwoliłem się uwieść; ujarzmiłeś mnie i przemogłeś. Stałem się codziennym pośmiewiskiem, wszyscy mi urągają. Albowiem ilekroć mam zabierać głos, muszę obwieszczać: \"Gwałt i ruina!\" Tak, słowo Pańskie stało się dla mnie codzienną zniewagą i pośmiewiskiem. I powiedziałem sobie: Nie będę Go już wspominał ani mówił w Jego imię! Ale wtedy zaczął trawić moje serce jakby ogień, nurtujący w moim ciele. Czyniłem wysiłki, by go stłumić, lecz nie potrafiłem.\n\n(Księga Jeremiasza 38,1-13) Szefatiasz, syn Matana, Godoliasz, syn Paszchura, Jukal, syn Szelemiasza, i Paszchur, syn Malkiasza, usłyszeli słowa, które Jeremiasz mówił do całego ludu: \"To mówi Pan: Kto pozostanie w tym mieście, umrze od miecza, głodu i zarazy; kto zaś przejdzie do Chaldejczyków, pozostanie przy życiu. Jako zdobycz będzie miał swoje własne życie i utrzyma je. To mówi Pan: Miasto to zostanie nieuchronnie wydane w ręce wojska króla babilońskiego, który je zdobędzie\". Przywódcy więc powiedzieli do króla: \"Niech umrze ten człowiek, bo naprawdę obezwładnia on ręce żołnierzy, którzy pozostali w tym mieście, i ręce całego ludu, gdy mówi do nich podobne słowa. Człowiek ten nie szuka przecież pomyślności dla tego ludu, lecz nieszczęścia\". Król Sedecjasz odrzekł: \"Oto jest w waszych rękach!\" Nie mógł bowiem król nic uczynić przeciw nim. Wzięli więc Jeremiasza i wtrącili go, spuszczając na linach, do cysterny Malkiasza, syna królewskiego, która się znajdowała na dziedzińcu wartowni. W cysternie zaś nie było wody, lecz błoto; zanurzył się więc Jeremiasz w błocie. Skoro usłyszał Kuszyta Ebedmelek, jeden z dworzan domu królewskiego, że wrzucono Jeremiasza do cysterny - król przebywał właśnie w Bramie Beniamina - wyszedł z domu królewskiego i rzekł do króla:"
   },
   {
     "t": "Prawo wypisane w sercu",
@@ -1633,7 +1698,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Przymierza",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty zawarłeś z nami Nowe Przymierze we własnej Krwi. Prosimy Cię, wypisz swoje Prawo w naszych sercach. Bądź Garncarzem, który cierpliwie lepi nas na nowo, i dodaj nam odwagi, abyśmy jak Jeremiasz mówili prawdę, nawet gdy jest odrzucana. Niech każdego poranka odnawia się w nas pewność Twojej wierności. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 64
+    "day": 64,
+    "passage": "(Księga Jeremiasza Jr 31,31-34) Oto nadchodzą dni - wyrocznia Pana - kiedy zawrę z domem Izraela <i z domem judzkim> nowe przymierze. Nie jak przymierze, które zawarłem z ich przodkami, kiedy ująłem ich za rękę, by wyprowadzić z ziemi egipskiej. To moje przymierze złamali, mimo że byłem ich Władcą - wyrocznia Pana. Lecz takie będzie przymierze, jakie zawrę z domem Izraela po tych dniach - wyrocznia Pana: Umieszczę swe prawo w głębi ich jestestwa i wypiszę na ich sercu. Będę im Bogiem, oni zaś będą Mi narodem. I nie będą się musieli wzajemnie pouczać jeden mówiąc do drugiego: \"Poznajcie Pana!\" Wszyscy bowiem od najmniejszego do największego poznają Mnie - wyrocznia Pana, ponieważ odpuszczę im występki, a o grzechach ich nie będę już wspominał\".\n\n(Ewangelia według św. Łukasza Łk 22,20) Tak samo i kielich po wieczerzy, mówiąc: \"Ten kielich to Nowe Przymierze we Krwi mojej, która za was będzie wylana."
   },
   {
     "t": "Łaska każdego poranka",
@@ -1658,7 +1724,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Przymierza",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty zawarłeś z nami Nowe Przymierze we własnej Krwi. Prosimy Cię, wypisz swoje Prawo w naszych sercach. Bądź Garncarzem, który cierpliwie lepi nas na nowo, i dodaj nam odwagi, abyśmy jak Jeremiasz mówili prawdę, nawet gdy jest odrzucana. Niech każdego poranka odnawia się w nas pewność Twojej wierności. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 65
+    "day": 65,
+    "passage": "(Księga Lamentacji Lm 3,17-33) Pozbawiłeś mą duszę spokoju, zapomniałem o szczęściu. I rzekłem: \"Przepadła moc moja i ufność moja do Pana\". Wspomnienie udręki i nędzy - to piołun i trucizna; stale je wspomina, rozważa we mnie dusza. Biorę to sobie do serca, dlatego też ufam: Nie wyczerpała się litość Pana, miłość nie zgasła. Odnawia się ona co rano: ogromna Twa wierność. \"Działem mym Pan\" - mówi moja dusza, dlatego czekam na Niego."
   },
   {
     "t": "Serce z ciała",
@@ -1683,7 +1750,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Serca",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty obiecałeś dać nam nowe serce i nowego Ducha. Prosimy Cię, zabierz nasze kamienne serca i daj nam serca z ciała. Ożyw w nas to, co wyschło i umarło. Niech z Twojej Świątyni płynie strumień, który uzdrawia nasze życie. Bądź z nami w ogniu prób i umacniaj nas w oczekiwaniu na Twoje królestwo, które nie przeminie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 66
+    "day": 66,
+    "passage": "(Księga Ezechiela Ez 36,24-28) Zabiorę was spośród ludów, zbiorę was ze wszystkich krajów i przyprowadzę was z powrotem do waszego kraju, pokropię was czystą wodą, abyście się stali czystymi, i oczyszczę was od wszelkiej zmazy i od wszystkich waszych bożków. I dam wam serce nowe i ducha nowego tchnę do waszego wnętrza, odbiorę wam serce kamienne, a dam wam serce z ciała. Ducha mojego chcę tchnąć w was i sprawić, byście żyli według mych nakazów i przestrzegali przykazań, i według nich postępowali. Wtedy będziecie mieszkać w kraju, który dałem waszym przodkom, i będziecie moim ludem, a Ja będę waszym Bogiem."
   },
   {
     "t": "Duch ożywiający",
@@ -1708,7 +1776,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Serca",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty obiecałeś dać nam nowe serce i nowego Ducha. Prosimy Cię, zabierz nasze kamienne serca i daj nam serca z ciała. Ożyw w nas to, co wyschło i umarło. Niech z Twojej Świątyni płynie strumień, który uzdrawia nasze życie. Bądź z nami w ogniu prób i umacniaj nas w oczekiwaniu na Twoje królestwo, które nie przeminie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 67
+    "day": 67,
+    "passage": "(Księga Ezechiela Ez 37,1-14) Potem spoczęła na mnie ręka Pana, i wyprowadził mnie On w duchu na zewnątrz, i postawił mnie pośród doliny. Była ona pełna kości. I polecił mi, abym przeszedł dokoła nich, i oto było ich na obszarze doliny bardzo wiele. Były one zupełnie wyschłe. I rzekł do mnie: \"Synu człowieczy, czy kości te powrócą znowu do życia?\" Odpowiedziałem: \"Panie Boże, Ty to wiesz\". Wtedy rzekł On do mnie: \"Prorokuj nad tymi kośćmi i mów do nich: \"Wyschłe kości, słuchajcie słowa Pana!\" Tak mówi Pan Bóg: Oto Ja wam daję ducha po to, abyście się stały żywe. Chcę was otoczyć ścięgnami i sprawić, byście obrosły ciałem, i przybrać was w skórę, i dać wam ducha po to, abyście ożyły i poznały, że Ja jestem Pan\". I prorokowałem, jak mi było polecone, a gdym prorokował, oto powstał szum i trzask, i kości jedna po drugiej zbliżały się do siebie. I patrzyłem, a oto powróciły ścięgna i wyrosło ciało, a skóra pokryła je z wierzchu, ale jeszcze nie było w nich ducha."
   },
   {
     "t": "Strumień życia",
@@ -1733,7 +1802,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Serca",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty obiecałeś dać nam nowe serce i nowego Ducha. Prosimy Cię, zabierz nasze kamienne serca i daj nam serca z ciała. Ożyw w nas to, co wyschło i umarło. Niech z Twojej Świątyni płynie strumień, który uzdrawia nasze życie. Bądź z nami w ogniu prób i umacniaj nas w oczekiwaniu na Twoje królestwo, które nie przeminie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 68
+    "day": 68,
+    "passage": "(Księga Ezechiela Ez 47,1-12) Następnie zaprowadził mnie z powrotem przed wejście do świątyni, a oto wypływała woda spod progu świątyni w kierunku wschodnim, ponieważ przednia strona świątyni była skierowana ku wschodowi; a woda płynęła spod prawej strony świątyni na południe od ołtarza. I wyprowadził mnie przez bramę północną na zewnątrz i poza murami powiódł mnie od bramy zewnętrznej, skierowanej ku wschodowi. A oto woda wypływała spod prawej ściany świątyni, na południe od ołtarza. Potem poprowadził mnie ów mąż w kierunku wschodnim; miał on w ręku pręt mierniczy, odmierzył tysiąc łokci i kazał mi przejść przez wodę; woda sięgała aż do kostek. Następnie znów odmierzył tysiąc [łokci] i kazał mi przejść przez wodę: sięgała aż do kolan; i znów odmierzył tysiąc [łokci] i kazał mi przejść: sięgała aż do bioder; i znów odmierzył jeszcze tysiąc [łokci]: był tam już potok, przez który nie mogłem przejść, gdyż woda była za głęboka, była to woda do pływania, rzeka, przez którą nie można było przejść. Potem rzekł do mnie: \"Czy widziałeś to, synu człowieczy?\" I poprowadził mnie z powrotem wzdłuż rzeki. Gdy się odwróciłem, oto po obu stronach na brzegu rzeki znajdowało się wiele drzew. A On rzekł do mnie: \"Woda ta płynie na obszar wschodni, wzdłuż stepów, i rozlewa się w wodach słonych, i wtedy wody jego stają się zdrowe.\n\n(Ewangelia według św. Jana J 7,37-39) W ostatnim zaś, najbardziej uroczystym dniu święta, Jezus stojąc zawołał donośnym głosem: \"Jeśli ktoś jest spragniony, a wierzy we Mnie - niech przyjdzie do Mnie i pije! Jak rzekło Pismo: Strumienie wody żywej popłyną z jego wnętrza\". A powiedział to o Duchu, którego mieli otrzymać wierzący w Niego; Duch bowiem jeszcze nie był , ponieważ Jezus nie został jeszcze uwielbiony."
   },
   {
     "t": "Czwarty w ogniu",
@@ -1758,7 +1828,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Serca",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty obiecałeś dać nam nowe serce i nowego Ducha. Prosimy Cię, zabierz nasze kamienne serca i daj nam serca z ciała. Ożyw w nas to, co wyschło i umarło. Niech z Twojej Świątyni płynie strumień, który uzdrawia nasze życie. Bądź z nami w ogniu prób i umacniaj nas w oczekiwaniu na Twoje królestwo, które nie przeminie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 69
+    "day": 69,
+    "passage": "(Księga Daniela Dn 3) Król Nabuchodonozor sporządził złoty posąg o wysokości sześćdziesięciu łokci, a szerokości sześciu łokci i kazał go ustawić na równinie Dura w prowincji babilońskiej. Następnie polecił król Nabuchodonozor satrapom, namiestnikom, rządcom, radcom, skarbnikom, sędziom, prawnikom i wszystkim zarządcom prowincji zebrać się i uczestniczyć w poświęceniu posągu wzniesionego przez króla Nabuchodonozora. Zebrali się więc satrapowie, namiestnicy, rządcy, radcy, skarbnicy, sędziowie, prawnicy i wszyscy zarządcy prowincji na poświęcenie posągu wzniesionego przez króla Nabuchodonozora i ustawili się przed posągiem, który wzniósł król Nabuchodonozor. Herold zaś obwieszczał donośnie: \"Rozkaz dla was, narody, ludy, języki; w chwili, gdy usłyszycie dźwięk rogu, fletu, lutni, harfy, psalterium, dud i wszelkiego rodzaju instrumentów muzycznych, upadniecie na twarz i oddacie pokłon złotemu posągowi, który wzniósł król Nabuchodonozor. Kto by nie upadł na twarz i nie oddał pokłonu, zostanie natychmiast wrzucony do rozpalonego pieca\". W chwili więc, gdy dał się słyszeć dźwięk rogu, fletu, lutni, harfy, psalterium, dud i wszelkiego rodzaju instrumentów muzycznych, wszystkie narody, ludy, języki padły na twarz, oddając pokłon złotemu posągowi, który wzniósł król Nabuchodonozor. Niektórzy Chaldejczycy przyszli jednocześnie, by oskarżyć Żydów."
   },
   {
     "t": "Królestwo, które nie przeminie",
@@ -1783,7 +1854,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Nowego Serca",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty obiecałeś dać nam nowe serce i nowego Ducha. Prosimy Cię, zabierz nasze kamienne serca i daj nam serca z ciała. Ożyw w nas to, co wyschło i umarło. Niech z Twojej Świątyni płynie strumień, który uzdrawia nasze życie. Bądź z nami w ogniu prób i umacniaj nas w oczekiwaniu na Twoje królestwo, które nie przeminie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 70
+    "day": 70,
+    "passage": "(Księga Daniela Dn 7,13-14) Patrzałem w nocnych widzeniach: a oto na obłokach nieba przybywa jakby Syn Człowieczy. Podchodzi do Przedwiecznego i wprowadzają Go przed Niego. Powierzono Mu panowanie, chwałę i władzę królewską, a służyły Mu wszystkie narody, ludy i języki. Panowanie Jego jest wiecznym panowaniem, które nie przeminie, a Jego królestwo nie ulegnie zagładzie.\n\n(Ewangelia według św. Marka Mk 14,61-62) Lecz On milczał i nic nie odpowiedział. Najwyższy kapłan zapytał Go ponownie: \"Czy Ty jesteś Mesjasz, Syn Błogosławionego?\" Jezus odpowiedział: \"Ja jestem. Ujrzycie Syna Człowieczego, siedzącego po prawicy Wszechmocnego i nadchodzącego z obłokami niebieskimi\"."
   },
   {
     "t": "Pocieszenie",
@@ -1808,7 +1880,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sługi Pańskiego",
     "inPart": 1,
     "prayer": "Panie Jezu, Sługo Pański, Ty nie złamałeś trzciny nadłamanej i nie zgasiłeś knota o nikłym płomyku. Prosimy Cię, pociesz swój lud i opatrz rany złamanych serc. W Twoich ranach jest nasze zdrowie — ulecz nas z grzechu i lęku. Namaszczony Duchem, ogłoś nam rok łaski i przygotuj nasze serca na Twoje przyjście, jak przygotował je Jan Chrzciciel. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 71
+    "day": 71,
+    "passage": "(Księga Izajasza Iz 40,1-11) \"Pocieszcie, pocieszcie mój lud!\" - mówi wasz Bóg. \"Przemawiajcie do serca Jeruzalem i wołajcie do niego, że czas jego służby się skończył, że nieprawość jego odpokutowana, bo odebrało z ręki Pana karę w dwójnasób za wszystkie swe grzechy\", Głos się rozlega: \"Drogę dla Pana przygotujcie na pustyni, wyrównajcie na pustkowiu gościniec naszemu Bogu! Niech się podniosą wszystkie doliny, a wszystkie góry i wzgórza obniżą; równiną niechaj się staną urwiska, a strome zbocza niziną gładką. Wtedy się chwała Pańska objawi, razem ją wszelkie ciało zobaczy, bo usta Pańskie to powiedziały\". Głos się odzywa: \"Wołaj!\" - I rzekłem: Co mam wołać? - \"Wszelkie ciało to jakby trawa, a cały wdzięk jego jest niby kwiat polny. Trawa usycha, więdnie kwiat, gdy na nie wiatr Pana powieje. <Prawdziwie, trawą jest naród>. Trawa usycha, więdnie kwiat, lecz słowo Boga naszego trwa na wieki\"."
   },
   {
     "t": "Trzcina nadłamana",
@@ -1833,7 +1906,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sługi Pańskiego",
     "inPart": 2,
     "prayer": "Panie Jezu, Sługo Pański, Ty nie złamałeś trzciny nadłamanej i nie zgasiłeś knota o nikłym płomyku. Prosimy Cię, pociesz swój lud i opatrz rany złamanych serc. W Twoich ranach jest nasze zdrowie — ulecz nas z grzechu i lęku. Namaszczony Duchem, ogłoś nam rok łaski i przygotuj nasze serca na Twoje przyjście, jak przygotował je Jan Chrzciciel. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 72
+    "day": 72,
+    "passage": "(Księga Izajasza Iz 42,1-7) Oto mój Sługa, którego podtrzymuję. Wybrany mój, w którym mam upodobanie. Sprawiłem, że Duch mój na Nim spoczął; On przyniesie narodom Prawo. Nie będzie wołał ni podnosił głosu, nie da słyszeć krzyku swego na dworze. Nie złamie trzciny nadłamanej, nie zagasi knotka o nikłym płomyku. On niezachwianie przyniesie Prawo. Nie zniechęci się ani nie załamie, aż utrwali Prawo na ziemi, a Jego pouczenia wyczekują wyspy. Tak mówi Pan Bóg, który stworzył i rozpiął niebo, rozpostarł ziemię wraz z jej plonami, dał ludziom na niej dech ożywczy i tchnienie tym, co po niej chodzą. \"Ja, Pan, powołałem Cię słusznie, ująłem Cię za rękę i ukształtowałem, ustanowiłem Cię przymierzem dla ludzi, światłością dla narodów, abyś otworzył oczy niewidomym, ażebyś z zamknięcia wypuścił jeńców, z więzienia tych, co mieszkają w ciemności.\n\n(Ewangelia według św. Mateusza Mt 12,18-21) Oto mój Sługa; którego wybrałem, Umiłowany mój, w którym moje serce ma upodobanie. Położę ducha mojego na Nim, a On zapowie prawo narodom. Nie będzie się spierał ani krzyczał, i nikt nie usłyszy na ulicach Jego głosu. Trzciny zgniecionej nie złamie ani knota tlejącego nie dogasi, aż zwycięsko sąd przeprowadzi. W Jego imieniu narody nadzieję pokładać będą."
   },
   {
     "t": "Rany, które leczą",
@@ -1858,7 +1932,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sługi Pańskiego",
     "inPart": 3,
     "prayer": "Panie Jezu, Sługo Pański, Ty nie złamałeś trzciny nadłamanej i nie zgasiłeś knota o nikłym płomyku. Prosimy Cię, pociesz swój lud i opatrz rany złamanych serc. W Twoich ranach jest nasze zdrowie — ulecz nas z grzechu i lęku. Namaszczony Duchem, ogłoś nam rok łaski i przygotuj nasze serca na Twoje przyjście, jak przygotował je Jan Chrzciciel. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 73
+    "day": 73,
+    "passage": "(Księga Izajasza Iz 52,13–53,12) Oto się powiedzie mojemu Słudze, wybije się, wywyższy i wyrośnie bardzo. Jak wielu osłupiało na Jego widok - - tak nieludzko został oszpecony Jego wygląd i postać Jego była niepodobna do ludzi - tak mnogie narody się zdumieją, królowie zamkną przed Nim usta, bo ujrzą coś, czego im nigdy nie opowiadano, i pojmą coś niesłychanego. Któż uwierzy temu, cośmy usłyszeli? na kimże się ramię Pańskie objawiło? On wyrósł przed nami jak młode drzewo i jakby korzeń z wyschniętej ziemi. Nie miał On wdzięku ani też blasku, aby na Niego popatrzeć, ani wyglądu, by się nam podobał. Wzgardzony i odepchnięty przez ludzi, Mąż boleści, oswojony z cierpieniem, jak ktoś, przed kim się twarze zakrywa, wzgardzony tak, iż mieliśmy Go za nic. Lecz On się obarczył naszym cierpieniem, On dźwigał nasze boleści, a myśmy Go za skazańca uznali, chłostanego przez Boga i zdeptanego. Lecz On był przebity za nasze grzechy, zdruzgotany za nasze winy. Spadła Nań chłosta zbawienna dla nas, a w Jego ranach jest nasze zdrowie."
   },
   {
     "t": "Namaszczony Duchem",
@@ -1883,7 +1958,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sługi Pańskiego",
     "inPart": 4,
     "prayer": "Panie Jezu, Sługo Pański, Ty nie złamałeś trzciny nadłamanej i nie zgasiłeś knota o nikłym płomyku. Prosimy Cię, pociesz swój lud i opatrz rany złamanych serc. W Twoich ranach jest nasze zdrowie — ulecz nas z grzechu i lęku. Namaszczony Duchem, ogłoś nam rok łaski i przygotuj nasze serca na Twoje przyjście, jak przygotował je Jan Chrzciciel. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 74
+    "day": 74,
+    "passage": "(Księga Izajasza Iz 61,1-3) Duch Pana Boga nade mną, bo Pan mnie namaścił. Posłał mnie, by głosić dobrą nowinę ubogim, by opatrywać rany serc złamanych, by zapowiadać wyzwolenie jeńcom i więźniom swobodę; aby obwieszczać rok łaski Pańskiej, i dzień pomsty naszego Boga; aby pocieszać wszystkich zasmuconych, <by rozweselić płaczących na Syjonie>, aby im wieniec dać zamiast popiołu, olejek radości zamiast szaty smutku, pieśń chwały zamiast zgnębienia na duchu. Nazwą ich terebintami sprawiedliwości, szczepieniem Pana dla Jego rozsławienia.\n\n(Ewangelia według św. Łukasza Łk 4,16-21) Przyszedł również do Nazaretu, gdzie się wychował. W dzień szabatu udał się swoim zwyczajem do synagogi i powstał, aby czytać. Podano Mu księgę proroka Izajasza. Rozwinąwszy księgę, natrafił na miejsce, gdzie było napisane: Duch Pański spoczywa na Mnie, ponieważ Mnie namaścił i posłał Mnie, abym ubogim niósł dobrą nowinę, więźniom głosił wolność, a niewidomym przejrzenie; abym uciśnionych odsyłał wolnymi, abym obwoływał rok łaski od Pana. Zwinąwszy księgę oddał słudze i usiadł; a oczy wszystkich w synagodze były w Nim utkwione. Począł więc mówić do nich: \"Dziś spełniły się te słowa Pisma, któreście słyszeli\"."
   },
   {
     "t": "Przygotowana droga",
@@ -1908,7 +1984,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Sługi Pańskiego",
     "inPart": 5,
     "prayer": "Panie Jezu, Sługo Pański, Ty nie złamałeś trzciny nadłamanej i nie zgasiłeś knota o nikłym płomyku. Prosimy Cię, pociesz swój lud i opatrz rany złamanych serc. W Twoich ranach jest nasze zdrowie — ulecz nas z grzechu i lęku. Namaszczony Duchem, ogłoś nam rok łaski i przygotuj nasze serca na Twoje przyjście, jak przygotował je Jan Chrzciciel. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 75
+    "day": 75,
+    "passage": "(Księga Malachiasza Ml 3,1-3.23-24) Oto Ja wyślę anioła mego, aby przygotował drogę przede Mną, a potem nagle przybędzie do swej świątyni Pan, którego wy oczekujecie, i Anioł Przymierza, którego pragniecie. Oto nadejdzie, mówi Pan Zastępów. Ale kto przetrwa dzień Jego nadejścia i kto się ostoi, gdy się ukaże? Albowiem On jest jak ogień złotnika i jak ług farbiarzy. Usiądzie więc, jakby miał przetapiać i oczyszczać srebro, i oczyści synów Lewiego, i przecedzi ich jak złoto i srebro, a wtedy będą składać Panu ofiary sprawiedliwe.\n\n(Ewangelia według św. Mateusza Mt 11,10-14) On jest tym, o którym napisano: Oto Ja posyłam mego wysłańca przed Tobą, aby Ci przygotował drogę. Zaprawdę, powiadam wam: Między narodzonymi z niewiast nie powstał większy od Jana Chrzciciela. Lecz najmniejszy w królestwie niebieskim większy jest niż on. A od czasu Jana Chrzciciela aż dotąd królestwo niebieskie doznaje gwałtu i ludzie gwałtowni zdobywają je. Wszyscy bowiem Prorocy i Prawo prorokowali aż do Jana. A jeśli chcecie przyjąć, to on jest Eliaszem, który ma przyjść."
   },
   {
     "t": "Zwiastowanie Najświętszej Maryi Pannie",
@@ -1933,7 +2010,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Radosne",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty przyszedłeś do nas przez „tak” Maryi i ukryłeś swoją chwałę w ubóstwie Betlejem. Prosimy Cię, daj nam radość, która rodzi się z przyjęcia Bożej woli. Naucz nas nieść Ciebie innym tak jak Maryja, która pospieszyła do Elżbiety, oddawać Ci wszystko, co mamy, i szukać Cię wytrwale, gdy wydaje się, że Cię zgubiliśmy. Niech nasze domy staną się Nazaretem, w którym wzrastasz w mądrości i łasce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 76
+    "day": 76,
+    "passage": "(Ewangelia według św. Łukasza Łk 1,26-38) W szóstym miesiącu posłał Bóg anioła Gabriela do miasta w Galilei, zwanego Nazaret, do Dziewicy poślubionej mężowi, imieniem Józef, z rodu Dawida; a Dziewicy było na imię Maryja. Anioł wszedł do Niej i rzekł: \"Bądź pozdrowiona, pełna łaski, Pan z Tobą, \". Ona zmieszała się na te słowa i rozważała, co miałoby znaczyć to pozdrowienie. Lecz anioł rzekł do Niej: \"Nie bój się, Maryjo, znalazłaś bowiem łaskę u Boga. Oto poczniesz i porodzisz Syna, któremu nadasz imię Jezus. Będzie On wielki i będzie nazwany Synem Najwyższego, a Pan Bóg da Mu tron Jego praojca, Dawida. Będzie panował nad domem Jakuba na wieki, a Jego panowaniu nie będzie końca\"."
   },
   {
     "t": "Nawiedzenie świętej Elżbiety",
@@ -1958,7 +2036,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Radosne",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty przyszedłeś do nas przez „tak” Maryi i ukryłeś swoją chwałę w ubóstwie Betlejem. Prosimy Cię, daj nam radość, która rodzi się z przyjęcia Bożej woli. Naucz nas nieść Ciebie innym tak jak Maryja, która pospieszyła do Elżbiety, oddawać Ci wszystko, co mamy, i szukać Cię wytrwale, gdy wydaje się, że Cię zgubiliśmy. Niech nasze domy staną się Nazaretem, w którym wzrastasz w mądrości i łasce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 77
+    "day": 77,
+    "passage": "(Ewangelia według św. Łukasza Łk 1,39-56) W tym czasie Maryja wybrała się i poszła z pośpiechem w góry do pewnego miasta w [pokoleniu] Judy. Weszła do domu Zachariasza i pozdrowiła Elżbietę. Gdy Elżbieta usłyszała pozdrowienie Maryi, poruszyło się dzieciątko w jej łonie, a Duch Święty napełnił Elżbietę. Wydała ona okrzyk i powiedziała: \"Błogosławiona jesteś między niewiastami i błogosławiony jest owoc Twojego łona. A skądże mi to, że Matka mojego Pana przychodzi do mnie? Oto, skoro głos Twego pozdrowienia zabrzmiał w moich uszach, poruszyło się z radości dzieciątko w moim łonie. Błogosławiona jesteś, któraś uwierzyła, że spełnią się słowa powiedziane Ci od Pana\". Wtedy Maryja rzekła: \"Wielbi dusza moja Pana,"
   },
   {
     "t": "Narodzenie Pana Jezusa",
@@ -1983,7 +2062,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Radosne",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty przyszedłeś do nas przez „tak” Maryi i ukryłeś swoją chwałę w ubóstwie Betlejem. Prosimy Cię, daj nam radość, która rodzi się z przyjęcia Bożej woli. Naucz nas nieść Ciebie innym tak jak Maryja, która pospieszyła do Elżbiety, oddawać Ci wszystko, co mamy, i szukać Cię wytrwale, gdy wydaje się, że Cię zgubiliśmy. Niech nasze domy staną się Nazaretem, w którym wzrastasz w mądrości i łasce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 78
+    "day": 78,
+    "passage": "(Ewangelia według św. Łukasza Łk 2,1-20) W owym czasie wyszło rozporządzenie Cezara Augusta, żeby przeprowadzić spis ludności w całym państwie. Pierwszy ten spis odbył się wówczas, gdy wielkorządcą Syrii był Kwiryniusz. Wybierali się więc wszyscy, aby się dać zapisać, każdy do swego miasta. Udał się także Józef z Galilei, z miasta Nazaret, do Judei, do miasta Dawidowego, zwanego Betlejem, ponieważ pochodził z domu i rodu Dawida, żeby się dać zapisać z poślubioną sobie Maryją, która była brzemienna. Kiedy tam przebywali, nadszedł dla Maryi czas rozwiązania. Porodziła swego pierworodnego Syna, owinęła Go w pieluszki i położyła w żłobie, gdyż nie było dla nich miejsca w gospodzie. W tej samej okolicy przebywali w polu pasterze i trzymali straż nocną nad swoją trzodą."
   },
   {
     "t": "Ofiarowanie Pana Jezusa w świątyni",
@@ -2008,7 +2088,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Radosne",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty przyszedłeś do nas przez „tak” Maryi i ukryłeś swoją chwałę w ubóstwie Betlejem. Prosimy Cię, daj nam radość, która rodzi się z przyjęcia Bożej woli. Naucz nas nieść Ciebie innym tak jak Maryja, która pospieszyła do Elżbiety, oddawać Ci wszystko, co mamy, i szukać Cię wytrwale, gdy wydaje się, że Cię zgubiliśmy. Niech nasze domy staną się Nazaretem, w którym wzrastasz w mądrości i łasce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 79
+    "day": 79,
+    "passage": "(Ewangelia według św. Łukasza Łk 2,22-38) Gdy potem upłynęły dni ich oczyszczenia według Prawa Mojżeszowego, przynieśli Je do Jerozolimy, aby Je przedstawić Panu. Tak bowiem jest napisane w Prawie Pańskim: Każde pierworodne dziecko płci męskiej będzie poświęcone Panu. Mieli również złożyć w ofierze parę synogarlic albo dwa młode gołębie, zgodnie z przepisem Prawa Pańskiego. A żył w Jerozolimie człowiek, imieniem Symeon. Był to człowiek prawy i pobożny, wyczekiwał pociechy Izraela, a Duch Święty spoczywał na nim. Jemu Duch Święty objawił, że nie ujrzy śmierci, aż zobaczy Mesjasza Pańskiego. Za natchnieniem więc Ducha przyszedł do świątyni. A gdy Rodzice wnosili Dzieciątko Jezus, aby postąpić z Nim według zwyczaju Prawa, on wziął Je w objęcia, błogosławił Boga i mówił: \"Teraz, o Władco, pozwól odejść słudze Twemu w pokoju, według Twojego słowa."
   },
   {
     "t": "Odnalezienie Pana Jezusa w świątyni",
@@ -2033,7 +2114,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Radosne",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty przyszedłeś do nas przez „tak” Maryi i ukryłeś swoją chwałę w ubóstwie Betlejem. Prosimy Cię, daj nam radość, która rodzi się z przyjęcia Bożej woli. Naucz nas nieść Ciebie innym tak jak Maryja, która pospieszyła do Elżbiety, oddawać Ci wszystko, co mamy, i szukać Cię wytrwale, gdy wydaje się, że Cię zgubiliśmy. Niech nasze domy staną się Nazaretem, w którym wzrastasz w mądrości i łasce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 80
+    "day": 80,
+    "passage": "(Ewangelia według św. Łukasza Łk 2,41-52) Rodzice Jego chodzili co roku do Jerozolimy na Święto Paschy. Gdy miał lat dwanaście, udali się tam zwyczajem świątecznym. Kiedy wracali po skończonych uroczystościach, został Jezus w Jerozolimie, a tego nie zauważyli Jego Rodzice. Przypuszczając, że jest w towarzystwie pątników, uszli dzień drogi i szukali Go wśród krewnych i znajomych. Gdy Go nie znaleźli, wrócili do Jerozolimy szukając Go. Dopiero po trzech dniach odnaleźli Go w świątyni, gdzie siedział między nauczycielami, przysłuchiwał się im i zadawał pytania. Wszyscy zaś, którzy Go słuchali, byli zdumieni bystrością Jego umysłu i odpowiedziami. Na ten widok zdziwili się bardzo, a Jego Matka rzekła do Niego: \"Synu, czemuś nam to uczynił? Oto ojciec Twój i ja z bólem serca szukaliśmy Ciebie\"."
   },
   {
     "t": "Cisza ukrycia",
@@ -2058,7 +2140,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Ciszy",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 81
+    "day": 81,
+    "passage": "(Ewangelia według św. Łukasza Łk 2,51-52) Potem poszedł z nimi i wrócił do Nazaretu; i był im poddany. A Matka Jego chowała wiernie wszystkie te wspomnienia w swym sercu. Jezus zaś czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi.\n\n(Ewangelia według św. Marka Mk 6,3) Czy nie jest to cieśla, syn Maryi, a brat Jakuba, Józefa, Judy i Szymona? Czyż nie żyją tu u nas także Jego siostry?\" I powątpiewali o Nim."
   },
   {
     "t": "Cisza intymności i kontemplacji",
@@ -2083,7 +2166,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Ciszy",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 82
+    "day": 82,
+    "passage": "(Ewangelia według św. Marka Mk 1,35) Nad ranem, gdy jeszcze było ciemno, wstał, wyszedł i udał się na miejsce pustynne, i tam się modlił.\n\n(Ewangelia według św. Mateusza Mt 6,6) Ty zaś, gdy chcesz się modlić, wejdź do swej izdebki, zamknij drzwi i módl się do Ojca twego, który jest w ukryciu. A Ojciec twój, który widzi w ukryciu, odda tobie.\n\n(Ewangelia według św. Marka Mk 6,31) A On rzekł do nich: \"Pójdźcie wy sami osobno na miejsce pustynne i wypocznijcie nieco!\". Tak wielu bowiem przychodziło i odchodziło, że nawet na posiłek nie mieli czasu."
   },
   {
     "t": "Cisza autorytetu",
@@ -2108,7 +2192,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Ciszy",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 83
+    "day": 83,
+    "passage": "(Ewangelia według św. Marka Mk 4,35-41) Gdy zapadł wieczór owego dnia, rzekł do nich: \"Przeprawmy się na drugą stronę\". Zostawili więc tłum, a Jego zabrali, tak jak był w łodzi. Także inne łodzie płynęły z Nim. Naraz zerwał się gwałtowny wicher. Fale biły w łódź, tak że łódź już się napełniała. On zaś spał w tyle łodzi na wezgłowiu. Zbudzili Go i powiedzieli do Niego: \"Nauczycielu, nic Cię to nie obchodzi, że giniemy?\" On wstał, rozkazał wichrowi i rzekł do jeziora: \"Milcz, ucisz się!\". Wicher się uspokoił i nastała głęboka cisza. Wtedy rzekł do nich: \"Czemu tak bojaźliwi jesteście? Jakże wam brak wiary?\" Oni zlękli się bardzo i mówili jeden do drugiego: \"Kim właściwie On jest, że nawet wicher i jezioro są Mu posłuszne?\"\n\n(Ewangelia według św. Marka Mk 1,23-26) Był właśnie w synagodze człowiek opętany przez ducha nieczystego. Zaczął on wołać: \"Czego chcesz od nas, Jezusie Nazarejczyku? Przyszedłeś nas zgubić. Wiem, kto jesteś: Święty Boży\". Lecz Jezus rozkazał mu surowo: \"Milcz i wyjdź z niego!\". Wtedy duch nieczysty zaczął go targać i z głośnym krzykiem wyszedł z niego."
   },
   {
     "t": "Cisza pokory i świadomej ofiary",
@@ -2133,7 +2218,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Ciszy",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 84
+    "day": 84,
+    "passage": "(Ewangelia według św. Mateusza Mt 26,62-63) Wtedy powstał najwyższy kapłan i rzekł do Niego: \"Nic nie odpowiadasz na to, co oni zeznają przeciwko Tobie?\" Lecz Jezus milczał. A najwyższy kapłan rzekł do Niego: \"Poprzysięgam Cię na Boga żywego, powiedz nam: Czy Ty jesteś Mesjasz, Syn Boży?\"\n\n(Ewangelia według św. Łukasza Łk 23,8-9) Na widok Jezusa Herod bardzo się ucieszył. Od dawna bowiem chciał Go ujrzeć, ponieważ słyszał o Nim i spodziewał się, że zobaczy jaki znak, zdziałany przez Niego. Zasypał Go też wieloma pytaniami, lecz Jezus nic mu nie odpowiedział.\n\n(Księga Izajasza Iz 53,7) Dręczono Go, lecz sam się dał gnębić, nawet nie otworzył ust swoich. Jak baranek na rzeź prowadzony, jak owca niema wobec strzygących ją, tak On nie otworzył ust swoich."
   },
   {
     "t": "Cisza ostateczna i oczekująca",
@@ -2158,7 +2244,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Ciszy",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 85
+    "day": 85,
+    "passage": "(Ewangelia według św. Jana J 19,34.38-42) tylko jeden z żołnierzy włócznią przebił Mu bok i natychmiast wypłynęła krew i woda.\n\n(Pierwszy List Piotrowy 1 P 3,18-19) Chrystus bowiem również raz umarł za grzechy, sprawiedliwy za niesprawiedliwych, aby was do Boga przyprowadzić; zabity wprawdzie na ciele, ale powołany do życia Duchem. W nim poszedł ogłosić [zbawienie] nawet duchom zamkniętym w więzieniu,\n\n(Ewangelia według św. Jana J 20,1-18) A pierwszego dnia po szabacie, wczesnym rankiem, gdy jeszcze było ciemno, Maria Magdalena udała się do grobu i zobaczyła kamień odsunięty od grobu. Pobiegła więc i przybyła do Szymona Piotra i do drugiego ucznia, którego Jezus kochał, i rzekła do nich: \"Zabrano Pana z grobu i nie wiemy, gdzie Go położono\". Wyszedł więc Piotr i ów drugi uczeń i szli do grobu. Biegli oni obydwaj razem, lecz ów drugi uczeń wyprzedził Piotra i przybył pierwszy do grobu. A kiedy się nachylił, zobaczył leżące płótna, jednakże nie wszedł do środka. Nadszedł potem także Szymon Piotr, idący za nim. Wszedł on do wnętrza grobu i ujrzał leżące płótna oraz chustę, która była na Jego głowie, leżącą nie razem z płótnami, ale oddzielnie zwiniętą na jednym miejscu. Wtedy wszedł do wnętrza także i ów drugi uczeń, który przybył pierwszy do grobu. Ujrzał i uwierzył."
   },
   {
     "t": "Chrzest Pana Jezusa w Jordanie",
@@ -2183,7 +2270,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Światła",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś Światłością świata, a kto idzie za Tobą, nie chodzi w ciemności. Prosimy Cię, oświecaj nasze życie tak, jak oświeciłeś Jordan, Kanę, Tabor i Wieczernik. Daj nam żyć łaską chrztu, słuchać Twego słowa i czynić wszystko, cokolwiek nam powiesz. Przemieniaj nas na swój obraz i karm nas swoim Ciałem, abyśmy sami stawali się światłem dla innych. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 86
+    "day": 86,
+    "passage": "(Ewangelia według św. Mateusza Mt 3,13-17) Wtedy przyszedł Jezus z Galilei nad Jordan do Jana, żeby przyjąć chrzest od niego. Lecz Jan powstrzymywał Go, mówiąc: \"To ja potrzebuję chrztu od Ciebie, a Ty przychodzisz do mnie?\" Jezus mu odpowiedział: \"Pozwól teraz, bo tak godzi się nam wypełnić wszystko, co sprawiedliwe\". Wtedy Mu ustąpił. A gdy Jezus został ochrzczony, natychmiast wyszedł z wody. A oto otworzyły Mu się niebiosa i ujrzał Ducha Bożego zstępującego jak gołębicę i przychodzącego na Niego. A głos z nieba mówił: \"Ten jest mój Syn umiłowany, w którym mam upodobanie\"."
   },
   {
     "t": "Objawienie się w Kanie Galilejskiej",
@@ -2208,7 +2296,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Światła",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś Światłością świata, a kto idzie za Tobą, nie chodzi w ciemności. Prosimy Cię, oświecaj nasze życie tak, jak oświeciłeś Jordan, Kanę, Tabor i Wieczernik. Daj nam żyć łaską chrztu, słuchać Twego słowa i czynić wszystko, cokolwiek nam powiesz. Przemieniaj nas na swój obraz i karm nas swoim Ciałem, abyśmy sami stawali się światłem dla innych. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 87
+    "day": 87,
+    "passage": "(Ewangelia według św. Jana J 2,1-11) Trzeciego dnia odbywało się wesele w Kanie Galilejskiej i była tam Matka Jezusa. Zaproszono na to wesele także Jezusa i Jego uczniów. A kiedy zabrakło wina, Matka Jezusa mówi do Niego: \"Nie mają już wina\". Jezus Jej odpowiedział: \"Czyż to moja lub Twoja sprawa, Niewiasto? Czyż jeszcze nie nadeszła godzina moja?\" Wtedy Matka Jego powiedziała do sług: \"Zróbcie wszystko, cokolwiek wam powie\". Stało zaś tam sześć stągwi kamiennych przeznaczonych do żydowskich oczyszczeń, z których każda mogła pomieścić dwie lub trzy miary. Rzekł do nich Jezus: \"Napełnijcie stągwie wodą!\" I napełnili je aż po brzegi. Potem do nich powiedział: \"Zaczerpnijcie teraz i zanieście staroście weselnemu!\" Oni zaś zanieśli."
   },
   {
     "t": "Głoszenie Królestwa Bożego i wzywanie do nawrócenia",
@@ -2233,7 +2322,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Światła",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś Światłością świata, a kto idzie za Tobą, nie chodzi w ciemności. Prosimy Cię, oświecaj nasze życie tak, jak oświeciłeś Jordan, Kanę, Tabor i Wieczernik. Daj nam żyć łaską chrztu, słuchać Twego słowa i czynić wszystko, cokolwiek nam powiesz. Przemieniaj nas na swój obraz i karm nas swoim Ciałem, abyśmy sami stawali się światłem dla innych. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 88
+    "day": 88,
+    "passage": "(Ewangelia według św. Marka Mk 1,14-15) Gdy Jan został uwięziony, Jezus przyszedł do Galilei i głosił Ewangelię Bożą. Mówił: \"Czas się wypełnił i bliskie jest królestwo Boże. Nawracajcie się i wierzcie w Ewangelię!\"\n\n(Ewangelia według św. Mateusza Mt 5,1-12) Jezus, widząc tłumy, wyszedł na górę. A gdy usiadł, przystąpili do Niego Jego uczniowie. Wtedy otworzył swoje usta i nauczał ich tymi słowami: \"Błogosławieni ubodzy w duchu, albowiem do nich należy królestwo niebieskie. Błogosławieni, którzy się smucą, albowiem oni będą pocieszeni. Błogosławieni cisi, albowiem oni na własność posiądą ziemię. Błogosławieni, którzy łakną i pragną sprawiedliwości, albowiem oni będą nasyceni. Błogosławieni miłosierni, albowiem oni miłosierdzia dostąpią. Błogosławieni czystego serca, albowiem oni Boga oglądać będą."
   },
   {
     "t": "Przemienienie na górze Tabor",
@@ -2258,7 +2348,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Światła",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś Światłością świata, a kto idzie za Tobą, nie chodzi w ciemności. Prosimy Cię, oświecaj nasze życie tak, jak oświeciłeś Jordan, Kanę, Tabor i Wieczernik. Daj nam żyć łaską chrztu, słuchać Twego słowa i czynić wszystko, cokolwiek nam powiesz. Przemieniaj nas na swój obraz i karm nas swoim Ciałem, abyśmy sami stawali się światłem dla innych. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 89
+    "day": 89,
+    "passage": "(Ewangelia według św. Mateusza Mt 17,1-9) Po sześciu dniach Jezus wziął z sobą Piotra, Jakuba i brata jego Jana i zaprowadził ich na górę wysoką, osobno. Tam przemienił się wobec nich: twarz Jego zajaśniała jak słońce, odzienie zaś stało się białe jak światło. A oto im się ukazali Mojżesz i Eliasz, którzy rozmawiali z Nim. Wtedy Piotr rzekł do Jezusa: \"Panie, dobrze, że tu jesteśmy; jeśli chcesz, postawię tu trzy namioty: jeden dla Ciebie, jeden dla Mojżesza i jeden dla Eliasza\". Gdy on jeszcze mówił, oto obłok świetlany osłonił ich, a z obłoku odezwał się głos: \"To jest mój Syn umiłowany, w którym mam upodobanie, Jego słuchajcie!\" Uczniowie, słysząc to, upadli na twarz i bardzo się zlękli. A Jezus zbliżył się do nich, dotknął ich i rzekł: \"Wstańcie, nie lękajcie się!\" Gdy podnieśli oczy, nikogo nie widzieli, tylko samego Jezusa."
   },
   {
     "t": "Ustanowienie Eucharystii",
@@ -2283,7 +2374,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Światła",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś Światłością świata, a kto idzie za Tobą, nie chodzi w ciemności. Prosimy Cię, oświecaj nasze życie tak, jak oświeciłeś Jordan, Kanę, Tabor i Wieczernik. Daj nam żyć łaską chrztu, słuchać Twego słowa i czynić wszystko, cokolwiek nam powiesz. Przemieniaj nas na swój obraz i karm nas swoim Ciałem, abyśmy sami stawali się światłem dla innych. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 90
+    "day": 90,
+    "passage": "(Ewangelia według św. Łukasza Łk 22,14-20) A gdy nadeszła pora, zajął miejsce u stołu i Apostołowie z Nim. Wtedy rzekł do nich: \"Gorąco pragnąłem spożyć Paschę z wami, zanim będę cierpiał. Albowiem powiadam wam: Już jej spożywać nie będę, aż się spełni w królestwie Bożym\". Potem wziął kielich i odmówiwszy dziękczynienie rzekł: \"Weźcie go i podzielcie między siebie; albowiem powiadam wam: odtąd nie będę już pił z owocu winnego krzewu, aż przyjdzie królestwo Boże\". Następnie wziął chleb, odmówiwszy dziękczynienie połamał go i podał mówiąc: \"To jest Ciało moje, które za was będzie wydane: to czyńcie na moją pamiątkę!\" Tak samo i kielich po wieczerzy, mówiąc: \"Ten kielich to Nowe Przymierze we Krwi mojej, która za was będzie wylana.\n\n(Ewangelia według św. Jana J 13,1) Było to przed Świętem Paschy. Jezus wiedząc, że nadeszła Jego godzina przejścia z tego świata do Ojca, umiłowawszy swoich na świecie, do końca ich umiłował."
   },
   {
     "t": "Modlitwa Pana Jezusa w Ogrójcu",
@@ -2308,7 +2400,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Bolesne",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty umiłowałeś nas do końca i za nas wydałeś siebie samego. Prosimy Cię, daj nam łaskę współcierpienia z Tobą i wdzięczności za Twoją Mękę. Gdy przychodzi lęk, naucz nas modlić się jak w Ogrójcu; gdy spotyka nas wzgarda, naucz nas pokory; gdy niesiemy krzyż, bądź naszym Cyrenejczykiem. Pod krzyżem przyjmujemy Twoją Matkę jako naszą. Niech Twoja śmierć będzie dla nas źródłem życia. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 91
+    "day": 91,
+    "passage": "(Ewangelia według św. Łukasza Łk 22,39-46) Potem wyszedł i udał się, według zwyczaju, na Górę Oliwną: towarzyszyli Mu także uczniowie. Gdy przyszedł na miejsce, rzekł do nich: \"Módlcie się, abyście nie ulegli pokusie\". A sam oddalił się od nich na odległość jakby rzutu kamieniem, upadł na kolana i modlił się tymi słowami: \"Ojcze, jeśli chcesz, zabierz ode Mnie ten kielich! Jednak nie moja wola, lecz Twoja niech się stanie!\" Wtedy ukazał Mu się anioł z nieba i umacniał Go. Pogrążony w udręce jeszcze usilniej się modlił, a Jego pot był jak gęste krople krwi, sączące się na ziemię. Gdy wstał od modlitwy i przyszedł do uczniów, zastał ich śpiących ze smutku. Rzekł do nich: \"Czemu śpicie? Wstańcie i módlcie się, abyście nie ulegli pokusie\".\n\n(Ewangelia według św. Mateusza Mt 26,36-46) Wtedy przyszedł Jezus z nimi do ogrodu, zwanego Getsemani, i rzekł do uczniów: \"Usiądźcie tu, Ja tymczasem odejdę tam i będę się modlił\". Wziąwszy z sobą Piotra i dwóch synów Zebedeusza, począł się smucić i odczuwać trwogę. Wtedy rzekł do nich: \"Smutna jest moja dusza aż do śmierci; zostańcie tu i czuwajcie ze Mną!\" I odszedłszy nieco dalej, upadł na twarz i modlił się tymi słowami: \"Ojcze mój, jeśli to możliwe, niech Mnie ominie ten kielich! Wszakże nie jak Ja chcę, ale jak Ty\". Potem przyszedł do uczniów i zastał ich śpiących. Rzekł więc do Piotra: \"Tak, jednej godziny nie mogliście czuwać ze Mną? Czuwajcie i módlcie się, abyście nie ulegli pokusie; duch wprawdzie ochoczy, ale ciało słabe\". Powtórnie odszedł i tak się modlił: \"Ojcze mój, jeśli nie może ominąć Mnie ten kielich, i muszę go wypić, niech się stanie wola Twoja!\" Potem przyszedł i znów zastał ich śpiących, bo oczy ich były senne."
   },
   {
     "t": "Biczowanie Pana Jezusa",
@@ -2333,7 +2426,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Bolesne",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty umiłowałeś nas do końca i za nas wydałeś siebie samego. Prosimy Cię, daj nam łaskę współcierpienia z Tobą i wdzięczności za Twoją Mękę. Gdy przychodzi lęk, naucz nas modlić się jak w Ogrójcu; gdy spotyka nas wzgarda, naucz nas pokory; gdy niesiemy krzyż, bądź naszym Cyrenejczykiem. Pod krzyżem przyjmujemy Twoją Matkę jako naszą. Niech Twoja śmierć będzie dla nas źródłem życia. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 92
+    "day": 92,
+    "passage": "(Ewangelia według św. Jana J 19,1) Wówczas Piłat wziął Jezusa i kazał Go ubiczować.\n\n(Księga Izajasza Iz 53,4-5) Lecz On się obarczył naszym cierpieniem, On dźwigał nasze boleści, a myśmy Go za skazańca uznali, chłostanego przez Boga i zdeptanego. Lecz On był przebity za nasze grzechy, zdruzgotany za nasze winy. Spadła Nań chłosta zbawienna dla nas, a w Jego ranach jest nasze zdrowie."
   },
   {
     "t": "Cierniem ukoronowanie",
@@ -2358,7 +2452,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Bolesne",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty umiłowałeś nas do końca i za nas wydałeś siebie samego. Prosimy Cię, daj nam łaskę współcierpienia z Tobą i wdzięczności za Twoją Mękę. Gdy przychodzi lęk, naucz nas modlić się jak w Ogrójcu; gdy spotyka nas wzgarda, naucz nas pokory; gdy niesiemy krzyż, bądź naszym Cyrenejczykiem. Pod krzyżem przyjmujemy Twoją Matkę jako naszą. Niech Twoja śmierć będzie dla nas źródłem życia. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 93
+    "day": 93,
+    "passage": "(Ewangelia według św. Mateusza Mt 27,27-31) Wtedy żołnierze namiestnika zabrali Jezusa z sobą do pretorium i zgromadzili koło Niego całą kohortę. Rozebrali Go z szat i narzucili na Niego płaszcz szkarłatny. Uplótłszy wieniec z ciernia włożyli Mu na głowę, a do prawej ręki dali Mu trzcinę. Potem przyklękali przed Nim i szydzili z Niego, mówiąc: \"Witaj, Królu Żydowski!\" Przy tym pluli na Niego, brali trzcinę i bili Go po głowie. A gdy Go wyszydzili, zdjęli z Niego płaszcz, włożyli na Niego własne Jego szaty i odprowadzili Go na ukrzyżowanie.\n\n(Ewangelia według św. Jana J 19,2-5) A żołnierze uplótłszy koronę z cierni, włożyli Mu ją na głowę i okryli Go płaszczem purpurowym. Potem podchodzili do Niego i mówili: \"Witaj, Królu Żydowski!\" I policzkowali Go. A Piłat ponownie wyszedł na zewnątrz i przemówił do nich: \"Oto wyprowadzam Go do was na zewnątrz, abyście poznali, że ja nie znajduję w Nim żadnej winy\". Jezus więc wyszedł na zewnątrz, w koronie cierniowej i płaszczu purpurowym. Piłat rzekł do nich: \"Oto Człowiek\"."
   },
   {
     "t": "Dźwiganie krzyża",
@@ -2383,7 +2478,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Bolesne",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty umiłowałeś nas do końca i za nas wydałeś siebie samego. Prosimy Cię, daj nam łaskę współcierpienia z Tobą i wdzięczności za Twoją Mękę. Gdy przychodzi lęk, naucz nas modlić się jak w Ogrójcu; gdy spotyka nas wzgarda, naucz nas pokory; gdy niesiemy krzyż, bądź naszym Cyrenejczykiem. Pod krzyżem przyjmujemy Twoją Matkę jako naszą. Niech Twoja śmierć będzie dla nas źródłem życia. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 94
+    "day": 94,
+    "passage": "(Ewangelia według św. Łukasza Łk 23,26-32) Gdy Go wyprowadzili, zatrzymali niejakiego Szymona z Cyreny, który wracał z pola, i włożyli na niego krzyż, aby go niósł za Jezusem. A szło za Nim mnóstwo ludu, także kobiet, które zawodziły i płakały nad Nim. Lecz Jezus zwrócił się do nich i rzekł: \"Córki jerozolimskie, nie płaczcie nade Mną; płaczcie raczej nad sobą i nad waszymi dziećmi! Oto bowiem przyjdą dni, kiedy mówić będą: \"Szczęśliwe niepłodne łona, które nie rodziły, i piersi, które nie karmiły\". Wtedy zaczną wołać do gór: Padnijcie na nas; a do pagórków: Przykryjcie nas! Bo jeśli z zielonym drzewem to czynią, cóż się stanie z suchym?\" Przyprowadzono też dwóch innych - złoczyńców, aby ich z Nim stracić.\n\n(Ewangelia według św. Jana J 19,16-17) Wtedy więc wydał Go im, aby Go ukrzyżowano. Zabrali zatem Jezusa. A On sam dźwigając krzyż wyszedł na miejsce zwane Miejscem Czaszki, które po hebrajsku nazywa się Golgota."
   },
   {
     "t": "Ukrzyżowanie i śmierć Pana Jezusa",
@@ -2408,7 +2504,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Bolesne",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty umiłowałeś nas do końca i za nas wydałeś siebie samego. Prosimy Cię, daj nam łaskę współcierpienia z Tobą i wdzięczności za Twoją Mękę. Gdy przychodzi lęk, naucz nas modlić się jak w Ogrójcu; gdy spotyka nas wzgarda, naucz nas pokory; gdy niesiemy krzyż, bądź naszym Cyrenejczykiem. Pod krzyżem przyjmujemy Twoją Matkę jako naszą. Niech Twoja śmierć będzie dla nas źródłem życia. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 95
+    "day": 95,
+    "passage": "(Ewangelia według św. Łukasza Łk 23,33-46) Gdy przyszli na miejsce, zwane \"Czaszką\", ukrzyżowali tam Jego i złoczyńców, jednego po prawej, drugiego po lewej Jego stronie. Lecz Jezus mówił: \"Ojcze, przebacz im, bo nie wiedzą, co czynią\". Potem rozdzielili między siebie Jego szaty, rzucając losy. A lud stał i patrzył. Lecz członkowie Wysokiej Rady drwiąco mówili: \"Innych wybawiał, niechże teraz siebie wybawi, jeśli On jest Mesjaszem, Wybrańcem Bożym\". Szydzili z Niego i żołnierze; podchodzili do Niego i podawali Mu ocet, mówiąc: \"Jeśli Ty jesteś królem żydowskim, wybaw sam siebie\". Był także nad Nim napis w języku greckim, łacińskim i hebrajskim: \"To jest Król Żydowski\". Jeden ze złoczyńców, których [tam] powieszono, urągał Mu: \"Czy Ty nie jesteś Mesjaszem? Wybaw więc siebie i nas\". Lecz drugi, karcąc go, rzekł: \"Ty nawet Boga się nie boisz, chociaż tę samą karę ponosisz?\n\n(Ewangelia według św. Jana J 19,25-30) A obok krzyża Jezusowego stały: Matka Jego i siostra Matki Jego, Maria, żona Kleofasa, i Maria Magdalena. Kiedy więc Jezus ujrzał Matkę i stojącego obok Niej ucznia, którego miłował, rzekł do Matki: \"Niewiasto, oto syn Twój\". Następnie rzekł do ucznia: \"Oto Matka twoja\". I od tej godziny uczeń wziął Ją do siebie. Potem Jezus świadom, że już wszystko się dokonało, aby się wypełniło Pismo, rzekł: \"Pragnę\". Stało tam naczynie pełne octu. Nałożono więc na hizop gąbkę pełną octu i do ust Mu podano. A gdy Jezus skosztował octu, rzekł: \"Wykonało się!\" I skłoniwszy głowę oddał ducha."
   },
   {
     "t": "Zmartwychwstanie Pana Jezusa",
@@ -2433,7 +2530,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Chwalebne",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty zmartwychwstałeś, wstąpiłeś do nieba i zesłałeś Ducha Świętego, a swoją Matkę wziąłeś do chwały i ukoronowałeś. Prosimy Cię, umocnij w nas wiarę w zmartwychwstanie i nadzieję nieba. Napełnij nas Duchem Świętym, abyśmy odważnie świadczyli o Tobie. Niech Maryja, nasza Matka i Królowa, prowadzi nas przez życie aż do dnia, w którym ujrzymy Twoje oblicze. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 96
+    "day": 96,
+    "passage": "(Ewangelia według św. Mateusza Mt 28,1-10) Po upływie szabatu, o świcie pierwszego dnia tygodnia przyszła Maria Magdalena i druga Maria obejrzeć grób. A oto powstało wielkie trzęsienie ziemi. Albowiem anioł Pański zstąpił z nieba, podszedł, odsunął kamień i usiadł na nim. Postać jego jaśniała jak błyskawica, a szaty jego były białe jak śnieg. Ze strachu przed nim zadrżeli strażnicy i stali się jakby umarli. Anioł zaś przemówił do niewiast: \"Wy się nie bójcie! Gdyż wiem, że szukacie Jezusa Ukrzyżowanego. Nie ma Go tu, bo zmartwychwstał, jak powiedział. Chodźcie, zobaczcie miejsce, gdzie leżał. A idźcie szybko i powiedzcie Jego uczniom: Powstał z martwych i oto udaje się przed wami do Galilei. Tam Go ujrzycie. Oto, co wam powiedziałem\". Pośpiesznie więc oddaliły się od grobu, z bojaźnią i wielką radością, i biegły oznajmić to Jego uczniom.\n\n(Ewangelia według św. Jana J 20,1-18) A pierwszego dnia po szabacie, wczesnym rankiem, gdy jeszcze było ciemno, Maria Magdalena udała się do grobu i zobaczyła kamień odsunięty od grobu. Pobiegła więc i przybyła do Szymona Piotra i do drugiego ucznia, którego Jezus kochał, i rzekła do nich: \"Zabrano Pana z grobu i nie wiemy, gdzie Go położono\". Wyszedł więc Piotr i ów drugi uczeń i szli do grobu. Biegli oni obydwaj razem, lecz ów drugi uczeń wyprzedził Piotra i przybył pierwszy do grobu. A kiedy się nachylił, zobaczył leżące płótna, jednakże nie wszedł do środka. Nadszedł potem także Szymon Piotr, idący za nim. Wszedł on do wnętrza grobu i ujrzał leżące płótna oraz chustę, która była na Jego głowie, leżącą nie razem z płótnami, ale oddzielnie zwiniętą na jednym miejscu. Wtedy wszedł do wnętrza także i ów drugi uczeń, który przybył pierwszy do grobu. Ujrzał i uwierzył."
   },
   {
     "t": "Wniebowstąpienie Pana Jezusa",
@@ -2458,7 +2556,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Chwalebne",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty zmartwychwstałeś, wstąpiłeś do nieba i zesłałeś Ducha Świętego, a swoją Matkę wziąłeś do chwały i ukoronowałeś. Prosimy Cię, umocnij w nas wiarę w zmartwychwstanie i nadzieję nieba. Napełnij nas Duchem Świętym, abyśmy odważnie świadczyli o Tobie. Niech Maryja, nasza Matka i Królowa, prowadzi nas przez życie aż do dnia, w którym ujrzymy Twoje oblicze. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 97
+    "day": 97,
+    "passage": "(Dzieje Apostołów Dz 1,6-11) Zapytywali Go zebrani: \"Panie, czy w tym czasie przywrócisz królestwo Izraela?\" Odpowiedział im: \"Nie wasza to rzecz znać czasy i chwile, które Ojciec ustalił swoją władzą, ale gdy Duch Święty zstąpi na was, otrzymacie Jego moc i będziecie moimi świadkami w Jerozolimie i w całej Judei, i w Samarii, i aż po krańce ziemi\". Po tych słowach uniósł się w ich obecności w górę i obłok zabrał Go im sprzed oczu. Kiedy uporczywie wpatrywali się w Niego, jak wstępował do nieba, przystąpili do nich dwaj mężowie w białych szatach. I rzekli: \"Mężowie z Galilei, dlaczego stoicie i wpatrujecie się w niebo? Ten Jezus, wzięty od was do nieba, przyjdzie tak samo, jak widzieliście Go wstępującego do nieba\".\n\n(Ewangelia według św. Mateusza Mt 28,16-20) Jedenastu zaś uczniów udało się do Galilei na górę, tam gdzie Jezus im polecił. A gdy Go ujrzeli, oddali Mu pokłon. Niektórzy jednak wątpili. Wtedy Jezus podszedł do nich i przemówił tymi słowami: \"Dana Mi jest wszelka władza w niebie i na ziemi. Idźcie więc i nauczajcie wszystkie narody, udzielając im chrztu w imię Ojca i Syna, i Ducha Świętego. Uczcie je zachowywać wszystko, co wam przykazałem. A oto Ja jestem z wami przez wszystkie dni, aż do skończenia świata\"."
   },
   {
     "t": "Zesłanie Ducha Świętego",
@@ -2483,7 +2582,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Chwalebne",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty zmartwychwstałeś, wstąpiłeś do nieba i zesłałeś Ducha Świętego, a swoją Matkę wziąłeś do chwały i ukoronowałeś. Prosimy Cię, umocnij w nas wiarę w zmartwychwstanie i nadzieję nieba. Napełnij nas Duchem Świętym, abyśmy odważnie świadczyli o Tobie. Niech Maryja, nasza Matka i Królowa, prowadzi nas przez życie aż do dnia, w którym ujrzymy Twoje oblicze. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 98
+    "day": 98,
+    "passage": "(Dzieje Apostołów Dz 1,14) Wszyscy oni trwali jednomyślnie na modlitwie razem z niewiastami, Maryją, Matką Jezusa, i braćmi Jego.\n\n(Dzieje Apostołów 2,1-13) Kiedy nadszedł wreszcie dzień Pięćdziesiątnicy, znajdowali się wszyscy razem na tym samym miejscu. Nagle dał się słyszeć z nieba szum, jakby uderzenie gwałtownego wiatru, i napełnił cały dom, w którym przebywali. Ukazały się im też języki jakby z ognia, które się rozdzieliły, i na każdym z nich spoczął jeden. I wszyscy zostali napełnieni Duchem Świętym, i zaczęli mówić obcymi językami, tak jak im Duch pozwalał mówić. Przebywali wtedy w Jerozolimie pobożni Żydzi ze wszystkich narodów pod słońcem. Kiedy więc powstał ów szum, zbiegli się tłumnie i zdumieli, bo każdy słyszał, jak przemawiali w jego własnym języku. \"Czyż ci wszyscy, którzy przemawiają, nie są Galilejczykami?\" - mówili pełni zdumienia i podziwu. \"Jakżeż więc każdy z nas słyszy swój własny język ojczysty? -"
   },
   {
     "t": "Wniebowzięcie Najświętszej Maryi Panny",
@@ -2508,7 +2608,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Chwalebne",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty zmartwychwstałeś, wstąpiłeś do nieba i zesłałeś Ducha Świętego, a swoją Matkę wziąłeś do chwały i ukoronowałeś. Prosimy Cię, umocnij w nas wiarę w zmartwychwstanie i nadzieję nieba. Napełnij nas Duchem Świętym, abyśmy odważnie świadczyli o Tobie. Niech Maryja, nasza Matka i Królowa, prowadzi nas przez życie aż do dnia, w którym ujrzymy Twoje oblicze. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 99
+    "day": 99,
+    "passage": "(Objawienie Apokalipsy Ap 11,19–12,1) Potem Świątynia Boga w niebie się otwarła, i Arka Jego Przymierza ukazała się w Jego Świątyni, a nastąpiły błyskawice, głosy, gromy, trzęsienie ziemi i wielki grad. Potem wielki znak się ukazał na niebie: Niewiasta obleczona w słońce i księżyc pod jej stopami, a na jej głowie wieniec z gwiazd dwunastu.\n\n(Pierwszy List do Koryntian 1 Kor 15,20-26) Tymczasem jednak Chrystus zmartwychwstał jako pierwszy spośród tych, co pomarli. Ponieważ bowiem przez człowieka [przyszła] śmierć, przez człowieka też [dokona się] zmartwychwstanie. I jak w Adamie wszyscy umierają, tak też w Chrystusie wszyscy będą ożywieni, lecz każdy według własnej kolejności. Chrystus jako pierwszy, potem ci, co należą do Chrystusa, w czasie Jego przyjścia. Wreszcie nastąpi koniec, gdy przekaże królowanie Bogu i Ojcu i gdy pokona wszelką Zwierzchność, Władzę i Moc. Trzeba bowiem, ażeby królował, aż położy wszystkich nieprzyjaciół pod swoje stopy. Jako ostatni wróg, zostanie pokonana śmierć."
   },
   {
     "t": "Ukoronowanie Maryi na Królową nieba i ziemi",
@@ -2533,7 +2634,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Chwalebne",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty zmartwychwstałeś, wstąpiłeś do nieba i zesłałeś Ducha Świętego, a swoją Matkę wziąłeś do chwały i ukoronowałeś. Prosimy Cię, umocnij w nas wiarę w zmartwychwstanie i nadzieję nieba. Napełnij nas Duchem Świętym, abyśmy odważnie świadczyli o Tobie. Niech Maryja, nasza Matka i Królowa, prowadzi nas przez życie aż do dnia, w którym ujrzymy Twoje oblicze. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 100
+    "day": 100,
+    "passage": "(Objawienie Apokalipsy Ap 12,1) Potem wielki znak się ukazał na niebie: Niewiasta obleczona w słońce i księżyc pod jej stopami, a na jej głowie wieniec z gwiazd dwunastu."
   },
   {
     "t": "Jedno serce i jedna dusza",
@@ -2558,7 +2660,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kościoła Apostolskiego",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty zrodziłeś swój Kościół z Ducha Świętego i prowadziłeś go przez apostołów. Prosimy Cię, odnów w nas ducha pierwszej wspólnoty: jedno serce i jedną duszę, wierność nauce apostołów, łamaniu chleba i modlitwie. Daj nam odwagę Piotra i Jana, przebaczenie Szczepana i gorliwość Pawła. Prowadź swój Kościół w jedności, abyśmy umieli razem rozeznawać Twoją wolę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 101
+    "day": 101,
+    "passage": "(Dzieje Apostołów Dz 2,37-47) Gdy to usłyszeli, przejęli się do głębi serca: \"Cóż mamy czynić, bracia?\" - zapytali Piotra i pozostałych Apostołów. \"Nawróćcie się - powiedział do nich Piotr - i niech każdy z was ochrzci się w imię Jezusa Chrystusa na odpuszczenie grzechów waszych, a weźmiecie w darze Ducha Świętego. Bo dla was jest obietnica i dla dzieci waszych, i dla wszystkich, którzy są daleko, a których powoła Pan Bóg nasz\". W wielu też innych słowach dawał świadectwo i napominał: \"Ratujcie się spośród tego przewrotnego pokolenia!\". Ci więc, którzy przyjęli jego naukę, zostali ochrzczeni. I przyłączyło się owego dnia około trzech tysięcy dusz. Trwali oni w nauce Apostołów i we wspólnocie, w łamaniu chleba i w modlitwach. Bojaźń ogarniała każdego, gdyż Apostołowie czynili wiele znaków i cudów. Ci wszyscy, co uwierzyli, przebywali razem i wszystko mieli wspólne.\n\n(Dzieje Apostołów 4,32-35) Jeden duch i jedno serce ożywiały wszystkich wierzących. Żaden nie nazywał swoim tego, co posiadał, ale wszystko mieli wspólne. Apostołowie z wielką mocą świadczyli o zmartwychwstaniu Pana Jezusa, a wszyscy oni mieli wielką łaskę. Nikt z nich nie cierpiał niedostatku, bo właściciele pól albo domów sprzedawali je i przynosili pieniądze [uzyskane] ze sprzedaży, i składali je u stóp Apostołów. Każdemu też rozdzielano według potrzeby."
   },
   {
     "t": "Odwaga świadectwa",
@@ -2583,7 +2686,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kościoła Apostolskiego",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty zrodziłeś swój Kościół z Ducha Świętego i prowadziłeś go przez apostołów. Prosimy Cię, odnów w nas ducha pierwszej wspólnoty: jedno serce i jedną duszę, wierność nauce apostołów, łamaniu chleba i modlitwie. Daj nam odwagę Piotra i Jana, przebaczenie Szczepana i gorliwość Pawła. Prowadź swój Kościół w jedności, abyśmy umieli razem rozeznawać Twoją wolę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 102
+    "day": 102,
+    "passage": "(Dzieje Apostołów Dz 3,1-10) Gdy Piotr i Jan wchodzili do świątyni na modlitwę o godzinie dziewiątej, wnoszono właśnie pewnego człowieka, chromego od urodzenia. Kładziono go codziennie przy bramie świątyni, zwanej Piękną, aby wstępujących do świątyni, prosił o jałmużnę. Ten zobaczywszy Piotra i Jana, gdy mieli wejść do świątyni, prosił ich o jałmużnę. Lecz Piotr wraz z Janem przypatrzywszy się mu powiedział: \"Spójrz na nas!\". A on patrzył na nich oczekując od nich jałmużny. \"Nie mam srebra ani złota - powiedział Piotr - ale co mam, to ci daję: W imię Jezusa Chrystusa Nazarejczyka, chodź!\" I ująwszy go za prawą rękę, podniósł go. A on natychmiast odzyskał władzę w nogach i stopach. Zerwał się i stanął na nogach, i chodził, i wszedł z nimi do świątyni, chodząc, skacząc i wielbiąc Boga.\n\n(Dzieje Apostołów 4,1-31) Kiedy przemawiali do ludu, podeszli do nich kapłani i dowódca straży świątynnej oraz saduceusze oburzeni, że nauczają lud i głoszą zmartwychwstanie umarłych w Jezusie. Zatrzymali ich i oddali pod straż aż do następnego dnia, bo już był wieczór. A wielu z tych, którzy słyszeli naukę, uwierzyło. Liczba mężczyzn dosięgała około pięciu tysięcy. Następnego dnia zebrali się ich przełożeni i starsi, i uczeni w Jerozolimie: arcykapłan Annasz, Kajfasz, Jan, Aleksander i ilu ich było z rodu arcykapłańskiego. Postawili ich w środku i pytali: \"Czyją mocą albo w czyim imieniu uczyniliście to?\" Wtedy Piotr napełniony Duchem Świętym powiedział do nich: \"Przełożeni ludu i starsi!"
   },
   {
     "t": "Pierwsza krew",
@@ -2608,7 +2712,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kościoła Apostolskiego",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty zrodziłeś swój Kościół z Ducha Świętego i prowadziłeś go przez apostołów. Prosimy Cię, odnów w nas ducha pierwszej wspólnoty: jedno serce i jedną duszę, wierność nauce apostołów, łamaniu chleba i modlitwie. Daj nam odwagę Piotra i Jana, przebaczenie Szczepana i gorliwość Pawła. Prowadź swój Kościół w jedności, abyśmy umieli razem rozeznawać Twoją wolę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 103
+    "day": 103,
+    "passage": "(Dzieje Apostołów Dz 6,8–7,60) Szczepan pełen łaski i mocy działał cuda i znaki wielkie wśród ludu. Niektórzy zaś z synagogi, zwanej [synagogą] Libertynów i Cyrenejczyków, i Aleksandryjczyków, i tych, którzy pochodzili z Cylicji i z Azji, wystąpili do rozprawy ze Szczepanem. Nie mogli jednak sprostać mądrości i Duchowi, z którego [natchnienia] przemawiał. Podstawili więc ludzi, którzy zeznali: \"Słyszeliśmy, jak on mówił bluźnierstwa przeciwko Mojżeszowi i Bogu\". W ten sposób podburzyli lud, starszych i uczonych w Piśmie. Przybiegli, porwali go i zaprowadzili przed Sanhedryn. Tam postawili fałszywych świadków, którzy zeznali: \"Ten człowiek nie przestaje mówić przeciwko temu świętemu miejscu i przeciwko Prawu. Bo słyszeliśmy, jak mówił, że Jezus Nazarejczyk zburzy to miejsce i pozmienia zwyczaje, które nam Mojżesz przekazał\". A wszyscy, którzy zasiadali w Sanhedrynie, przyglądali się mu uważnie i zobaczyli twarz jego podobną do oblicza anioła."
   },
   {
     "t": "Światło na drodze",
@@ -2633,7 +2738,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kościoła Apostolskiego",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty zrodziłeś swój Kościół z Ducha Świętego i prowadziłeś go przez apostołów. Prosimy Cię, odnów w nas ducha pierwszej wspólnoty: jedno serce i jedną duszę, wierność nauce apostołów, łamaniu chleba i modlitwie. Daj nam odwagę Piotra i Jana, przebaczenie Szczepana i gorliwość Pawła. Prowadź swój Kościół w jedności, abyśmy umieli razem rozeznawać Twoją wolę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 104
+    "day": 104,
+    "passage": "(Dzieje Apostołów Dz 9,1-19) Szaweł ciągle jeszcze siał grozę i dyszał żądzą zabijania uczniów Pańskich. Udał się do arcykapłana i poprosił go o listy do synagog w Damaszku, aby mógł uwięzić i przyprowadzić do Jerozolimy mężczyzn i kobiety, zwolenników tej drogi, jeśliby jakichś znalazł. Gdy zbliżał się już w swojej podróży do Damaszku, olśniła go nagle światłość z nieba. A gdy upadł na ziemię, usłyszał głos, który mówił: \"Szawle, Szawle, dlaczego Mnie prześladujesz?\" \"Kto jesteś, Panie?\" - powiedział. A On: \"Ja jestem Jezus, którego ty prześladujesz. Wstań i wejdź do miasta, tam ci powiedzą, co masz czynić\". Ludzie, którzy mu towarzyszyli w drodze, oniemieli ze zdumienia, słyszeli bowiem głos, lecz nie widzieli nikogo. Szaweł podniósł się z ziemi, a kiedy otworzył oczy, nic nie widział. Wprowadzili go więc do Damaszku, trzymając za ręce.\n\n(List do Galatów Ga 1,13-16) Słyszeliście przecież o moim postępowaniu ongiś, gdy jeszcze wyznawałem judaizm, jak z niezwykłą gorliwością zwalczałem Kościół Boży i usiłowałem go zniszczyć, jak w żarliwości o judaizm przewyższałem wielu moich rówieśników z mego narodu, jak byłem szczególnie wielkim zapaleńcem w zachowywaniu tradycji moich przodków. Gdy jednak spodobało się Temu, który wybrał mnie jeszcze w łonie matki mojej i powołał łaską swoją, aby objawić Syna swego we mnie, bym Ewangelię o Nim głosił poganom, natychmiast, nie radząc się ciała i krwi"
   },
   {
     "t": "Wspólne rozeznanie",
@@ -2658,7 +2764,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kościoła Apostolskiego",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty zrodziłeś swój Kościół z Ducha Świętego i prowadziłeś go przez apostołów. Prosimy Cię, odnów w nas ducha pierwszej wspólnoty: jedno serce i jedną duszę, wierność nauce apostołów, łamaniu chleba i modlitwie. Daj nam odwagę Piotra i Jana, przebaczenie Szczepana i gorliwość Pawła. Prowadź swój Kościół w jedności, abyśmy umieli razem rozeznawać Twoją wolę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 105
+    "day": 105,
+    "passage": "(Dzieje Apostołów Dz 15,1-29) Niektórzy przybysze z Judei nauczali braci: \"Jeżeli się nie poddacie obrzezaniu według zwyczaju Mojżeszowego, nie możecie być zbawieni\". Kiedy doszło do niemałych sporów i zatargów między nimi a Pawłem i Barnabą, postanowiono, że Paweł i Barnaba, i jeszcze kilku spośród nich uda się w sprawie tego sporu do Jerozolimy, do Apostołów i starszych. Wysłani przez Kościół szli przez Fenicję i Samarię, sprawiając wielką radość braciom opowiadaniem o nawróceniu pogan. Kiedy przybyli do Jerozolimy, zostali przyjęci przez Kościół, Apostołów i starszych. Opowiedzieli też, jak wielkich rzeczy Bóg przez nich dokonał. Lecz niektórzy nawróceni ze stronnictwa faryzeuszów oświadczyli: \"Trzeba ich obrzezać i zobowiązać do przestrzegania Prawa Mojżeszowego\". Zebrali się więc Apostołowie i starsi, aby rozpatrzyć tę sprawę. Po długiej wymianie zdań przemówił do nich Piotr: \"Wiecie, bracia, że Bóg już dawno wybrał mnie spośród was, aby z moich ust poganie usłyszeli słowa Ewangelii i uwierzyli. Bóg, który zna serca, zaświadczył na ich korzyść, dając im Ducha Świętego tak samo jak nam."
   },
   {
     "t": "Fundament z krwi",
@@ -2683,7 +2790,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Męczenników",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś ziarnem pszenicy, które obumarło, aby wydać plon obfity. Dziękujemy Ci za męczenników, na których krwi zbudowany jest Kościół. Prosimy Cię, daj nam ich wierność: odwagę Piotra i Pawła, pragnienie Ignacego, stałość Polikarpa, braterstwo Perpetui i Felicyty oraz miłość Wawrzyńca do ubogich. Umacniaj wszystkich, którzy dziś cierpią za wiarę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 106
+    "day": 106,
+    "passage": "(Ewangelia według św. Jana J 21,18-19) Zaprawdę, zaprawdę, powiadam ci: Gdy byłeś młodszy, opasywałeś się sam i chodziłeś, gdzie chciałeś. Ale gdy się zestarzejesz, wyciągniesz ręce swoje, a inny cię opasze i poprowadzi, dokąd nie chcesz\". To powiedział, aby zaznaczyć, jaką śmiercią uwielbi Boga. A wypowiedziawszy to rzekł do niego: \"Pójdź za Mną!\"\n\n(Drugi List do Tymoteusza 2 Tm 4,6-8) Albowiem krew moja już ma być wylana na ofiarę, a chwila mojej rozłąki nadeszła. W dobrych zawodach wystąpiłem, bieg ukończyłem, wiary ustrzegłem. Na ostatek odłożono dla mnie wieniec sprawiedliwości, który mi w owym dniu odda Pan, sprawiedliwy Sędzia, a nie tylko mnie, ale i wszystkim, którzy umiłowali pojawienie się Jego."
   },
   {
     "t": "Pszenica Boża",
@@ -2708,7 +2816,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Męczenników",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś ziarnem pszenicy, które obumarło, aby wydać plon obfity. Dziękujemy Ci za męczenników, na których krwi zbudowany jest Kościół. Prosimy Cię, daj nam ich wierność: odwagę Piotra i Pawła, pragnienie Ignacego, stałość Polikarpa, braterstwo Perpetui i Felicyty oraz miłość Wawrzyńca do ubogich. Umacniaj wszystkich, którzy dziś cierpią za wiarę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 107
+    "day": 107,
+    "passage": "(Ewangelia według św. Jana J 12,24) Zaprawdę, zaprawdę, powiadam wam: Jeżeli ziarno pszenicy wpadłszy w ziemię nie obumrze, zostanie tylko samo, ale jeżeli obumrze, przynosi plon obfity."
   },
   {
     "t": "Wierność starca",
@@ -2733,7 +2842,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Męczenników",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś ziarnem pszenicy, które obumarło, aby wydać plon obfity. Dziękujemy Ci za męczenników, na których krwi zbudowany jest Kościół. Prosimy Cię, daj nam ich wierność: odwagę Piotra i Pawła, pragnienie Ignacego, stałość Polikarpa, braterstwo Perpetui i Felicyty oraz miłość Wawrzyńca do ubogich. Umacniaj wszystkich, którzy dziś cierpią za wiarę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 108
+    "day": 108,
+    "passage": "(Objawienie Apokalipsy Ap 2,8-10) Aniołowi Kościoła w Smyrnie napisz: To mówi Pierwszy i Ostatni, który był martwy, a ożył: Znam twój ucisk i ubóstwo - ale ty jesteś bogaty - i [znam] obelgę wyrządzoną przez tych, co samych siebie zowią Żydami, a nie są nimi, lecz synagogą szatana. Przestań się lękać tego, co będziesz cierpiał. Oto diabeł ma niektórych spośród was wtrącić do więzienia, abyście próbie zostali poddani, a znosić będziecie ucisk przez dziesięć dni. Bądź wierny aż do śmierci, a dam ci wieniec życia."
   },
   {
     "t": "Siostry w wierze",
@@ -2758,7 +2868,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Męczenników",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś ziarnem pszenicy, które obumarło, aby wydać plon obfity. Dziękujemy Ci za męczenników, na których krwi zbudowany jest Kościół. Prosimy Cię, daj nam ich wierność: odwagę Piotra i Pawła, pragnienie Ignacego, stałość Polikarpa, braterstwo Perpetui i Felicyty oraz miłość Wawrzyńca do ubogich. Umacniaj wszystkich, którzy dziś cierpią za wiarę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 109
+    "day": 109,
+    "passage": "(List do Rzymian Rz 8,35-39) Któż nas może odłączyć od miłości Chrystusowej? Utrapienie, ucisk czy prześladowanie, głód czy nagość, niebezpieczeństwo czy miecz? Jak to jest napisane: Z powodu Ciebie zabijają nas przez cały dzień, uważają nas za owce przeznaczone na rzeź. Ale we wszystkim tym odnosimy pełne zwycięstwo dzięki Temu, który nas umiłował. I jestem pewien, że ani śmierć, ani życie, ani aniołowie, ani Zwierzchności, ani rzeczy teraźniejsze, ani przyszłe, ani Moce, ani co wysokie, ani co głębokie, ani jakiekolwiek inne stworzenie nie zdoła nas odłączyć od miłości Boga, która jest w Chrystusie Jezusie, Panu naszym."
   },
   {
     "t": "Skarby Kościoła",
@@ -2783,7 +2894,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Męczenników",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś ziarnem pszenicy, które obumarło, aby wydać plon obfity. Dziękujemy Ci za męczenników, na których krwi zbudowany jest Kościół. Prosimy Cię, daj nam ich wierność: odwagę Piotra i Pawła, pragnienie Ignacego, stałość Polikarpa, braterstwo Perpetui i Felicyty oraz miłość Wawrzyńca do ubogich. Umacniaj wszystkich, którzy dziś cierpią za wiarę. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 110
+    "day": 110,
+    "passage": "(Ewangelia według św. Mateusza Mt 25,40) A Król im odpowie: \"Zaprawdę, powiadam wam: Wszystko, co uczyniliście jednemu z tych braci moich najmniejszych, Mnieście uczynili\"."
   },
   {
     "t": "Wolność wiary",
@@ -2808,7 +2920,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdziwej Wiary",
     "inPart": 1,
     "prayer": "Panie Jezu, Bogu z Boga i Światłości ze Światłości, Ty prowadziłeś swój Kościół przez sobory do pełniejszego poznania prawdy. Prosimy Cię, zachowaj nas w prawdziwej wierze, którą wyznajemy w Credo. Daj nam czcić Trójcę Świętą, kochać Twoją Matkę, Bogarodzicę, i zachwycać się tajemnicą Twojego Wcielenia. Dziękujemy Ci za dar wolności wiary. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 111
+    "day": 111,
+    "passage": "(Pierwszy List do Tymoteusza 1 Tm 2,1-4) Zalecam więc przede wszystkim, by prośby, modlitwy, wspólne błagania, dziękczynienia odprawiane były za wszystkich ludzi: za królów i za wszystkich sprawujących władze, abyśmy mogli prowadzić życie ciche i spokojne z całą pobożnością i godnością. Jest to bowiem rzecz dobra i miła w oczach Zbawiciela naszego, Boga, który pragnie, by wszyscy ludzie zostali zbawieni i doszli do poznania prawdy."
   },
   {
     "t": "Bóg z Boga",
@@ -2833,7 +2946,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdziwej Wiary",
     "inPart": 2,
     "prayer": "Panie Jezu, Bogu z Boga i Światłości ze Światłości, Ty prowadziłeś swój Kościół przez sobory do pełniejszego poznania prawdy. Prosimy Cię, zachowaj nas w prawdziwej wierze, którą wyznajemy w Credo. Daj nam czcić Trójcę Świętą, kochać Twoją Matkę, Bogarodzicę, i zachwycać się tajemnicą Twojego Wcielenia. Dziękujemy Ci za dar wolności wiary. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 112
+    "day": 112,
+    "passage": "(Ewangelia według św. Jana J 1,1-14) Na początku było Słowo, a Słowo było u Boga, i Bogiem było Słowo. Ono było na początku u Boga. Wszystko przez Nie się stało, a bez Niego nic się nie stało, co się stało. W Nim było życie, a życie było światłością ludzi, a światłość w ciemności świeci i ciemność jej nie ogarnęła. Pojawił się człowiek posłany przez Boga - Jan mu było na imię. Przyszedł on na świadectwo, aby zaświadczyć o światłości, by wszyscy uwierzyli przez niego. Nie był on światłością, lecz [posłanym], aby zaświadczyć o światłości."
   },
   {
     "t": "Pan i Ożywiciel",
@@ -2858,7 +2972,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdziwej Wiary",
     "inPart": 3,
     "prayer": "Panie Jezu, Bogu z Boga i Światłości ze Światłości, Ty prowadziłeś swój Kościół przez sobory do pełniejszego poznania prawdy. Prosimy Cię, zachowaj nas w prawdziwej wierze, którą wyznajemy w Credo. Daj nam czcić Trójcę Świętą, kochać Twoją Matkę, Bogarodzicę, i zachwycać się tajemnicą Twojego Wcielenia. Dziękujemy Ci za dar wolności wiary. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 113
+    "day": 113,
+    "passage": "(Ewangelia według św. Jana J 14,16-26) Ja zaś będę prosił Ojca, a innego Pocieszyciela da wam, aby z wami był na zawsze - Ducha Prawdy, którego świat przyjąć nie może, ponieważ Go nie widzi ani nie zna. Ale wy Go znacie, ponieważ u was przebywa i w was będzie. Nie zostawię was sierotami: Przyjdę do was. Jeszcze chwila, a świat nie będzie już Mnie oglądał. Ale wy Mnie widzicie, ponieważ Ja żyję i wy żyć będziecie. W owym dniu poznacie, że Ja jestem w Ojcu moim, a wy we Mnie i Ja w was. Kto ma przykazania moje i zachowuje je, ten Mnie miłuje. Kto zaś Mnie miłuje, ten będzie umiłowany przez Ojca mego, a również Ja będę go miłował i objawię mu siebie\". Rzekł do Niego Juda, ale nie Iskariota: \"Panie, cóż się stało, że nam się masz objawić, a nie światu?\" W odpowiedzi rzekł do niego Jezus: \"Jeśli Mnie kto miłuje, będzie zachowywał moją naukę, a Ojciec mój umiłuje go, i przyjdziemy do niego, i będziemy u niego przebywać."
   },
   {
     "t": "Matka Boga",
@@ -2883,7 +2998,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdziwej Wiary",
     "inPart": 4,
     "prayer": "Panie Jezu, Bogu z Boga i Światłości ze Światłości, Ty prowadziłeś swój Kościół przez sobory do pełniejszego poznania prawdy. Prosimy Cię, zachowaj nas w prawdziwej wierze, którą wyznajemy w Credo. Daj nam czcić Trójcę Świętą, kochać Twoją Matkę, Bogarodzicę, i zachwycać się tajemnicą Twojego Wcielenia. Dziękujemy Ci za dar wolności wiary. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 114
+    "day": 114,
+    "passage": "(Ewangelia według św. Łukasza Łk 1,43) A skądże mi to, że Matka mojego Pana przychodzi do mnie?"
   },
   {
     "t": "Prawdziwy Bóg i prawdziwy człowiek",
@@ -2908,7 +3024,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdziwej Wiary",
     "inPart": 5,
     "prayer": "Panie Jezu, Bogu z Boga i Światłości ze Światłości, Ty prowadziłeś swój Kościół przez sobory do pełniejszego poznania prawdy. Prosimy Cię, zachowaj nas w prawdziwej wierze, którą wyznajemy w Credo. Daj nam czcić Trójcę Świętą, kochać Twoją Matkę, Bogarodzicę, i zachwycać się tajemnicą Twojego Wcielenia. Dziękujemy Ci za dar wolności wiary. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 115
+    "day": 115,
+    "passage": "(List do Filipian Flp 2,5-11) To dążenie niech was ożywia; ono też było w Chrystusie Jezusie. On, istniejąc w postaci Bożej, nie skorzystał ze sposobności, aby na równi być z Bogiem, lecz ogołocił samego siebie, przyjąwszy postać sługi, stawszy się podobnym do ludzi. A w zewnętrznym przejawie, uznany za człowieka, uniżył samego siebie, stawszy się posłusznym aż do śmierci - i to śmierci krzyżowej. Dlatego też Bóg Go nad wszystko wywyższył i darował Mu imię ponad wszelkie imię, aby na imię Jezusa zgięło się każde kolano istot niebieskich i ziemskich i podziemnych. I aby wszelki język wyznał, że Jezus Chrystus jest PANEM - ku chwale Boga Ojca."
   },
   {
     "t": "Niewolnik, który wrócił",
@@ -2933,7 +3050,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Misji",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty posłałeś uczniów, aby nauczali wszystkie narody. Dziękujemy Ci za misjonarzy, którzy przynieśli Ewangelię do Irlandii, do Słowian, do Polski i na Ruś. Prosimy Cię, odnów w nas łaskę chrztu i gorliwość misyjną. Zachowaj wiarę w naszym narodzie, uzdrów podziały między chrześcijanami Wschodu i Zachodu i daj nam męstwo świętego Wojciecha. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 116
+    "day": 116,
+    "passage": "(Ewangelia według św. Mateusza Mt 28,19-20) Idźcie więc i nauczajcie wszystkie narody, udzielając im chrztu w imię Ojca i Syna, i Ducha Świętego. Uczcie je zachowywać wszystko, co wam przykazałem. A oto Ja jestem z wami przez wszystkie dni, aż do skończenia świata\"."
   },
   {
     "t": "Ewangelia w naszym języku",
@@ -2958,7 +3076,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Misji",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty posłałeś uczniów, aby nauczali wszystkie narody. Dziękujemy Ci za misjonarzy, którzy przynieśli Ewangelię do Irlandii, do Słowian, do Polski i na Ruś. Prosimy Cię, odnów w nas łaskę chrztu i gorliwość misyjną. Zachowaj wiarę w naszym narodzie, uzdrów podziały między chrześcijanami Wschodu i Zachodu i daj nam męstwo świętego Wojciecha. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 117
+    "day": 117,
+    "passage": "(Dzieje Apostołów Dz 2,8-11) \"Jakżeż więc każdy z nas słyszy swój własny język ojczysty? - Partowie i Medowie, i Elamici, i mieszkańcy Mezopotamii, Judei oraz Kapadocji, Pontu i Azji, Frygii oraz Pamfilii, Egiptu i tych części Libii, które leżą blisko Cyreny, i przybysze z Rzymu, Żydzi oraz prozelici, Kreteńczycy i Arabowie - słyszymy ich głoszących w naszych językach wielkie dzieła Boże\"."
   },
   {
     "t": "Narodziny narodu w wierze",
@@ -2983,7 +3102,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Misji",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty posłałeś uczniów, aby nauczali wszystkie narody. Dziękujemy Ci za misjonarzy, którzy przynieśli Ewangelię do Irlandii, do Słowian, do Polski i na Ruś. Prosimy Cię, odnów w nas łaskę chrztu i gorliwość misyjną. Zachowaj wiarę w naszym narodzie, uzdrów podziały między chrześcijanami Wschodu i Zachodu i daj nam męstwo świętego Wojciecha. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 118
+    "day": 118,
+    "passage": "(List do Rzymian Rz 6,3-4) Czyż nie wiadomo wam, że my wszyscy, którzyśmy otrzymali chrzest zanurzający w Chrystusa Jezusa, zostaliśmy zanurzeni w Jego śmierć? Zatem przez chrzest zanurzający nas w śmierć zostaliśmy razem z Nim pogrzebani po to, abyśmy i my wkroczyli w nowe życie - jak Chrystus powstał z martwych dzięki chwale Ojca."
   },
   {
     "t": "Dwa płuca Kościoła",
@@ -3008,7 +3128,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Misji",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty posłałeś uczniów, aby nauczali wszystkie narody. Dziękujemy Ci za misjonarzy, którzy przynieśli Ewangelię do Irlandii, do Słowian, do Polski i na Ruś. Prosimy Cię, odnów w nas łaskę chrztu i gorliwość misyjną. Zachowaj wiarę w naszym narodzie, uzdrów podziały między chrześcijanami Wschodu i Zachodu i daj nam męstwo świętego Wojciecha. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 119
+    "day": 119,
+    "passage": "(List do Efezjan Ef 4,4-6) Jedno jest Ciało i jeden Duch, bo też zostaliście wezwani do jednej nadziei, jaką daje wasze powołanie. Jeden jest Pan, jedna wiara, jeden chrzest. Jeden jest Bóg i Ojciec wszystkich, który [jest i działa] ponad wszystkimi, przez wszystkich i we wszystkich."
   },
   {
     "t": "Męczennik i metropolia",
@@ -3033,7 +3154,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Misji",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty posłałeś uczniów, aby nauczali wszystkie narody. Dziękujemy Ci za misjonarzy, którzy przynieśli Ewangelię do Irlandii, do Słowian, do Polski i na Ruś. Prosimy Cię, odnów w nas łaskę chrztu i gorliwość misyjną. Zachowaj wiarę w naszym narodzie, uzdrów podziały między chrześcijanami Wschodu i Zachodu i daj nam męstwo świętego Wojciecha. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 120
+    "day": 120,
+    "passage": "(Ewangelia według św. Jana J 15,13) Nikt nie ma większej miłości od tej, gdy ktoś życie swoje oddaje za przyjaciół swoich."
   },
   {
     "t": "Rana podziału",
@@ -3058,7 +3180,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Jedności",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty modliłeś się w Wieczerniku, aby wszyscy Twoi uczniowie stanowili jedno. Prosimy Cię, ulecz rany podziałów w Twoim Kościele. Odnawiaj nas od wewnątrz w czasach kryzysu, daj nam męstwo męczenników z Nagasaki i otwartość serca, której uczył Sobór. Prowadź nas drogą pojednania, aż zgromadzisz wszystkich przy jednym stole. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 121
+    "day": 121,
+    "passage": "(Ewangelia według św. Jana J 17,20-23) Nie tylko za nimi proszę, ale i za tymi, którzy dzięki ich słowu będą wierzyć we Mnie; aby wszyscy stanowili jedno, jak Ty, Ojcze, we Mnie, a Ja w Tobie, aby i oni stanowili w Nas jedno, aby świat uwierzył, żeś Ty Mnie posłał. I także chwałę, którą Mi dałeś, przekazałem im, aby stanowili jedno, tak jak My jedno stanowimy. Ja w nich, a Ty we Mnie! Oby się tak zespolili w jedno, aby świat poznał, żeś Ty Mnie posłał i żeś Ty ich umiłował tak, jak Mnie umiłowałeś."
   },
   {
     "t": "Odnowa od wewnątrz",
@@ -3083,7 +3206,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Jedności",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty modliłeś się w Wieczerniku, aby wszyscy Twoi uczniowie stanowili jedno. Prosimy Cię, ulecz rany podziałów w Twoim Kościele. Odnawiaj nas od wewnątrz w czasach kryzysu, daj nam męstwo męczenników z Nagasaki i otwartość serca, której uczył Sobór. Prowadź nas drogą pojednania, aż zgromadzisz wszystkich przy jednym stole. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 122
+    "day": 122,
+    "passage": "(List do Efezjan Ef 5,25-27) Mężowie miłujcie żony, bo i Chrystus umiłował Kościół i wydał za niego samego siebie, aby go uświęcić, oczyściwszy obmyciem wodą, któremu towarzyszy słowo, aby osobiście stawić przed sobą Kościół jako chwalebny, nie mający skazy czy zmarszczki, czy czegoś podobnego, lecz aby był święty i nieskalany."
   },
   {
     "t": "Krzyże na wzgórzu",
@@ -3108,7 +3232,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Jedności",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty modliłeś się w Wieczerniku, aby wszyscy Twoi uczniowie stanowili jedno. Prosimy Cię, ulecz rany podziałów w Twoim Kościele. Odnawiaj nas od wewnątrz w czasach kryzysu, daj nam męstwo męczenników z Nagasaki i otwartość serca, której uczył Sobór. Prowadź nas drogą pojednania, aż zgromadzisz wszystkich przy jednym stole. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 123
+    "day": 123,
+    "passage": "(List do Galatów Ga 6,14) Co do mnie, nie daj Boże, bym się miał chlubić z czego innego, jak tylko z krzyża Pana naszego Jezusa Chrystusa, dzięki któremu świat stał się ukrzyżowany dla mnie, a ja dla świata."
   },
   {
     "t": "Okna otwarte na świat",
@@ -3133,7 +3258,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Jedności",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty modliłeś się w Wieczerniku, aby wszyscy Twoi uczniowie stanowili jedno. Prosimy Cię, ulecz rany podziałów w Twoim Kościele. Odnawiaj nas od wewnątrz w czasach kryzysu, daj nam męstwo męczenników z Nagasaki i otwartość serca, której uczył Sobór. Prowadź nas drogą pojednania, aż zgromadzisz wszystkich przy jednym stole. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 124
+    "day": 124,
+    "passage": "(Ewangelia według św. Mateusza Mt 5,13-16) Wy jesteście solą dla ziemi. Lecz jeśli sól utraci swój smak, czymże ją posolić? Na nic się już nie przyda, chyba na wyrzucenie i podeptanie przez ludzi. Wy jesteście światłem świata. Nie może się ukryć miasto położone na górze. Nie zapala się też światła i nie stawia pod korcem, ale na świeczniku, aby świeciło wszystkim, którzy są w domu. Tak niech świeci wasze światło przed ludźmi, aby widzieli wasze dobre uczynki i chwalili Ojca waszego, który jest w niebie."
   },
   {
     "t": "Pocałunek pokoju",
@@ -3158,7 +3284,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Jedności",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty modliłeś się w Wieczerniku, aby wszyscy Twoi uczniowie stanowili jedno. Prosimy Cię, ulecz rany podziałów w Twoim Kościele. Odnawiaj nas od wewnątrz w czasach kryzysu, daj nam męstwo męczenników z Nagasaki i otwartość serca, której uczył Sobór. Prowadź nas drogą pojednania, aż zgromadzisz wszystkich przy jednym stole. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 125
+    "day": 125,
+    "passage": "(List do Efezjan Ef 4,1-6) A zatem zachęcam was ja, więzień w Panu, abyście postępowali w sposób godny powołania, jakim zostaliście wezwani, z całą pokorą i cichością, z cierpliwością, znosząc siebie nawzajem w miłości. Usiłujcie zachować jedność Ducha dzięki więzi, jaką jest pokój. Jedno jest Ciało i jeden Duch, bo też zostaliście wezwani do jednej nadziei, jaką daje wasze powołanie. Jeden jest Pan, jedna wiara, jeden chrzest. Jeden jest Bóg i Ojciec wszystkich, który [jest i działa] ponad wszystkimi, przez wszystkich i we wszystkich."
   },
   {
     "t": "Wezwanie do doskonałości",
@@ -3183,7 +3310,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Pustyni",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty przez czterdzieści dni przebywałeś na pustyni i często odchodziłeś na miejsca ustronne, aby się modlić. Prosimy Cię, daj nam łaskę ciszy i modlitwy serca, której uczyli Ojcowie Pustyni. Naucz nas, jak Antoni, zostawiać wszystko dla Ciebie, jak Bazyli — służyć ubogim, a jak Benedykt — niczego nie przedkładać nad Twoją miłość. Panie Jezu Chryste, Synu Boży, zmiłuj się nad nami, grzesznymi. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 126
+    "day": 126,
+    "passage": "(Ewangelia według św. Mateusza Mt 19,21) Jezus mu odpowiedział: \"Jeśli chcesz być doskonały, idź, sprzedaj, co posiadasz, i rozdaj ubogim, a będziesz miał skarb w niebie. Potem przyjdź i chodź za Mną!\""
   },
   {
     "t": "Szkoła celi",
@@ -3208,7 +3336,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Pustyni",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty przez czterdzieści dni przebywałeś na pustyni i często odchodziłeś na miejsca ustronne, aby się modlić. Prosimy Cię, daj nam łaskę ciszy i modlitwy serca, której uczyli Ojcowie Pustyni. Naucz nas, jak Antoni, zostawiać wszystko dla Ciebie, jak Bazyli — służyć ubogim, a jak Benedykt — niczego nie przedkładać nad Twoją miłość. Panie Jezu Chryste, Synu Boży, zmiłuj się nad nami, grzesznymi. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 127
+    "day": 127,
+    "passage": "(Ewangelia według św. Mateusza Mt 6,6) Ty zaś, gdy chcesz się modlić, wejdź do swej izdebki, zamknij drzwi i módl się do Ojca twego, który jest w ukryciu. A Ojciec twój, który widzi w ukryciu, odda tobie."
   },
   {
     "t": "Modlitwa serca",
@@ -3233,7 +3362,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Pustyni",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty przez czterdzieści dni przebywałeś na pustyni i często odchodziłeś na miejsca ustronne, aby się modlić. Prosimy Cię, daj nam łaskę ciszy i modlitwy serca, której uczyli Ojcowie Pustyni. Naucz nas, jak Antoni, zostawiać wszystko dla Ciebie, jak Bazyli — służyć ubogim, a jak Benedykt — niczego nie przedkładać nad Twoją miłość. Panie Jezu Chryste, Synu Boży, zmiłuj się nad nami, grzesznymi. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 128
+    "day": 128,
+    "passage": "(Ewangelia według św. Łukasza Łk 18,13) Natomiast celnik stał z daleka i nie śmiał nawet oczu wznieść ku niebu, lecz bił się w piersi i mówił: \"Boże, miej litość dla mnie, grzesznika!\"\n\n(Pierwszy List do Tesaliczan 1 Tes 5,17) nieustannie się módlcie!"
   },
   {
     "t": "Miasto miłosierdzia",
@@ -3258,7 +3388,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Pustyni",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty przez czterdzieści dni przebywałeś na pustyni i często odchodziłeś na miejsca ustronne, aby się modlić. Prosimy Cię, daj nam łaskę ciszy i modlitwy serca, której uczyli Ojcowie Pustyni. Naucz nas, jak Antoni, zostawiać wszystko dla Ciebie, jak Bazyli — służyć ubogim, a jak Benedykt — niczego nie przedkładać nad Twoją miłość. Panie Jezu Chryste, Synu Boży, zmiłuj się nad nami, grzesznymi. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 129
+    "day": 129,
+    "passage": "(Dzieje Apostołów Dz 4,32-35) Jeden duch i jedno serce ożywiały wszystkich wierzących. Żaden nie nazywał swoim tego, co posiadał, ale wszystko mieli wspólne. Apostołowie z wielką mocą świadczyli o zmartwychwstaniu Pana Jezusa, a wszyscy oni mieli wielką łaskę. Nikt z nich nie cierpiał niedostatku, bo właściciele pól albo domów sprzedawali je i przynosili pieniądze [uzyskane] ze sprzedaży, i składali je u stóp Apostołów. Każdemu też rozdzielano według potrzeby."
   },
   {
     "t": "Ora et labora",
@@ -3283,7 +3414,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Pustyni",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty przez czterdzieści dni przebywałeś na pustyni i często odchodziłeś na miejsca ustronne, aby się modlić. Prosimy Cię, daj nam łaskę ciszy i modlitwy serca, której uczyli Ojcowie Pustyni. Naucz nas, jak Antoni, zostawiać wszystko dla Ciebie, jak Bazyli — służyć ubogim, a jak Benedykt — niczego nie przedkładać nad Twoją miłość. Panie Jezu Chryste, Synu Boży, zmiłuj się nad nami, grzesznymi. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 130
+    "day": 130,
+    "passage": "(Księga Psalmów Ps 34,12-15) Pójdźcie, synowie, słuchajcie mnie; nauczę was bojaźni Pańskiej. Jakim ma być człowiek, co miłuje życie i pragnie dni, by zażywać szczęścia? Powściągnij swój język od złego, a twoje wargi od słów podstępnych! Odstąp od złego, czyń dobro; szukaj pokoju, idź za nim!"
   },
   {
     "t": "Wierność w wygnaniu",
@@ -3308,7 +3440,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdy",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś Prawdą, a Twoje słowo jest światłem na naszej ścieżce. Dziękujemy Ci za Ojców i Doktorów Kościoła, którzy bronili wiary, tłumaczyli Pismo i szukali Ciebie całym sercem. Prosimy Cię, daj nam wytrwałość Atanazego, miłość Hieronima do Słowa, nawrócenie Augustyna i pokorę Grzegorza. Niech nasze niespokojne serca spoczną w Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 131
+    "day": 131,
+    "passage": "(Ewangelia według św. Jana J 10,30) Ja i Ojciec jedno jesteśmy\"."
   },
   {
     "t": "Miłość do Słowa",
@@ -3333,7 +3466,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdy",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś Prawdą, a Twoje słowo jest światłem na naszej ścieżce. Dziękujemy Ci za Ojców i Doktorów Kościoła, którzy bronili wiary, tłumaczyli Pismo i szukali Ciebie całym sercem. Prosimy Cię, daj nam wytrwałość Atanazego, miłość Hieronima do Słowa, nawrócenie Augustyna i pokorę Grzegorza. Niech nasze niespokojne serca spoczną w Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 132
+    "day": 132,
+    "passage": "(Drugi List do Tymoteusza 2 Tm 3,14-17) Ty natomiast trwaj w tym, czego się nauczyłeś i co ci powierzono, bo wiesz, od kogo się nauczyłeś. Od lat bowiem niemowlęcych znasz Pisma święte, które mogą cię nauczyć mądrości wiodącej ku zbawieniu przez wiarę w Chrystusie Jezusie. Wszelkie Pismo od Boga natchnione [jest] i pożyteczne do nauczania, do przekonywania, do poprawiania, do kształcenia w sprawiedliwości - aby człowiek Boży był doskonały, przysposobiony do każdego dobrego czynu."
   },
   {
     "t": "„Weź i czytaj”",
@@ -3358,7 +3492,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdy",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś Prawdą, a Twoje słowo jest światłem na naszej ścieżce. Dziękujemy Ci za Ojców i Doktorów Kościoła, którzy bronili wiary, tłumaczyli Pismo i szukali Ciebie całym sercem. Prosimy Cię, daj nam wytrwałość Atanazego, miłość Hieronima do Słowa, nawrócenie Augustyna i pokorę Grzegorza. Niech nasze niespokojne serca spoczną w Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 133
+    "day": 133,
+    "passage": "(List do Rzymian Rz 13,13-14) Żyjmy przyzwoicie jak w jasny dzień: nie w hulankach i pijatykach, nie w rozpuście i wyuzdaniu, nie w kłótni i zazdrości. Ale przyobleczcie się w Pana Jezusa Chrystusa i nie troszczcie się zbytnio o ciało, dogadzając żądzom."
   },
   {
     "t": "Niespokojne serce",
@@ -3383,7 +3518,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdy",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś Prawdą, a Twoje słowo jest światłem na naszej ścieżce. Dziękujemy Ci za Ojców i Doktorów Kościoła, którzy bronili wiary, tłumaczyli Pismo i szukali Ciebie całym sercem. Prosimy Cię, daj nam wytrwałość Atanazego, miłość Hieronima do Słowa, nawrócenie Augustyna i pokorę Grzegorza. Niech nasze niespokojne serca spoczną w Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 134
+    "day": 134,
+    "passage": "(Księga Psalmów Ps 42,2-3) Jak łania pragnie wody ze strumieni, tak dusza moja pragnie Ciebie, Boże! Dusza moja pragnie Boga, Boga żywego: kiedyż więc przyjdę i ujrzę oblicze Boże?"
   },
   {
     "t": "Sługa sług Bożych",
@@ -3408,7 +3544,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Prawdy",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś Prawdą, a Twoje słowo jest światłem na naszej ścieżce. Dziękujemy Ci za Ojców i Doktorów Kościoła, którzy bronili wiary, tłumaczyli Pismo i szukali Ciebie całym sercem. Prosimy Cię, daj nam wytrwałość Atanazego, miłość Hieronima do Słowa, nawrócenie Augustyna i pokorę Grzegorza. Niech nasze niespokojne serca spoczną w Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 135
+    "day": 135,
+    "passage": "(Ewangelia według św. Marka Mk 10,43-45) Nie tak będzie między wami. Lecz kto by między wami chciał się stać wielkim, niech będzie sługą waszym. A kto by chciał być pierwszym między wami, niech będzie niewolnikiem wszystkich. Bo i Syn Człowieczy nie przyszedł, aby Mu służono, lecz żeby służyć i dać swoje życie na okup za wielu\"."
   },
   {
     "t": "Miłość bez miary",
@@ -3433,7 +3570,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kontemplacji",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś Prawdą i Miłością, którą kontemplowali święci. Prosimy Cię, rozpal w nas miłość bez miary, której uczył Bernard. Oświecaj nasz rozum jak rozum Tomasza, prowadź nas drogą duszy do Boga jak Bonawenturę i daj nam miłość do Kościoła, jaką miała Katarzyna. Niech nasze życie będzie prawdziwym naśladowaniem Ciebie. Niczego, tylko Ciebie, Panie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 136
+    "day": 136,
+    "passage": "(Pierwszy List Jana 1 J 4,16-19) Myśmy poznali i uwierzyli miłości, jaką Bóg ma ku nam. Bóg jest miłością: kto trwa w miłości, trwa w Bogu, a Bóg trwa w nim. Przez to miłość osiąga w nas kres doskonałości, że mamy pełną ufność na dzień sądu, ponieważ tak, jak On jest [w niebie], i my jesteśmy na tym świecie. W miłości nie ma lęku, lecz doskonała miłość usuwa lęk, ponieważ lęk kojarzy się z karą. Ten zaś, kto się lęka, nie wydoskonalił się w miłości. O źródle miłości My miłujemy [Boga], ponieważ Bóg sam pierwszy nas umiłował."
   },
   {
     "t": "„Tylko Ciebie, Panie”",
@@ -3458,7 +3596,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kontemplacji",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś Prawdą i Miłością, którą kontemplowali święci. Prosimy Cię, rozpal w nas miłość bez miary, której uczył Bernard. Oświecaj nasz rozum jak rozum Tomasza, prowadź nas drogą duszy do Boga jak Bonawenturę i daj nam miłość do Kościoła, jaką miała Katarzyna. Niech nasze życie będzie prawdziwym naśladowaniem Ciebie. Niczego, tylko Ciebie, Panie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 137
+    "day": 137,
+    "passage": "(Księga Mądrości Mdr 7,7-14) Dlatego się modliłem i dano mi zrozumienie, przyzywałem, i przyszedł na mnie duch Mądrości. Przeniosłem ją nad berła i trony i w porównaniu z nią za nic miałem bogactwa. Nie porównałem z nią drogich kamieni, bo wszystko złoto wobec niej jest garścią piasku, a srebro przy niej ma wartość błota. Umiłowałem ją nad zdrowie i piękność i wolałem mieć ją aniżeli światło, bo nie zna snu blask od niej bijący. A przyszły mi wraz z nią wszystkie dobra i niezliczone bogactwa w jej ręku. Ucieszyłem się ze wszystkich, bo wiodła je Mądrość, a nie wiedziałem, że ona jest ich rodzicielką. Rzetelnie poznałem, bez zazdrości przekazuję i nie chowam dla siebie jej bogactwa. Jest bowiem dla ludzi skarbem nieprzebranym: ci, którzy go zdobyli, przyjaźń sobie Bożą zjednali, podtrzymani darami, co biorą początek z karności."
   },
   {
     "t": "Droga duszy do Boga",
@@ -3483,7 +3622,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kontemplacji",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś Prawdą i Miłością, którą kontemplowali święci. Prosimy Cię, rozpal w nas miłość bez miary, której uczył Bernard. Oświecaj nasz rozum jak rozum Tomasza, prowadź nas drogą duszy do Boga jak Bonawenturę i daj nam miłość do Kościoła, jaką miała Katarzyna. Niech nasze życie będzie prawdziwym naśladowaniem Ciebie. Niczego, tylko Ciebie, Panie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 138
+    "day": 138,
+    "passage": "(List do Rzymian Rz 1,20) Albowiem od stworzenia świata niewidzialne Jego przymioty - wiekuista Jego potęga oraz bóstwo - stają się widzialne dla umysłu przez Jego dzieła, tak że nie mogą się wymówić od winy."
   },
   {
     "t": "Miłość do Kościoła",
@@ -3508,7 +3648,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kontemplacji",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś Prawdą i Miłością, którą kontemplowali święci. Prosimy Cię, rozpal w nas miłość bez miary, której uczył Bernard. Oświecaj nasz rozum jak rozum Tomasza, prowadź nas drogą duszy do Boga jak Bonawenturę i daj nam miłość do Kościoła, jaką miała Katarzyna. Niech nasze życie będzie prawdziwym naśladowaniem Ciebie. Niczego, tylko Ciebie, Panie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 139
+    "day": 139,
+    "passage": "(List do Efezjan Ef 5,25) Mężowie miłujcie żony, bo i Chrystus umiłował Kościół i wydał za niego samego siebie,"
   },
   {
     "t": "Za Nim iść",
@@ -3533,7 +3674,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Kontemplacji",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś Prawdą i Miłością, którą kontemplowali święci. Prosimy Cię, rozpal w nas miłość bez miary, której uczył Bernard. Oświecaj nasz rozum jak rozum Tomasza, prowadź nas drogą duszy do Boga jak Bonawenturę i daj nam miłość do Kościoła, jaką miała Katarzyna. Niech nasze życie będzie prawdziwym naśladowaniem Ciebie. Niczego, tylko Ciebie, Panie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 140
+    "day": 140,
+    "passage": "(Ewangelia według św. Jana J 8,12) A oto znów przemówił do nich Jezus tymi słowami: \"Ja jestem światłością świata. Kto idzie za Mną, nie będzie chodził w ciemności, lecz będzie miał światło życia\"."
   },
   {
     "t": "Zamek wewnętrzny",
@@ -3558,7 +3700,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Karmelu",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty mieszkasz w najgłębszej komnacie naszej duszy i czekasz na przyjacielską rozmowę z nami. Prosimy Cię, naucz nas modlitwy Teresy z Ávili, wiary Jana od Krzyża w ciemnej nocy i dziecięcej ufności małej Teresy. Niech nic nas nie niepokoi i nic nas nie przeraża, bo Ty sam wystarczasz. A pod wieczór naszego życia osądź nas z miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 141
+    "day": 141,
+    "passage": "(Ewangelia według św. Jana J 14,23) W odpowiedzi rzekł do niego Jezus: \"Jeśli Mnie kto miłuje, będzie zachowywał moją naukę, a Ojciec mój umiłuje go, i przyjdziemy do niego, i będziemy u niego przebywać."
   },
   {
     "t": "Bóg sam wystarcza",
@@ -3583,7 +3726,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Karmelu",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty mieszkasz w najgłębszej komnacie naszej duszy i czekasz na przyjacielską rozmowę z nami. Prosimy Cię, naucz nas modlitwy Teresy z Ávili, wiary Jana od Krzyża w ciemnej nocy i dziecięcej ufności małej Teresy. Niech nic nas nie niepokoi i nic nas nie przeraża, bo Ty sam wystarczasz. A pod wieczór naszego życia osądź nas z miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 142
+    "day": 142,
+    "passage": "(Księga Psalmów Ps 16,1-2) Miktam. Dawidowy. Zachowaj mnie, Boże, bo chronię się u Ciebie, mówię Panu: \"Tyś jest Panem moim; nie ma dla mnie dobra poza Tobą\"."
   },
   {
     "t": "Noc ciemna",
@@ -3608,7 +3752,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Karmelu",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty mieszkasz w najgłębszej komnacie naszej duszy i czekasz na przyjacielską rozmowę z nami. Prosimy Cię, naucz nas modlitwy Teresy z Ávili, wiary Jana od Krzyża w ciemnej nocy i dziecięcej ufności małej Teresy. Niech nic nas nie niepokoi i nic nas nie przeraża, bo Ty sam wystarczasz. A pod wieczór naszego życia osądź nas z miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 143
+    "day": 143,
+    "passage": "(Księga Psalmów Ps 139,11-12) Jeśli powiem: \"Niech mię przynajmniej ciemności okryją i noc mnie otoczy jak światło\": sama ciemność nie będzie ciemna dla Ciebie, a noc jak dzień zajaśnieje: <mrok jest dla Ciebie jak światło>."
   },
   {
     "t": "Sąd z miłości",
@@ -3633,7 +3778,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Karmelu",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty mieszkasz w najgłębszej komnacie naszej duszy i czekasz na przyjacielską rozmowę z nami. Prosimy Cię, naucz nas modlitwy Teresy z Ávili, wiary Jana od Krzyża w ciemnej nocy i dziecięcej ufności małej Teresy. Niech nic nas nie niepokoi i nic nas nie przeraża, bo Ty sam wystarczasz. A pod wieczór naszego życia osądź nas z miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 144
+    "day": 144,
+    "passage": "(Pierwszy List do Koryntian 1 Kor 13,1-3) Gdybym mówił językami ludzi i aniołów, a miłości bym nie miał, stałbym się jak miedź brzęcząca albo cymbał brzmiący. Gdybym też miał dar prorokowania i znał wszystkie tajemnice, i posiadał wszelką wiedzę, i wszelką [możliwą] wiarę, tak iżbym góry przenosił. a miłości bym nie miał, byłbym niczym. I gdybym rozdał na jałmużnę całą majętność moją, a ciało wystawił na spalenie, lecz miłości bym nie miał, nic bym nie zyskał."
   },
   {
     "t": "Mała droga",
@@ -3658,7 +3804,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Karmelu",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty mieszkasz w najgłębszej komnacie naszej duszy i czekasz na przyjacielską rozmowę z nami. Prosimy Cię, naucz nas modlitwy Teresy z Ávili, wiary Jana od Krzyża w ciemnej nocy i dziecięcej ufności małej Teresy. Niech nic nas nie niepokoi i nic nas nie przeraża, bo Ty sam wystarczasz. A pod wieczór naszego życia osądź nas z miłości. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 145
+    "day": 145,
+    "passage": "(Ewangelia według św. Mateusza Mt 18,1-4) W tym czasie uczniowie przystąpili do Jezusa z zapytaniem: \"Kto właściwie jest największy w królestwie niebieskim?\" On przywołał dziecko, postawił je przed nimi i rzekł: \"Zaprawdę, powiadam wam: Jeśli się nie odmienicie i nie staniecie jak dzieci, nie wejdziecie do królestwa niebieskiego. Kto się więc uniży jak to dziecko, ten jest największy w królestwie niebieskim."
   },
   {
     "t": "Świętość dla wszystkich",
@@ -3683,7 +3830,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłosierdzia",
     "inPart": 1,
     "prayer": "Panie Jezu, Twoje Serce tak bardzo umiłowało ludzi, a miłosierdzie jest największym przymiotem Boga. Prosimy Cię, uczyń nasze serca na wzór Twojego Serca: łagodne jak serce Franciszka Salezego, służebne jak serce Wincentego, ufne jak serce Faustyny. Niech z Twojego przebitego boku spłynie miłosierdzie na nas i na cały świat. Jezu, ufam Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 146
+    "day": 146,
+    "passage": "(Pierwszy List do Tesaliczan 1 Tes 4,3) Albowiem wolą Bożą jest wasze uświęcenie: powstrzymywanie się od rozpusty,"
   },
   {
     "t": "Ubodzy naszymi panami",
@@ -3708,7 +3856,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłosierdzia",
     "inPart": 2,
     "prayer": "Panie Jezu, Twoje Serce tak bardzo umiłowało ludzi, a miłosierdzie jest największym przymiotem Boga. Prosimy Cię, uczyń nasze serca na wzór Twojego Serca: łagodne jak serce Franciszka Salezego, służebne jak serce Wincentego, ufne jak serce Faustyny. Niech z Twojego przebitego boku spłynie miłosierdzie na nas i na cały świat. Jezu, ufam Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 147
+    "day": 147,
+    "passage": "(Ewangelia według św. Mateusza Mt 25,35-40) Bo byłem głodny, a daliście Mi jeść; byłem spragniony, a daliście Mi pić; byłem przybyszem, a przyjęliście Mnie; byłem nagi, a przyodzialiście Mnie; byłem chory, a odwiedziliście Mnie; byłem w więzieniu, a przyszliście do Mnie\". Wówczas zapytają sprawiedliwi: \"Panie, kiedy widzieliśmy Cię głodnym i nakarmiliśmy Ciebie? spragnionym i daliśmy Ci pić? Kiedy widzieliśmy Cię przybyszem i przyjęliśmy Cię? lub nagim i przyodzialiśmy Cię? Kiedy widzieliśmy Cię chorym lub w więzieniu i przyszliśmy do Ciebie?\" A Król im odpowie: \"Zaprawdę, powiadam wam: Wszystko, co uczyniliście jednemu z tych braci moich najmniejszych, Mnieście uczynili\"."
   },
   {
     "t": "Serce, które umiłowało",
@@ -3733,7 +3882,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłosierdzia",
     "inPart": 3,
     "prayer": "Panie Jezu, Twoje Serce tak bardzo umiłowało ludzi, a miłosierdzie jest największym przymiotem Boga. Prosimy Cię, uczyń nasze serca na wzór Twojego Serca: łagodne jak serce Franciszka Salezego, służebne jak serce Wincentego, ufne jak serce Faustyny. Niech z Twojego przebitego boku spłynie miłosierdzie na nas i na cały świat. Jezu, ufam Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 148
+    "day": 148,
+    "passage": "(Ewangelia według św. Jana J 19,34) tylko jeden z żołnierzy włócznią przebił Mu bok i natychmiast wypłynęła krew i woda.\n\n(Ewangelia według św. Mateusza Mt 11,28-30) Przyjdźcie do Mnie wszyscy, którzy utrudzeni i obciążeni jesteście, a Ja was pokrzepię. Weźcie moje jarzmo na siebie i uczcie się ode Mnie, bo jestem cichy i pokorny sercem, a znajdziecie ukojenie dla dusz waszych. Albowiem jarzmo moje jest słodkie, a moje brzemię lekkie\"."
   },
   {
     "t": "Ufność",
@@ -3758,7 +3908,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłosierdzia",
     "inPart": 4,
     "prayer": "Panie Jezu, Twoje Serce tak bardzo umiłowało ludzi, a miłosierdzie jest największym przymiotem Boga. Prosimy Cię, uczyń nasze serca na wzór Twojego Serca: łagodne jak serce Franciszka Salezego, służebne jak serce Wincentego, ufne jak serce Faustyny. Niech z Twojego przebitego boku spłynie miłosierdzie na nas i na cały świat. Jezu, ufam Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 149
+    "day": 149,
+    "passage": "(Księga Psalmów Ps 136) Alleluja. Chwalcie Pana, bo dobry, bo Jego łaska na wieki. Chwalcie Boga nad bogami, bo Jego łaska na wieki. Chwalcie Pana nad panami, bo Jego łaska na wieki. On sam cudów wielkich dokonał, bo Jego łaska na wieki. On w mądrości uczynił niebiosa, bo Jego łaska na wieki. On rozpostarł ziemię nad wodami, bo Jego łaska na wieki. On uczynił wielkie światła, bo Jego łaska na wieki. Słońce, by dniem władało, bo Jego łaska na wieki."
   },
   {
     "t": "Bogaty w miłosierdzie",
@@ -3783,7 +3934,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Miłosierdzia",
     "inPart": 5,
     "prayer": "Panie Jezu, Twoje Serce tak bardzo umiłowało ludzi, a miłosierdzie jest największym przymiotem Boga. Prosimy Cię, uczyń nasze serca na wzór Twojego Serca: łagodne jak serce Franciszka Salezego, służebne jak serce Wincentego, ufne jak serce Faustyny. Niech z Twojego przebitego boku spłynie miłosierdzie na nas i na cały świat. Jezu, ufam Tobie. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 150
+    "day": 150,
+    "passage": "(List do Efezjan Ef 2,4-7) A Bóg, będąc bogaty w miłosierdzie, przez wielką swą miłość, jaką nas umiłował, i to nas, umarłych na skutek występków, razem z Chrystusem przywrócił do życia. Łaską bowiem jesteście zbawieni. Razem też wskrzesił i razem posadził na wyżynach niebieskich - w Chrystusie Jezusie, aby w nadchodzących wiekach przemożne bogactwo Jego łaski wykazać na przykładzie dobroci względem nas, w Chrystusie Jezusie."
   },
   {
     "t": "„Idź, odbuduj mój Kościół”",
@@ -3808,7 +3960,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Odnowy",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty w każdym czasie wzbudzasz świętych, którzy odnawiają Twój Kościół. Prosimy Cię, daj nam ubóstwo i radość Franciszka, umiłowanie prawdy i różańca Dominika, rozeznanie Ignacego i pasterską miłość Karola. Niech odnowa Kościoła zaczyna się od nawrócenia naszych serc. Uczyń nas narzędziami Twojego pokoju — na większą chwałę Bożą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 151
+    "day": 151,
+    "passage": "(Ewangelia według św. Mateusza Mt 10,7-10) Idźcie i głoście: \"Bliskie już jest królestwo niebieskie\". Uzdrawiajcie chorych, wskrzeszajcie umarłych, oczyszczajcie trędowatych, wypędzajcie złe duchy! Darmo otrzymaliście, darmo dawajcie! Nie zdobywajcie złota ani srebra, ani miedzi do swych trzosów. Nie bierzcie na drogę torby ani dwóch sukien, ani sandałów, ani laski! Wart jest bowiem robotnik swej strawy."
   },
   {
     "t": "Rany miłości",
@@ -3833,7 +3986,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Odnowy",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty w każdym czasie wzbudzasz świętych, którzy odnawiają Twój Kościół. Prosimy Cię, daj nam ubóstwo i radość Franciszka, umiłowanie prawdy i różańca Dominika, rozeznanie Ignacego i pasterską miłość Karola. Niech odnowa Kościoła zaczyna się od nawrócenia naszych serc. Uczyń nas narzędziami Twojego pokoju — na większą chwałę Bożą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 152
+    "day": 152,
+    "passage": "(List do Galatów Ga 6,17) Odtąd niech już nikt nie sprawia mi przykrości: przecież ja na ciele swoim noszę blizny, znamię przynależności do Jezusa."
   },
   {
     "t": "Kontemplować i dzielić się",
@@ -3858,7 +4012,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Odnowy",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty w każdym czasie wzbudzasz świętych, którzy odnawiają Twój Kościół. Prosimy Cię, daj nam ubóstwo i radość Franciszka, umiłowanie prawdy i różańca Dominika, rozeznanie Ignacego i pasterską miłość Karola. Niech odnowa Kościoła zaczyna się od nawrócenia naszych serc. Uczyń nas narzędziami Twojego pokoju — na większą chwałę Bożą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 153
+    "day": 153,
+    "passage": "(List do Rzymian Rz 10,14-17) Jakże więc mieli wzywać Tego, w którego nie uwierzyli? Jakże mieli uwierzyć w Tego, którego nie słyszeli? Jakże mieli usłyszeć, gdy im nikt nie głosił? Jakże mogliby im głosić, jeśliby nie zostali posłani? Jak to jest napisane: Jak piękne stopy tych, którzy zwiastują dobrą nowinę! Ale nie wszyscy dali posłuch Ewangelii. Izajasz bowiem mówi: Panie, któż uwierzył temu, co od nas posłyszał? Przeto wiara rodzi się z tego, co się słyszy, tym zaś, co się słyszy, jest słowo Chrystusa."
   },
   {
     "t": "Na większą chwałę Bożą",
@@ -3883,7 +4038,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Odnowy",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty w każdym czasie wzbudzasz świętych, którzy odnawiają Twój Kościół. Prosimy Cię, daj nam ubóstwo i radość Franciszka, umiłowanie prawdy i różańca Dominika, rozeznanie Ignacego i pasterską miłość Karola. Niech odnowa Kościoła zaczyna się od nawrócenia naszych serc. Uczyń nas narzędziami Twojego pokoju — na większą chwałę Bożą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 154
+    "day": 154,
+    "passage": "(Ewangelia według św. Mateusza Mt 16,24-26) Wtedy Jezus rzekł do swoich uczniów: \"Jeśli kto chce pójść za Mną, niech się zaprze samego siebie, niech weźmie krzyż swój i niech Mnie naśladuje. Bo kto chce zachować swoje życie, straci je; a kto straci swe życie z mego powodu, znajdzie je. Cóż bowiem za korzyść odniesie człowiek, choćby cały świat zyskał, a na swej duszy szkodę poniósł? Albo co da człowiek w zamian za swoją duszę?"
   },
   {
     "t": "Pasterz w czasie zarazy",
@@ -3908,7 +4064,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Odnowy",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty w każdym czasie wzbudzasz świętych, którzy odnawiają Twój Kościół. Prosimy Cię, daj nam ubóstwo i radość Franciszka, umiłowanie prawdy i różańca Dominika, rozeznanie Ignacego i pasterską miłość Karola. Niech odnowa Kościoła zaczyna się od nawrócenia naszych serc. Uczyń nas narzędziami Twojego pokoju — na większą chwałę Bożą. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 155
+    "day": 155,
+    "passage": "(Ewangelia według św. Jana J 10,11) Ja jestem dobrym pasterzem. Dobry pasterz daje życie swoje za owce."
   },
   {
     "t": "Matka wszystkich narodów",
@@ -3933,7 +4090,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Orędzi Maryjnych",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty z krzyża dałeś nam Maryję za Matkę, a ona w każdym czasie przychodzi do swoich dzieci. Prosimy Cię, daj nam słuchać jej wezwań: do pokuty, do modlitwy za grzeszników i do codziennego różańca. Niech ona, Matka z Guadalupe, Niepokalana z Lourdes i Pani z Gietrzwałdu i Fatimy, prowadzi nas do Ciebie. Niech zatriumfuje jej Niepokalane Serce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 156
+    "day": 156,
+    "passage": "(Objawienie Apokalipsy Ap 12,1) Potem wielki znak się ukazał na niebie: Niewiasta obleczona w słońce i księżyc pod jej stopami, a na jej głowie wieniec z gwiazd dwunastu."
   },
   {
     "t": "Promienie łask",
@@ -3958,7 +4116,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Orędzi Maryjnych",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty z krzyża dałeś nam Maryję za Matkę, a ona w każdym czasie przychodzi do swoich dzieci. Prosimy Cię, daj nam słuchać jej wezwań: do pokuty, do modlitwy za grzeszników i do codziennego różańca. Niech ona, Matka z Guadalupe, Niepokalana z Lourdes i Pani z Gietrzwałdu i Fatimy, prowadzi nas do Ciebie. Niech zatriumfuje jej Niepokalane Serce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 157
+    "day": 157,
+    "passage": "(Ewangelia według św. Łukasza Łk 1,28) Anioł wszedł do Niej i rzekł: \"Bądź pozdrowiona, pełna łaski, Pan z Tobą, \"."
   },
   {
     "t": "Niepokalane Poczęcie",
@@ -3983,7 +4142,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Orędzi Maryjnych",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty z krzyża dałeś nam Maryję za Matkę, a ona w każdym czasie przychodzi do swoich dzieci. Prosimy Cię, daj nam słuchać jej wezwań: do pokuty, do modlitwy za grzeszników i do codziennego różańca. Niech ona, Matka z Guadalupe, Niepokalana z Lourdes i Pani z Gietrzwałdu i Fatimy, prowadzi nas do Ciebie. Niech zatriumfuje jej Niepokalane Serce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 158
+    "day": 158,
+    "passage": "(Ewangelia według św. Łukasza Łk 1,46-55) Wtedy Maryja rzekła: \"Wielbi dusza moja Pana, i raduje się duch mój w Bogu, moim Zbawcy. Bo wejrzał na uniżenie Służebnicy swojej. Oto bowiem błogosławić mnie będą odtąd wszystkie pokolenia, gdyż wielkie rzeczy uczynił mi Wszechmocny. Święte jest Jego imię - a swoje miłosierdzie na pokolenia i pokolenia [zachowuje] dla tych, co się Go boją. On przejawia moc ramienia swego, rozprasza [ludzi] pyszniących się zamysłami serc swoich. Strąca władców z tronu, a wywyższa pokornych. Głodnych nasyca dobrami, a bogatych z niczym odprawia."
   },
   {
     "t": "Matka mówiąca po polsku",
@@ -4008,7 +4168,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Orędzi Maryjnych",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty z krzyża dałeś nam Maryję za Matkę, a ona w każdym czasie przychodzi do swoich dzieci. Prosimy Cię, daj nam słuchać jej wezwań: do pokuty, do modlitwy za grzeszników i do codziennego różańca. Niech ona, Matka z Guadalupe, Niepokalana z Lourdes i Pani z Gietrzwałdu i Fatimy, prowadzi nas do Ciebie. Niech zatriumfuje jej Niepokalane Serce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 159
+    "day": 159,
+    "passage": "(Ewangelia według św. Jana J 2,5) Wtedy Matka Jego powiedziała do sług: \"Zróbcie wszystko, cokolwiek wam powie\"."
   },
   {
     "t": "Triumf Niepokalanego Serca",
@@ -4033,7 +4194,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Orędzi Maryjnych",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty z krzyża dałeś nam Maryję za Matkę, a ona w każdym czasie przychodzi do swoich dzieci. Prosimy Cię, daj nam słuchać jej wezwań: do pokuty, do modlitwy za grzeszników i do codziennego różańca. Niech ona, Matka z Guadalupe, Niepokalana z Lourdes i Pani z Gietrzwałdu i Fatimy, prowadzi nas do Ciebie. Niech zatriumfuje jej Niepokalane Serce. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 160
+    "day": 160,
+    "passage": "(Ewangelia według św. Łukasza Łk 1,48) Bo wejrzał na uniżenie Służebnicy swojej. Oto bowiem błogosławić mnie będą odtąd wszystkie pokolenia,"
   },
   {
     "t": "Tylko miłość jest twórcza",
@@ -4058,7 +4220,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Świadectwa",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty w XX wieku, w czasach obozów i totalitaryzmów, wzbudziłeś świadków, którzy kochali do końca. Prosimy Cię, daj nam ofiarną miłość Maksymiliana, pragnienie prawdy Edyty Stein, miłosierdzie Rodziny Ulmów, wierność Matki Teresy w małych rzeczach i odwagę ks. Jerzego, by zło dobrem zwyciężać. Niech ich świadectwo nie pozwoli nam zobojętnieć. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 161
+    "day": 161,
+    "passage": "(Ewangelia według św. Jana J 15,13) Nikt nie ma większej miłości od tej, gdy ktoś życie swoje oddaje za przyjaciół swoich."
   },
   {
     "t": "Nauka Krzyża",
@@ -4083,7 +4246,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Świadectwa",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty w XX wieku, w czasach obozów i totalitaryzmów, wzbudziłeś świadków, którzy kochali do końca. Prosimy Cię, daj nam ofiarną miłość Maksymiliana, pragnienie prawdy Edyty Stein, miłosierdzie Rodziny Ulmów, wierność Matki Teresy w małych rzeczach i odwagę ks. Jerzego, by zło dobrem zwyciężać. Niech ich świadectwo nie pozwoli nam zobojętnieć. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 162
+    "day": 162,
+    "passage": "(List do Galatów Ga 6,14) Co do mnie, nie daj Boże, bym się miał chlubić z czego innego, jak tylko z krzyża Pana naszego Jezusa Chrystusa, dzięki któremu świat stał się ukrzyżowany dla mnie, a ja dla świata."
   },
   {
     "t": "Samarytanie z Markowej",
@@ -4108,7 +4272,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Świadectwa",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty w XX wieku, w czasach obozów i totalitaryzmów, wzbudziłeś świadków, którzy kochali do końca. Prosimy Cię, daj nam ofiarną miłość Maksymiliana, pragnienie prawdy Edyty Stein, miłosierdzie Rodziny Ulmów, wierność Matki Teresy w małych rzeczach i odwagę ks. Jerzego, by zło dobrem zwyciężać. Niech ich świadectwo nie pozwoli nam zobojętnieć. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 163
+    "day": 163,
+    "passage": "(Ewangelia według św. Łukasza Łk 10,25-37) A oto powstał jakiś uczony w Prawie i wystawiając Go na próbę, zapytał: \"Nauczycielu, co mam czynić, aby osiągnąć życie wieczne?\" Jezus mu odpowiedział: \"Co jest napisane w Prawie? Jak czytasz?\" On rzekł: Będziesz miłował Pana, Boga swego, całym swoim sercem, całą swoją duszą, całą swoją mocą i całym swoim umysłem; a swego bliźniego jak siebie samego. Jezus rzekł do niego: \"Dobrześ odpowiedział. To czyń, a będziesz żył\". Lecz on, chcąc się usprawiedliwić, zapytał Jezusa: \"A kto jest moim bliźnim?\" Jezus nawiązując do tego, rzekł: \"Pewien człowiek schodził z Jerozolimy do Jerycha i wpadł w ręce zbójców. Ci nie tylko że go obdarli, lecz jeszcze rany mu zadali i zostawiwszy na pół umarłego, odeszli. Przypadkiem przechodził tą drogą pewien kapłan; zobaczył go i minął. Tak samo lewita, gdy przyszedł na to miejsce i zobaczył go, minął."
   },
   {
     "t": "Pragnienie Jezusa",
@@ -4133,7 +4298,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Świadectwa",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty w XX wieku, w czasach obozów i totalitaryzmów, wzbudziłeś świadków, którzy kochali do końca. Prosimy Cię, daj nam ofiarną miłość Maksymiliana, pragnienie prawdy Edyty Stein, miłosierdzie Rodziny Ulmów, wierność Matki Teresy w małych rzeczach i odwagę ks. Jerzego, by zło dobrem zwyciężać. Niech ich świadectwo nie pozwoli nam zobojętnieć. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 164
+    "day": 164,
+    "passage": "(Ewangelia według św. Jana J 19,28) Potem Jezus świadom, że już wszystko się dokonało, aby się wypełniło Pismo, rzekł: \"Pragnę\".\n\n(Ewangelia według św. Mateusza Mt 25,35-40) Bo byłem głodny, a daliście Mi jeść; byłem spragniony, a daliście Mi pić; byłem przybyszem, a przyjęliście Mnie; byłem nagi, a przyodzialiście Mnie; byłem chory, a odwiedziliście Mnie; byłem w więzieniu, a przyszliście do Mnie\". Wówczas zapytają sprawiedliwi: \"Panie, kiedy widzieliśmy Cię głodnym i nakarmiliśmy Ciebie? spragnionym i daliśmy Ci pić? Kiedy widzieliśmy Cię przybyszem i przyjęliśmy Cię? lub nagim i przyodzialiśmy Cię? Kiedy widzieliśmy Cię chorym lub w więzieniu i przyszliśmy do Ciebie?\" A Król im odpowie: \"Zaprawdę, powiadam wam: Wszystko, co uczyniliście jednemu z tych braci moich najmniejszych, Mnieście uczynili\"."
   },
   {
     "t": "Zło dobrem zwyciężaj",
@@ -4158,7 +4324,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Świadectwa",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty w XX wieku, w czasach obozów i totalitaryzmów, wzbudziłeś świadków, którzy kochali do końca. Prosimy Cię, daj nam ofiarną miłość Maksymiliana, pragnienie prawdy Edyty Stein, miłosierdzie Rodziny Ulmów, wierność Matki Teresy w małych rzeczach i odwagę ks. Jerzego, by zło dobrem zwyciężać. Niech ich świadectwo nie pozwoli nam zobojętnieć. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 165
+    "day": 165,
+    "passage": "(List do Rzymian Rz 12,21) Nie daj się zwyciężyć złu, ale zło dobrem zwyciężaj!"
   },
   {
     "t": "„Nie lękajcie się!”",
@@ -4183,7 +4350,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Znaków Czasu",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty wołasz do nas przez znaki naszych czasów. Prosimy Cię, daj nam odwagę, do której wzywał święty Jan Paweł II, radość młodego Kościoła, wierność męczenników naszych dni i świętość w codzienności, jaką żył Carlo. Naucz nas troszczyć się o wspólny dom i słyszeć wołanie ubogich. Nie pozwól nam się lękać, bo Ty jesteś z nami. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 166
+    "day": 166,
+    "passage": "(Ewangelia według św. Mateusza Mt 14,27) Jezus zaraz przemówił do nich: \"Odwagi! Ja jestem, nie bójcie się!\""
   },
   {
     "t": "Kościół jest młody",
@@ -4208,7 +4376,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Znaków Czasu",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty wołasz do nas przez znaki naszych czasów. Prosimy Cię, daj nam odwagę, do której wzywał święty Jan Paweł II, radość młodego Kościoła, wierność męczenników naszych dni i świętość w codzienności, jaką żył Carlo. Naucz nas troszczyć się o wspólny dom i słyszeć wołanie ubogich. Nie pozwól nam się lękać, bo Ty jesteś z nami. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 167
+    "day": 167,
+    "passage": "(Pierwszy List do Tymoteusza 1 Tm 4,12) Niechaj nikt nie lekceważy twego młodego wieku, lecz wzorem bądź dla wiernych w mowie, w obejściu, w miłości, w wierze, w czystości!"
   },
   {
     "t": "Imię na ustach",
@@ -4233,7 +4402,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Znaków Czasu",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty wołasz do nas przez znaki naszych czasów. Prosimy Cię, daj nam odwagę, do której wzywał święty Jan Paweł II, radość młodego Kościoła, wierność męczenników naszych dni i świętość w codzienności, jaką żył Carlo. Naucz nas troszczyć się o wspólny dom i słyszeć wołanie ubogich. Nie pozwól nam się lękać, bo Ty jesteś z nami. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 168
+    "day": 168,
+    "passage": "(Ewangelia według św. Mateusza Mt 10,32) Do każdego więc, który się przyzna do Mnie przed ludźmi, przyznam się i Ja przed moim Ojcem, który jest w niebie."
   },
   {
     "t": "Autostrada do nieba",
@@ -4258,7 +4428,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Znaków Czasu",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty wołasz do nas przez znaki naszych czasów. Prosimy Cię, daj nam odwagę, do której wzywał święty Jan Paweł II, radość młodego Kościoła, wierność męczenników naszych dni i świętość w codzienności, jaką żył Carlo. Naucz nas troszczyć się o wspólny dom i słyszeć wołanie ubogich. Nie pozwól nam się lękać, bo Ty jesteś z nami. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 169
+    "day": 169,
+    "passage": "(Ewangelia według św. Jana J 6,51) Ja jestem chlebem żywym, który zstąpił z nieba. Jeśli kto spożywa ten chleb, będzie żył na wieki. Chlebem, który Ja dam, jest moje ciało za życie świata\"."
   },
   {
     "t": "Wspólny dom",
@@ -4283,7 +4454,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Znaków Czasu",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty wołasz do nas przez znaki naszych czasów. Prosimy Cię, daj nam odwagę, do której wzywał święty Jan Paweł II, radość młodego Kościoła, wierność męczenników naszych dni i świętość w codzienności, jaką żył Carlo. Naucz nas troszczyć się o wspólny dom i słyszeć wołanie ubogich. Nie pozwól nam się lękać, bo Ty jesteś z nami. Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 170
+    "day": 170,
+    "passage": "(Księga Rodzaju Rdz 2,15) Pan Bóg wziął zatem człowieka i umieścił go w ogrodzie Eden, aby uprawiał go i doglądał.\n\n(List do Rzymian Rz 8,19-22) Bo stworzenie z upragnieniem oczekuje objawienia się synów Bożych. Stworzenie bowiem zostało poddane marności - nie z własnej chęci, ale ze względu na Tego, który je poddał - w nadziei, że również i ono zostanie wyzwolone z niewoli zepsucia, by uczestniczyć w wolności i chwale dzieci Bożych. Wiemy przecież, że całe stworzenie aż dotąd jęczy i wzdycha w bólach rodzenia."
   },
   {
     "t": "Czuwanie",
@@ -4308,7 +4480,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Paruzji",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty jesteś Alfą i Omegą, Początkiem i Końcem całej historii zbawienia. Prosimy Cię, utrzymaj nasze lampy zapalone, abyśmy czuwali na Twoje przyjście. Gdy przyjdziesz sądzić świat, rozpoznaj nas po miłości do najmniejszych. Umacniaj nas w walce ze złem i daj nam ujrzeć nowe niebo i nową ziemię, gdzie otrzesz z naszych oczu wszelką łzę. Marana tha — przyjdź, Panie Jezu! Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 171
+    "day": 171,
+    "passage": "(Ewangelia według św. Mateusza Mt 25,1-13) Wtedy podobne będzie królestwo niebieskie do dziesięciu panien, które wzięły swoje lampy i wyszły na spotkanie pana młodego. Pięć z nich było nierozsądnych, a pięć roztropnych. Nierozsądne wzięły lampy, ale nie wzięły z sobą oliwy. Roztropne zaś razem z lampami zabrały również oliwę w naczyniach. Gdy się pan młody opóźniał, zmorzone snem wszystkie zasnęły. Lecz o północy rozległo się wołanie: \"Pan młody idzie, wyjdźcie mu na spotkanie!\" Wtedy powstały wszystkie owe panny i opatrzyły swe lampy. A nierozsądne rzekły do roztropnych: \"Użyczcie nam swej oliwy, bo nasze lampy gasną\"."
   },
   {
     "t": "Sąd miłości",
@@ -4333,7 +4506,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Paruzji",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty jesteś Alfą i Omegą, Początkiem i Końcem całej historii zbawienia. Prosimy Cię, utrzymaj nasze lampy zapalone, abyśmy czuwali na Twoje przyjście. Gdy przyjdziesz sądzić świat, rozpoznaj nas po miłości do najmniejszych. Umacniaj nas w walce ze złem i daj nam ujrzeć nowe niebo i nową ziemię, gdzie otrzesz z naszych oczu wszelką łzę. Marana tha — przyjdź, Panie Jezu! Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 172
+    "day": 172,
+    "passage": "(Ewangelia według św. Mateusza Mt 25,31-46) Gdy Syn Człowieczy przyjdzie w swej chwale i wszyscy aniołowie z Nim, wtedy zasiądzie na swoim tronie pełnym chwały. I zgromadzą się przed Nim wszystkie narody, a On oddzieli jednych [ludzi] od drugich, jak pasterz oddziela owce od kozłów. Owce postawi po prawej, a kozły po swojej lewej stronie. Wtedy odezwie się Król do tych po prawej stronie: \"Pójdźcie, błogosławieni Ojca mojego, weźcie w posiadanie królestwo, przygotowane wam od założenia świata! Bo byłem głodny, a daliście Mi jeść; byłem spragniony, a daliście Mi pić; byłem przybyszem, a przyjęliście Mnie; byłem nagi, a przyodzialiście Mnie; byłem chory, a odwiedziliście Mnie; byłem w więzieniu, a przyszliście do Mnie\". Wówczas zapytają sprawiedliwi: \"Panie, kiedy widzieliśmy Cię głodnym i nakarmiliśmy Ciebie? spragnionym i daliśmy Ci pić? Kiedy widzieliśmy Cię przybyszem i przyjęliśmy Cię? lub nagim i przyodzialiśmy Cię?"
   },
   {
     "t": "Ostateczne zwycięstwo",
@@ -4358,7 +4532,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Paruzji",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty jesteś Alfą i Omegą, Początkiem i Końcem całej historii zbawienia. Prosimy Cię, utrzymaj nasze lampy zapalone, abyśmy czuwali na Twoje przyjście. Gdy przyjdziesz sądzić świat, rozpoznaj nas po miłości do najmniejszych. Umacniaj nas w walce ze złem i daj nam ujrzeć nowe niebo i nową ziemię, gdzie otrzesz z naszych oczu wszelką łzę. Marana tha — przyjdź, Panie Jezu! Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 173
+    "day": 173,
+    "passage": "(Objawienie Apokalipsy Ap 12) Potem wielki znak się ukazał na niebie: Niewiasta obleczona w słońce i księżyc pod jej stopami, a na jej głowie wieniec z gwiazd dwunastu. A jest brzemienna. I woła cierpiąc bóle i męki rodzenia. I inny znak się ukazał na niebie: Oto wielki Smok barwy ognia, mający siedem głów i dziesięć rogów - a na głowach jego siedem diademów. I ogon jego zmiata trzecią część gwiazd nieba: i rzucił je na ziemię. I stanął Smok przed mającą rodzić Niewiastą, ażeby skoro porodzi, pożreć jej dziecię. I porodziła Syna - Mężczyznę, który wszystkie narody będzie pasł rózgą żelazną. I zostało porwane jej Dziecię do Boga i do Jego tronu. A Niewiasta zbiegła na pustynię, gdzie miejsce ma przygotowane przez Boga, aby ją tam żywiono przez tysiąc dwieście sześćdziesiąt dni. I nastąpiła walka na niebie: Michał i jego aniołowie mieli walczyć ze Smokiem. I wystąpił do walki Smok i jego aniołowie, ale nie przemógł, i już się miejsce dla nich w niebie nie znalazło."
   },
   {
     "t": "Wszystko nowe",
@@ -4383,7 +4558,8 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Paruzji",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty jesteś Alfą i Omegą, Początkiem i Końcem całej historii zbawienia. Prosimy Cię, utrzymaj nasze lampy zapalone, abyśmy czuwali na Twoje przyjście. Gdy przyjdziesz sądzić świat, rozpoznaj nas po miłości do najmniejszych. Umacniaj nas w walce ze złem i daj nam ujrzeć nowe niebo i nową ziemię, gdzie otrzesz z naszych oczu wszelką łzę. Marana tha — przyjdź, Panie Jezu! Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 174
+    "day": 174,
+    "passage": "(Objawienie Apokalipsy Ap 21,1-7) I ujrzałem niebo nowe i ziemię nową, bo pierwsze niebo i pierwsza ziemia przeminęły, i morza już nie ma. I Miasto Święte - Jeruzalem Nowe ujrzałem zstępujące z nieba od Boga, przystrojone jak oblubienica zdobna w klejnoty dla swego męża. I usłyszałem donośny głos mówiący od tronu: \"Oto przybytek Boga z ludźmi: i zamieszka wraz z nimi, i będą oni Jego ludem, a On będzie \"BOGIEM Z NIMI\". I otrze z ich oczu wszelką łzę, a śmierci już odtąd nie będzie. Ani żałoby, ni krzyku, ni trudu już [odtąd] nie będzie, bo pierwsze rzeczy przeminęły\". I rzekł Zasiadający na tronie: \"Oto czynię wszystko nowe\". I mówi: \"Napisz: Słowa te wiarygodne są i prawdziwe\". I rzekł mi: \"Stało się. Jam Alfa i Omega, Początek i Koniec. Ja pragnącemu dam darmo pić ze źródła wody życia. Zwycięzca to odziedziczy i będę Bogiem dla niego, a on dla mnie będzie synem."
   },
   {
     "t": "Marana tha",
@@ -4408,6 +4584,7 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "partTitle": "Tajemnice Paruzji",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty jesteś Alfą i Omegą, Początkiem i Końcem całej historii zbawienia. Prosimy Cię, utrzymaj nasze lampy zapalone, abyśmy czuwali na Twoje przyjście. Gdy przyjdziesz sądzić świat, rozpoznaj nas po miłości do najmniejszych. Umacniaj nas w walce ze złem i daj nam ujrzeć nowe niebo i nową ziemię, gdzie otrzesz z naszych oczu wszelką łzę. Marana tha — przyjdź, Panie Jezu! Który żyjesz i królujesz na wieki wieków. Amen.",
-    "day": 175
+    "day": 175,
+    "passage": "(Objawienie Apokalipsy Ap 22,16-21) Ja, Jezus, posłałem mojego anioła, by wam zaświadczyć o tym, co dotyczy Kościołów. Jam jest Odrośl i Potomstwo Dawida, Gwiazda świecąca, poranna\". A Duch i Oblubienica mówią: \"Przyjdź!\" A kto słyszy, niech powie: \"Przyjdź!\" I kto odczuwa pragnienie, niech przyjdzie, kto chce, niech wody życia darmo zaczerpnie. Ja świadczę każdemu, kto słucha słów proroctwa tej księgi: jeśliby ktoś do nich cokolwiek dołożył, Bóg mu dołoży plag zapisanych w tej księdze. A jeśliby ktoś odjął co ze słów księgi tego proroctwa, to Bóg odejmie jego udział w drzewie życia i w Mieście Świętym - które są opisane w tej księdze. Mówi Ten, który o tym świadczy: \"Zaiste, przyjdę niebawem\". Amen. Przyjdź, Panie Jezu! Łaska Pana Jezusa ze wszystkimi!"
   }
 ];

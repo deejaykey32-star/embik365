@@ -554,7 +554,12 @@ export function extractCleanWordsForKaraoke(normalizedText: string): string[] {
     .replace(/[\n\r\t]+/g, ' ')
     .split(/\s+/)
     .map(w => w.trim())
-    .filter(w => w.length > 0 && w !== '.' && w !== ',' && w !== ':' && w !== ';');
+    .filter(w => {
+      if (!w || w.length === 0) return false;
+      // Filter out isolated punctuation/symbols that are not spoken words by TTS
+      if (/^[.,:;!?'"()\[\]{}—–\-_/\\|•·*~^„”«»]+$/.test(w)) return false;
+      return true;
+    });
 }
 
 /**

@@ -462,12 +462,13 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                 </span>
                 <button
                   onClick={() => {
-                    const explText = rhzEntry.explanation || rhzEntry.passage || '';
-                    const fullPaterText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${explText ? ` ${explText}.` : ''} ${rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text}`;
+                    const passageText = rhzEntry.passage ? `Fragment Pisma Świętego: ${rhzEntry.passage}. ` : '';
+                    const explText = rhzEntry.explanation ? `Rozważanie: ${rhzEntry.explanation}. ` : '';
+                    const fullPaterText = `Tajemnica: ${rhzEntry.stageTitle}. ${passageText}${explText}${rhzEntry.ourFather || COMMON_PRAYERS.ourFather.text}`;
                     speakText('mystery_pater', fullPaterText);
                   }}
                   className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
-                  title="Odsłuchaj lektorem (z rozważaniem tajemnicy)"
+                  title="Odsłuchaj lektorem (z Pismem Świętym i rozważaniem tajemnicy)"
                 >
                   {activeSpeechId === 'mystery_pater' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
