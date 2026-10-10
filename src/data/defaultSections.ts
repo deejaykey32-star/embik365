@@ -65,10 +65,10 @@ export const SECTIONS: SectionMeta[] = [
     id: 'mapa',
     name: 'Mapa',
     shortTitle: 'Pielgrzymka Gwiaździsta',
-    subtitle: 'Wielka Pielgrzymka Gwiaździsta 2026 & Szlak Orlich Gniazd',
+    subtitle: 'Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
     type: 'info',
     description: 'Interaktywna mapa multimedialna: 3 etapy pielgrzymki, promienie z Polski i świata ku Jasnej Górze, 164 km Szlakiem Orlich Gniazd do Łagiewnik, czuwanie i nocleg w Ojcowie w Dzień Ojca oraz transmisje YouTube na żywo.',
-    badge: 'Pielgrzymka 2026',
+    badge: 'Pielgrzymka',
     icon: 'MapPin',
     accentColor: '#d97706', // amber-600
     bgGradient: 'from-amber-900/20 via-orange-800/10 to-transparent'

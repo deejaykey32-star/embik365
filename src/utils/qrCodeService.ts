@@ -169,8 +169,8 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
   },
   {
     id: 'qr_mapa',
-    title: 'Wielka Pielgrzymka Gwiaździsta 2026 (mapa-aon.pages.dev)',
-    displayLabel: 'Zeskanuj, aby otworzyć interaktywną mapę Pielgrzymki Gwiaździstej 2026',
+    title: 'Wielka Pielgrzymka Gwiaździsta (mapa-aon.pages.dev)',
+    displayLabel: 'Zeskanuj, aby otworzyć interaktywną mapę Pielgrzymki Gwiaździstej',
     shortUrl: 'https://wnr365.pages.dev/mapa-aon',
     fullUrl: 'https://mapa-aon.pages.dev',
     sectionId: 'mapa',

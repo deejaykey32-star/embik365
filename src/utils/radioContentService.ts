@@ -530,9 +530,19 @@ export function getRadioBroadcastItem(
 
   if (stationId === 'wnr365') {
     const entry = WNR365_FULL_DATA[safeDay] || WNR365_FULL_DATA[1];
-    const cleanContent = stripHtml(entry.content || entry.page1 || '').replace(/https?:\/\/[^\s]+/g, '').trim();
+    const cleanContent = stripHtml(entry.content || entry.page1 || '')
+      .replace(/https?:\/\/[^\s]+/g, '')
+      .replace(/\[\s*(\d{1,2}\.\d{1,2})\.2026\s*\]/g, '[$1]')
+      .replace(/\.2026\b/g, '')
+      .replace(/\b2026\b/g, '')
+      .trim();
     const rawTitle = entry.title || `Dzień ${safeDay}`;
-    const cleanTitle = rawTitle.replace(/^Widoki na Raj\s*—\s*WnR365\s*\([^)]*\)\s*—\s*WnR365\s*—\s*Widoki na Raj\s*-\s*\([^)]*\)\s*-\s*—\s*/i, '').trim();
+    const cleanTitle = rawTitle
+      .replace(/^Widoki na Raj\s*—\s*WnR365\s*\([^)]*\)\s*—\s*WnR365\s*—\s*Widoki na Raj\s*-\s*\([^)]*\)\s*-\s*—\s*/i, '')
+      .replace(/\[\s*(\d{1,2}\.\d{1,2})\.2026\s*\]/g, '[$1]')
+      .replace(/\.2026\b/g, '')
+      .replace(/\b2026\b/g, '')
+      .trim();
 
     const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
     const spokenDate = normalizePolishTextForSpeech(entry.displayDate || '');

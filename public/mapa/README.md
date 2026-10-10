@@ -1,4 +1,4 @@
-# Wielka Pielgrzymka Gwiaździsta 2026 & Szlak Orlich Gniazd
+# Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
 
 Interaktywna platforma multimedialno-geograficzna obsługująca 3-etapową Pielgrzymkę Gwiaździstą z całego świata do Częstochowy, wspólny marsz Szlakiem Orlich Gniazd do Sanktuarium Bożego Miłosierdzia w Krakowie-Łagiewnikach oraz Rozesłanie (Missio).
 
@@ -21,13 +21,13 @@ Interaktywna platforma multimedialno-geograficzna obsługująca 3-etapową Pielg
 
 ### **Etap II: Wielkie Zjednoczenie – Szlak Orlich Gniazd (18 – 24 Czerwca 2026)**
 Wszystkie grupy łączą się 17 czerwca na Jasnej Górze i **18 czerwca 2026** ruszają wspólnie jako jedna wielka pielgrzymka licząca 164 km przez Jurę Krakowsko-Częstochowską:
-1. **Dzień 1 (18.06.2026, Czw):** Jasna Góra ➔ Zamek Olsztyn ➔ Zrębice ➔ Złoty Potok (28 km)
-2. **Dzień 2 (19.06.2026, Pt):** Złoty Potok ➔ Ostrężnik ➔ Zamek Mirów ➔ Zamek Bobolice (24 km)
-3. **Dzień 3 (20.06.2026, Sob):** Bobolice ➔ Góra Zborów (Podlesice) ➔ Zamek Morsko ➔ Zamek Ogrodzieniec (26 km)
-4. **Dzień 4 (21.06.2026, Nd):** Zamek Ogrodzieniec ➔ Zamek Smoleń ➔ Bydlin ➔ Klucze / Pustynia Błędowska (27 km)
-5. **Dzień 5 (22.06.2026, Pon):** Klucze ➔ Olkusz ➔ Zamek Rabsztyn ➔ Sułoszowa ➔ Zamek Pieskowa Skała (25 km)
-6. **Dzień 6 (23.06.2026, Wt – DZIEŃ OJCA):** Pieskowa Skała ➔ Grodzisko ➔ Brama Krakowska ➔ **Nocleg w OJCOWIE w Dzień Ojca** (18 km). *Wielkie czuwanie i modlitwa za ojców i rodziny pod Bramą Krakowską.*
-7. **Dzień 7 (24.06.2026, Śr):** Ojców ➔ Zamek Korzkiew ➔ Kraków (Wawel) ➔ **Kraków-Łagiewniki (Sanktuarium Bożego Miłosierdzia)** (26 km). *Finałowa Msza Święta Te Deum o 15:00 w Godzinie Miłosierdzia.*
+1. **Dzień 1 (, Czw):** Jasna Góra ➔ Zamek Olsztyn ➔ Zrębice ➔ Złoty Potok (28 km)
+2. **Dzień 2 (, Pt):** Złoty Potok ➔ Ostrężnik ➔ Zamek Mirów ➔ Zamek Bobolice (24 km)
+3. **Dzień 3 (, Sob):** Bobolice ➔ Góra Zborów (Podlesice) ➔ Zamek Morsko ➔ Zamek Ogrodzieniec (26 km)
+4. **Dzień 4 (, Nd):** Zamek Ogrodzieniec ➔ Zamek Smoleń ➔ Bydlin ➔ Klucze / Pustynia Błędowska (27 km)
+5. **Dzień 5 (, Pon):** Klucze ➔ Olkusz ➔ Zamek Rabsztyn ➔ Sułoszowa ➔ Zamek Pieskowa Skała (25 km)
+6. **Dzień 6 (, Wt – DZIEŃ OJCA):** Pieskowa Skała ➔ Grodzisko ➔ Brama Krakowska ➔ **Nocleg w OJCOWIE w Dzień Ojca** (18 km). *Wielkie czuwanie i modlitwa za ojców i rodziny pod Bramą Krakowską.*
+7. **Dzień 7 (, Śr):** Ojców ➔ Zamek Korzkiew ➔ Kraków (Wawel) ➔ **Kraków-Łagiewniki (Sanktuarium Bożego Miłosierdzia)** (26 km). *Finałowa Msza Święta Te Deum o 15:00 w Godzinie Miłosierdzia.*
 
 ---
 

@@ -265,9 +265,9 @@ Każde małżeństwo to nieustanna budowa świątyni ze słów: "przepraszam", "
         sectionId,
         dateKey: cycleDate.dateKey,
         dayNumber,
-        title: `Pielgrzymka Gwiaździsta 2026 • Dzień ${dayNumber}`,
+        title: `Pielgrzymka Gwiaździsta • Dzień ${dayNumber}`,
         subtitle: `${displayDate} • Szlak Orlich Gniazd i Sanktuaria`,
-        content: `Informacje o Wielkiej Pielgrzymce Gwiaździstej 2026, Szlaku Orlich Gniazd i etapach pielgrzymowania ku Jasnej Górze i Łagiewnikom.`
+        content: `Informacje o Wielkiej Pielgrzymce Gwiaździstej, Szlaku Orlich Gniazd i etapach pielgrzymowania ku Jasnej Górze i Łagiewnikom.`
       };
 
     case 'histada':

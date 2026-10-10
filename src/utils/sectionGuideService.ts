@@ -43,7 +43,7 @@ Po trzecie: Nowy RHZ – interaktywna aplikacja modlitewna na 175 dni, podzielon
 
 Po czwarte: Biblia365 i Apokryfy. Roczny plan czytania Słowa Bożego wraz z cennymi tekstami wczesnochrześcijańskimi.
 
-Po piąte: Sekcja Mapa – poświęcona Wielkiej Pielgrzymce Gwiaździstej 2026 oraz pieszemu Szlakowi Orlich Gniazd z Częstochowy do Łagiewnik. Znajdziesz tam interaktywne mapy, trasy w Google Maps, pliki CSV oraz nagranie audioprzewodnika.
+Po piąte: Sekcja Mapa – poświęcona Wielkiej Pielgrzymce Gwiaździstej oraz pieszemu Szlakowi Orlich Gniazd z Częstochowy do Łagiewnik. Znajdziesz tam interaktywne mapy, trasy w Google Maps, pliki CSV oraz nagranie audioprzewodnika.
 
 Po szóste: Histada – autorska trylogia gier kulturowo-historycznych dla poszukujących prawdy, łącząca historię, naukę, filozofię i wiarę.
 
@@ -65,7 +65,7 @@ W każdej chwili możesz włączyć lektora online przyciskiem ze słuchawkami. 
   mapa: {
     id: 'mapa',
     sectionName: 'Mapa Pielgrzymki',
-    title: 'Wielka Pielgrzymka Gwiaździsta 2026 & Szlak Orlich Gniazd',
+    title: 'Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
     subtitle: 'Symbolika dwóch gwiazd, Trójkąt Trójcy Świętej, 7 dni szlaku i przesilenie 21 czerwca',
     badge: 'Audioprzewodnik Szlaku',
     script: PILGRIMAGE_LECTOR_SCRIPT

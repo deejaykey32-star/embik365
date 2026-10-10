@@ -1,6 +1,6 @@
 {
-  "name": "Wielka Pielgrzymka Gwiaździsta 2026",
-  "short_name": "Pielgrzymka 2026",
+  "name": "Wielka Pielgrzymka Gwiaździsta",
+  "short_name": "Pielgrzymka",
   "description": "Oficjalna aplikacja Pielgrzymki Gwiaździstej do Częstochowy i Szlaku Orlich Gniazd do Łagiewnik",
   "start_url": "./",
   "display": "standalone",

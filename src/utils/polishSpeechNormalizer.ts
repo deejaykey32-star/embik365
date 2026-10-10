@@ -380,6 +380,14 @@ export function normalizePolishTextForSpeech(rawText: string): string {
   text = text.replace(/www\.\S+/gi, ' ');
   text = text.replace(/[*#_~^|\\]/g, ' ');
 
+  // Usunięcie wszelkich odwołań do roku 2026 w tekście i werbalnym przekazie lektora
+  text = text.replace(/(?:\b(?:w|roku|rok|z\s+dnia|dnia)\s+)?2026(?:\s*r(?:\.|oku)?)?/gi, '');
+  text = text.replace(/2025\s*\/\s*2026(?:\s*r(?:\.|oku)?)?/gi, '2025');
+  text = text.replace(/\[\s*(\d{1,2}\.\d{1,2})\.2026\s*\]/gi, '[$1]');
+  text = text.replace(/(\d{1,2}\.\d{1,2})\.2026/gi, '$1');
+  text = text.replace(/(\d{1,2}\s+(?:stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia))\s+2026(?:\s*r(?:\.|oku)?)?/gi, '$1');
+  text = text.replace(/\b2026\b/g, '');
+
   // 3. Rozwinięcie specyficznych nazw projektów i sekcji
   text = text.replace(/\bWnR365\b/g, 'Widoki na Raj trzysta sześćdziesiąt pięć');
   text = text.replace(/\bWnR\b/g, 'Widoki na Raj');

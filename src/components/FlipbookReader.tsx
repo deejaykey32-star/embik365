@@ -378,7 +378,7 @@ export const FlipbookReader: React.FC<Props> = ({
     size: 2123083,
     sectionId: 'ebook_rhz',
     title: 'Księga Różaniec Historii Zbawienia (RHZ365) - Pełny PDF 1:1',
-    description: 'Najnowszy plik PDF książki z dnia 17.09.2026.',
+    description: 'Najnowszy plik PDF książki z dnia 17.09.',
     uploadedAt: '2026-09-17T12:00:00.000Z'
   };
 

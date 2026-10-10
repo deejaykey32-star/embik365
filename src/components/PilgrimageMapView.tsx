@@ -533,7 +533,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
           <iframe
             ref={iframeRef}
             src={`/mapa/index.html?stage=${activeStage}`}
-            title="Pielgrzymka Gwiaździsta 2026 - Interaktywna Mapa"
+            title="Pielgrzymka Gwiaździsta - Interaktywna Mapa"
             className="w-full h-full border-0"
             allow="geolocation"
           />
@@ -1385,7 +1385,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
                 <div className="text-xs font-bold uppercase tracking-wider text-amber-600">Wydarzenie Specjalne</div>
                 <h3 className="text-sm font-bold text-[#1f1712] dark:text-white">Czuwanie w Dniu Ojca pod Bramą Krakowską (Ojców)</h3>
-                <p className="text-xs text-[#614e3e] dark:text-[#94a3b8]">Wieczorna modlitwa i różaniec 23.06.2026 o 20:00.</p>
+                <p className="text-xs text-[#614e3e] dark:text-[#94a3b8]">Wieczorna modlitwa i różaniec 23.06 o 20:00.</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border border-[#e8ded3] dark:border-[#24334a] space-y-2">
