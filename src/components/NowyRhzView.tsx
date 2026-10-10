@@ -51,6 +51,7 @@ import {
   getLectorConfig, 
   unlockMobileAudio 
 } from '../utils/audioLectorService';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 
 interface Props {
   section?: SectionMeta;
@@ -1145,6 +1146,15 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
             <p className="text-xs sm:text-sm text-[#5e4b3b] dark:text-[#9bb0cf] max-w-4xl font-sans-ui leading-relaxed">
               7 etapów × 5 części × 5 tajemnic = 175 dni modlitwy. Każdego dnia rozważana jest jedna tajemnica z 10 dopowiedzeniami po słowie „Jezus” oraz syntezą lektora AI TTS.
             </p>
+
+            {/* Lektor AI Audio Guide Bar */}
+            <div className="pt-2">
+              <SectionGuidePlayerBar 
+                sectionId="nowyRHZ" 
+                currentLang={currentLang} 
+                variant="banner" 
+              />
+            </div>
           </div>
 
           {/* 3 Zakładki: Okno z tekstem, Aplikacja PWA, 7 Etapów */}

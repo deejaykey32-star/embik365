@@ -25,6 +25,7 @@ import { DigitalRosary } from './DigitalRosary';
 import { RhzPrayerGuide } from './RhzPrayerGuide';
 import { getRhzEntryForDay } from '../data/rhz365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio, getSerialLectorState, saveSerialLectorState } from '../utils/audioLectorService';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
@@ -292,6 +293,13 @@ export const StandardReader: React.FC<Props> = ({
                   <span className="font-semibold whitespace-nowrap">Głos</span>
                 </button>
               )}
+
+              {/* 2.5 Przewodnik audio po sekcji */}
+              <SectionGuidePlayerBar 
+                sectionId={section.id} 
+                currentLang={currentLang} 
+                variant="compact" 
+              />
 
               {/* 3. Kopiuj treść wpisu */}
               <button

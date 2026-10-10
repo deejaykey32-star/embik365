@@ -31,6 +31,7 @@ import {
 } from '../utils/radioContentService';
 import { generateAndDownloadQrBadgePng, getQrCodeForSection } from '../utils/qrCodeService';
 import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 
 interface Props {
   onBackToHome?: () => void;
@@ -167,6 +168,15 @@ export const VideoStudioView: React.FC<Props> = ({
                   <Play className="w-5 h-5 fill-current" />
                   <span>Uruchom Generator Wideo MP4</span>
                 </button>
+              </div>
+
+              {/* Lektor AI Audio Guide Bar */}
+              <div className="pt-2">
+                <SectionGuidePlayerBar 
+                  sectionId="wideo" 
+                  currentLang={currentLang} 
+                  variant="banner" 
+                />
               </div>
             </div>
 

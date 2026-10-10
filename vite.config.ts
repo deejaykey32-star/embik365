@@ -36,6 +36,32 @@ function apiShortenDevPlugin(): Plugin {
             console.warn('Vite dev api/shorten plugin error:', err);
           }
         }
+
+        if (req.url && req.url.startsWith('/api/tts') && req.method === 'POST') {
+          try {
+            const bodyBuffers: Buffer[] = [];
+            for await (const chunk of req) {
+              bodyBuffers.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+            }
+            const bodyStr = Buffer.concat(bodyBuffers).toString('utf-8');
+            const ttsRes = await fetch('https://widokinaraj.pl/api/tts', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: bodyStr
+            });
+            res.statusCode = ttsRes.status;
+            res.setHeader('Content-Type', ttsRes.headers.get('content-type') || 'application/json');
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            const data = await ttsRes.text();
+            return res.end(data);
+          } catch (err: any) {
+            console.warn('Vite dev api/tts proxy error:', err);
+          }
+        }
+
         next();
       });
     }

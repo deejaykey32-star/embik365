@@ -30,6 +30,7 @@ import { getWnrEntryForDay, getWnrStartPdfPageForDay, getWnrDayForPdfPage, getWn
 import { getWnrPdfPage } from '../data/wnrPdfPagesData';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
 import { playLectorSpeech, stopLectorSpeech, getLectorConfig, unlockMobileAudio, getSerialLectorState, saveSerialLectorState } from '../utils/audioLectorService';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 import { getQrCodeForSection, generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
 import { COMMON_PRAYERS } from '../data/rosaryData';
@@ -1272,6 +1273,13 @@ export const FlipbookReader: React.FC<Props> = ({
               <span>🎧</span>
             </button>
           )}
+
+          {/* Przewodnik audio po sekcji */}
+          <SectionGuidePlayerBar 
+            sectionId={section.id} 
+            currentLang={currentLang} 
+            variant="compact" 
+          />
 
           {/* Sound toggle */}
           <button

@@ -43,6 +43,7 @@ import {
 } from '../utils/radioPlaybackManager';
 import { generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 
 interface Props {
   initialStationId?: RadioStationId;
@@ -293,6 +294,16 @@ export const RadioView: React.FC<Props> = ({
               Nie musisz niczego włączać ani uruchamiać – jesteś w trybie ciągłego podsłuchu. 
               Możesz przełączać stacje i podsłuchiwać to, co w danej sekundzie płynie w eterze.
             </p>
+
+            {/* Lektor AI Audio Guide Bar */}
+            <div className="pt-2">
+              <SectionGuidePlayerBar 
+                sectionId="radio" 
+                currentLang={currentLang} 
+                onOpenLectorModal={onOpenLectorSettings}
+                variant="banner" 
+              />
+            </div>
           </div>
 
           {/* 4 Stacje Selector (Karty Podsłuchu na żywo dla każdej ze stacji) */}

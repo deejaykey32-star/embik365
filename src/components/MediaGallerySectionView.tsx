@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { MediaLibraryViewer } from './MediaLibraryViewer';
 import { ElementEditorModal } from './ElementEditorModal';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 import { getHomePageConfig, saveHomePageConfig } from '../utils/homePageConfig';
 
 interface MediaGallerySectionViewProps {
@@ -148,6 +149,15 @@ export const MediaGallerySectionView: React.FC<MediaGallerySectionViewProps> = (
             className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200"
             dangerouslySetInnerHTML={{ __html: introHtml }}
           />
+
+          {/* Lektor AI Audio Guide Bar */}
+          <div className="mt-6">
+            <SectionGuidePlayerBar 
+              sectionId="grafika" 
+              currentLang={currentLang} 
+              variant="banner" 
+            />
+          </div>
 
           {adminUser && (
             <div className="mt-6 pt-4 border-t border-fuchsia-500/20 flex flex-wrap items-center justify-between gap-3">

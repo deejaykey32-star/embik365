@@ -35,7 +35,8 @@ import {
   playLectorSpeech, 
   stopLectorSpeech, 
   getLectorConfig, 
-  unlockMobileAudio 
+  unlockMobileAudio,
+  getLectorPlaybackState
 } from '../utils/audioLectorService';
 
 export const PILGRIMAGE_LECTOR_SCRIPT = `
@@ -105,9 +106,17 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
   const [showNarrationText, setShowNarrationText] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Zatrzymanie lektora przy odmontowaniu widoku
+  // Zatrzymanie lektora przy odmontowaniu widoku oraz nasłuchiwanie stanu odtwarzacza
   useEffect(() => {
+    const handleLectorStateChange = () => {
+      const state = getLectorPlaybackState();
+      if (state === 'idle') {
+        setIsLectorPlaying(false);
+      }
+    };
+    window.addEventListener('drogowskazy_lector_state_changed', handleLectorStateChange);
     return () => {
+      window.removeEventListener('drogowskazy_lector_state_changed', handleLectorStateChange);
       stopLectorSpeech();
     };
   }, []);
@@ -121,7 +130,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     }
     stopLectorSpeech();
     setIsLectorPlaying(true);
-    const config = getLectorConfig();
+    const config = { ...getLectorConfig(), mode: 'online' as const };
     await playLectorSpeech({
       text: PILGRIMAGE_LECTOR_SCRIPT,
       config,
@@ -402,6 +411,29 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             >
               <Info className="w-3.5 h-3.5" />
               <span>Info</span>
+            </button>
+
+            <button
+              onClick={handleToggleLector}
+              id="btn-map-lector-online"
+              title="Włącz lub wyłącz lektora AI online (Przewodnik po pielgrzymce i szlaku)"
+              className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
+                isLectorPlaying
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white ring-2 ring-rose-400/50 animate-pulse'
+                  : 'bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 text-white shadow-xs'
+              }`}
+            >
+              {isLectorPlaying ? (
+                <>
+                  <Square className="w-3.5 h-3.5 fill-white" />
+                  <span>Zatrzymaj Lektora</span>
+                </>
+              ) : (
+                <>
+                  <Headphones className="w-3.5 h-3.5 text-amber-200" />
+                  <span>Lektor AI (Online)</span>
+                </>
+              )}
             </button>
 
             <a

@@ -31,6 +31,12 @@ import {
   RadioPlaybackState
 } from '../utils/radioPlaybackManager';
 import { RADIO_STATIONS } from '../utils/radioContentService';
+import { 
+  getSectionGuide, 
+  getActiveGuideSectionId, 
+  playSectionGuideLector, 
+  stopSectionGuideLector 
+} from '../utils/sectionGuideService';
 
 interface Props {
   currentDate: CycleDate;
@@ -56,12 +62,14 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
   const [playbackState, setPlaybackState] = useState<LectorPlaybackState>(() => getLectorPlaybackState());
   const [serialState, setSerialState] = useState<SerialLectorState>(() => getSerialLectorState());
   const [radioState, setRadioState] = useState<RadioPlaybackState>(() => globalRadioManager.getState());
+  const [guideActiveId, setGuideActiveId] = useState<string | null>(() => getActiveGuideSectionId());
   const [isMinimized, setIsMinimized] = useState(false);
 
   // Sync state on custom events
   useEffect(() => {
     const handleStateChange = () => {
       setPlaybackState(getLectorPlaybackState());
+      setGuideActiveId(getActiveGuideSectionId());
     };
     const handleSerialChange = (e: any) => {
       setSerialState(e.detail || getSerialLectorState());
@@ -69,22 +77,28 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
     const handleRadioChange = (e: any) => {
       setRadioState(e.detail || globalRadioManager.getState());
     };
+    const handleGuideChange = (e: any) => {
+      setGuideActiveId(e.detail?.sectionId || getActiveGuideSectionId());
+      setPlaybackState(getLectorPlaybackState());
+    };
 
     window.addEventListener('drogowskazy_lector_state_changed', handleStateChange);
     window.addEventListener('drogowskazy_serial_lector_updated', handleSerialChange);
     window.addEventListener(RADIO_PLAYBACK_EVENT_NAME, handleRadioChange);
+    window.addEventListener('drogowskazy_section_guide_changed', handleGuideChange);
 
     return () => {
       window.removeEventListener('drogowskazy_lector_state_changed', handleStateChange);
       window.removeEventListener('drogowskazy_serial_lector_updated', handleSerialChange);
       window.removeEventListener(RADIO_PLAYBACK_EVENT_NAME, handleRadioChange);
+      window.removeEventListener('drogowskazy_section_guide_changed', handleGuideChange);
     };
   }, []);
 
   const isRadioActive = radioState.isRadioActive;
 
-  // Show player if playing, paused, serial lector is active, or 24/7 radio is broadcasting
-  const isVisible = playbackState !== 'idle' || serialState.isActive || isRadioActive;
+  // Show player if playing, paused, serial lector is active, guide is active, or 24/7 radio is broadcasting
+  const isVisible = playbackState !== 'idle' || serialState.isActive || isRadioActive || Boolean(guideActiveId);
 
   if (!isVisible) {
     return null;
@@ -114,15 +128,23 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
       globalRadioManager.stopRadio();
       return;
     }
+    stopSectionGuideLector();
     saveSerialLectorState({ isActive: false });
     stopLectorSpeech();
     setPlaybackState('idle');
   };
 
   const triggerPlayCurrentEntry = async () => {
+    const activeGuideId = guideActiveId || getActiveGuideSectionId();
+    if (activeGuideId || activeSection.type === 'info') {
+      const gId = activeGuideId || activeSection.id;
+      await playSectionGuideLector(gId, currentLang);
+      return;
+    }
+
     const title = serialState.lastTitle || displayedEntry.title || activeSection.name;
     const textToSpeak = `${title}. ${displayedEntry.content.replace(/<[^>]*>/g, '')}. ${displayedEntry.prayer ? 'Modlitwa: ' + displayedEntry.prayer.replace(/<[^>]*>/g, '') : ''}`;
-    const lectorCfg = getLectorConfig();
+    const lectorCfg = { ...getLectorConfig(), mode: 'online' as const };
 
     await playLectorSpeech({
       text: textToSpeak,
@@ -206,16 +228,25 @@ export const FloatingAudioPlayer: React.FC<Props> = ({
     ? RADIO_STATIONS.find(s => s.id === radioState.stationId)
     : null;
 
+  const activeGuideId = guideActiveId || getActiveGuideSectionId();
+  const guideItem = activeGuideId ? getSectionGuide(activeGuideId) : null;
+
   const activeBadge = isRadioActive
     ? '🔴 RADIO 24/7 LIVE'
+    : guideItem
+    ? guideItem.badge
     : activeSection.name;
 
   const activeSubInfo = isRadioActive
     ? `${stationMeta?.shortName || 'Radio'} • Dzień ${radioState.dayNumber} z ${radioState.totalDays}`
+    : guideItem
+    ? guideItem.sectionName
     : `Dzień ${currentDate.dayNumber} z 366`;
 
   const activeTitle = isRadioActive
     ? (radioState.currentBroadcastItem?.headlineTitle || stationMeta?.name || 'Radio Internetowe 24/7')
+    : guideItem
+    ? guideItem.title
     : (serialState.lastTitle || displayedEntry.title || 'Odtwarzacz Lektora');
 
   if (isMinimized) {

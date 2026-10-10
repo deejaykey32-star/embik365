@@ -119,14 +119,11 @@ export function getLectorConfig(): LectorConfig {
 
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Jeśli użytkownik miał jeszcze stary domyślny tryb 'local',
-      // migrujemy automatycznie do 'online' (płynny lektor bez zacinania):
-      if (!migrationDone) {
-        parsed.mode = 'online';
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_LECTOR_CONFIG, ...parsed }));
-        localStorage.setItem(MIGRATION_KEY, 'true');
-      }
-      return { ...DEFAULT_LECTOR_CONFIG, ...parsed };
+      // Użytkownik ma zawsze tryb 'online' (płynny lektor AI w chmurze bez zacinania):
+      parsed.mode = 'online';
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_LECTOR_CONFIG, ...parsed, mode: 'online' }));
+      localStorage.setItem(MIGRATION_KEY, 'true');
+      return { ...DEFAULT_LECTOR_CONFIG, ...parsed, mode: 'online' };
     } else {
       localStorage.setItem(MIGRATION_KEY, 'true');
     }
@@ -679,44 +676,46 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
     return;
   }
 
-  const shouldUseOnline = config.mode === 'online' && cleanedSpeechText.length <= 1200;
-  if (shouldUseOnline) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9000);
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        signal: controller.signal,
-        body: JSON.stringify({
-          text: cleanedSpeechText,
-          voiceId: onlineProfile.id,
-          lang: targetLang,
-          gender: targetGender,
-          rate: config.rate,
-          pitch: config.pitch,
-          format: 'json'
-        })
-      });
-      clearTimeout(timeoutId);
+  // Helper do pobierania segmentów audio z /api/tts z podwójnym adresem i bezpośrednim fallbackiem
+  async function fetchOnlineTtsBuffers(segmentText: string): Promise<AudioBuffer[]> {
+    if (!segmentText.trim()) return [];
+    const endpoints = ['/api/tts', 'https://widokinaraj.pl/api/tts'];
+    
+    for (const endpoint of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            text: segmentText,
+            voiceId: onlineProfile.id,
+            lang: targetLang,
+            gender: targetGender,
+            rate: config.rate,
+            pitch: config.pitch,
+            format: 'json'
+          })
+        });
+        clearTimeout(timeoutId);
 
-      if (!isCurrentSession()) return;
+        if (!response.ok) continue;
 
-      if (response.ok) {
         let audioCtx = sharedAudioCtx;
         if (!audioCtx || audioCtx.state === 'closed') {
           audioCtx = unlockMobileAudio();
         }
+        if (!audioCtx) continue;
 
         const contentType = response.headers.get('content-type') || '';
-        let fullAudioBuffer: AudioBuffer | null = null;
-
         if (contentType.includes('application/json')) {
           const data = await response.json();
-          if (data && Array.isArray(data.chunks) && data.chunks.length > 0 && audioCtx) {
+          if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
             const decodedChunks: AudioBuffer[] = [];
             for (const b64 of data.chunks) {
               try {
@@ -730,49 +729,99 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
               }
             }
             if (decodedChunks.length > 0) {
-              fullAudioBuffer = concatenateAudioBuffers(audioCtx, decodedChunks);
+              return decodedChunks;
             }
           }
-        } else if (audioCtx) {
+        } else {
           const arrayBuffer = await response.arrayBuffer();
-          fullAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+          if (arrayBuffer.byteLength > 64) {
+            const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+            return [decoded];
+          }
         }
+      } catch (err) {
+        console.warn(`Online TTS fetch error on ${endpoint}:`, err);
+      }
+    }
 
+    // Bezpośredni fallback Google Translate TTS (gdyby endpointy API były chwilowo niedostępne)
+    try {
+      let audioCtx = sharedAudioCtx;
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = unlockMobileAudio();
+      }
+      if (audioCtx) {
+        const subFragments = splitTextForTts(segmentText, 140);
+        const directBuffers: AudioBuffer[] = [];
+        for (const sub of subFragments) {
+          try {
+            const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(sub)}&tl=${targetLang}&client=tw-ob`;
+            const dRes = await fetch(directUrl);
+            if (dRes.ok) {
+              const ab = await dRes.arrayBuffer();
+              if (ab.byteLength > 64) {
+                const decoded = await audioCtx.decodeAudioData(ab);
+                directBuffers.push(decoded);
+              }
+            }
+          } catch {}
+        }
+        if (directBuffers.length > 0) {
+          return directBuffers;
+        }
+      }
+    } catch {}
+
+    return [];
+  }
+
+  try {
+    // Podział na naturalne segmenty po maks 900 znaków (na granicach zdań i interpunkcji)
+    const segments = splitTextForTts(cleanedSpeechText, 900);
+    const allDecodedBuffers: AudioBuffer[] = [];
+
+    for (let i = 0; i < segments.length; i += 2) {
+      if (!isCurrentSession()) return;
+      const batch = segments.slice(i, i + 2);
+      const batchResults = await Promise.all(batch.map(seg => fetchOnlineTtsBuffers(seg)));
+      for (const res of batchResults) {
+        allDecodedBuffers.push(...res);
+      }
+    }
+
+    if (!isCurrentSession()) return;
+
+    if (allDecodedBuffers.length > 0) {
+      let audioCtx = sharedAudioCtx;
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = unlockMobileAudio();
+      }
+      if (audioCtx) {
+        const fullAudioBuffer = concatenateAudioBuffers(audioCtx, allDecodedBuffers);
         if (fullAudioBuffer && isCurrentSession()) {
           await playDecodedAudioBuffer(fullAudioBuffer, onlineProfile, config, currentSession, wrappedOnStart, wrappedOnEnd, wrappedOnError);
           return;
         }
       }
-    } catch (err) {
-      console.warn('Online TTS endpoint unavailable or timed out, falling back to local speech synthesis:', err);
     }
-
-    if (!isCurrentSession()) return;
-
-    playLocalSpeechFallback({
-      ...options,
-      text: cleanedSpeechText,
-      sessionId: currentSession,
-      overrideLang: targetLang,
-      desiredGender: targetGender,
-      voiceProfile: onlineProfile,
-      onStart: wrappedOnStart,
-      onEnd: wrappedOnEnd,
-      onError: wrappedOnError
-    });
-  } else {
-    playLocalSpeechFallback({
-      ...options,
-      text: cleanedSpeechText,
-      sessionId: currentSession,
-      overrideLang: targetLang,
-      desiredGender: targetGender,
-      preferredURI: config.localVoiceURI,
-      onStart: wrappedOnStart,
-      onEnd: wrappedOnEnd,
-      onError: wrappedOnError
-    });
+  } catch (err) {
+    console.warn('Online TTS pipeline error:', err);
   }
+
+  if (!isCurrentSession()) return;
+
+  // Awaryjny fallback do syntezy lokalnej wyłącznie w przypadku całkowitego braku połączenia internetowego
+  playLocalSpeechFallback({
+    ...options,
+    text: cleanedSpeechText,
+    sessionId: currentSession,
+    overrideLang: targetLang,
+    desiredGender: targetGender,
+    voiceProfile: onlineProfile,
+    onStart: wrappedOnStart,
+    onEnd: wrappedOnEnd,
+    onError: wrappedOnError
+  });
 }
 
 export function splitTextForTts(text: string, maxLen: number = 320): string[] {

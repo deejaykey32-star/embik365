@@ -53,6 +53,7 @@ import {
   uploadImageFileToServer,
   SECTION_ICONS_MAP 
 } from '../utils/homePageConfig';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 import { getUIText, translateTextWithFreeApi } from '../utils/translationService';
 
 interface Info365ViewProps {
@@ -330,6 +331,15 @@ export const Info365View: React.FC<Info365ViewProps> = ({
             className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200"
             dangerouslySetInnerHTML={{ __html: activeConfig.introHtml }}
           />
+
+          {/* AI Lector Audio Guide Bar for Home Page & All Sections */}
+          <div className="mt-6">
+            <SectionGuidePlayerBar 
+              sectionId="info365" 
+              currentLang={currentLang} 
+              variant="banner" 
+            />
+          </div>
 
           {/* Admin toolbar inside Hero Banner */}
           {adminUser && (

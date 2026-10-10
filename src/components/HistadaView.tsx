@@ -23,6 +23,7 @@ import {
 import { SectionMeta } from '../types';
 import { generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { QrImageDisplay } from './QrImageDisplay';
+import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 
 interface Props {
   section?: SectionMeta;
@@ -217,6 +218,15 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
               Interaktywny świat zachęcający do odkrywania prawdy, pobudzający do myślenia, 
               uczący odpowiedzialności za losy świata i motywujący do zgłębiania wielkiego dorobku całej ludzkości.
             </p>
+
+            {/* Lektor AI Audio Guide Bar */}
+            <div className="pt-2">
+              <SectionGuidePlayerBar 
+                sectionId="histada" 
+                currentLang={currentLang} 
+                variant="banner" 
+              />
+            </div>
           </div>
         </div>
       </section>
