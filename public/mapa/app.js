@@ -45,6 +45,9 @@ class PilgrimageApp {
 
     // Lektor AI State
     this.isLectorSpeaking = false;
+    this.lectorSessionId = 0;
+    this.lectorKeepAliveTimer = null;
+    this.lectorWatchdogTimer = null;
 
     this.init();
   }
@@ -1223,11 +1226,26 @@ class PilgrimageApp {
 
   stopAiLector() {
     this.isLectorSpeaking = false;
+    this.lectorSessionId = 0;
+
+    if (this.lectorKeepAliveTimer) {
+      clearInterval(this.lectorKeepAliveTimer);
+      this.lectorKeepAliveTimer = null;
+    }
+    if (this.lectorWatchdogTimer) {
+      clearTimeout(this.lectorWatchdogTimer);
+      this.lectorWatchdogTimer = null;
+    }
+    if (window._activeLectorUtterances) {
+      window._activeLectorUtterances.clear();
+    }
+
     if ('speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
       } catch {}
     }
+
     const icon = document.getElementById('btn-lector-icon');
     const text = document.getElementById('btn-lector-text');
     const btn = document.getElementById('btn-toggle-ai-lector');
@@ -1244,11 +1262,15 @@ class PilgrimageApp {
       return;
     }
 
-    try {
-      window.speechSynthesis.cancel();
-    } catch {}
+    this.stopAiLector();
 
     this.isLectorSpeaking = true;
+    const currentSession = Date.now();
+    this.lectorSessionId = currentSession;
+
+    // Globalna referencja uniemożliwiająca Garbage Collectorowi usunięcie obiektu w trakcie mowy (Chromium V8 Bug)
+    window._activeLectorUtterances = window._activeLectorUtterances || new Set();
+    window._activeLectorUtterances.clear();
 
     const icon = document.getElementById('btn-lector-icon');
     const text = document.getElementById('btn-lector-text');
@@ -1259,16 +1281,42 @@ class PilgrimageApp {
     if (btn) { btn.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)'; }
     if (box) { box.style.background = '#dc2626'; }
 
+    // Heartbeat Keep-Alive zapobiegający samoczynnemu zamarzaniu silnika mowy po 15 sekundach w Chrome / Edge
+    this.lectorKeepAliveTimer = setInterval(() => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        if (this.isLectorSpeaking && window.speechSynthesis.speaking) {
+          if (!window.speechSynthesis.paused) {
+            try {
+              window.speechSynthesis.pause();
+              window.speechSynthesis.resume();
+            } catch (e) {}
+          } else {
+            try {
+              window.speechSynthesis.resume();
+            } catch (e) {}
+          }
+        }
+      }
+    }, 5000);
+
     const lectorScript = `
 Witaj na szlaku Wielkiej Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd. 
 
 Oto przewodnik po niezwykłej drodze serca, braterstwa i duchowej odnowy.
 
 O co w niej chodzi i na czym polega ta pielgrzymka?
-Pielgrzymka opiera się na idei dwóch wielkich gwiazd, łączących najważniejsze sanktuaria Polski. 
+Pielgrzymka opiera się na idei dwóch wielkich gwiazd oraz głębokiej symbolice Trójcy Przenajświętszej.
 Jako promienie pierwszej gwiazdy, pielgrzymi wyruszają z różnych zakątków Polski i świata – pieszo, rowerami, pociągami czy autokarami – by zjednoczyć się u stóp Matki Bożej na Jasnej Górze w Częstochowie. 
 Następnie, tworząc jedną wielką rodzinę, wyruszają we wspólną, 7-dniową wędrówkę pieszą liczącą 174 kilometry przez malowniczy Szlak Orlich Gniazd na Wyżynie Krakowsko-Częstochowskiej, aż do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
-Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Ojca.
+Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. 
+
+Co niezwykłe i pełne duchowej głębi: każda grupa pielgrzymkowa, wyruszając ze swojego domu na Jasną Górę, wędrując szlakiem do Łagiewnik i wracając stamtąd z powrotem do miejsca wyjścia, tworzy na mapie ramiona wielkiego trójkąta. W ten sposób droga każdej grupy domyka geometryczny trójkąt, w widzialny sposób przypominając o Trójcy Świętej – Ojcu, Synu i Duchu Świętym – oraz wpisując tajemnicę Bożej jedności i miłości w drogi naszej Ojczyzny. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Boga.
+
+Oto wspaniały, konkretny przykład takiego szlaku:
+Pielgrzymka rozpoczynająca się w Rudzie Śląskiej, w parafii Trójcy Przenajświętszej w Kochłowicach, tuż obok zabytkowej kaplicy Sanktuarium Matki Bożej z Lourdes.
+Pielgrzymi wyruszają stamtąd na północ przez Piekary Śląskie z Kalwarią Piekarską, Świerklaniec, Woźniki i Poraj, by po czterech dniach dotrzeć na Jasną Górę w Częstochowie.
+Następnie, idąc opisanym, 7-dniowym Szlakiem Orlich Gniazd przez całą Jurę, docierają do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
+Po uroczystym Rozesłaniu, wędrują w drodze powrotnej przez Opactwo Benedyktynów w Tyńcu, Alwernię, Chrzanów, Jaworzno, Mysłowice oraz Bazylikę w Panewnikach, powracając prosto do kościoła Trójcy Przenajświętszej w Rudzie Śląskiej. W ten sposób cała trasa tworzy na mapie przybliżony kształt wielkiego trójkąta, łącząc początek i zwieńczenie drogi w tajemnicy Trójcy Świętej!
 
 Pielgrzymka nie jest jedynie sprawdzianem kondycyjnym. Jest szkołą patrzenia na naszą codzienność z perspektywy wieczności – tak jak uczy nas blog Widoki na Raj.
 
@@ -1296,47 +1344,178 @@ Ten dzień ma wyjątkowy charakter, ponieważ przypada w Dzień Ojca. Pielgrzymi
 
 Dzień siódmy, 24 czerwca. Wielki Finał. Dystans: 26 kilometrów. Trasa: Ojców do Krakowa-Łagiewnik.
 Ostatni odcinek prowadzi przez Zamek Korzkiew i Zielonki w stronę Krakowa. Pielgrzymi wkraczają na Wzgórze Miłosierdzia w Łagiewnikach. O godzinie piętnastej, w Godzinie Miłosierdzia, sprawowana jest dziękczynna Msza Święta i odmawiana jest uroczysta Koronka do Bożego Miłosierdzia.
-Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy, stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
+Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy – domykając pielgrzymi trójkąt ku czci Trójcy Przenajświętszej i stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
 
 Dziękujemy, że jesteś na tej drodze. Niech każdy krok otwiera Twoje serce na prawdziwe Widoki na Raj.
     `;
 
-    // Podział na zdania dla płynnej syntezy bez limitu czasu
-    const sentences = lectorScript
-      .split(/(?<=[.!?])\s+/)
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+    // Inteligentny, bezpieczny podział na fragmenty (maks ~140 znaków) gwarantujący płynność i brak zacięć
+    const splitIntoSpeechChunks = (text, maxLen = 140) => {
+      const paragraphs = text.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
+      const chunks = [];
 
+      for (const para of paragraphs) {
+        const sentences = para.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 0);
+        for (const sentence of sentences) {
+          if (sentence.length <= maxLen) {
+            if (chunks.length > 0 && (chunks[chunks.length - 1].length + 1 + sentence.length) <= maxLen) {
+              chunks[chunks.length - 1] += ' ' + sentence;
+            } else {
+              chunks.push(sentence);
+            }
+          } else {
+            const clauses = sentence.split(/(?<=[,;:\-–—])\s+/).map(c => c.trim()).filter(c => c.length > 0);
+            let currentClauseChunk = '';
+            for (const clause of clauses) {
+              if (clause.length <= maxLen) {
+                if (!currentClauseChunk) {
+                  currentClauseChunk = clause;
+                } else if ((currentClauseChunk + ' ' + clause).length <= maxLen) {
+                  currentClauseChunk += ' ' + clause;
+                } else {
+                  chunks.push(currentClauseChunk);
+                  currentClauseChunk = clause;
+                }
+              } else {
+                if (currentClauseChunk) {
+                  chunks.push(currentClauseChunk);
+                  currentClauseChunk = '';
+                }
+                const words = clause.split(/\s+/).filter(w => w.length > 0);
+                for (const word of words) {
+                  if (!currentClauseChunk) {
+                    currentClauseChunk = word;
+                  } else if ((currentClauseChunk + ' ' + word).length <= maxLen) {
+                    currentClauseChunk += ' ' + word;
+                  } else {
+                    chunks.push(currentClauseChunk);
+                    currentClauseChunk = word;
+                  }
+                }
+              }
+            }
+            if (currentClauseChunk) {
+              chunks.push(currentClauseChunk);
+            }
+          }
+        }
+      }
+      return chunks;
+    };
+
+    const speechChunks = splitIntoSpeechChunks(lectorScript, 140);
     let currentIndex = 0;
 
+    const getBestPolishVoice = () => {
+      const voices = window.speechSynthesis.getVoices() || [];
+      return voices.find(v => (v.lang && v.lang.toLowerCase().startsWith('pl')) && /natural|online|google|microsoft/i.test(v.name)) ||
+             voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pl')) ||
+             voices.find(v => /polish|polski|paulina|adam|zofia|jan/i.test(v.name)) ||
+             null;
+    };
+
     const playNext = () => {
-      if (!this.isLectorSpeaking || currentIndex >= sentences.length) {
+      if (!this.isLectorSpeaking || currentSession !== this.lectorSessionId) {
+        return;
+      }
+      if (currentIndex >= speechChunks.length) {
         this.stopAiLector();
         return;
       }
 
-      const utterance = new SpeechSynthesisUtterance(sentences[currentIndex]);
+      const currentChunkText = speechChunks[currentIndex];
+      let chunkSettled = false;
+
+      const utterance = new SpeechSynthesisUtterance(currentChunkText);
       utterance.lang = 'pl-PL';
-      utterance.rate = 0.95;
+      utterance.rate = 0.96;
       utterance.pitch = 1.0;
 
-      const voices = window.speechSynthesis.getVoices();
-      const plVoice = voices.find(v => v.lang.startsWith('pl'));
-      if (plVoice) utterance.voice = plVoice;
+      const voice = getBestPolishVoice();
+      if (voice) {
+        utterance.voice = voice;
+        utterance.lang = voice.lang || 'pl-PL';
+      }
+
+      // Bezpośrednie zabezpieczenie przed V8 Garbage Collection
+      window._activeLectorUtterances.add(utterance);
+
+      const cleanupUtterance = () => {
+        chunkSettled = true;
+        if (this.lectorWatchdogTimer) {
+          clearTimeout(this.lectorWatchdogTimer);
+          this.lectorWatchdogTimer = null;
+        }
+        window._activeLectorUtterances.delete(utterance);
+      };
+
+      // Watchdog zapobiegający ugrzęźnięciu silnika mowy (gdyby onend/onerror nie nadeszły)
+      const expectedDurationMs = Math.max(10000, Math.round(currentChunkText.length * 150) + 6000);
+      this.lectorWatchdogTimer = setTimeout(() => {
+        if (chunkSettled || !this.isLectorSpeaking || currentSession !== this.lectorSessionId) return;
+        console.warn('Speech chunk watchdog recovered stuck speech, advancing to next sentence...');
+        cleanupUtterance();
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+        setTimeout(() => {
+          if (this.isLectorSpeaking && currentSession === this.lectorSessionId) {
+            currentIndex++;
+            playNext();
+          }
+        }, 50);
+      }, expectedDurationMs);
 
       utterance.onend = () => {
+        if (chunkSettled || currentSession !== this.lectorSessionId) return;
+        cleanupUtterance();
         currentIndex++;
-        playNext();
+        setTimeout(() => {
+          if (this.isLectorSpeaking && currentSession === this.lectorSessionId) {
+            playNext();
+          }
+        }, 30);
       };
 
-      utterance.onerror = () => {
-        this.stopAiLector();
+      utterance.onerror = (e) => {
+        if (chunkSettled || currentSession !== this.lectorSessionId) return;
+        cleanupUtterance();
+        if (e && (e.error === 'canceled' || e.error === 'interrupted')) {
+          if (!this.isLectorSpeaking) return;
+        }
+        console.warn('Utterance error or interruption, auto-advancing to next chunk:', e);
+        currentIndex++;
+        setTimeout(() => {
+          if (this.isLectorSpeaking && currentSession === this.lectorSessionId) {
+            playNext();
+          }
+        }, 40);
       };
 
-      window.speechSynthesis.speak(utterance);
+      try {
+        if (window.speechSynthesis.paused) {
+          try { window.speechSynthesis.resume(); } catch (e) {}
+        }
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('SpeechSynthesis.speak failed:', err);
+        cleanupUtterance();
+        currentIndex++;
+        setTimeout(() => {
+          if (this.isLectorSpeaking && currentSession === this.lectorSessionId) {
+            playNext();
+          }
+        }, 50);
+      }
     };
 
-    playNext();
+    // Uruchomienie z buforem 60ms gwarantującym odblokowanie kolejki po wcześniejszym cancel()
+    setTimeout(() => {
+      if (this.isLectorSpeaking && currentSession === this.lectorSessionId) {
+        if (window.speechSynthesis.paused) {
+          try { window.speechSynthesis.resume(); } catch (e) {}
+        }
+        playNext();
+      }
+    }, 60);
   }
 }
 

@@ -23,6 +23,7 @@ import {
   Info,
   Navigation,
   Route,
+  Download,
   X,
   Volume2,
   Square,
@@ -43,10 +44,18 @@ Witaj na szlaku Wielkiej Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd.
 Oto przewodnik po niezwykłej drodze serca, braterstwa i duchowej odnowy.
 
 O co w niej chodzi i na czym polega ta pielgrzymka?
-Pielgrzymka opiera się na idei dwóch wielkich gwiazd, łączących najważniejsze sanktuaria Polski. 
+Pielgrzymka opiera się na idei dwóch wielkich gwiazd oraz głębokiej symbolice Trójcy Przenajświętszej.
 Jako promienie pierwszej gwiazdy, pielgrzymi wyruszają z różnych zakątków Polski i świata – pieszo, rowerami, pociągami czy autokarami – by zjednoczyć się u stóp Matki Bożej na Jasnej Górze w Częstochowie. 
 Następnie, tworząc jedną wielką rodzinę, wyruszają we wspólną, 7-dniową wędrówkę pieszą liczącą 174 kilometry przez malowniczy Szlak Orlich Gniazd na Wyżynie Krakowsko-Częstochowskiej, aż do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
-Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Ojca.
+Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. 
+
+Co niezwykłe i pełne duchowej głębi: każda grupa pielgrzymkowa, wyruszając ze swojego domu na Jasną Górę, wędrując szlakiem do Łagiewnik i wracając stamtąd z powrotem do miejsca wyjścia, tworzy na mapie ramiona wielkiego trójkąta. W ten sposób droga każdej grupy domyka geometryczny trójkąt, w widzialny sposób przypominając o Trójcy Świętej – Ojcu, Synu i Duchu Świętym – oraz wpisując tajemnicę Bożej jedności i miłości w drogi naszej Ojczyzny. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Boga.
+
+Oto wspaniały, konkretny przykład takiego szlaku:
+Pielgrzymka rozpoczynająca się w Rudzie Śląskiej, w parafii Trójcy Przenajświętszej w Kochłowicach, tuż obok zabytkowej kaplicy Sanktuarium Matki Bożej z Lourdes.
+Pielgrzymi wyruszają stamtąd na północ przez Piekary Śląskie z Kalwarią Piekarską, Świerklaniec, Woźniki i Poraj, by po czterech dniach dotrzeć na Jasną Górę w Częstochowie.
+Następnie, idąc opisanym, 7-dniowym Szlakiem Orlich Gniazd przez całą Jurę, docierają do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
+Po uroczystym Rozesłaniu, wędrują w drodze powrotnej przez Opactwo Benedyktynów w Tyńcu, Alwernię, Chrzanów, Jaworzno, Mysłowice oraz Bazylikę w Panewnikach, powracając prosto do kościoła Trójcy Przenajświętszej w Rudzie Śląskiej. W ten sposób cała trasa tworzy na mapie przybliżony kształt wielkiego trójkąta, łącząc początek i zwieńczenie drogi w tajemnicy Trójcy Świętej!
 
 Pielgrzymka nie jest jedynie sprawdzianem kondycyjnym. Jest szkołą patrzenia na naszą codzienność z perspektywy wieczności – tak jak uczy nas blog Widoki na Raj.
 
@@ -74,7 +83,8 @@ Ten dzień ma wyjątkowy charakter, ponieważ przypada w Dzień Ojca. Pielgrzymi
 
 Dzień siódmy, 24 czerwca. Wielki Finał. Dystans: 26 kilometrów. Trasa: Ojców do Krakowa-Łagiewnik.
 Ostatni odcinek prowadzi przez Zamek Korzkiew i Zielonki w stronę Krakowa. Pielgrzymi wkraczają na Wzgórze Miłosierdzia w Łagiewnikach. O godzinie piętnastej, w Godzinie Miłosierdzia, sprawowana jest dziękczynna Msza Święta i odmawiana jest uroczysta Koronka do Bożego Miłosierdzia.
-Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy, stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
+Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy – domykając pielgrzymi trójkąt ku czci Trójcy Przenajświętszej i stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
+Przykładem takiego szlaku jest modelowa, piętnastodniowa trasa z Rudy Śląskiej: od parafii Trójcy Przenajświętszej i kaplicy Sanktuarium Matki Bożej z Lourdes przez Piekary Śląskie na Jasną Górę, stamtąd Szlakiem Orlich Gniazd do Łagiewnik, i powrotnie przez Tyniec, Alwernię i Panewniki do Rudy Śląskiej. Pełną trasę z plikami do pobrania możesz otworzyć w Google Maps na naszej mapie.
 
 Dziękujemy, że jesteś na tej drodze. Niech każdy krok otwiera Twoje serce na prawdziwe Widoki na Raj.
 `;
@@ -125,7 +135,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
   };
 
   // Bezpośrednia ścieżka do nawigacji w Google Maps (Jasna Góra ➔ Łagiewniki)
-  const googleMapsRouteUrl = 'https://maps.app.goo.gl/3aTKzBQiZ83mqcQdA';
+  const googleMapsRouteUrl = 'https://www.google.com/maps/d/u/0/edit?mid=1VVkkzCIpWQ3AUUWu9F9nNH2ot8TZGeE&ll=50.415082274554095%2C19.5170855&z=9';
   const googleMapsModes = {
     walking: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewnikach,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w&waypoints=Z%C5%82oty+Potok%7CKr%C3%B3lewski+Zamek+Bobolice%7CZamek+Ogrodzieniec%7COjc%C3%B3w&travelmode=walking',
     driving: 'https://www.google.com/maps/dir/?api=1&origin=Jasna+G%C3%B3ra,+ul.+o.+A.+Kordeckiego+2,+42-225+Cz%C4%99stochowa&destination=Sanktuarium+Bo%C5%BCego+Mi%C5%82osierdzia,+Krak%C3%B3w-%C5%81agiewnikach,+Siostry+Faustyny+3,+30-608+Krak%C3%B3w&waypoints=Z%C5%82oty+Potok%7CKr%C3%B3lewski+Zamek+Bobolice%7CZamek+Ogrodzieniec%7COjc%C3%B3w&travelmode=driving',
@@ -407,11 +417,31 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </a>
 
             <a
+              href="/mapa/trasa_orle_gniazda_czestochowa_lagiewniki.csv"
+              download="trasa_orle_gniazda_czestochowa_lagiewniki.csv"
+              title="Pobierz trasę Etapu II: Szlak Orlich Gniazd (Częstochowa ➔ Łagiewniki, 7 dni) w formacie CSV"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-800/80 hover:bg-amber-800 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition shrink-0"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>CSV Orle Gniazda (7 dni)</span>
+            </a>
+
+            <a
+              href="/mapa/trasa_ruda_slaska_trojkat.csv"
+              download="trasa_ruda_slaska_trojkat.csv"
+              title="Pobierz pełną trasę modelową: Trójkąt Święty (Ruda Śląska ➔ Częstochowa ➔ Łagiewniki ➔ Ruda Śląska, 15 dni) w formacie CSV"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-700/80 hover:bg-amber-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition shrink-0"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>CSV Trójkąt (15 dni)</span>
+            </a>
+
+            <a
               href="https://mapa.widokinaraj.pl"
               target="_blank"
               rel="noopener noreferrer"
               title="Otwórz oficjalną platformę mapa.widokinaraj.pl"
-              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-700/80 hover:bg-amber-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition shrink-0"
+              className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-amber-900/80 hover:bg-amber-900 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition shrink-0"
             >
               <span>mapa.widokinaraj.pl</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -739,6 +769,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-[#0f1523]/80 border border-amber-500/20 text-xs text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed flex flex-wrap items-center gap-2">
                 <span className="font-bold text-amber-800 dark:text-amber-300">W audycji:</span>
                 <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Idea Dwóch Gwiazd</span>
+                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Trójkąt Trójcy Świętej</span>
                 <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Harmonogram Dni 1–7</span>
                 <span className="px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-900 dark:text-rose-200 font-semibold">
                   ☀️ 21.06: Przesilenie Letnie & Urodziny Autora — „Widoki na Raj”
@@ -774,7 +805,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
 
               <p className="text-sm sm:text-base text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
                 Coroczne wydarzenie w formie gwiaździstej pielgrzymki oraz 7-dniowego pieszego rajdu. 
-                Trasa z Częstochowy do Krakowa przebiega malowniczym <strong className="text-amber-800 dark:text-amber-300">Szlakiem Orlich Gniazd</strong> (Jura Krakowsko-Częstochowska), łącząc sanktuaria, ruiny średniowiecznych warowni, ostańce skalne oraz czuwanie w Dniu Ojca w Ojcowie.
+                Łączy symbolikę <strong>dwóch wielkich gwiazd</strong> oraz <strong>Trójkąta Trójcy Świętej</strong>: każda grupa pielgrzymkowa, wyruszając ze swojego domu na Jasną Górę, wędrując <strong className="text-amber-800 dark:text-amber-300">Szlakiem Orlich Gniazd</strong> (174 km) do Łagiewnik i wracając do miejsca wyjścia, zamyka na mapie ramiona geometrycznego trójkąta przypominającego o Trójcy Przenajświętszej (np. modelowy szlak: Ruda Śląska ➔ Częstochowa ➔ Łagiewniki ➔ Ruda Śląska).
               </p>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -1200,7 +1231,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition"
                 >
                   <Navigation className="w-4 h-4" />
-                  <span>Otwórz nawigację trasy w Google Maps (https://maps.app.goo.gl/5t7uuhdYYeqVaaLz7)</span>
+                  <span>Otwórz mapę i nawigację w Google Maps</span>
                   <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
@@ -1430,7 +1461,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                     )}
                   </div>
                   <h4 className="text-sm font-bold text-[#1f1712] dark:text-white">
-                    Posłuchaj o idei pielgrzymki, 7 dniach szlaku, przesileniu 21 czerwca i blogu „Widoki na Raj”
+                    Posłuchaj o idei dwóch gwiazd, Trójkącie Trójcy Świętej, 7 dniach szlaku, przesileniu 21 czerwca i blogu „Widoki na Raj”
                   </h4>
                 </div>
               </div>
@@ -1456,6 +1487,78 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+
+            {/* Duchowa Architektura: Dwie Gwiazdy & Trójkąt Trójcy Świętej */}
+            <div className="p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 space-y-3">
+              <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+                <Sparkles className="w-4 h-4 text-amber-600" />
+                <span>Duchowa Architektura: Dwie Gwiazdy & Trójkąt Trójcy Świętej</span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed">
+                Pielgrzymka opiera się na idei <strong>dwóch wielkich gwiazd</strong> (promienie zbiegające się na Jasnej Górze oraz rozchodzące się ze Wzgórza Bożego Miłosierdzia w Łagiewnikach). 
+                Co najważniejsze: <strong>każda grupa pielgrzymkowa, wracając skąd przyszła, tworzy na mapie ramiona trójkąta</strong> (Dom ➔ Częstochowa ➔ Kraków-Łagiewniki ➔ Dom), w widzialny sposób przypominając o <strong>Trójcy Przenajświętszej</strong> (Ojcu, Synu i Duchu Świętym) oraz wpisując tajemnicę Bożej jedności i miłości w geografię naszej ziemi.
+              </p>
+            </div>
+
+            {/* Przykładowy Szlak: Ruda Śląska */}
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-600/10 via-stone-900/5 to-amber-700/10 dark:from-stone-900/80 dark:to-stone-950/90 border border-amber-500/35 space-y-3 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+                  <Compass className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Przykładowy Szlak Trójkąta: Ruda Śląska ➔ Jasna Góra ➔ Łagiewniki ➔ Ruda Śląska</span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <a
+                    href="/mapa/trasa_orle_gniazda_czestochowa_lagiewniki.csv"
+                    download="trasa_orle_gniazda_czestochowa_lagiewniki.csv"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>CSV Orle Gniazda (7 dni)</span>
+                  </a>
+                  <a
+                    href="/mapa/trasa_ruda_slaska_trojkat.csv"
+                    download="trasa_ruda_slaska_trojkat.csv"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>CSV Trójkąt (15 dni)</span>
+                  </a>
+                </div>
+              </div>
+              <p className="text-xs text-[#524133] dark:text-[#cbd5e1] leading-relaxed">
+                Modelowa, 15-dniowa trasa piesza idealnie ilustrująca zamknięcie geometrycznego trójkąta ku czci Trójcy Przenajświętszej. 
+                Możesz przeglądać całą trasę na interaktywnej mapie Google Maps:{' '}
+                <a
+                  href="https://www.google.com/maps/d/u/0/edit?mid=1VVkkzCIpWQ3AUUWu9F9nNH2ot8TZGeE&ll=50.415082274554095%2C19.5170855&z=9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold underline text-amber-700 dark:text-amber-400 hover:text-amber-900"
+                >
+                  Otwórz mapę Trójkąta w Google Maps (skala z=9)
+                </a>.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs pt-1">
+                <div className="p-3 rounded-xl bg-white/70 dark:bg-white/5 border border-amber-500/20 space-y-1">
+                  <strong className="text-amber-800 dark:text-amber-300 block">BOK I (14–17.06 • 92.6 km)</strong>
+                  <p className="text-[#6b5543] dark:text-[#94a3b8] leading-relaxed">
+                    Start: <strong>Ruda Śląska-Kochłowice (Parafia Trójcy Przenajświętszej & kaplica Sanktuarium MB z Lourdes)</strong> ➔ Piekary Śląskie (Bazylika & Kalwaria) ➔ Świerklaniec ➔ Woźniki ➔ Poraj ➔ <strong>Jasna Góra w Częstochowie</strong>.
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-white/70 dark:bg-white/5 border border-emerald-500/20 space-y-1">
+                  <strong className="text-emerald-800 dark:text-emerald-300 block">BOK II (18–24.06 • 174 km)</strong>
+                  <p className="text-[#6b5543] dark:text-[#94a3b8] leading-relaxed">
+                    Wspólny Szlak Orlich Gniazd z Jasnej Góry przez jurajskie warownie: Złoty Potok ➔ Bobolice/Mirów ➔ Ogrodzieniec ➔ Czubatka (21.06) ➔ Pieskowa Skała ➔ Ojców (23.06 w Dzień Ojca) ➔ <strong>Łagiewniki (Sanktuarium Bożego Miłosierdzia)</strong>.
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-white/70 dark:bg-white/5 border border-sky-500/20 space-y-1">
+                  <strong className="text-sky-800 dark:text-sky-300 block">BOK III (25–28.06 • 105.3 km)</strong>
+                  <p className="text-[#6b5543] dark:text-[#94a3b8] leading-relaxed">
+                    Powrót po Rozesłaniu: Tyniec (Benedyktyni) ➔ Alwernia (Bernardyni) ➔ Chrzanów ➔ Jaworzno ➔ Mysłowice ➔ Panewniki (Bazylika) ➔ <strong>finałowe domknięcie trójkąta w kościele Trójcy Przenajświętszej w Rudzie Śląskiej</strong>.
+                  </p>
+                </div>
               </div>
             </div>
 

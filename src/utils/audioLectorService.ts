@@ -679,14 +679,18 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
     return;
   }
 
-  if (config.mode === 'online') {
+  const shouldUseOnline = config.mode === 'online' && cleanedSpeechText.length <= 1200;
+  if (shouldUseOnline) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9000);
       const response = await fetch('/api/tts', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
+        signal: controller.signal,
         body: JSON.stringify({
           text: cleanedSpeechText,
           voiceId: onlineProfile.id,
@@ -697,6 +701,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
           format: 'json'
         })
       });
+      clearTimeout(timeoutId);
 
       if (!isCurrentSession()) return;
 
@@ -739,7 +744,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
         }
       }
     } catch (err) {
-      console.warn('Online TTS endpoint unavailable, falling back to local speech synthesis:', err);
+      console.warn('Online TTS endpoint unavailable or timed out, falling back to local speech synthesis:', err);
     }
 
     if (!isCurrentSession()) return;
@@ -1065,8 +1070,10 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
     return;
   }
 
-  // Używamy zoptymalizowanego rozmiaru chunka ~300 znaków (całe zdania i frazy bez cięcia słów)
-  const textChunks = splitTextForTts(cleanText, 300);
+  lectorPlaybackState = 'playing';
+
+  // Używamy zoptymalizowanego rozmiaru chunka ~160 znaków (krótkie zdania gwarantują odporność na 15-sekundowy limit Chrome)
+  const textChunks = splitTextForTts(cleanText, 160);
   if (textChunks.length === 0) {
     if (onError) onError('Brak tekstu');
     return;
@@ -1075,11 +1082,11 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
   let chunkIndex = 0;
 
   // Rozwiązanie błędu Chromium Bug #679437: Chrome wstrzymuje odtwarzanie po ~14-15s mowy
-  // Wywołanie pause() i od razu resume() co 6 sekund resetuje wewnętrzny licznik Chrome bez przerywania dźwięku
+  // Wywołanie pause() i od razu resume() co 5 sekund resetuje wewnętrzny licznik Chrome bez przerywania dźwięku
   if (chromeKeepAliveInterval) clearInterval(chromeKeepAliveInterval);
   chromeKeepAliveInterval = setInterval(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      if (window.speechSynthesis.speaking && lectorPlaybackState === 'playing') {
+      if (window.speechSynthesis.speaking && lectorPlaybackState !== 'paused') {
         if (!window.speechSynthesis.paused) {
           try {
             window.speechSynthesis.pause();
@@ -1092,7 +1099,7 @@ function playLocalSpeechFallback(options: LocalSpeechOptions): void {
         }
       }
     }
-  }, 6000);
+  }, 5000);
 
   const speakNextChunk = () => {
     if (!isCurrentSession()) {

@@ -196,16 +196,34 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.textAlign = 'right';
     ctx.fillText(`widokinaraj.pl`, width - 80, 60);
 
-    // Tytuł Dnia & Informacja nagłówkowa
-    ctx.font = `bold ${Math.round(height * 0.046)}px "Cinzel", Georgia, serif`;
+    // Tytuł Dnia & Informacja nagłówkowa z bezpiecznym skalowaniem
+    ctx.save();
+    const maxHeaderW = width - 160;
+    let titleFontSize = Math.round(height * 0.044);
+    ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
+    const fullTitleText = `${activeBroadcastItem.displayDate} • ${activeBroadcastItem.headlineTitle}`;
+    const titleWidth = ctx.measureText(fullTitleText).width;
+    if (titleWidth > maxHeaderW) {
+      titleFontSize = Math.max(Math.round(height * 0.024), Math.floor(titleFontSize * (maxHeaderW / titleWidth)));
+      ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
+    }
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
-    ctx.fillText(`${activeBroadcastItem.displayDate} • ${activeBroadcastItem.headlineTitle}`, 80, 130);
+    ctx.fillText(fullTitleText, 80, 130);
+    ctx.restore();
 
-    // Podtytuł / Ścieżka / Źródło
-    ctx.font = `500 ${Math.round(height * 0.024)}px "Plus Jakarta Sans", sans-serif`;
+    // Podtytuł / Ścieżka / Źródło z bezpiecznym dopasowaniem
+    ctx.save();
+    let subFontSize = Math.round(height * 0.022);
+    ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
+    const subWidth = ctx.measureText(activeBroadcastItem.subtitle).width;
+    if (subWidth > maxHeaderW) {
+      subFontSize = Math.max(Math.round(height * 0.016), Math.floor(subFontSize * (maxHeaderW / subWidth)));
+      ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
+    }
     ctx.fillStyle = '#cbd5e1';
-    ctx.fillText(`${activeBroadcastItem.subtitle}`, 80, 170);
+    ctx.fillText(activeBroadcastItem.subtitle, 80, 170);
+    ctx.restore();
 
     // Cienka linia oddzielająca nagłówek od strefy napisów
     ctx.fillStyle = '#263040';
@@ -537,6 +555,40 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.restore();
 
       headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
+    } else {
+      // Belka informacyjna dla czytań biblijnych (Biblia365) i wpisów (Widoki na Raj)
+      const pillY = 215;
+      const pillW = width - 180;
+      const pillH = Math.round(height * 0.046);
+
+      ctx.save();
+      ctx.fillStyle = selectedStationId === 'biblia365' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(2, 132, 199, 0.15)';
+      ctx.strokeStyle = selectedStationId === 'biblia365' ? 'rgba(16, 185, 129, 0.45)' : 'rgba(2, 132, 199, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(90, pillY, pillW, pillH, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      let pillFont = Math.round(height * 0.020);
+      ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
+      ctx.fillStyle = selectedStationId === 'biblia365' ? '#34d399' : '#38bdf8';
+
+      const pillText = selectedStationId === 'biblia365'
+        ? `📖 Pismo Święte & Apokryfy • ${activeBroadcastItem.headlineTitle}`
+        : `🕊️ Widoki na Raj 365 • Refleksja duchowa • ${activeBroadcastItem.headlineTitle}`;
+
+      const pW = ctx.measureText(pillText).width;
+      if (pW > pillW - 30) {
+        pillFont = Math.max(Math.round(height * 0.015), Math.floor(pillFont * ((pillW - 30) / pW)));
+        ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
+      }
+      ctx.fillText(pillText, width / 2, pillY + pillH / 2);
+      ctx.restore();
+
+      headerBottom = pillY + pillH;
     }
 
     // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PERFEKCYJNYM WYŚWIETLANIEM BEZ ZNIKANIA TEKSTU
@@ -546,17 +598,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     const wordsTotal = words.length;
 
     if (wordsTotal > 0) {
-      const marginLeft = Math.round(width * 0.05); // 96px na 1080p, 64px na 720p
-      const marginRight = marginLeft;
-      const maxTextWidth = width - (marginLeft + marginRight);
-
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.038 : 0.050));
+      const maxTextWidth = Math.round(width * 0.88);
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.030 : 0.036));
       const footerTop = height - 87; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
 
       const zoneTop = headerBottom + minHeaderGap;
       const zoneBottom = footerTop - bottomPadding;
-      const zoneHeight = Math.max(140, zoneBottom - zoneTop);
+      const zoneHeight = Math.max(160, zoneBottom - zoneTop);
 
       interface WordToken {
         text: string;
@@ -569,18 +618,29 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
-      // Aktywna jednostka modlitewna/akapitowa do wyświetlenia
-      const activeSec = (previewMode !== 'sample' && activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
-        ? (activeBroadcastItem.sections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx) || activeBroadcastItem.sections[0])
-        : null;
+      // Wybór zakresu słów do wyświetlenia:
+      // Dla stacji różańcowych (Nowy RHZ, Pierwotny RHZ) wyświetlamy całą bieżącą modlitwę lub rozważanie
+      // Dla czytań i wpisów (Biblia365, Widoki na Raj) wyświetlamy pełny, płynny ciąg tekstu (continuous reading),
+      // by żaden akapit ani werset nie znikał z ekranu!
+      let displayStartWordIdx = 0;
+      let displayEndWordIdx = wordsTotal - 1;
 
-      const displayStartWordIdx = activeSec ? activeSec.startWordIdx : 0;
-      const displayEndWordIdx = activeSec ? Math.min(activeSec.endWordIdx, wordsTotal - 1) : (wordsTotal - 1);
+      if (hasRosary && activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0) {
+        const activeSec = activeBroadcastItem.sections.find(
+          s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
+        ) || activeBroadcastItem.sections[0];
+
+        if (activeSec) {
+          displayStartWordIdx = activeSec.startWordIdx;
+          displayEndWordIdx = Math.min(activeSec.endWordIdx, wordsTotal - 1);
+        }
+      }
+
       const displayWordTexts = words.slice(displayStartWordIdx, displayEndWordIdx + 1);
+      const effectiveWordTexts = displayWordTexts.length > 0 ? displayWordTexts : words;
+      const effectiveStartIdx = displayWordTexts.length > 0 ? displayStartWordIdx : 0;
 
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
-
-      // Czcionka i rodzina krojów (zapewnia stabilny pomiar w Canvasie)
       const FONT_FAMILY = '"Newsreader", Georgia, Cambria, "Times New Roman", serif';
 
       // Pomocnik dzielenia słów danej sekcji na linie dla zadanego rozmiaru czcionki
@@ -594,9 +654,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         let curLineTokens: WordToken[] = [];
         let curWordsWidth = 0;
 
-        for (let i = 0; i < displayWordTexts.length; i++) {
-          const globalIdx = displayStartWordIdx + i;
-          const wordText = displayWordTexts[i];
+        for (let i = 0; i < effectiveWordTexts.length; i++) {
+          const globalIdx = effectiveStartIdx + i;
+          const wordText = effectiveWordTexts[i];
           const isExplicitLineBreak = i > 0 && lineBreakIndicesSet.has(globalIdx);
 
           if (isExplicitLineBreak && curLineTokens.length > 0) {
@@ -640,20 +700,21 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       };
 
       // DYNAMICZNY ROZMIAR CZCIONKI:
-      // Gwarantuje, że CAŁA treść bieżącej modlitwy mieści się w 100% na ekranie!
-      let renderFontSize = Math.round(height * (hasRosary ? 0.046 : 0.052));
-      let renderLineHeight = Math.round(renderFontSize * 1.50);
+      let baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.035));
+      let renderFontSize = baseFontSize;
+      let renderLineHeight = Math.round(renderFontSize * 1.46);
 
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
-      if (sectionLines.length > 0) {
+      // Dla modlitw różańcowych: jeśli cała modlitwa mieści się przy minimalnym zmniejszeniu, dopasuj do ekranu
+      if (hasRosary && sectionLines.length > 0) {
         const requiredH = sectionLines.length * renderLineHeight;
         if (requiredH > zoneHeight) {
           const candidateLineH = Math.floor(zoneHeight / sectionLines.length);
-          const minAcceptableLineH = Math.round(height * (hasRosary ? 0.033 : 0.036));
+          const minAcceptableLineH = Math.round(height * 0.027);
           if (candidateLineH >= minAcceptableLineH) {
             renderLineHeight = candidateLineH;
-            renderFontSize = Math.round(candidateLineH / 1.48);
+            renderFontSize = Math.round(candidateLineH / 1.42);
             const recomputed = buildLinesForSection(renderFontSize);
             sectionLines = recomputed.builtLines;
             standardSpaceWidth = recomputed.spaceW;
@@ -661,7 +722,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
       }
 
-      // Bezpieczny podział na strony jeśli treść jest długa
+      // Bezpieczny podział na widok (sliding window wycentrowany na aktywnej linii)
       const maxLinesOnScreen = Math.max(3, Math.floor(zoneHeight / renderLineHeight));
       let displayLines: LineItem[] = [];
 
@@ -670,8 +731,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       } else {
         let activeIdxInSec = sectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
         if (activeIdxInSec === -1) activeIdxInSec = 0;
-        const pageIndex = Math.floor(activeIdxInSec / maxLinesOnScreen);
-        const startLine = pageIndex * maxLinesOnScreen;
+        const halfWindow = Math.floor(maxLinesOnScreen / 2);
+        const targetStart = activeIdxInSec - halfWindow;
+        const startLine = Math.max(0, Math.min(sectionLines.length - maxLinesOnScreen, targetStart));
         displayLines = sectionLines.slice(startLine, startLine + maxLinesOnScreen);
       }
 
@@ -683,36 +745,22 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       displayLines.forEach((line, lineIndex) => {
         const lineY = startY + lineIndex * renderLineHeight;
-        const isLastLineOfSec = line === sectionLines[sectionLines.length - 1];
         const N = line.tokens.length;
+        if (N === 0) return;
 
-        // OBUSTRONNE WYJUSTOWANIE DO LEWEGO I PRAWEGO MARGINESU:
-        // Wszystkie linie oprócz ostatniej w akapicie/sekcji są idealnie rozciągnięte od lewego do prawego marginesu
+        // ELEGANCKIE WYŚRODKOWANIE KAŻDEJ LINII (Sacralny standard YouTube i telepromptera)
+        // Zero nienaturalnych odstępów, zero ucinania, idealna czytelność z daleka
         const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
-        const gapsCount = N - 1;
-        const isLastLine = Boolean(line.isParagraphEnd || isLastLineOfSec);
-        const isJustified = gapsCount > 0 && !isLastLine;
+        const totalLineWidth = totalWordsW + (N - 1) * standardSpaceWidth;
+        const lineStartX = Math.round((width - totalLineWidth) / 2);
 
-        let gap = standardSpaceWidth;
-        if (isJustified) {
-          const remainingSpace = maxTextWidth - totalWordsW;
-          const candidateGap = remainingSpace / gapsCount;
-          gap = Math.max(standardSpaceWidth, candidateGap);
-        }
-
-        let curX = marginLeft;
+        let curX = lineStartX;
 
         for (let tIdx = 0; tIdx < N; tIdx++) {
           const token = line.tokens[tIdx];
           const isCurrent = token.wordIdx === activeWordIdx;
           const isSpoken = token.wordIdx < activeWordIdx;
-
-          // Wyznacz bezwzględną pozycję X:
-          // Dla wyjustowanej linii ostatnie słowo styka się w 100% z prawym marginesem
-          let tokenX = curX;
-          if (isJustified && tIdx === N - 1) {
-            tokenX = marginLeft + maxTextWidth - token.width;
-          }
+          const tokenX = curX;
 
           ctx.save();
           ctx.textAlign = 'left';
@@ -721,19 +769,18 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
           if (isCurrent) {
             // EFEKT KARAOKE: Eleganckie złote tło dokładnie wokół aktywnego słowa
-            // Nigdy nie zachodzi na sąsiednie słowa (bezpieczny margines padX)
-            const padX = Math.min(Math.round(gap * 0.25), 6);
-            const bgH = Math.round(renderFontSize * 1.28);
+            const padX = Math.min(Math.round(standardSpaceWidth * 0.35), 8);
+            const bgH = Math.round(renderFontSize * 1.25);
             const bgX = tokenX - padX;
             const bgY = Math.round(lineY - bgH / 2);
             const bgW = token.width + padX * 2;
 
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.26)';
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.28)';
             ctx.beginPath();
             ctx.roundRect(bgX, bgY, bgW, bgH, 8);
             ctx.fill();
 
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.90)';
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
@@ -747,18 +794,27 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.fillStyle = '#ffffff';
             ctx.fillText(token.text, tokenX, lineY);
           } else {
-            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-400
+            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-300
             ctx.shadowBlur = 0;
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#cbd5e1';
             ctx.fillText(token.text, tokenX, lineY);
           }
           ctx.restore();
 
-          curX = tokenX + token.width + gap;
+          curX = tokenX + token.width + standardSpaceWidth;
         }
       });
 
       ctx.shadowBlur = 0;
+    } else {
+      // Bezpieczny komunikat w przypadku braku słów
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = `600 ${Math.round(height * 0.026)}px "Cinzel", Georgia, serif`;
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('Wybierz dzień lub tajemnicę z katalogu powyżej', width / 2, height / 2);
+      ctx.restore();
     }
 
     // 4. STOPKA WIDEO & PASEK STATUSU YOUTUBE
@@ -1574,6 +1630,37 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
           </div>
 
+          {/* Szybki skok do sekcji / modlitw / akapitów */}
+          {activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0 && (
+            <div className="p-2.5 bg-[#0e1624] rounded-xl border border-slate-800 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
+              <span className="text-[11px] text-amber-400 font-bold shrink-0 uppercase tracking-wide">
+                Sekcje:
+              </span>
+              {activeBroadcastItem.sections.map((sec, idx) => {
+                const isSecActive = currentWordIndex >= sec.startWordIdx && currentWordIndex <= sec.endWordIdx;
+                return (
+                  <button
+                    key={sec.id || idx}
+                    onClick={() => {
+                      if (isRecording) return;
+                      setCurrentWordIndex(sec.startWordIdx);
+                      drawVideoFrame(sec.startWordIdx, 0);
+                    }}
+                    disabled={isRecording}
+                    className={`px-2.5 py-1 rounded-lg shrink-0 transition cursor-pointer text-xs font-semibold ${
+                      isSecActive
+                        ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60'
+                    }`}
+                    title={`Przejdź do: ${sec.title}`}
+                  >
+                    {sec.title}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Podgląd Canvas 16:9 na żywo */}
           <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-amber-500/30 shadow-inner flex items-center justify-center">
             <canvas
@@ -1591,6 +1678,72 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               </div>
             )}
           </div>
+
+          {/* Interaktywny suwak podglądu słów i karaoke (gdy nie trwa nagrywanie) */}
+          {!isRecording && activeBroadcastItem.words.length > 0 && (
+            <div className="p-3 bg-[#0c121e] rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1">
+                  <Play className="w-3 h-3 text-amber-400" />
+                  <span>Podgląd tekstu:</span>
+                </span>
+                <button
+                  onClick={() => {
+                    setCurrentWordIndex(0);
+                    drawVideoFrame(0, 0);
+                  }}
+                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition flex items-center gap-1"
+                  title="Początek"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Początek</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const newIdx = Math.max(0, currentWordIndex - 5);
+                    setCurrentWordIndex(newIdx);
+                    drawVideoFrame(newIdx, 0);
+                  }}
+                  disabled={currentWordIndex <= 0}
+                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-semibold cursor-pointer transition"
+                  title="-5 słów"
+                >
+                  -5
+                </button>
+                <button
+                  onClick={() => {
+                    const newIdx = Math.min(activeBroadcastItem.words.length - 1, currentWordIndex + 5);
+                    setCurrentWordIndex(newIdx);
+                    drawVideoFrame(newIdx, 0);
+                  }}
+                  disabled={currentWordIndex >= activeBroadcastItem.words.length - 1}
+                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-semibold cursor-pointer transition"
+                  title="+5 słów"
+                >
+                  +5
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-[200px] flex items-center gap-2">
+                <input
+                  type="range"
+                  min={0}
+                  max={activeBroadcastItem.words.length - 1}
+                  value={currentWordIndex}
+                  onChange={(e) => {
+                    const idx = parseInt(e.target.value, 10);
+                    setCurrentWordIndex(idx);
+                    drawVideoFrame(idx, 0);
+                  }}
+                  className="w-full accent-amber-500 cursor-pointer"
+                />
+              </div>
+
+              <div className="text-[11px] font-mono text-slate-400 font-semibold shrink-0">
+                Słowo <span className="text-amber-400 font-bold">{currentWordIndex + 1}</span> / {activeBroadcastItem.words.length}
+              </div>
+            </div>
+          )}
 
           {/* Pasek postępu */}
           {isRecording && (
