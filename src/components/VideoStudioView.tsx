@@ -440,7 +440,7 @@ export const VideoStudioView: React.FC<Props> = ({
                   <span>Podgląd tekstu do przeczytania przez lektora:</span>
                   <span className="text-[10px] text-stone-400">Napisy zsynchronizowane w wideo</span>
                 </div>
-                <div className="max-h-48 overflow-y-auto p-4 rounded-2xl bg-stone-100 dark:bg-[#070b14] border border-stone-200 dark:border-stone-800 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-serif leading-relaxed whitespace-pre-line custom-scrollbar text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
+                <div className="max-h-72 sm:max-h-96 overflow-y-auto p-4 sm:p-5 rounded-2xl bg-stone-100 dark:bg-[#070b14] border border-stone-200 dark:border-stone-800 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-serif leading-relaxed whitespace-pre-line custom-scrollbar text-justify shadow-inner" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                   {activeBroadcastItem.displayContent || activeBroadcastItem.speechText}
                 </div>
               </div>

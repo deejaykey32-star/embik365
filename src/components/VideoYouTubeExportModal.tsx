@@ -59,7 +59,7 @@ export interface TextPage {
 export function getPagesForSection(
   sec: { startWordIdx: number; endWordIdx: number; title?: string },
   allWords: string[],
-  maxWordsPerPage: number = 220
+  maxWordsPerPage: number = 70
 ): TextPage[] {
   const clampedStart = Math.max(0, Math.min(sec.startWordIdx, allWords.length - 1));
   const clampedEnd = Math.max(clampedStart, Math.min(sec.endWordIdx, allWords.length - 1));
@@ -76,8 +76,9 @@ export function getPagesForSection(
     }];
   }
 
-  // Jeśli modlitwa/sekcja mieści się z marginesem w maxWordsPerPage + 35, zachowaj jako 1 kompletną stronę bez ucinania
-  if (totalSecWords <= maxWordsPerPage + 35) {
+  // Jeśli modlitwa/sekcja mieści się w całości (np. Ojcze nasz, Zdrowaś Maryjo, Chwała Ojcu do ~85 słów),
+  // zachowaj jako 1 kompletną stronę bez ucinania
+  if (totalSecWords <= Math.min(85, maxWordsPerPage + 15)) {
     return [{
       pageIndex: 1,
       totalPages: 1,
@@ -94,14 +95,14 @@ export function getPagesForSection(
     let candidateEnd = Math.min(totalSecWords - 1, curPageStart + maxWordsPerPage - 1);
 
     if (candidateEnd < totalSecWords - 1) {
-      if (totalSecWords - 1 - candidateEnd < 35) {
+      if (totalSecWords - 1 - candidateEnd < 25) {
         candidateEnd = totalSecWords - 1;
       } else {
         let bestBreak = -1;
         // Poszukiwanie naturalnego końca pełnego zdania (. ! ?)
-        for (let offset = 0; offset <= 45; offset++) {
+        for (let offset = 0; offset <= 25; offset++) {
           const checkBack = candidateEnd - offset;
-          if (checkBack > curPageStart + 40) {
+          if (checkBack > curPageStart + 30) {
             const w = secWords[checkBack];
             if (/[.!?][„”«»"']?$/.test(w) || /^[„”«»"']/.test(secWords[checkBack + 1] || '')) {
               bestBreak = checkBack;
@@ -109,7 +110,7 @@ export function getPagesForSection(
             }
           }
           const checkForward = candidateEnd + offset;
-          if (checkForward < totalSecWords - 1 && checkForward < curPageStart + maxWordsPerPage + 45) {
+          if (checkForward < totalSecWords - 1 && checkForward < curPageStart + maxWordsPerPage + 25) {
             const w = secWords[checkForward];
             if (/[.!?][„”«»"']?$/.test(w)) {
               bestBreak = checkForward;
@@ -119,9 +120,9 @@ export function getPagesForSection(
         }
         // Fallback: poszukiwanie przecinka, średnika, dwukropka lub pauzy
         if (bestBreak === -1) {
-          for (let offset = 0; offset <= 25; offset++) {
+          for (let offset = 0; offset <= 15; offset++) {
             const checkBack = candidateEnd - offset;
-            if (checkBack > curPageStart + 40) {
+            if (checkBack > curPageStart + 30) {
               const w = secWords[checkBack];
               if (/[,;:\-—–][„”«»"']?$/.test(w)) {
                 bestBreak = checkBack;
@@ -278,7 +279,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       : activeBroadcastItem.words;
     const wordsTotal = words.length;
 
-    const rawSections = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
+    const baseSections = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
       ? activeBroadcastItem.sections
       : [{
           id: 'main',
@@ -289,10 +290,17 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           endWordIdx: Math.max(0, wordsTotal - 1)
         }];
 
+    // W trybie próbki bezpiecznie przycinamy granice sekcji do pierwszych 45 słów
+    const rawSections = previewMode === 'sample'
+      ? baseSections
+          .filter(s => s.startWordIdx < 45)
+          .map(s => ({ ...s, endWordIdx: Math.min(s.endWordIdx, 44) }))
+      : baseSections;
+
     const activeSec = rawSections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx)
       || (activeWordIdx >= wordsTotal - 1 ? rawSections[rawSections.length - 1] : rawSections[0]);
 
-    const secPages = getPagesForSection(activeSec, words);
+    const secPages = getPagesForSection(activeSec, words, 70);
     const activePage = secPages.find(p => activeWordIdx >= p.startWordIdx && activeWordIdx <= p.endWordIdx)
       || (activeWordIdx >= wordsTotal - 1 ? secPages[secPages.length - 1] : secPages[0]);
 
@@ -834,15 +842,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       };
 
       // DYNAMICZNY, ELEGANCKI ROZMIAR CZCIONKI DLA DANEJ STRONY:
-      let baseFontSize = Math.round(height * (hasRosary ? 0.032 : 0.030));
-      if (effectiveWordTexts.length <= 35) {
-        baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.035));
-      } else if (effectiveWordTexts.length <= 80) {
+      let baseFontSize = Math.round(height * (hasRosary ? 0.034 : 0.032));
+      if (effectiveWordTexts.length <= 40) {
+        baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.036));
+      } else if (effectiveWordTexts.length <= 70) {
         baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
-      } else if (effectiveWordTexts.length <= 150) {
-        baseFontSize = Math.round(height * (hasRosary ? 0.027 : 0.026));
       } else {
-        baseFontSize = Math.round(height * (hasRosary ? 0.023 : 0.022));
+        baseFontSize = Math.round(height * (hasRosary ? 0.028 : 0.027));
       }
 
       let renderFontSize = baseFontSize;
@@ -850,27 +856,37 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
-      // Gwarancja zmieszczenia wszystkich linii strony w pionie bez ucinania
-      if (sectionLines.length > 0) {
-        const maxAllowedBlockH = zoneHeight - 20;
-        let currentBlockH = sectionLines.length * renderLineHeight;
-        if (currentBlockH > maxAllowedBlockH) {
-          const candidateLineH = Math.floor(maxAllowedBlockH / sectionLines.length);
-          renderFontSize = Math.max(16, Math.floor(candidateLineH / 1.44));
-          renderLineHeight = candidateLineH;
-          const recomputed = buildLinesForSection(renderFontSize);
-          sectionLines = recomputed.builtLines;
-          standardSpaceWidth = recomputed.spaceW;
-        }
+      // Pętla dynamicznego dopasowywania – gwarancja zmieszczenia wszystkich linii strony w pionie
+      const maxAllowedBlockH = zoneHeight - 20;
+      while (sectionLines.length * renderLineHeight > maxAllowedBlockH && renderFontSize > 15) {
+        renderFontSize -= 1;
+        renderLineHeight = Math.round(renderFontSize * 1.40);
+        const recomputed = buildLinesForSection(renderFontSize);
+        sectionLines = recomputed.builtLines;
+        standardSpaceWidth = recomputed.spaceW;
+      }
+
+      if (sectionLines.length * renderLineHeight > maxAllowedBlockH) {
+        renderLineHeight = Math.max(16, Math.floor(maxAllowedBlockH / Math.max(1, sectionLines.length)));
       }
 
       const totalBlockHeight = sectionLines.length * renderLineHeight;
-      // Strona jest zawsze idealnie wyśrodkowana w pionie (scrollY = 0)
-      const baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
+      // Strona jest zawsze idealnie wyśrodkowana w pionie z auto-śledzeniem aktywnego słowa
+      let baseStartY: number;
+      if (totalBlockHeight <= zoneHeight) {
+        baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
+      } else {
+        let activeLineIdx = sectionLines.findIndex(l => l.hasActiveWord);
+        if (activeLineIdx === -1) activeLineIdx = 0;
+        const centerTarget = zoneTop + Math.round(zoneHeight / 2);
+        const activeLineCenter = activeLineIdx * renderLineHeight + Math.round(renderLineHeight / 2);
+        baseStartY = centerTarget - activeLineCenter;
+        baseStartY = Math.max(zoneBottom - totalBlockHeight, Math.min(zoneTop, baseStartY));
+      }
 
       ctx.save();
       ctx.beginPath();
-      ctx.rect(40, zoneTop, width - 80, zoneHeight);
+      ctx.rect(30, zoneTop - 6, width - 60, zoneHeight + 12);
       ctx.clip();
 
       sectionLines.forEach((line, lineIndex) => {
