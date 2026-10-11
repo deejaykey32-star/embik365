@@ -59,7 +59,7 @@ export interface TextPage {
 export function getPagesForSection(
   sec: { startWordIdx: number; endWordIdx: number; title?: string },
   allWords: string[],
-  maxWordsPerPage: number = 60
+  maxWordsPerPage: number = 220
 ): TextPage[] {
   const clampedStart = Math.max(0, Math.min(sec.startWordIdx, allWords.length - 1));
   const clampedEnd = Math.max(clampedStart, Math.min(sec.endWordIdx, allWords.length - 1));
@@ -76,8 +76,8 @@ export function getPagesForSection(
     }];
   }
 
-  // Jeśli modlitwa mieści się z marginesem w maxWordsPerPage + 15, zachowaj jako 1 stronę
-  if (totalSecWords <= maxWordsPerPage + 15) {
+  // Jeśli modlitwa/sekcja mieści się z marginesem w maxWordsPerPage + 35, zachowaj jako 1 kompletną stronę bez ucinania
+  if (totalSecWords <= maxWordsPerPage + 35) {
     return [{
       pageIndex: 1,
       totalPages: 1,
@@ -94,25 +94,39 @@ export function getPagesForSection(
     let candidateEnd = Math.min(totalSecWords - 1, curPageStart + maxWordsPerPage - 1);
 
     if (candidateEnd < totalSecWords - 1) {
-      if (totalSecWords - 1 - candidateEnd < 22) {
+      if (totalSecWords - 1 - candidateEnd < 35) {
         candidateEnd = totalSecWords - 1;
       } else {
         let bestBreak = -1;
-        for (let offset = 0; offset <= 18; offset++) {
+        // Poszukiwanie naturalnego końca pełnego zdania (. ! ?)
+        for (let offset = 0; offset <= 45; offset++) {
           const checkBack = candidateEnd - offset;
-          if (checkBack > curPageStart + 25) {
+          if (checkBack > curPageStart + 40) {
             const w = secWords[checkBack];
-            if (/[.!?]$/.test(w) || /^[„”«»"']/.test(secWords[checkBack + 1] || '')) {
+            if (/[.!?][„”«»"']?$/.test(w) || /^[„”«»"']/.test(secWords[checkBack + 1] || '')) {
               bestBreak = checkBack;
               break;
             }
           }
           const checkForward = candidateEnd + offset;
-          if (checkForward < totalSecWords - 1 && checkForward < curPageStart + maxWordsPerPage + 18) {
+          if (checkForward < totalSecWords - 1 && checkForward < curPageStart + maxWordsPerPage + 45) {
             const w = secWords[checkForward];
-            if (/[.!?]$/.test(w)) {
+            if (/[.!?][„”«»"']?$/.test(w)) {
               bestBreak = checkForward;
               break;
+            }
+          }
+        }
+        // Fallback: poszukiwanie przecinka, średnika, dwukropka lub pauzy
+        if (bestBreak === -1) {
+          for (let offset = 0; offset <= 25; offset++) {
+            const checkBack = candidateEnd - offset;
+            if (checkBack > curPageStart + 40) {
+              const w = secWords[checkBack];
+              if (/[,;:\-—–][„”«»"']?$/.test(w)) {
+                bestBreak = checkBack;
+                break;
+              }
             }
           }
         }
@@ -629,7 +643,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       let pillText = '';
 
       if (isDayZero) {
-        if (activeSec?.id === 'sign_of_cross') {
+        if (activeSec?.id === 'sign_and_queen') {
+          pillText = `✝️ Krok 1 • Znak Krzyża & Witaj Królowo`;
+        } else if (activeSec?.id === 'sign_of_cross') {
           pillText = `✝️ Krok 1 • Znak Krzyża Świętego`;
         } else if (activeSec?.id === 'hail_holy_queen') {
           pillText = `👑 Krok 1 • Witaj Królowo`;
@@ -653,17 +669,19 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           pillText = `✨ Modlitwy Wstępne Różańca Świętego`;
         }
       } else if (hasRosary) {
-        if (activeSec?.id === 'intro' || activeSec?.type === 'intro') {
+        if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
+          pillText = `🕊️ Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
+        } else if (activeSec?.id === 'intro' || activeSec?.type === 'intro') {
           pillText = `ℹ️ ${activeBroadcastItem.subtitle || activeBroadcastItem.headlineTitle}${pageSuffix}`;
         } else if (activeSec?.id === 'scripture' || activeSec?.type === 'scripture') {
           pillText = `📖 Słowo Boże • ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
-        } else if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
-          pillText = `🕊️ Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
         } else if (activeSec?.id === 'our_father') {
           pillText = `🙏 Krok 1 • Ojcze nasz`;
         } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
           const ins = activeSeg?.insertion ? `„${activeSeg.insertion}”` : '';
           pillText = `📿 Paciorek ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`;
+        } else if (activeSec?.id === 'glory_and_fatima') {
+          pillText = `✨ Krok 11 • Chwała Ojcu & O mój Jezu`;
         } else if (activeSec?.id === 'glory_be') {
           pillText = `✨ Krok 11 • Chwała Ojcu`;
         } else if (activeSec?.id === 'fatima') {
@@ -816,17 +834,19 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       };
 
       // DYNAMICZNY, ELEGANCKI ROZMIAR CZCIONKI DLA DANEJ STRONY:
-      let baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
-      if (effectiveWordTexts.length <= 22) {
-        baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.036));
-      } else if (effectiveWordTexts.length <= 48) {
-        baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.032));
+      let baseFontSize = Math.round(height * (hasRosary ? 0.032 : 0.030));
+      if (effectiveWordTexts.length <= 35) {
+        baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.035));
+      } else if (effectiveWordTexts.length <= 80) {
+        baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
+      } else if (effectiveWordTexts.length <= 150) {
+        baseFontSize = Math.round(height * (hasRosary ? 0.027 : 0.026));
       } else {
-        baseFontSize = Math.round(height * (hasRosary ? 0.029 : 0.028));
+        baseFontSize = Math.round(height * (hasRosary ? 0.023 : 0.022));
       }
 
       let renderFontSize = baseFontSize;
-      let renderLineHeight = Math.round(renderFontSize * 1.48);
+      let renderLineHeight = Math.round(renderFontSize * 1.44);
 
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 

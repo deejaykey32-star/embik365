@@ -271,11 +271,10 @@ export function getRadioBroadcastItem(
         rawText: string;
       }
 
-      // Komplet pełnych modlitw bez skrótów i bez nazw modlitw
+      // Komplet pełnych modlitw bez skrótów i bez ucinania zdań
       const sectionDefs: SectionDef[] = [
-        { id: 'sign_of_cross', title: 'Znak Krzyża', type: 'scripture', beadIndex: 0, rawText: znakKrzyzaRaw },
-        { id: 'hail_holy_queen', title: 'Witaj Królowo', type: 'meditation', beadIndex: 0, rawText: witajKrolowoRaw },
-        { id: 'credo', title: 'Wierzę w Boga', type: 'meditation', beadIndex: 0, rawText: credoRaw },
+        { id: 'sign_and_queen', title: 'Znak Krzyża & Witaj Królowo', type: 'meditation', beadIndex: 0, rawText: `${znakKrzyzaRaw}\n\n${witajKrolowoRaw}` },
+        { id: 'credo', title: 'Wierzę w Boga Ojca', type: 'meditation', beadIndex: 0, rawText: credoRaw },
         { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 1, rawText: ojczeNaszRaw },
         { id: 'hail_mary_faith', title: 'Zdrowaś Maryjo o Wiarę', type: 'hail_mary', beadIndex: 2, rawText: zdrowasWiaraRaw },
         { id: 'hail_mary_hope', title: 'Zdrowaś Maryjo o Nadzieję', type: 'hail_mary', beadIndex: 3, rawText: zdrowasNadziejaRaw },
@@ -325,15 +324,15 @@ export function getRadioBroadcastItem(
           label: 'Krzyżyk: Znak Krzyża, Witaj Królowo, Wierzę w Boga',
           subLabel: 'Wstęp modlitwy różańcowej',
           startWordIdx: sections[0].startWordIdx,
-          endWordIdx: sections[2].endWordIdx
+          endWordIdx: sections[1].endWordIdx
         },
         {
           beadIndex: 1,
           beadType: 'large_intro',
           label: 'Duży paciorek: Ojcze nasz',
           subLabel: 'Modlitwa Pańska',
-          startWordIdx: sections[3].startWordIdx,
-          endWordIdx: sections[3].endWordIdx
+          startWordIdx: sections[2].startWordIdx,
+          endWordIdx: sections[2].endWordIdx
         },
         {
           beadIndex: 2,
@@ -341,8 +340,8 @@ export function getRadioBroadcastItem(
           label: 'Paciorek 1: O wiarę',
           subLabel: 'Zdrowaś Maryjo',
           insertion: 'który przymnaża nam wiary',
-          startWordIdx: sections[4].startWordIdx,
-          endWordIdx: sections[4].endWordIdx
+          startWordIdx: sections[3].startWordIdx,
+          endWordIdx: sections[3].endWordIdx
         },
         {
           beadIndex: 3,
@@ -350,8 +349,8 @@ export function getRadioBroadcastItem(
           label: 'Paciorek 2: O nadzieję',
           subLabel: 'Zdrowaś Maryjo',
           insertion: 'który przymnaża nam nadziei',
-          startWordIdx: sections[5].startWordIdx,
-          endWordIdx: sections[5].endWordIdx
+          startWordIdx: sections[4].startWordIdx,
+          endWordIdx: sections[4].endWordIdx
         },
         {
           beadIndex: 4,
@@ -359,16 +358,16 @@ export function getRadioBroadcastItem(
           label: 'Paciorek 3: O miłość',
           subLabel: 'Zdrowaś Maryjo',
           insertion: 'który przymnaża nam miłości',
-          startWordIdx: sections[6].startWordIdx,
-          endWordIdx: sections[6].endWordIdx
+          startWordIdx: sections[5].startWordIdx,
+          endWordIdx: sections[5].endWordIdx
         },
         {
           beadIndex: 5,
           beadType: 'large_conclusion',
           label: 'Zakończenie: Chwała Ojcu',
           subLabel: 'Modlitwa Uwielbienia',
-          startWordIdx: sections[7].startWordIdx,
-          endWordIdx: sections[sections.length - 1].endWordIdx
+          startWordIdx: sections[6].startWordIdx,
+          endWordIdx: sections[6].endWordIdx
         }
       ];
 
@@ -437,22 +436,16 @@ export function getRadioBroadcastItem(
       rawText: string;
     }
 
+    const introBlockRaw = `${introHeaderRaw}\n\n${scriptureRaw ? `${scriptureRaw}\n\n` : ''}${meditationRawText}`;
+
     const sectionDefs: SectionDef[] = [
       {
-        id: 'intro',
-        title: `Etap ${mystery.stage} • Część ${mystery.part} • Tajemnica ${mystery.inPart || safeDay}`,
-        type: 'intro',
+        id: 'meditation',
+        title: `Rozważanie: ${mystery.t}`,
+        type: 'meditation',
         beadIndex: 0,
-        rawText: introHeaderRaw
+        rawText: introBlockRaw
       },
-      ...(scriptureRaw ? [{
-        id: 'scripture',
-        title: `Pismo Święte: ${mystery.ref}`,
-        type: 'scripture' as const,
-        beadIndex: 0,
-        rawText: scriptureRaw
-      }] : []),
-      { id: 'meditation', title: `Rozważanie: ${mystery.t}`, type: 'meditation', beadIndex: 0, rawText: meditationRawText },
       { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: ojczeNaszText },
       ...smallBeadsData.map((b, idx) => ({
         id: `hail_mary_${idx + 1}`,
@@ -461,10 +454,9 @@ export function getRadioBroadcastItem(
         beadIndex: idx + 1,
         rawText: b.text
       })),
-      { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
-      { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText },
-      ...(safeDay === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion' as const, beadIndex: 11, rawText: podTwojaObroneText }] : []),
-      ...(modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
+      { id: 'glory_and_fatima', title: 'Chwała Ojcu & O mój Jezu', type: 'conclusion', beadIndex: 11, rawText: `${chwalaOjcuText}\n\n${oMojJezuText}` },
+      ...(safeDay === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę & Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: `${podTwojaObroneText}${modlitwaKoncowaText ? `\n\n${modlitwaKoncowaText}` : ''}` }] : []),
+      ...(safeDay !== 175 && modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
     ];
 
     const cleanWords: string[] = [];
@@ -568,15 +560,11 @@ export function getRadioBroadcastItem(
       rawText: string;
     }
 
+    const fullWnrRaw = `${cleanTitle}\n\n${cleanContent}`;
+
     const sectionDefs: SectionDef[] = [
       { id: 'intro', title: 'Informacje wstępne', type: 'intro', rawText: introInfoText },
-      { id: 'title', title: 'Tytuł wpisu', type: 'general', rawText: titleText },
-      ...contentParagraphs.map((p, idx) => ({
-        id: `para_${idx + 1}`,
-        title: `Akapit ${idx + 1}`,
-        type: 'general' as const,
-        rawText: p
-      }))
+      { id: 'content', title: cleanTitle, type: 'general', rawText: fullWnrRaw }
     ];
 
     const cleanWords: string[] = [];
@@ -656,15 +644,11 @@ export function getRadioBroadcastItem(
       rawText: string;
     }
 
+    const fullBibliaRaw = titleText ? `${titleText}\n\n${cleanContent}` : cleanContent;
+
     const sectionDefs: SectionDef[] = [
       { id: 'intro', title: 'Informacje wstępne', type: 'intro', rawText: introInfoText },
-      ...(titleText ? [{ id: 'title', title: 'Temat', type: 'general' as const, rawText: titleText }] : []),
-      ...contentParagraphs.map((p, idx) => ({
-        id: `para_${idx + 1}`,
-        title: `Akapit ${idx + 1}`,
-        type: 'general' as const,
-        rawText: p
-      }))
+      { id: 'content', title: headlineTitle, type: 'general', rawText: fullBibliaRaw }
     ];
 
     const cleanWords: string[] = [];
@@ -764,11 +748,11 @@ export function getRadioBroadcastItem(
     rawText: string;
   }
 
+  const introBlockRaw = `${introHeaderRaw}\n\n${scriptureRawText ? `${scriptureRawText}\n\n` : ''}${meditationRawText}`;
+
   // Komplet pełnych modlitw z nagłówkiem tajemnicy, Pismem Świętym i rozważaniem tajemnicy przed Ojcze nasz oraz Pod Twoją obronę na zakończenie
   const sectionDefs: SectionDef[] = [
-    { id: 'intro', title: rhzEntry.stageTitle, type: 'intro', beadIndex: 0, rawText: introHeaderRaw },
-    ...(scriptureRawText ? [{ id: 'scripture', title: `Pismo Święte: ${rhzEntry.stageTitle}`, type: 'scripture' as const, beadIndex: 0, rawText: scriptureRawText }] : []),
-    { id: 'meditation', title: `Rozważanie: ${rhzEntry.stageTitle}`, type: 'meditation' as const, beadIndex: 0, rawText: meditationRawText },
+    { id: 'meditation', title: `Rozważanie: ${rhzEntry.stageTitle}`, type: 'meditation' as const, beadIndex: 0, rawText: introBlockRaw },
     { id: 'our_father', title: 'Ojcze nasz', type: 'our_father' as const, beadIndex: 0, rawText: ojczeNaszText },
     ...smallBeadsData.map((b, idx) => ({
       id: `hail_mary_${idx + 1}`,
@@ -777,8 +761,7 @@ export function getRadioBroadcastItem(
       beadIndex: idx + 1,
       rawText: b.text
     })),
-    { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be' as const, beadIndex: 11, rawText: chwalaOjcuText },
-    { id: 'fatima', title: 'O mój Jezu', type: 'fatima' as const, beadIndex: 11, rawText: oMojJezuText },
+    { id: 'glory_and_fatima', title: 'Chwała Ojcu & O mój Jezu', type: 'conclusion' as const, beadIndex: 11, rawText: `${chwalaOjcuText}\n\n${oMojJezuText}` },
     ...(safeDay === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion' as const, beadIndex: 11, rawText: podTwojaObroneText }] : [])
   ];
 
