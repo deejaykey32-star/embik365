@@ -765,10 +765,17 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         const N = line.tokens.length;
         if (N === 0) return;
 
-        // ELEGANCKIE WYŚRODKOWANIE KAŻDEJ LINII (Sacralny standard YouTube i telepromptera)
+        // PEŁNE WYJUSTOWANIE DO LEWEJ I PRAWEJ KRAWĘDZI:
+        // Wszystkie linie rozpoczynają się od lewego marginesu lineStartX.
+        // Linie wewnętrzne (N > 1 i !line.isParagraphEnd) rozciągają się dokładnie do prawego marginesu (lineStartX + maxTextWidth).
+        // Ostatnia linia akapitu (line.isParagraphEnd) lub linia jednowyrazowa jest wyrównana do lewego marginesu ze standardowym odstępem.
+        const lineStartX = Math.round((width - maxTextWidth) / 2);
         const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
-        const totalLineWidth = totalWordsW + (N - 1) * standardSpaceWidth;
-        const lineStartX = Math.round((width - totalLineWidth) / 2);
+
+        const isJustified = !line.isParagraphEnd && N > 1;
+        const spaceBetweenWords = isJustified
+          ? Math.min((maxTextWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5)
+          : standardSpaceWidth;
 
         let curX = lineStartX;
 
@@ -826,7 +833,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           }
           ctx.restore();
 
-          curX = tokenX + token.width + standardSpaceWidth;
+          curX = tokenX + token.width + spaceBetweenWords;
         }
       });
 

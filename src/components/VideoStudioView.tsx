@@ -156,7 +156,7 @@ export const VideoStudioView: React.FC<Props> = ({
                 </span>
               </h1>
 
-              <p className="text-sm sm:text-base text-stone-300 font-sans-ui max-w-2xl leading-relaxed">
+              <p className="text-sm sm:text-base text-stone-300 font-sans-ui max-w-2xl leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 Generuj gotowe filmy Full HD (1080p lub 720p) z czarnym tłem (16:9), animacją koralików różańca (RGBA/CMYK), wbudowanym lektorem syntezy mowy oraz synchronizowanymi słowo po słowie napisami karaoke. Cały proces odbywa się bezpośrednio w Twojej przeglądarce.
               </p>
 
@@ -440,7 +440,7 @@ export const VideoStudioView: React.FC<Props> = ({
                   <span>Podgląd tekstu do przeczytania przez lektora:</span>
                   <span className="text-[10px] text-stone-400">Napisy zsynchronizowane w wideo</span>
                 </div>
-                <div className="max-h-48 overflow-y-auto p-4 rounded-2xl bg-stone-100 dark:bg-[#070b14] border border-stone-200 dark:border-stone-800 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-serif leading-relaxed whitespace-pre-line custom-scrollbar">
+                <div className="max-h-48 overflow-y-auto p-4 rounded-2xl bg-stone-100 dark:bg-[#070b14] border border-stone-200 dark:border-stone-800 text-xs sm:text-sm text-stone-700 dark:text-stone-300 font-serif leading-relaxed whitespace-pre-line custom-scrollbar text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                   {activeBroadcastItem.displayContent || activeBroadcastItem.speechText}
                 </div>
               </div>
@@ -486,7 +486,7 @@ export const VideoStudioView: React.FC<Props> = ({
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">1</div>
               <div className="font-bold text-sm text-stone-100">Kliknij Generuj</div>
-              <p className="text-stone-400 leading-relaxed">
+              <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 Wybierz stację i dzień, kliknij nagraj, a przeglądarka wyrenderuje obraz z dźwiękiem w czasie rzeczywistym.
               </p>
             </div>
@@ -494,7 +494,7 @@ export const VideoStudioView: React.FC<Props> = ({
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">2</div>
               <div className="font-bold text-sm text-stone-100">Pobierz plik MP4</div>
-              <p className="text-stone-400 leading-relaxed">
+              <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 Po zakończeniu nagrania kliknij „Pobierz wideo MP4”. Plik zostanie zapisany w Twoim folderze Pobrane.
               </p>
             </div>
@@ -502,7 +502,7 @@ export const VideoStudioView: React.FC<Props> = ({
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">3</div>
               <div className="font-bold text-sm text-stone-100">Wgraj na YouTube</div>
-              <p className="text-stone-400 leading-relaxed">
+              <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 Przejdź do YouTube Studio (studio.youtube.com), kliknij Utwórz → Prześlij film i upuść pobrany plik MP4.
               </p>
             </div>
@@ -510,7 +510,7 @@ export const VideoStudioView: React.FC<Props> = ({
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">4</div>
               <div className="font-bold text-sm text-stone-100">Czarne tło i OLED</div>
-              <p className="text-stone-400 leading-relaxed">
+              <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 Wideo posiada czyste tło #000000, dzięki czemu idealnie prezentuje się na ekranach TV, smartfonach oraz w trybie ciemnym.
               </p>
             </div>

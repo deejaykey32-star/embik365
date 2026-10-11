@@ -30,12 +30,12 @@ interface MediaGallerySectionViewProps {
 }
 
 const DEFAULT_GRAFIKA_INTRO = `
-  <div style="font-size: 16px; line-height: 1.7;">
-    <p style="margin-bottom: 12px;">
+  <div style="font-size: 16px; line-height: 1.7; text-align: justify; text-justify: inter-word;">
+    <p style="margin-bottom: 12px; text-align: justify; text-justify: inter-word;">
       Witaj w oficjalnym <strong>Repozytorium Materiałów Graficznych i Media (Grafika365)</strong>. 
       Sekcja ta gromadzi wszystkie ilustracje, okładki książek, banery promocyjne, animowane pliki GIF, wideo oraz materiały interaktywne opublikowane i zarządzane przez administratora serwisu.
     </p>
-    <p style="font-size: 15px; color: #86198f; background: rgba(192, 38, 211, 0.08); padding: 12px 18px; border-left: 4px solid #c026d3; border-radius: 0 12px 12px 0;">
+    <p style="font-size: 15px; color: #86198f; background: rgba(192, 38, 211, 0.08); padding: 12px 18px; border-left: 4px solid #c026d3; border-radius: 0 12px 12px 0; text-align: justify; text-justify: inter-word;">
       ✨ Każdy materiał posiada generowany w czasie rzeczywistym kod QR (PNG 300 DPI) oraz stały skrócony adres URL (clck.ru) gotowy do użycia w druku i publikacjach cyfrowych.
     </p>
   </div>
@@ -146,7 +146,8 @@ export const MediaGallerySectionView: React.FC<MediaGallerySectionViewProps> = (
 
           {/* WYSIWYG Editable Description Box */}
           <div 
-            className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200"
+            className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200 text-justify"
+            style={{ textAlign: 'justify', textJustify: 'inter-word' }}
             dangerouslySetInnerHTML={{ __html: introHtml }}
           />
 

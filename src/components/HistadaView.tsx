@@ -213,7 +213,7 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
               </p>
             </div>
 
-            <p className="text-base sm:text-lg text-[#614e3e] dark:text-[#94a3b8] max-w-4xl font-sans-ui leading-relaxed">
+            <p className="text-base sm:text-lg text-[#614e3e] dark:text-[#94a3b8] max-w-4xl font-sans-ui leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               Autorski projekt gry łączącej <span className="font-semibold text-purple-800 dark:text-purple-300">historię, kulturę, naukę, filozofię i wiarę</span>. 
               Interaktywny świat zachęcający do odkrywania prawdy, pobudzający do myślenia, 
               uczący odpowiedzialności za losy świata i motywujący do zgłębiania wielkiego dorobku całej ludzkości.
@@ -355,7 +355,7 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                   {part.subtitle}
                 </p>
 
-                <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book">
+                <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                   {part.desc}
                 </p>
               </div>
@@ -404,7 +404,7 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
                     {pillar.quote}
                   </p>
 
-                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-sans-ui">
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-sans-ui text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                     {pillar.desc}
                   </p>
                 </div>
@@ -428,7 +428,7 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
             </h3>
 
             <div className="space-y-3 text-sm sm:text-base text-purple-100/90 font-serif-book leading-relaxed border-l-2 border-amber-400/60 pl-4 py-1">
-              <p>
+              <p className="text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 <em>
                   „Chciałbym stworzyć świat, który będzie zachęcał do poznawania historii, nauki, kultury i wiary. 
                   Marzy mi się gra, która nie tylko będzie bawić, ale także uczyć odpowiedzialności, pobudzać do myślenia 

@@ -714,7 +714,7 @@ export const RadioView: React.FC<Props> = ({
                     </div>
                   </div>
                   <div className="font-semibold text-white">{previewItem.headlineTitle}</div>
-                  <div className="text-xs text-slate-300 font-serif max-h-48 overflow-y-auto whitespace-pre-line leading-relaxed">
+                  <div className="text-xs text-slate-300 font-serif max-h-48 overflow-y-auto whitespace-pre-line leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                     {previewItem.displayContent || previewItem.speechText}
                   </div>
                   <div className="text-[11px] text-amber-300/80 italic">

@@ -328,7 +328,8 @@ export const Info365View: React.FC<Info365ViewProps> = ({
 
           {/* Rendered Intro HTML */}
           <div 
-            className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200"
+            className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200 text-justify"
+            style={{ textAlign: 'justify', textJustify: 'inter-word' }}
             dangerouslySetInnerHTML={{ __html: activeConfig.introHtml }}
           />
 
@@ -533,7 +534,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                       );
                     })()}
                   </div>
-                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book">
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                     {section.fullDesc}
                   </p>
                 </div>
@@ -842,7 +843,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 Generator Plików Wideo MP4 dla YouTube
               </h3>
 
-              <p className="text-xs sm:text-sm text-stone-300 font-sans-ui leading-relaxed">
+              <p className="text-xs sm:text-sm text-stone-300 font-sans-ui leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
                 Twórz gotowe filmy wideo w formacie MP4 z czarnym tłem, wbudowanym automatycznym lektorem mowy, synchronizowanymi napisami karaoke oraz animacją koralików różańca. Gotowy plik pobierzesz bezpośrednio z przeglądarki i możesz od razu opublikować na kanale YouTube.
               </p>
             </div>

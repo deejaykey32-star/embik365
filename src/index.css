@@ -230,6 +230,19 @@
   background: rgba(245, 158, 11, 0.45);
 }
 
+/* Pełne obustronne wyjustowanie tekstu do prawej i lewej w całej aplikacji */
+.text-justify,
+p.text-justify,
+div.text-justify,
+.prose p,
+.prose blockquote {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  text-align-last: left;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
 /* Rich text content formatting for WYSIWYG & HTML reader outputs (Times New Roman, interlinia 1.15, pełne wyjustowanie obustronne) */
 .rich-text-content,
 .app-reading-content {

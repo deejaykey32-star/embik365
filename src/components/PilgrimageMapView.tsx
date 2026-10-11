@@ -323,7 +323,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-serif-book tracking-tight text-[#1f1712] dark:text-white">
               Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
             </h1>
-            <p className="text-base sm:text-lg text-[#614e3e] dark:text-[#94a3b8] max-w-4xl font-sans-ui leading-relaxed">
+            <p className="text-base sm:text-lg text-[#614e3e] dark:text-[#94a3b8] max-w-4xl font-sans-ui leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               Uniwersalny, coroczny szlak wędrówki (18–24 czerwca): 
               <span className="font-semibold text-amber-800 dark:text-amber-300"> Promienie z całego świata i Polski ku Jasnej Górze</span>, 
               wspólny <span className="font-semibold text-amber-800 dark:text-amber-300">Szlak Orlich Gniazd (174 km Częstochowa ➔ Łagiewniki)</span> z 
@@ -658,7 +658,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 Wszystkie tryby: 🚗 Auto • 🚆 Pociąg • 🚶 Pieszo • 🚲 Rower
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
+            <p className="text-xs sm:text-sm text-[#473729] dark:text-[#cbd5e1] leading-relaxed font-sans-ui text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               Skorzystaj z gotowej trasy w Google Maps z głównymi punktami: <span className="font-semibold text-emerald-900 dark:text-emerald-200">Jasna Góra ➔ Złoty Potok ➔ Królewski Zamek Bobolice ➔ Zamek Ogrodzieniec ➔ Ojców ➔ Sanktuarium w Łagiewnikach</span>. Wybierz swój tryb podróży poniżej:
             </p>
             <div className="flex items-center gap-2 text-xs font-mono text-[#614e3e] dark:text-[#94a3b8]">
