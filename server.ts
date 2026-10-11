@@ -279,8 +279,8 @@ app.post('/api/tts', async (req, res) => {
     const targetLang = (req.body?.lang || 'pl').toLowerCase();
     const wantsJson = req.headers['accept']?.includes('application/json') || req.body?.format === 'json';
     
-    // Bezpieczny podział na fragmenty (maks 150 znaków) dla Google TTS bez sztucznego obcinania
-    const limitedChunks = splitTextForTts(rawText, 150);
+    // Bezpieczny podział na fragmenty (maks 130 znaków) dla Google TTS bez sztucznego obcinania
+    const limitedChunks = splitTextForTts(rawText, 130);
     const buffers: Buffer[] = [];
     const textChunks: string[] = [];
 

@@ -774,7 +774,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
         const isJustified = !line.isParagraphEnd && N > 1;
         const spaceBetweenWords = isJustified
-          ? Math.min((maxTextWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5)
+          ? Math.max(standardSpaceWidth, Math.min((maxTextWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5))
           : standardSpaceWidth;
 
         let curX = lineStartX;
@@ -839,18 +839,18 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       ctx.restore(); // Przywrócenie stanu przed clip()
 
-      // Subtelny gradient wygaszający na górnej i dolnej krawędzi strefy napisów
-      // zapobiega ucinaniu linii podczas płynnego przewijania telepromptera
+      // Bardzo subtelny gradient wygaszający na samej krawędzi strefy napisów
+      // zapobiega ucinaniu linii bez zakrywania czytanego tekstu
       if (totalBlockHeight > zoneHeight) {
-        const topFadeH = Math.min(38, Math.round(zoneHeight * 0.08));
+        const topFadeH = Math.min(18, Math.round(zoneHeight * 0.04));
         const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + topFadeH);
         topGrad.addColorStop(0, '#050505');
         topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
         ctx.fillStyle = topGrad;
         ctx.fillRect(40, zoneTop, width - 80, topFadeH);
 
-        const botFadeH = Math.min(46, Math.round(zoneHeight * 0.10));
-        const botGrad = ctx.createLinearGradient(0, zoneBottom - botFadeH, 0, zoneBottom);
+        const botFadeH = Math.min(22, Math.round(zoneHeight * 0.05));
+        botGrad = ctx.createLinearGradient(0, zoneBottom - botFadeH, 0, zoneBottom);
         botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
         botGrad.addColorStop(1, '#050505');
         ctx.fillStyle = botGrad;
@@ -1093,11 +1093,16 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           let secAudio: AudioBuffer | null = null;
 
           if (sec.text.length > 400) {
-            const subTexts = splitTextForTts(sec.text, 200);
+            const subTexts = splitTextForTts(sec.text, 130);
             const subBuffers: AudioBuffer[] = [];
             for (const sub of subTexts) {
-              const buf = await fetchAudioForText(sub);
-              if (buf) subBuffers.push(buf);
+              let buf = await fetchAudioForText(sub);
+              if (!buf) {
+                const wCount = sub.split(/\s+/).filter(Boolean).length || 5;
+                const dur = Math.max(1.2, wCount * 0.44);
+                buf = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+              }
+              subBuffers.push(buf);
             }
             if (subBuffers.length > 0) {
               secAudio = concatenateAudioBuffers(audioCtx, subBuffers);

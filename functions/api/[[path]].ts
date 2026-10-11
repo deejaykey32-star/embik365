@@ -673,7 +673,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       }
 
       const targetLang = (body.lang || 'pl').toLowerCase();
-      const textChunks = splitTextForTts(rawText, 150);
+      const textChunks = splitTextForTts(rawText, 130);
       const validBuffers: ArrayBuffer[] = [];
       const respondedTextChunks: string[] = [];
 

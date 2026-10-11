@@ -190,6 +190,14 @@ function getPdfPageData(
     else if (subPage === 3) chunk = rhz.page3;
     else chunk = rhz.page4;
 
+    let fullContent = rhz.fullText;
+    let prayer = `${rhz.gloryBe}\n\n${rhz.fatimaPrayer}`;
+    if (dayNum !== 175) {
+      chunk = chunk.replace(/(?:\r?\n)*Modlitwa na zakończenie różańca[^\n]*\s*Pod Twoją obronę[^\n]*/gi, '');
+      prayer = prayer.replace(/(?:\r?\n)*Modlitwa na zakończenie różańca[^\n]*\s*Pod Twoją obronę[^\n]*/gi, '');
+      fullContent = fullContent.replace(/(?:\r?\n)*Modlitwa na zakończenie różańca[^\n]*\s*Pod Twoją obronę[^\n]*/gi, '');
+    }
+
     return {
       pdfPageNumber: safeP,
       dayNumber: dayNum,
@@ -201,10 +209,10 @@ function getPdfPageData(
       title: rhz.stageTitle || `RHZ365 • Dzień ${dayNum}`,
       subtitle: `${dateObj.displayDate} • ${rhz.cycle} (Tajemnica ${rhz.mysteryIndex} z 175)`,
       chunk,
-      prayer: `${rhz.gloryBe}\n\n${rhz.fatimaPrayer}`,
+      prayer,
       mystery: rhz.stageTitle,
       intention: `Tajemnica ${rhz.mysteryIndex} Różańca Historii Zbawienia`,
-      fullContent: rhz.fullText,
+      fullContent,
       qrBadges: [] as any[]
     };
   }

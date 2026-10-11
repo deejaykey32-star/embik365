@@ -243,10 +243,10 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
       }
     });
 
-    if (mysteriesList.length > 0) {
+    if (mysteriesList.some(m => m.day === 175)) {
       q.push({
         id: 'seq_conclusion_sub_tuum',
-        title: 'Zakończenie części Różańca • Pod Twoją obronę',
+        title: 'Zakończenie Różańca • Pod Twoją obronę',
         subtitle: 'Starożytna antyfona do Bogurodzicy',
         text: POD_TWOJA_OBRONE_PELNE
       });
@@ -1105,34 +1105,36 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
             </div>
           )}
 
-          {/* Modlitwa "Pod Twoją obronę" po każdej części różańca */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/25 border border-amber-500/35 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                <span>Modlitwa na Zakończenie Części • Pod Twoją obronę:</span>
-              </span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => copyText(`sub_tuum_${m.day}`, POD_TWOJA_OBRONE_PELNE)}
-                  className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
-                  title="Kopiuj modlitwę"
-                >
-                  {copiedId === `sub_tuum_${m.day}` ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                </button>
-                <button
-                  onClick={() => speakText(`speech_sub_tuum_${m.day}`, POD_TWOJA_OBRONE_PELNE)}
-                  className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
-                  title="Odsłuchaj modlitwę Pod Twoją obronę"
-                >
-                  {activeSpeechId === `speech_sub_tuum_${m.day}` ? <VolumeX className="w-4 h-4 text-amber-600" /> : <Volume2 className="w-4 h-4" />}
-                </button>
+          {/* Modlitwa "Pod Twoją obronę" wyłącznie w dniu 175 (zakończenie całego różańca) */}
+          {m.day === 175 && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/25 border border-amber-500/35 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                  <span>Modlitwa na Zakończenie Różańca • Pod Twoją obronę:</span>
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => copyText(`sub_tuum_${m.day}`, POD_TWOJA_OBRONE_PELNE)}
+                    className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
+                    title="Kopiuj modlitwę"
+                  >
+                    {copiedId === `sub_tuum_${m.day}` ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={() => speakText(`speech_sub_tuum_${m.day}`, POD_TWOJA_OBRONE_PELNE)}
+                    className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition cursor-pointer"
+                    title="Odsłuchaj modlitwę Pod Twoją obronę"
+                  >
+                    {activeSpeechId === `speech_sub_tuum_${m.day}` ? <VolumeX className="w-4 h-4 text-amber-600" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
+              <p className={`font-serif-book text-[#3a2e22] dark:text-[#f8fafc] text-justify leading-relaxed ${fontClass}`}>
+                {POD_TWOJA_OBRONE_PELNE}
+              </p>
             </div>
-            <p className={`font-serif-book text-[#3a2e22] dark:text-[#f8fafc] text-justify leading-relaxed ${fontClass}`}>
-              {POD_TWOJA_OBRONE_PELNE}
-            </p>
-          </div>
+          )}
         </div>
       </div>
     );

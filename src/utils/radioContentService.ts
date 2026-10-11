@@ -280,8 +280,7 @@ export function getRadioBroadcastItem(
         { id: 'hail_mary_faith', title: 'Zdrowaś Maryjo o Wiarę', type: 'hail_mary', beadIndex: 2, rawText: zdrowasWiaraRaw },
         { id: 'hail_mary_hope', title: 'Zdrowaś Maryjo o Nadzieję', type: 'hail_mary', beadIndex: 3, rawText: zdrowasNadziejaRaw },
         { id: 'hail_mary_love', title: 'Zdrowaś Maryjo o Miłość', type: 'hail_mary', beadIndex: 4, rawText: zdrowasMiloscRaw },
-        { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 5, rawText: chwalaOjcuRaw },
-        { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion', beadIndex: 5, rawText: POD_TWOJA_OBRONE_PELNE }
+        { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 5, rawText: chwalaOjcuRaw }
       ];
 
       const cleanWords: string[] = [];
@@ -366,8 +365,8 @@ export function getRadioBroadcastItem(
         {
           beadIndex: 5,
           beadType: 'large_conclusion',
-          label: 'Zakończenie: Chwała Ojcu i Pod Twoją obronę',
-          subLabel: 'Uwielbienie i Pod Twoją obronę',
+          label: 'Zakończenie: Chwała Ojcu',
+          subLabel: 'Modlitwa Uwielbienia',
           startWordIdx: sections[7].startWordIdx,
           endWordIdx: sections[sections.length - 1].endWordIdx
         }
@@ -381,8 +380,7 @@ export function getRadioBroadcastItem(
         zdrowasWiaraRaw,
         zdrowasNadziejaRaw,
         zdrowasMiloscRaw,
-        chwalaOjcuRaw,
-        POD_TWOJA_OBRONE_PELNE
+        chwalaOjcuRaw
       ].join('\n\n');
 
       return {
@@ -465,7 +463,7 @@ export function getRadioBroadcastItem(
       })),
       { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be', beadIndex: 11, rawText: chwalaOjcuText },
       { id: 'fatima', title: 'O mój Jezu', type: 'fatima', beadIndex: 11, rawText: oMojJezuText },
-      { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion', beadIndex: 11, rawText: podTwojaObroneText },
+      ...(safeDay === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion' as const, beadIndex: 11, rawText: podTwojaObroneText }] : []),
       ...(modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
     ];
 
@@ -516,7 +514,7 @@ export function getRadioBroadcastItem(
       ...dopowiedzeniaList,
       CHWALA_OJCU_PELNE,
       MODLITWA_FATIMSKA_PELNA,
-      POD_TWOJA_OBRONE_PELNE,
+      ...(safeDay === 175 ? [POD_TWOJA_OBRONE_PELNE] : []),
       ...(modlitwaKoncowaText ? [modlitwaKoncowaText] : [])
     ].join('\n\n');
 
@@ -781,7 +779,7 @@ export function getRadioBroadcastItem(
     })),
     { id: 'glory_be', title: 'Chwała Ojcu', type: 'glory_be' as const, beadIndex: 11, rawText: chwalaOjcuText },
     { id: 'fatima', title: 'O mój Jezu', type: 'fatima' as const, beadIndex: 11, rawText: oMojJezuText },
-    { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion' as const, beadIndex: 11, rawText: podTwojaObroneText }
+    ...(safeDay === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion' as const, beadIndex: 11, rawText: podTwojaObroneText }] : [])
   ];
 
   const cleanWords: string[] = [];
@@ -828,7 +826,7 @@ export function getRadioBroadcastItem(
     ...beadsList,
     chwalaOjcuText,
     oMojJezuText,
-    podTwojaObroneText
+    ...(safeDay === 175 ? [podTwojaObroneText] : [])
   ].join('\n\n');
 
   return {

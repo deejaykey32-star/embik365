@@ -616,7 +616,7 @@ export const RhzPrayerGuide: React.FC<Props> = ({
                 Krok 4 • Zakończenie Modlitwy
               </div>
               <h3 className="font-heading-cinzel text-lg sm:text-xl font-bold text-[#2a2016] dark:text-[#f3e8d2]">
-                Chwała Ojcu, Modlitwa Fatimska i Pod Twoją obronę
+                {rhzEntry.dayNumber === 175 ? 'Chwała Ojcu, Modlitwa Fatimska i Pod Twoją obronę' : 'Chwała Ojcu i Modlitwa Fatimska'}
               </h3>
             </div>
           </div>
@@ -664,24 +664,26 @@ export const RhzPrayerGuide: React.FC<Props> = ({
               </p>
             </div>
 
-            {/* Pod Twoją obronę */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#141b29] border border-[#e5d9cc] dark:border-[#24334c] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Shield className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                  <span>Modlitwa na zakończenie różańca:</span>
-                </span>
-                <button
-                  onClick={() => speakText('concl_defense', COMMON_PRAYERS.concludingPrayer.text)}
-                  className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
-                >
-                  {activeSpeechId === 'concl_defense' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </button>
+            {/* Pod Twoją obronę - wyłącznie w dniu 175 */}
+            {rhzEntry.dayNumber === 175 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#141b29] border border-[#e5d9cc] dark:border-[#24334c] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Shield className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                    <span>Modlitwa na zakończenie różańca:</span>
+                  </span>
+                  <button
+                    onClick={() => speakText('concl_defense', COMMON_PRAYERS.concludingPrayer.text)}
+                    className="p-1.5 rounded-lg hover:bg-amber-600/20 text-amber-800 dark:text-amber-300 transition-colors"
+                  >
+                    {activeSpeechId === 'concl_defense' ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
+                  {COMMON_PRAYERS.concludingPrayer.text}
+                </p>
               </div>
-              <p className={`font-serif-book text-[#3a2e22] dark:text-[#cbd5e1] text-justify ${fontClass}`}>
-                {COMMON_PRAYERS.concludingPrayer.text}
-              </p>
-            </div>
+            )}
 
             {/* Końcowy Znak Krzyża */}
             <div className="p-3 text-center text-xs font-bold uppercase tracking-widest text-amber-800 dark:text-amber-400">
