@@ -294,9 +294,10 @@ export function getRadioBroadcastItem(
         const normText = normalizePolishTextForSpeech(def.rawText);
         normalizedSectionTexts.push(normText);
         const sWords = extractCleanWordsForKaraoke(normText);
+        if (sWords.length === 0) continue;
         const startWordIdx = cleanWords.length;
 
-        if (cleanWords.length > 0 && sWords.length > 0) {
+        if (cleanWords.length > 0) {
           lineBreakWordIndices.push(startWordIdx);
         }
 
@@ -304,7 +305,7 @@ export function getRadioBroadcastItem(
           cleanWords.push(w);
         }
 
-        const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+        const endWordIdx = cleanWords.length - 1;
         sections.push({
           id: def.id,
           title: def.title,
@@ -478,9 +479,10 @@ export function getRadioBroadcastItem(
       const normText = normalizePolishTextForSpeech(def.rawText);
       normalizedSectionTexts.push(normText);
       const sWords = extractCleanWordsForKaraoke(normText);
+      if (sWords.length === 0) continue;
       const startWordIdx = cleanWords.length;
 
-      if (cleanWords.length > 0 && sWords.length > 0) {
+      if (cleanWords.length > 0) {
         lineBreakWordIndices.push(startWordIdx); // Każda kolejna modlitwa/sekcja zaczyna się od nowej linii!
       }
 
@@ -488,7 +490,7 @@ export function getRadioBroadcastItem(
         cleanWords.push(w);
       }
 
-      const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+      const endWordIdx = cleanWords.length - 1;
       sections.push({
         id: def.id,
         title: def.title,
@@ -589,9 +591,10 @@ export function getRadioBroadcastItem(
       const normText = normalizePolishTextForSpeech(def.rawText);
       normalizedSectionTexts.push(normText);
       const sWords = extractCleanWordsForKaraoke(normText);
+      if (sWords.length === 0) continue;
       const startWordIdx = cleanWords.length;
 
-      if (cleanWords.length > 0 && sWords.length > 0) {
+      if (cleanWords.length > 0) {
         lineBreakWordIndices.push(startWordIdx);
       }
 
@@ -599,7 +602,7 @@ export function getRadioBroadcastItem(
         cleanWords.push(w);
       }
 
-      const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+      const endWordIdx = cleanWords.length - 1;
       sections.push({
         id: def.id,
         title: def.title,
@@ -676,9 +679,10 @@ export function getRadioBroadcastItem(
       const normText = normalizePolishTextForSpeech(def.rawText);
       normalizedSectionTexts.push(normText);
       const sWords = extractCleanWordsForKaraoke(normText);
+      if (sWords.length === 0) continue;
       const startWordIdx = cleanWords.length;
 
-      if (cleanWords.length > 0 && sWords.length > 0) {
+      if (cleanWords.length > 0) {
         lineBreakWordIndices.push(startWordIdx);
       }
 
@@ -686,7 +690,7 @@ export function getRadioBroadcastItem(
         cleanWords.push(w);
       }
 
-      const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+      const endWordIdx = cleanWords.length - 1;
       sections.push({
         id: def.id,
         title: def.title,
@@ -749,7 +753,7 @@ export function getRadioBroadcastItem(
   const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
   const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
 
-  const introHeaderRaw = `${rhzEntry.stageTitle}.`;
+  const introHeaderRaw = `Pierwotny Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${rhzEntry.stageTitle}.`;
   const scriptureRawText = cleanPassage ? `Fragment Pisma Świętego:\n${cleanPassage}` : '';
   const meditationRawText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${cleanExplanation ? `\n${cleanExplanation}` : ''}`;
   const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
@@ -790,9 +794,10 @@ export function getRadioBroadcastItem(
     const normText = normalizePolishTextForSpeech(def.rawText);
     normalizedSectionTexts.push(normText);
     const sWords = extractCleanWordsForKaraoke(normText);
+    if (sWords.length === 0) continue;
     const startWordIdx = cleanWords.length;
 
-    if (cleanWords.length > 0 && sWords.length > 0) {
+    if (cleanWords.length > 0) {
       lineBreakWordIndices.push(startWordIdx); // Każda kolejna modlitwa/sekcja zaczyna się od nowej linii!
     }
 
@@ -800,7 +805,7 @@ export function getRadioBroadcastItem(
       cleanWords.push(w);
     }
 
-    const endWordIdx = Math.max(startWordIdx, cleanWords.length - 1);
+    const endWordIdx = cleanWords.length - 1;
     sections.push({
       id: def.id,
       title: def.title,

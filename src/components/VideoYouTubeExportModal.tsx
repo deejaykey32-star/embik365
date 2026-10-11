@@ -622,27 +622,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
-      // Wybór zakresu słów do wyświetlenia:
-      // Dla stacji różańcowych (Nowy RHZ, Pierwotny RHZ) wyświetlamy całą bieżącą modlitwę lub rozważanie
-      // Dla czytań i wpisów (Biblia365, Widoki na Raj) wyświetlamy pełny, płynny ciąg tekstu (continuous reading),
-      // by żaden akapit ani werset nie znikał z ekranu!
-      let displayStartWordIdx = 0;
-      let displayEndWordIdx = wordsTotal - 1;
-
-      if (hasRosary && activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0) {
-        const activeSec = activeBroadcastItem.sections.find(
-          s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
-        ) || activeBroadcastItem.sections[0];
-
-        if (activeSec) {
-          displayStartWordIdx = activeSec.startWordIdx;
-          displayEndWordIdx = Math.min(activeSec.endWordIdx, wordsTotal - 1);
-        }
-      }
-
-      const displayWordTexts = words.slice(displayStartWordIdx, displayEndWordIdx + 1);
-      const effectiveWordTexts = displayWordTexts.length > 0 ? displayWordTexts : words;
-      const effectiveStartIdx = displayWordTexts.length > 0 ? displayStartWordIdx : 0;
+      // ZAWSZE WYŚWIETLAMY PEŁNY, PŁYNNY CIĄG TEKSTU DLA WSZYSTKICH STACJI!
+      // (Zarówno dla stacji różańcowych Nowy RHZ / RHZ365, jak i dla WnR365 i Biblia365)
+      // Żadne słowo ani modlitwa nie znika przed czytaniem, w trakcie czytania ani po przeczytaniu!
+      const effectiveWordTexts = words;
+      const effectiveStartIdx = 0;
 
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
       const FONT_FAMILY = '"Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
@@ -704,21 +688,21 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       };
 
       // DYNAMICZNY ROZMIAR CZCIONKI:
-      let baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.035));
+      let baseFontSize = Math.round(height * (hasRosary ? 0.035 : 0.033));
       let renderFontSize = baseFontSize;
-      let renderLineHeight = Math.round(renderFontSize * 1.46);
+      let renderLineHeight = Math.round(renderFontSize * 1.48);
 
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
-      // Dla modlitw różańcowych: jeśli cała modlitwa mieści się przy minimalnym zmniejszeniu, dopasuj do ekranu
-      if (hasRosary && sectionLines.length > 0) {
+      // Jeśli cały tekst audycji mieści się przy minimalnym zmniejszeniu, dopasuj do wysokości strefy
+      if (sectionLines.length > 0) {
         const requiredH = sectionLines.length * renderLineHeight;
         if (requiredH > zoneHeight) {
           const candidateLineH = Math.floor(zoneHeight / sectionLines.length);
-          const minAcceptableLineH = Math.round(height * 0.027);
+          const minAcceptableLineH = Math.round(height * 0.026);
           if (candidateLineH >= minAcceptableLineH) {
             renderLineHeight = candidateLineH;
-            renderFontSize = Math.round(candidateLineH / 1.42);
+            renderFontSize = Math.round(candidateLineH / 1.44);
             const recomputed = buildLinesForSection(renderFontSize);
             sectionLines = recomputed.builtLines;
             standardSpaceWidth = recomputed.spaceW;
@@ -726,34 +710,62 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
       }
 
-      // Bezpieczny podział na widok (sliding window wycentrowany na aktywnej linii)
-      const maxLinesOnScreen = Math.max(3, Math.floor(zoneHeight / renderLineHeight));
-      let displayLines: LineItem[] = [];
+      // PŁYNNY SYSTEM TELEPROMPTERA BEZ UCINANIA LINII I ZNIKANIA WYRAZÓW:
+      const totalBlockHeight = sectionLines.length * renderLineHeight;
+      let scrollY = 0;
 
-      if (sectionLines.length <= maxLinesOnScreen) {
-        displayLines = sectionLines;
-      } else {
-        let activeIdxInSec = sectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-        if (activeIdxInSec === -1) activeIdxInSec = 0;
-        const halfWindow = Math.floor(maxLinesOnScreen / 2);
-        const targetStart = activeIdxInSec - halfWindow;
-        const startLine = Math.max(0, Math.min(sectionLines.length - maxLinesOnScreen, targetStart));
-        displayLines = sectionLines.slice(startLine, startLine + maxLinesOnScreen);
+      // Znajdź indeks linii zawierającej aktualnie czytane słowo
+      let activeLineIdx = sectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
+      if (activeLineIdx === -1) {
+        if (activeWordIdx <= 0) {
+          activeLineIdx = 0;
+        } else if (activeWordIdx >= wordsTotal - 1) {
+          activeLineIdx = sectionLines.length - 1;
+        } else {
+          for (let li = 0; li < sectionLines.length; li++) {
+            const lastTok = sectionLines[li].tokens[sectionLines[li].tokens.length - 1];
+            if (lastTok && lastTok.wordIdx >= activeWordIdx) {
+              activeLineIdx = li;
+              break;
+            }
+          }
+          if (activeLineIdx === -1) activeLineIdx = 0;
+        }
       }
 
-      // PIONOWE WYŚRODKOWANIE WIDOCZNYCH LINII W STREFIE NAPISÓW
-      const totalBlockHeight = displayLines.length * renderLineHeight;
-      const remainingZoneY = zoneHeight - totalBlockHeight;
-      const blockTop = zoneTop + Math.max(0, Math.round(remainingZoneY / 2));
-      const startY = blockTop + Math.round(renderLineHeight / 2);
+      if (totalBlockHeight <= zoneHeight) {
+        // Wszystkie linie mieszczą się bez przewijania – eleganckie wyśrodkowanie w pionie
+        scrollY = 0;
+      } else {
+        // Tekst przewija się płynnie, utrzymując czytaną linię w naturalnym polu widzenia (~36% wysokości strefy)
+        const targetActiveScreenY = zoneHeight * 0.36;
+        const targetScroll = (activeLineIdx * renderLineHeight) - targetActiveScreenY;
+        const maxScroll = Math.max(0, totalBlockHeight - zoneHeight + Math.round(renderLineHeight * 0.5));
+        scrollY = Math.max(0, Math.min(maxScroll, targetScroll));
+      }
 
-      displayLines.forEach((line, lineIndex) => {
-        const lineY = startY + lineIndex * renderLineHeight;
+      // Przycinamy rysowanie dokładnie do strefy napisów, aby tekst nie nachodził na nagłówek ani stopkę
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(40, zoneTop, width - 80, zoneHeight);
+      ctx.clip();
+
+      const baseStartY = totalBlockHeight <= zoneHeight
+        ? zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2))
+        : zoneTop - scrollY;
+
+      sectionLines.forEach((line, lineIndex) => {
+        const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
+        
+        // Pomijamy linie całkowicie poza ekranem (z marginesem 1 linii dla optymalizacji)
+        if (lineY < zoneTop - renderLineHeight || lineY > zoneBottom + renderLineHeight) {
+          return;
+        }
+
         const N = line.tokens.length;
         if (N === 0) return;
 
         // ELEGANCKIE WYŚRODKOWANIE KAŻDEJ LINII (Sacralny standard YouTube i telepromptera)
-        // Zero nienaturalnych odstępów, zero ucinania, idealna czytelność z daleka
         const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
         const totalLineWidth = totalWordsW + (N - 1) * standardSpaceWidth;
         const lineStartX = Math.round((width - totalLineWidth) / 2);
@@ -779,7 +791,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             const bgY = Math.round(lineY - bgH / 2);
             const bgW = token.width + padX * 2;
 
-            ctx.fillStyle = 'rgba(217, 119, 6, 0.40)';
+            ctx.fillStyle = 'rgba(217, 119, 6, 0.45)';
             ctx.beginPath();
             ctx.roundRect(bgX, bgY, bgW, bgH, 8);
             ctx.fill();
@@ -817,6 +829,26 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           curX = tokenX + token.width + standardSpaceWidth;
         }
       });
+
+      ctx.restore(); // Przywrócenie stanu przed clip()
+
+      // Subtelny gradient wygaszający na górnej i dolnej krawędzi strefy napisów
+      // zapobiega ucinaniu linii podczas płynnego przewijania telepromptera
+      if (totalBlockHeight > zoneHeight) {
+        const topFadeH = Math.min(38, Math.round(zoneHeight * 0.08));
+        const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + topFadeH);
+        topGrad.addColorStop(0, '#050505');
+        topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(40, zoneTop, width - 80, topFadeH);
+
+        const botFadeH = Math.min(46, Math.round(zoneHeight * 0.10));
+        const botGrad = ctx.createLinearGradient(0, zoneBottom - botFadeH, 0, zoneBottom);
+        botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
+        botGrad.addColorStop(1, '#050505');
+        ctx.fillStyle = botGrad;
+        ctx.fillRect(40, zoneBottom - botFadeH, width - 80, botFadeH);
+      }
 
       ctx.shadowBlur = 0;
     } else {
@@ -1212,7 +1244,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           let activeIdx = 0;
           for (let i = 0; i < wordTimings.length; i++) {
             if (elapsed >= wordTimings[i].start) {
-              activeIdx = i;
+              activeIdx = wordTimings[i].wordIdx;
             } else {
               break;
             }
@@ -1234,7 +1266,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               if (recorder.state === 'recording') {
                 recorder.stop();
               }
-            }, 600);
+            }, 1000);
           }
         };
 
@@ -1256,7 +1288,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           let activeIdx = 0;
           for (let i = 0; i < wordTimings.length; i++) {
             if (elapsed >= wordTimings[i].start) {
-              activeIdx = i;
+              activeIdx = wordTimings[i].wordIdx;
             } else {
               break;
             }
@@ -1275,7 +1307,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               if (recorder.state === 'recording') {
                 recorder.stop();
               }
-            }, 500);
+            }, 1000);
           }
         };
 

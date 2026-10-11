@@ -85,6 +85,10 @@ function splitTextForTts(text: string, maxChunkLen: number = 140): string[] {
 
     for (const clause of clauses) {
       if (clause.length > maxChunkLen) {
+        if (currentClause) {
+          chunks.push(currentClause);
+          currentClause = '';
+        }
         const words = clause.split(/\s+/).filter(Boolean);
         let curWordChunk = '';
         for (const w of words) {

@@ -647,6 +647,10 @@ export function splitTextForTts(text: string, maxChunkLen: number = 140): string
 
     for (const clause of clauses) {
       if (clause.length > maxChunkLen) {
+        if (currentClause) {
+          chunks.push(currentClause);
+          currentClause = '';
+        }
         // Jeśli pojedyncza klauzula jest za długa, dzielimy bezpiecznie po słowach
         const words = clause.split(/\s+/).filter(Boolean);
         let curWordChunk = '';
