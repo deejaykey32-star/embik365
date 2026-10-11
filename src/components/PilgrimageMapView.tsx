@@ -28,9 +28,11 @@ import {
   Volume2,
   Square,
   BookOpen,
-  Headphones
+  Headphones,
+  FileText
 } from 'lucide-react';
 import { SectionMeta } from '../types';
+import { PetlaTrzechSanktuariowSubsection } from './PetlaTrzechSanktuariowSubsection';
 import { 
   playLectorSpeech, 
   stopLectorSpeech, 
@@ -98,7 +100,7 @@ interface Props {
 
 export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme = 'light' }) => {
   const [activeStage, setActiveStage] = useState<'stage-1' | 'stage-2' | 'stage-3'>('stage-2');
-  const [activeTab, setActiveTab] = useState<'info' | 'trail' | 'plan' | 'rays' | 'lodging' | 'live' | 'digital'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'petla' | 'trail' | 'plan' | 'rays' | 'lodging' | 'live' | 'digital'>('info');
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -385,6 +387,47 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </button>
           </div>
 
+          {/* Dedicated Section Highlight Card: Pętla Trzech Sanktuariów */}
+          <div className="mt-4 p-5 rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-blue-600/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-stone-950">
+                  Dedykowana Podsekcja
+                </span>
+                <span className="text-xs text-blue-200">15 dni (14–28 czerwca) • Trasa Wózkowa 329 km</span>
+              </div>
+              <h3 className="font-bold text-base sm:text-lg text-white font-serif-book">
+                Wielka Pętla Trzech Sanktuariów: Kochłowice ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice
+              </h3>
+              <p className="text-xs text-blue-200/90 leading-relaxed max-w-2xl">
+                Odrębna podsekcja z plikiem PDF (7 stron A4 do pobrania i podglądu), lektorem audio czytającym założenia, teologię, filozofię, punkty orientacyjne, postoje i zasady bezpieczeństwa.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href="/pdf/Petla_Trzech_Sanktuariow.pdf"
+                download="Petla_Trzech_Sanktuariow.pdf"
+                className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition flex items-center gap-1.5"
+                title="Pobierz plik PDF bezpośrednio"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Pobierz PDF</span>
+              </a>
+              <button
+                onClick={() => {
+                  setActiveTab('petla');
+                  const target = document.getElementById('tabs-detailed-section');
+                  if (target) target.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Otwórz Podsekcję</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -555,10 +598,22 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
       </section>
 
       {/* 3. Detailed Tabs Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-6">
+      <section id="tabs-detailed-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-6">
         
         {/* Navigation Tabs */}
         <div className="flex items-center overflow-x-auto no-scrollbar gap-2 border-b border-[#e2d6c7] dark:border-[#1f293d] pb-2">
+          <button
+            onClick={() => setActiveTab('petla')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
+              activeTab === 'petla'
+                ? 'bg-blue-800 text-white shadow-xs ring-2 ring-blue-500/30'
+                : 'bg-blue-50/80 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 border border-blue-300/80 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50'
+            }`}
+          >
+            <FileText className="w-4 h-4 text-rose-500" />
+            <span>Pętla Trzech Sanktuariów (PDF & Lektor)</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('info')}
             className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
@@ -727,6 +782,11 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </a>
           </div>
         </div>
+
+        {/* Tab Petla Content: Wielka Pętla Trzech Sanktuariów (Trasa Wózkowa, PDF & Lektor) */}
+        {activeTab === 'petla' && (
+          <PetlaTrzechSanktuariowSubsection theme={theme} />
+        )}
 
         {/* Tab 0 Content: Info & Pełny Harmonogram */}
         {activeTab === 'info' && (

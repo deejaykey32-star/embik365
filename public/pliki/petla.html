@@ -1,0 +1,1304 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pętla Trzech Sanktuariów • Przewodnik i Mapa Pielgrzymki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,500;0,700;1,500&display=swap">
+<style>
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --fg: #16192b;
+  --muted: #555b72;
+  --line: #dfe2ec;
+  --accent: #1e3a8a;
+  --accent-soft: #e3e8f8;
+  --gold: #a35f08;
+  --gold-soft: #fbf0dc;
+  --danger: #b4231b;
+  --danger-soft: #fbe6e4;
+  --ok: #08704f;
+  --s1: #2563eb;
+  --s2: #c2410c;
+  --s3: #047857;
+  --map-bg: #eef0f5;
+  --grid: #d6dae6;
+  --font-display: "Spectral", Georgia, "Times New Roman", serif;
+  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1120; --surface: #181b2e; --fg: #eceef7; --muted: #a3a8c0; --line: #2d3150;
+    --accent: #9db7ff; --accent-soft: #232a4a; --gold: #f2b84b; --gold-soft: #33280f;
+    --danger: #ff8a80; --danger-soft: #3a1a1a; --ok: #4ade9f;
+    --s1: #6b9bff; --s2: #fb8a4c; --s3: #34d399; --map-bg: #13162a; --grid: #262a45;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1120; --surface: #181b2e; --fg: #eceef7; --muted: #a3a8c0; --line: #2d3150;
+  --accent: #9db7ff; --accent-soft: #232a4a; --gold: #f2b84b; --gold-soft: #33280f;
+  --danger: #ff8a80; --danger-soft: #3a1a1a; --ok: #4ade9f;
+  --s1: #6b9bff; --s2: #fb8a4c; --s3: #34d399; --map-bg: #13162a; --grid: #262a45;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 1rem/1.55 var(--font-body);
+  padding-inline: 16px; padding-block: 0 40px;
+  margin: 0;
+}
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+
+.wrap { max-width: 1280px; margin: 0 auto; }
+header.top { padding-block: 24px 16px; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between; }
+header.top h1 { font-size: clamp(1.6rem, 3.5vw, 2.3rem); }
+header.top p { margin: 4px 0 0; color: var(--muted); }
+.countdown { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+.top-bar-links { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.pdf-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; background: #dc2626; color: #fff; font-size: .85rem; font-weight: bold; text-decoration: none; }
+.pdf-pill:hover { background: #b91c1c; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 24px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Map */
+.map-card { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--map-bg); border: 1px solid var(--line); border-radius: 14px; padding: 8px; }
+@media (max-width: 900px) { .map-card { position: static; } }
+.map-card svg { display: block; width: 100%; height: auto; max-height: 78vh; }
+.map-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 8px 2px; font-size: .8rem; color: var(--muted); }
+.map-legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.seg { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 4; transition: opacity .2s, stroke-width .2s; }
+.seg-hit { fill: none; stroke: transparent; stroke-width: 18; cursor: pointer; }
+svg.has-sel .seg { opacity: .28; }
+svg.has-sel .seg.sel { opacity: 1; stroke-width: 7; }
+.num circle { stroke: var(--surface); stroke-width: 2.5; }
+.num text { fill: #fff; font: 700 10px var(--font-body); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.num { cursor: pointer; }
+.num.done circle { fill: var(--ok) !important; }
+.lbl { fill: var(--fg); font: 600 11px var(--font-body); paint-order: stroke; stroke: var(--map-bg); stroke-width: 3.5px; pointer-events: none; }
+.shrine-lbl { fill: var(--gold); font: italic 700 12.5px var(--font-display); paint-order: stroke; stroke: var(--map-bg); stroke-width: 4px; pointer-events: none; }
+.region { fill: var(--muted); font: italic 500 13px var(--font-display); opacity: .55; letter-spacing: .08em; }
+.grat { stroke: var(--grid); stroke-width: 1; }
+.grat-l { fill: var(--muted); font: 9px var(--font-body); opacity: .8; }
+.scale { stroke: var(--fg); stroke-width: 2; }
+.scale-t { fill: var(--fg); font: 10px var(--font-body); }
+
+/* Panel */
+.tabs { display: flex; gap: 2px; overflow-x: auto; border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 2; }
+.tabs button { background: none; border: 0; border-bottom: 3px solid transparent; padding: 12px 14px; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab { padding-top: 16px; display: grid; gap: 14px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-weight: 700; font-size: .9rem; text-decoration: none; cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn.ok { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.btn.warn { border-color: var(--danger); color: var(--danger); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.progress-label { display: flex; justify-content: space-between; font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bar { height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--s1), var(--s2), var(--s3)); transition: width .4s; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-size: .85rem; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.chip i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+label.inline { font-size: .85rem; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+select, input[type="text"], input[type="tel"] { min-height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 6px 10px; min-width: 0; }
+
+.stage-head { border-left: 5px solid; padding-left: 12px; margin-top: 8px; }
+.stage-head h2 { font-size: 1.2rem; }
+.stage-head p { margin: 4px 0 0; font-size: .875rem; color: var(--muted); max-width: 65ch; }
+.days { display: grid; gap: 8px; }
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.day.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.day-head { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; background: none; border: 0; text-align: left; cursor: pointer; }
+.dn { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.day.done .dn { background: var(--ok) !important; }
+.dt strong { display: block; }
+.dt span { font-size: .8rem; color: var(--muted); }
+.km { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .9rem; }
+.day-body { padding: 0 12px 14px; display: grid; gap: 8px; font-size: .94rem; }
+.day-body p, .day-body ul { margin: 0; }
+.day-body ul { padding-left: 20px; }
+.tag { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; margin-right: 4px; }
+.tag.l1 { background: var(--accent-soft); color: var(--accent); }
+.tag.l2 { background: var(--gold-soft); color: var(--gold); }
+.tag.l3 { background: var(--danger-soft); color: var(--danger); }
+.tag.sp { background: var(--gold); color: var(--surface); }
+.alert { background: var(--danger-soft); border-left: 4px solid var(--danger); padding: 8px 12px; border-radius: 6px; }
+.intention { font-family: var(--font-display); font-style: italic; color: var(--gold); font-size: 1.02rem; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+.card h3 { font-size: 1.1rem; }
+.card p { margin: 0; }
+.card.emergency { border-color: var(--danger); }
+.phone { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; user-select: all; }
+.check-group h3 { font-family: var(--font-body); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; }
+.check { display: flex; gap: 10px; align-items: center; padding: 5px 0; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--ok); flex: none; }
+.check input:checked + span { text-decoration: line-through; color: var(--muted); }
+.contact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+@media (max-width: 480px) { .contact { grid-template-columns: minmax(0, 1fr) auto; } .contact .cname { grid-column: 1 / -1; } }
+
+.reflect { max-width: 65ch; }
+.reflect h2 { font-size: 1.3rem; color: var(--accent); margin: 18px 0 6px; }
+.reflect p { margin: 0 0 10px; }
+blockquote { margin: 0; padding: 14px 18px; border-left: 4px solid var(--gold); background: var(--gold-soft); border-radius: 6px; font-family: var(--font-display); font-size: 1.2rem; font-style: italic; }
+ol.int { padding-left: 22px; margin: 0; display: grid; gap: 6px; }
+
+.chapters { display: grid; gap: 4px; }
+.chapter { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.chapter:hover { border-color: var(--line); background: var(--bg); }
+.chapter .pi { color: var(--accent); font-size: .8rem; }
+.chapter .dur { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chapter.now { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
+.chip[data-rate] { font-variant-numeric: tabular-nums; }
+.listen { color: var(--accent); }
+#nbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 2px solid var(--accent);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -4px 18px rgba(0,0,0,.12); }
+#nbar .in { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+#nbar .ctl { display: flex; gap: 6px; }
+#nbar .ctl button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 1rem; }
+#nbar #n-play { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+#nbar .meta { min-width: 0; }
+#nbar .meta strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#n-seek { width: 100%; accent-color: var(--accent); margin: 4px 0; }
+#nbar .n-error { margin: 4px 0 0; }
+#n-pos { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+#n-now { font-family: var(--font-display); font-style: italic; font-size: .95rem; color: var(--gold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+body.has-nbar { padding-bottom: 150px; }
+@media (max-width: 560px) { #nbar .in { grid-template-columns: minmax(0, 1fr); } #nbar .ctl { order: 2; justify-content: center; } #nbar .rate-mini { display: none; } }
+footer { margin-top: 32px; font-size: .8rem; color: var(--muted); max-width: 70ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="title">Wielka Pętla Trzech Sanktuariów</h1>
+      <p id="subtitle">Kochłowice – Jasna Góra – Łagiewniki – Kochłowice · 15 dni, 14–28 czerwca 2027, trasa dla wózka</p>
+    </div>
+    <div class="countdown" id="countdown" aria-live="polite"></div>
+  </header>
+
+  <div class="top-bar-links">
+    <a href="/pdf/Petla_Trzech_Sanktuariow.pdf" target="_blank" download="Petla_Trzech_Sanktuariow.pdf" class="pdf-pill">
+      📄 Pobierz Przewodnik PDF (7 stron A4)
+    </a>
+    <a href="/pdf/Petla_Trzech_Sanktuariow.pdf" target="_blank" class="btn small">
+      Podgląd PDF w oknie
+    </a>
+  </div>
+
+  <div class="grid">
+    <section class="map-card" aria-label="Mapa schematyczna trasy">
+      <svg id="map" role="img" aria-label="Mapa pętli: Kochłowice, Jasna Góra, Łagiewniki"></svg>
+      <div class="map-legend" id="legend"></div>
+    </section>
+
+    <section>
+      <nav class="tabs" role="tablist">
+        <button role="tab" id="t-plan" data-tab="plan" aria-selected="true">Plan</button>
+        <button role="tab" id="t-today" data-tab="today" aria-selected="false">Dziś</button>
+        <button role="tab" id="t-log" data-tab="logistics" aria-selected="false">Logistyka</button>
+        <button role="tab" id="t-spirit" data-tab="spirit" aria-selected="false">Duchowość</button>
+        <button role="tab" id="t-narrator" data-tab="narrator" aria-selected="false">🔊 Lektor</button>
+        <button role="tab" id="t-pdf" data-tab="pdf" aria-selected="false">📄 Plik PDF</button>
+      </nav>
+
+      <div class="tab" id="tab-plan">
+        <div>
+          <div class="progress-label"><span id="p-days"></span><span id="p-km"></span></div>
+          <div class="bar"><div id="p-bar"></div></div>
+        </div>
+        <div class="row"><button class="btn primary" data-listen="intro">🔊 Posłuchaj przewodnika od początku</button></div>
+        <div class="controls">
+          <div class="chips" id="chips" role="group" aria-label="Etapy"></div>
+          <label class="inline" for="route-type">Trasa w Mapy.com
+            <select id="route-type">
+              <option value="bike_road">po asfalcie (zalecane)</option>
+              <option value="foot_fast">pieszo, najkrótsza</option>
+              <option value="car_short">drogi publiczne</option>
+            </select>
+          </label>
+        </div>
+        <div id="plan"></div>
+      </div>
+
+      <div class="tab" id="tab-today" hidden></div>
+
+      <div class="tab" id="tab-logistics" hidden>
+        <div class="row"><button class="btn listen" data-listen="safety">▶ Odsłuchaj logistykę i bezpieczeństwo</button></div>
+        <h2>Bezpieczeństwo na wózku</h2>
+        <div id="safety" class="tab" style="padding:0"></div>
+        <h2>Lista kontrolna</h2>
+        <p class="small muted">Zaznaczenia zapamiętuje ta przeglądarka.</p>
+        <div id="checklist" class="tab" style="padding:0"></div>
+        <h2>Kontakty ekipy</h2>
+        <div class="card" id="contacts"></div>
+        <div class="row"><button class="btn warn" id="reset">Wyzeruj postęp i listę</button></div>
+      </div>
+
+      <div class="tab" id="tab-spirit" hidden></div>
+
+      <div class="tab" id="tab-narrator" hidden></div>
+
+      <div class="tab" id="tab-pdf" hidden>
+        <div class="card">
+          <h2>Dedykowany Plik PDF: Pętla Trzech Sanktuariów</h2>
+          <p class="small muted">Oficjalny przewodnik zawierający pełne omówienie duchowości, filozofii, założeń pielgrzymki, opisy 15 dni ze szczegółami punktów orientacyjnych, postojów, zasad bezpieczeństwa i listy sprzętu.</p>
+          <div class="row">
+            <a href="/pdf/Petla_Trzech_Sanktuariow.pdf" download="Petla_Trzech_Sanktuariow.pdf" class="btn primary">
+              Pobierz plik PDF
+            </a>
+            <a href="/pdf/Petla_Trzech_Sanktuariow.pdf" target="_blank" rel="noopener noreferrer" class="btn">
+              Otwórz w pełnym oknie
+            </a>
+          </div>
+        </div>
+        <div style="height: 650px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff;">
+          <iframe src="/pdf/Petla_Trzech_Sanktuariow.pdf#toolbar=1" width="100%" height="100%" style="border: 0;" title="Przewodnik PDF"></iframe>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    Mapa jest schematem w skali, a punkty trasy są przybliżone. Na drogach lokalnych zawsze sprawdzajcie przejezdność na miejscu. Przyciski „Nawiguj” otwierają trasę w <a href="https://mapy.com" target="_blank" rel="noopener">Mapy.com</a>, gdzie działa nawigacja głosowa i Wasza pozycja GPS.
+  </footer>
+</div>
+
+<div id="nbar" hidden role="region" aria-label="Odtwarzacz lektora">
+  <div class="in">
+    <div class="ctl">
+      <button id="n-prev" aria-label="Poprzedni rozdział">⏮</button>
+      <button id="n-play" aria-label="Pauza">❚❚</button>
+      <button id="n-next" aria-label="Następny rozdział">⏭</button>
+      <button id="n-stop" aria-label="Zatrzymaj">■</button>
+    </div>
+    <div class="meta"><strong id="n-title"></strong><div id="n-pos"></div><input type="range" id="n-seek" min="0" max="1" step="0.5" value="0" aria-label="Pozycja w rozdziale"><div id="n-now" aria-live="off"></div><p class="alert small n-error" hidden></p></div>
+    <button class="btn rate-mini" data-goto-tab="narrator">Ustawienia lektora</button>
+  </div>
+</div>
+
+<script>
+window.PILGRIMAGE = {
+  title: 'Wielka Pętla Trzech Sanktuariów',
+  subtitle: 'Kochłowice – Jasna Góra – Łagiewniki – Kochłowice',
+
+  stages: [
+    {
+      id: 1,
+      name: 'Etap I: Z Kochłowic do Matki Bożej Częstochowskiej',
+      short: 'Kochłowice → Jasna Góra',
+      days: '4 dni, 14–17 czerwca',
+      color: '#2563eb',
+      about: 'Teren silnie zurbanizowany, a następnie podmiejski. Trasa w większości płaska, prowadząca przez miasta aglomeracji śląskiej i spokojniejsze wsie w kierunku północnym.'
+    },
+    {
+      id: 2,
+      name: 'Etap II: Główny Szlak Orlich Gniazd',
+      short: 'Jasna Góra → Łagiewniki',
+      days: '7 dni, 18–24 czerwca',
+      color: '#c2410c',
+      about: 'Najbardziej wymagający fizycznie odcinek. Pojawią się podjazdy i zjazdy, dlatego wsparcie asystentów lub dostawka elektryczna do wózka będą tu kluczowe. Trasa wiedzie utwardzonymi szlakami rowerowymi i lokalnymi drogami asfaltowymi o małym natężeniu ruchu.'
+    },
+    {
+      id: 3,
+      name: 'Etap III: Powrót w stronę domu',
+      short: 'Łagiewniki → Kochłowice',
+      days: '4 dni, 25–28 czerwca',
+      color: '#047857',
+      about: 'Powrót z Krakowa na Górny Śląsk. Teren systematycznie opada (więcej zjazdów niż podjazdów). Wykorzystujemy dawne trasy królewskie i gęstą sieć miasteczek ze ścieżkami dla pieszych i rowerów.'
+    }
+  ],
+
+  days: [
+    {
+      n: 1, date: '06-14', stage: 1, km: 20, level: 1,
+      from: 'Ruda Śląska (Kochłowice)', to: 'Radzionków / Tarnowskie Góry',
+      start: 'Poranna Msza Święta i błogosławieństwo w Sanktuarium Matki Bożej z Lourdes w Kochłowicach.',
+      route: 'Przejazd przez Chorzów Batory i centrum Bytomia.',
+      pois: [
+        { name: 'Sanktuarium MB z Lourdes, Kochłowice', at: [50.2550, 18.8985], note: 'Msza Święta na rozpoczęcie i błogosławieństwo.' },
+        { name: 'Rynek w Bytomiu', at: [50.3480, 18.9157], note: 'Możliwy odpoczynek – twarda nawierzchnia.' }
+      ],
+      via: [
+        [50.2550, 18.8985, 'Kochłowice – Sanktuarium'],
+        [50.2810, 18.9160, 'Chorzów Batory'],
+        [50.3480, 18.9157, 'Bytom – Rynek'],
+        [50.3990, 18.9000, 'Radzionków'],
+        [50.4300, 18.8700, 'Tarnowskie Góry (płd. dzielnice)']
+      ],
+      sleep: 'Okolice Radzionkowa lub południowych dzielnic Tarnowskich Gór.',
+      intention: 'Oddanie słabości ciała w ręce Maryi – jak chorzy w Lourdes.'
+    },
+    {
+      n: 2, date: '06-15', stage: 1, km: 18, level: 1,
+      from: 'Tarnowskie Góry', to: 'Miasteczko Śląskie / Ożarowice',
+      route: 'Wyjazd z Tarnowskich Gór w kierunku wschodnim, z wykorzystaniem ciągów pieszo-rowerowych.',
+      pois: [
+        { name: 'Zalew Nakło-Chechło', at: [50.4670, 18.9240], note: 'Asfaltowe alejki wokół jeziora – idealne miejsce na dłuższy, bezpieczny postój.' }
+      ],
+      via: [
+        [50.4300, 18.8700, 'Tarnowskie Góry'],
+        [50.4670, 18.9240, 'Zalew Nakło-Chechło'],
+        [50.4800, 18.9950, 'Tąpkowice'],
+        [50.4690, 19.0460, 'Ożarowice']
+      ],
+      sleep: 'Ożarowice lub Zendek (okolice lotniska w Pyrzowicach).',
+      intention: 'Za tych, którzy idą przez życie samotnie – by spotkali swojego asystenta w drodze.'
+    },
+    {
+      n: 3, date: '06-16', stage: 1, km: 20, level: 2,
+      from: 'Ożarowice', to: 'Koziegłowy / Poraj',
+      route: 'Zmiana krajobrazu na bardziej wiejski. Korzystamy z dróg powiatowych.',
+      warn: 'Wymagana asysta z tyłu ze względu na ruch aut.',
+      pois: [
+        { name: 'Rynek w Koziegłowach', at: [50.5995, 19.1640] },
+        { name: 'Zalew Porajski', at: [50.6650, 19.2400], note: 'Malownicze miejsce na odpoczynek.' }
+      ],
+      via: [
+        [50.4690, 19.0460, 'Ożarowice'],
+        [50.5995, 19.1640, 'Koziegłowy – Rynek'],
+        [50.6650, 19.2400, 'Zalew Porajski'],
+        [50.6800, 19.2150, 'Poraj']
+      ],
+      sleep: 'Poraj lub Jastrząb (rozwinięta baza turystyczna z podjazdami dla wózków).',
+      intention: 'Za kierowców mijających nas na drogach – o rozwagę i życzliwość.'
+    },
+    {
+      n: 4, date: '06-17', stage: 1, km: 17, level: 1,
+      from: 'Poraj', to: 'Jasna Góra, Częstochowa',
+      route: 'Wjazd do Częstochowy od strony południowej – najlepiej wzdłuż al. Wojska Polskiego (równe chodniki i ścieżki rowerowe).',
+      pois: [
+        { name: 'Aleja Najświętszej Maryi Panny', at: [50.8114, 19.1180], note: 'Płaski, reprezentacyjny deptak prowadzący prosto pod klasztor.' },
+        { name: 'Jasna Góra', at: [50.8123, 19.0972], note: 'Serce pielgrzymki – miejsce duchowej siły i wspólnoty.' }
+      ],
+      via: [
+        [50.6800, 19.2150, 'Poraj'],
+        [50.7820, 19.1560, 'Częstochowa – al. Wojska Polskiego'],
+        [50.8114, 19.1250, 'Aleja NMP'],
+        [50.8123, 19.0972, 'Jasna Góra']
+      ],
+      sleep: 'Domy Pielgrzyma na Jasnej Górze (w pełni dostosowane do potrzeb osób z niepełnosprawnościami).',
+      intention: 'Zawierzenie wszystkich uczestników przed Cudownym Obrazem – siła na etap jurajski.'
+    },
+    {
+      n: 5, date: '06-18', stage: 2, km: 26, level: 2,
+      from: 'Częstochowa', to: 'Złoty Potok',
+      route: 'Wymarsz z Jasnej Góry i kierunek na Olsztyn wydzieloną, gładką ścieżką rowerową. Dalej spokojne, asfaltowe drogi przez Biskupice i Choroń.',
+      pois: [
+        { name: 'Ruiny Zamku w Olsztynie', at: [50.7497, 19.2756], note: 'Widoczne z płaskiej drogi.' },
+        { name: 'Stawy w Złotym Potoku', at: [50.7110, 19.4330], note: 'Spacer asfaltową aleją wokół stawów młyńskich.' }
+      ],
+      via: [
+        [50.8123, 19.0972, 'Jasna Góra'],
+        [50.7497, 19.2756, 'Olsztyn'],
+        [50.7310, 19.3110, 'Biskupice'],
+        [50.7050, 19.3590, 'Choroń'],
+        [50.7105, 19.4350, 'Złoty Potok']
+      ],
+      sleep: 'Złoty Potok.',
+      intention: 'Za wszystkich, którzy opiekują się chorymi i niepełnosprawnymi.'
+    },
+    {
+      n: 6, date: '06-19', stage: 2, km: 18, level: 2,
+      from: 'Złoty Potok', to: 'Zamek Mirów / Bobolice',
+      route: 'Zjazd w kierunku Żarek, finał dnia pod odrestaurowanym Zamkiem w Bobolicach.',
+      warn: 'Zjazd w stronę Żarek – kontrola hamulców przed startem.',
+      pois: [
+        { name: 'Stodoły w Żarkach', at: [50.6260, 19.3700], note: 'Utwardzony teren targowy.' },
+        { name: 'Zamek Mirów', at: [50.6130, 19.4740] },
+        { name: 'Zamek Bobolice', at: [50.6060, 19.4940], note: 'Wybrukowana droga i asfalt pozwalają podjechać pod same mury.' }
+      ],
+      via: [
+        [50.7105, 19.4350, 'Złoty Potok'],
+        [50.6260, 19.3700, 'Żarki'],
+        [50.6130, 19.4740, 'Mirów'],
+        [50.6060, 19.4940, 'Bobolice']
+      ],
+      sleep: 'Okolice Mirowa lub Bobolic.',
+      intention: 'Za tych, których życie legło w gruzach – by odbudowali je na Skale.'
+    },
+    {
+      n: 7, date: '06-20', stage: 2, km: 15, level: 1,
+      from: 'Bobolice', to: 'Podlesice',
+      route: 'Bardzo spokojny odcinek relaksacyjny poprowadzony po równym, nowym asfalcie przez Hucisko i Kotowice.',
+      pois: [
+        { name: 'Skały Kroczyckie – Góra Zborów', at: [50.5710, 19.5290], note: 'Widok z poziomu jezdni.' }
+      ],
+      via: [
+        [50.6060, 19.4940, 'Bobolice'],
+        [50.5960, 19.5150, 'Hucisko'],
+        [50.5830, 19.5100, 'Kotowice'],
+        [50.5745, 19.5280, 'Podlesice']
+      ],
+      sleep: 'Podlesice.',
+      intention: 'Dzień odpoczynku i wdzięczności – za asystentów i całą ekipę.'
+    },
+    {
+      n: 8, date: '06-21', stage: 2, km: 19, level: 3,
+      from: 'Podlesice', to: 'Ogrodzieniec (Podzamcze)',
+      route: 'Droga powiatowa z Kroczyc przez Morsko. Dojazd pod zamek ułatwia chodnik u podnóża góry w Podzamczu.',
+      warn: 'Droga powiatowa – wymagana szczególna ostrożność, samochód techniczny z tyłu.',
+      pois: [
+        { name: 'Zamek Ogrodzieniec', at: [50.4530, 19.5530], note: 'Można obejść z zewnątrz wybrukowanymi/asfaltowymi ścieżkami u podstawy skał.' }
+      ],
+      via: [
+        [50.5745, 19.5280, 'Podlesice'],
+        [50.5600, 19.5100, 'Kroczyce'],
+        [50.5250, 19.5300, 'Morsko'],
+        [50.4530, 19.5530, 'Podzamcze']
+      ],
+      sleep: 'Podzamcze / Ogrodzieniec.',
+      intention: 'O pokorę wobec kruchości ludzkich dzieł – mury kruszeją, duch idzie dalej.'
+    },
+    {
+      n: 9, date: '06-22', stage: 2, km: 24, level: 2,
+      from: 'Ogrodzieniec', to: 'Wolbrom',
+      route: 'Zjazd ze wzniesień Ogrodzieńca, dalej drogą asfaltową w stronę Pilicy, przejście przez południową część Jury do Wolbromia.',
+      warn: 'Zjazd z Ogrodzieńca – asystent z tyłu, kontrola prędkości.',
+      pois: [
+        { name: 'Zamek w Pilicy i rynek', at: [50.4660, 19.6560] }
+      ],
+      via: [
+        [50.4530, 19.5530, 'Podzamcze'],
+        [50.4660, 19.6560, 'Pilica'],
+        [50.3800, 19.7600, 'Wolbrom']
+      ],
+      sleep: 'Wolbrom.',
+      intention: 'Za rodziny osób z niepełnosprawnościami – o siły na codzienność.'
+    },
+    {
+      n: 10, date: '06-23', stage: 2, km: 27, level: 2,
+      from: 'Wolbrom', to: 'Ojców',
+      route: 'Szosą przez Trzyciąż i Skałę. Finałem jest zjazd do Doliny Prądnika.',
+      warn: 'Zjazd do Doliny Prądnika jest stromy. Droga w dolinie bywa uczęszczana przez auta – sprawdźcie aktualną organizację ruchu na miejscu.',
+      pois: [
+        { name: 'Zamek w Pieskowej Skale', at: [50.2435, 19.7790] },
+        { name: 'Maczuga Herkulesa', at: [50.2450, 19.7800] },
+        { name: 'Ojcowski Park Narodowy', at: [50.2110, 19.8290], note: 'Utwardzona droga przez dolinę – jeden z najprzyjemniejszych dni dla wózka.' }
+      ],
+      via: [
+        [50.3800, 19.7600, 'Wolbrom'],
+        [50.3120, 19.8340, 'Trzyciąż'],
+        [50.2340, 19.8530, 'Skała'],
+        [50.2110, 19.8290, 'Ojców']
+      ],
+      sleep: 'Ojców.',
+      intention: 'O zachwyt nad pięknem stworzenia i umiejętność zatrzymania się.'
+    },
+    {
+      n: 11, date: '06-24', stage: 2, km: 25, level: 2,
+      from: 'Ojców', to: 'Kraków (Łagiewniki)', special: 'Rozesłanie',
+      route: 'Wyjazd z Doliny Prądnika asfaltem przez Prądnik Korzkiewski i wjazd do północnego Krakowa. W mieście płaska infrastruktura (np. Bulwary Wiślane).',
+      pois: [
+        { name: 'Błonia Krakowskie', at: [50.0600, 19.9120] },
+        { name: 'Wawel', at: [50.0540, 19.9355] },
+        { name: 'Sanktuarium Bożego Miłosierdzia', at: [50.0197, 19.9330], note: 'Uroczysta Msza Święta z grupami z innych ścieżek.' }
+      ],
+      via: [
+        [50.2110, 19.8290, 'Ojców'],
+        [50.1580, 19.8840, 'Prądnik Korzkiewski'],
+        [50.1200, 19.9200, 'Zielonki'],
+        [50.0600, 19.9120, 'Błonia'],
+        [50.0540, 19.9355, 'Wawel / Bulwary'],
+        [50.0197, 19.9330, 'Łagiewniki']
+      ],
+      sleep: 'Domy duszpasterskie w Łagiewnikach.',
+      intention: '„Jezu, ufam Tobie” – złożenie całego trudu drogi w oceanie Miłosierdzia.'
+    },
+    {
+      n: 12, date: '06-25', stage: 3, km: 26, level: 2,
+      from: 'Łagiewniki', to: 'Krzeszowice',
+      route: 'Przez krakowski Salwator na zachód w stronę Zabierzowa, trzymając się bocznych, utwardzonych dróg równoległych do ruchliwej DK79.',
+      warn: 'Unikać jazdy samą DK79 – trzymać się dróg równoległych.',
+      pois: [
+        { name: 'Salwator', at: [50.0530, 19.9070] },
+        { name: 'Pałac Potockich w Krzeszowicach', at: [50.1340, 19.6330], note: 'Dostępny park ze żwirowymi/asfaltowymi alejkami.' }
+      ],
+      via: [
+        [50.0197, 19.9330, 'Łagiewniki'],
+        [50.0530, 19.9070, 'Salwator'],
+        [50.1140, 19.7980, 'Zabierzów'],
+        [50.1340, 19.6330, 'Krzeszowice']
+      ],
+      sleep: 'Krzeszowice.',
+      intention: 'O wierność łasce przyniesionej z sanktuariów do codzienności.'
+    },
+    {
+      n: 13, date: '06-26', stage: 3, km: 25, level: 2,
+      from: 'Krzeszowice', to: 'Jaworzno',
+      route: 'Przejazd przez Dulową i Trzebinię.',
+      pois: [
+        { name: 'Park Gródek w Jaworznie', at: [50.2150, 19.2950], note: 'Twarde, spacerowe ścieżki dostępne dla wózków – modlitwa w naturze.' }
+      ],
+      via: [
+        [50.1340, 19.6330, 'Krzeszowice'],
+        [50.1370, 19.5300, 'Dulowa'],
+        [50.1600, 19.4710, 'Trzebinia'],
+        [50.2150, 19.2950, 'Jaworzno – Park Gródek']
+      ],
+      sleep: 'Jaworzno.',
+      intention: 'Za Kościół – by był otwarty i bez barier w sercach i umysłach.'
+    },
+    {
+      n: 14, date: '06-27', stage: 3, km: 24, level: 1,
+      from: 'Jaworzno', to: 'Katowice',
+      route: 'Trasa przez Mysłowice, wkraczająca z powrotem w tkankę śląskiej metropolii.',
+      pois: [
+        { name: 'Dolina Trzech Stawów', at: [50.2410, 19.0450], note: 'Równe, wydzielone od aut asfaltowe ścieżki rekreacyjne.' }
+      ],
+      via: [
+        [50.2150, 19.2950, 'Jaworzno'],
+        [50.2420, 19.1410, 'Mysłowice'],
+        [50.2410, 19.0450, 'Katowice – Dolina Trzech Stawów']
+      ],
+      sleep: 'Katowice (południowe dzielnice).',
+      intention: 'Za mieszkańców Śląska – ludzi pracy i ich rodziny.'
+    },
+    {
+      n: 15, date: '06-28', stage: 3, km: 25, level: 1,
+      from: 'Katowice', to: 'Ruda Śląska (Kochłowice)', special: 'Zakończenie',
+      route: 'Finałowy marsz w pełni po infrastrukturze miejskiej (Katowice Załęże, Chorzów, aż po Rudę Śląską).',
+      pois: [
+        { name: 'Sanktuarium MB z Lourdes, Kochłowice', at: [50.2550, 18.8985], note: 'Uroczysty powrót – zakończenie pętli.' }
+      ],
+      via: [
+        [50.2410, 19.0450, 'Dolina Trzech Stawów'],
+        [50.2660, 18.9800, 'Katowice Załęże'],
+        [50.2810, 18.9160, 'Chorzów'],
+        [50.2550, 18.8985, 'Kochłowice – Sanktuarium']
+      ],
+      sleep: 'Dom.',
+      intention: 'Dziękczynienie – wracamy jako inni ludzie, przemienieni przez Drogę.'
+    }
+  ],
+
+  safety: [
+    { title: 'Asysta techniczna (samochód)', text: 'Na wielu odcinkach dróg lokalnych (bez szerokich poboczy) jadący z tyłu na światłach awaryjnych samochód techniczny jest warunkiem bezwzględnego bezpieczeństwa. Przewozi sprzęt serwisowy (np. zapasowe dętki do wózka) oraz większy bagaż.' },
+    { title: 'Hamulce w wózku', text: 'Na Jurze Krakowsko-Częstochowskiej zjazdy mogą być strome. Konieczny jest przegląd układu hamulcowego, ewentualnie grube rękawiczki skórzane dla osoby obsługującej ciągi lub zamontowanie specjalnych spowalniaczy dla asystenta.' },
+    { title: 'Widoczność', text: 'Wózek powinien być wyposażony w silne oświetlenie (najlepiej lampy ostrzegawcze z przodu i z tyłu) oraz flagę odblaskową na wysięgniku (chorągiewkę bezpieczeństwa).' }
+  ],
+
+  checklist: [
+    { group: 'Wózek', items: ['Przegląd hamulców', 'Zapasowe dętki i łatki', 'Pompka i klucze', 'Dostawka elektryczna naładowana', 'Lampy ostrzegawcze przód / tył', 'Chorągiewka odblaskowa na wysięgniku', 'Spowalniacze / uchwyty dla asystenta'] },
+    { group: 'Asystenci', items: ['Grube rękawice skórzane', 'Kamizelki odblaskowe', 'Grafik zmian pchających', 'Wygodne obuwie i plastry'] },
+    { group: 'Samochód techniczny', items: ['Światła awaryjne sprawne', 'Trójkąt i tablica „Uwaga pielgrzymka”', 'Bagaż i namiot/rampa', 'Woda pitna (zapas na cały dzień)', 'Apteczka rozszerzona'] },
+    { group: 'Osobiste', items: ['Leki na cały wyjazd', 'Peleryna przeciwdeszczowa', 'Krem z filtrem i nakrycie głowy', 'Poduszka przeciwodleżynowa', 'Powerbank i ładowarki', 'Dokumenty i legitymacja', 'Różaniec i śpiewnik'] }
+  ],
+
+  reflection: [
+    {
+      title: 'Teologia: Ad Iesum per Mariam i Moc w Słabości',
+      body: [
+        'Trasa tej pielgrzymki rysuje klasyczny szlak teologii katolickiej: od Maryi do Chrystusa (Przez Maryję do Jezusa).',
+        '<b>Początek i koniec – Kochłowice (MB z Lourdes).</b> Lourdes to miejsce szczególnego pochylenia się nad chorymi, cierpiącymi i tymi, którzy doświadczają ograniczeń ciała. Rozpoczęcie drogi tutaj to akt oddania swojej fizyczności i słabości w ręce Maryi.',
+        '<b>Serce – Jasna Góra.</b> Miejsce duchowej siły, wstawiennictwa i poczucia wspólnoty. Tu pielgrzym nabiera mocy na najtrudniejszy, jurajski etap drogi.',
+        '<b>Cel i kulminacja – Łagiewniki.</b> Spotkanie z Chrystusem i wezwaniem „Jezu, ufam Tobie”. Cały wysiłek, pot i ograniczenia znoszone na trasie zostają tu złożone w oceanie Miłosierdzia.',
+        'Obecność wózka jest żywą realizacją słów św. Pawła: <i>„Moc w słabości się doskonali”</i> (2 Kor 12,9). Wózek nie jest znakiem braku, lecz narzędziem łaski – dowodem, że przed Bogiem nie stajemy o własnych siłach, tak jak pielgrzym na wózku jest zależny od pomocy drugiego człowieka.'
+      ]
+    },
+    {
+      title: 'Filozofia: Homo Viator i Etyka Spotkania',
+      body: [
+        'Pielgrzymka to realizacja idei <i>Homo viator</i> – człowieka w drodze. Pielgrzym na wózku obnaża prawdę, o której zdrowi często zapominają: nikt z nas nie idzie sam.',
+        '<b>Zależność i zaufanie.</b> Pielgrzym ufa asystentowi (że go nie puści, że zahamuje na zjeździe), a asystent oddaje swoje siły pielgrzymowi. To wyraz etyki spotkania w duchu Emmanuela Levinasa czy ks. Józefa Tischnera – zaprzeczenie współczesnego indywidualizmu.',
+        '<b>Oswajanie przestrzeni.</b> Wybór dróg asfaltowych zamiast leśnych ścieżek wskazuje, że sacrum można odnaleźć w prozie życia – na twardym asfalcie, poboczu szosy, wśród pędzących samochodów.'
+      ]
+    },
+    {
+      title: 'Symbolika: Pętla, Koło i Asfalt',
+      body: [
+        '<b>Wózek (Koło).</b> Koła obracające się przez 15 dni to symbol wytrwałości i cykliczności życia. Wózek, kojarzony ze szpitalem, na szlaku staje się rydwanem wolności i zwycięstwa ducha nad materią.',
+        '<b>Pętla (Wyjście i Powrót).</b> Trasa zaczyna się i kończy w Kochłowicach. Wychodzimy z domu, doświadczamy trudów i łask, wracamy do codzienności – ale nie jako ci sami ludzie. Przemienia nas Droga.',
+        '<b>Jurajskie Zamki.</b> Zrujnowane twierdze (Bobolice, Ogrodzieniec) przypominają o kruchości ludzkich dzieł. Mury kruszeją, ale kruchy człowiek na wózku – dzięki sile ducha – jedzie dalej.'
+      ]
+    },
+    {
+      title: 'Znaczenie: Triumf Ducha i Świadectwo',
+      body: [
+        'Dla osoby na wózku i jej ekipy to akt emancypacji – dowód, że ograniczenia fizyczne nie mogą uwięzić pragnienia Boga i przygody.',
+        '<b>Dla mijanych ludzi</b> to kazanie bez słów: przełamuje stereotypy i prowokuje pytanie „Skoro on może z takim trudem podążać do celu, to na co ja narzekam?”.',
+        '<b>Dla Kościoła</b> to przypomnienie, że wiara i przestrzeń duchowa mają być bez barier – nie tylko architektonicznych, ale przede wszystkim w sercach i umysłach.',
+        'To droga, w której słabość ciała staje się najmocniejszym nośnikiem wiary, nadziei i miłości.'
+      ]
+    }
+  ]
+};
+</script>
+<script>
+(function () {
+  'use strict';
+  const P = window.PILGRIMAGE;
+  const YEAR = 2027;
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+  };
+  const done = new Set(store.get('petla:done', []));
+  const checks = store.get('petla:checks', {});
+  const contacts = store.get('petla:contacts', [
+    { role: 'Kierowca auta technicznego', name: '', phone: '' },
+    { role: 'Koordynator pielgrzymki', name: '', phone: '' },
+    { role: 'Opiekun medyczny', name: '', phone: '' }
+  ]);
+  let routeType = store.get('petla:routeType', 'bike_road');
+  let active = new Set(P.stages.map((s) => s.id));
+  let selected = null;
+
+  const STAGE_VAR = { 1: 'var(--s1)', 2: 'var(--s2)', 3: 'var(--s3)' };
+  const LEVELS = { 1: 'łatwy', 2: 'umiarkowany', 3: 'wymagający' };
+  const stageOf = (d) => P.stages.find((s) => s.id === d.stage);
+  const dayDate = (d) => new Date(YEAR + '-' + d.date + 'T00:00:00');
+  const fmtDate = (d) => dayDate(d).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
+  const lonlat = (p) => p[1].toFixed(6) + ',' + p[0].toFixed(6);
+  const qs = (o) => Object.entries(o).map(([k, v]) => k + '=' + encodeURIComponent(v).replace(/%2C/g, ',').replace(/%3B/g, ';')).join('&');
+  const mapy = {
+    route(pts) {
+      const o = { start: lonlat(pts[0]), end: lonlat(pts[pts.length - 1]) };
+      if (pts.length > 2) o.waypoints = pts.slice(1, -1).map(lonlat).join(';');
+      o.routeType = routeType;
+      o.navigation = 'true';
+      return 'https://mapy.com/fnc/v1/route?' + qs(o);
+    },
+    show: (p) => 'https://mapy.com/fnc/v1/showmap?' + qs({ center: lonlat(p), zoom: 16, marker: 'true' }),
+    search: (q, p) => 'https://mapy.com/fnc/v1/search?' + qs({ query: q, center: lonlat(p), zoom: 13 })
+  };
+  const weather = (p) => `https://www.windy.com/${p[0].toFixed(3)}/${p[1].toFixed(3)}?${p[0].toFixed(3)},${p[1].toFixed(3)},11`;
+  const link = (href, text, cls) => `<a class="btn ${cls || ''}" href="${href}" target="_blank" rel="noopener">${text}</a>`;
+
+  // ---------- mapa schematyczna ----------
+  const LON0 = 18.80, LON1 = 19.99, LAT0 = 49.99, LAT1 = 50.86;
+  const K = Math.cos(50.43 * Math.PI / 180);
+  const PAD = 24, W = 600;
+  const S = (W - 2 * PAD) / ((LON1 - LON0) * K);
+  const H = Math.round((LAT1 - LAT0) * S + 2 * PAD);
+  const X = (lon) => PAD + (lon - LON0) * K * S;
+  const Y = (lat) => PAD + (LAT1 - lat) * S;
+  const PX_PER_KM = S / 111.2;
+  const END_LABEL = { 1: 'Tarnowskie Góry', 2: 'Ożarowice', 3: 'Poraj', 5: 'Złoty Potok', 6: 'Bobolice', 7: 'Podlesice', 8: 'Ogrodzieniec', 9: 'Wolbrom', 10: 'Ojców', 12: 'Krzeszowice', 13: 'Jaworzno', 14: 'Katowice' };
+  const SHRINES = [
+    { name: 'Kochłowice', sub: 'MB z Lourdes', at: [50.2550, 18.8985], days: [15], side: 'start', dy: 22 },
+    { name: 'Jasna Góra', sub: 'Częstochowa', at: [50.8123, 19.0972], days: [4], side: 'start' },
+    { name: 'Łagiewniki', sub: 'Kraków', at: [50.0197, 19.9330], days: [11], side: 'end' }
+  ];
+
+  function drawMap() {
+    const svg = $('#map');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    let g = '';
+    for (let lat = 50.0; lat <= 50.85; lat += 0.25) {
+      g += `<line class="grat" x1="${PAD}" x2="${W - PAD}" y1="${Y(lat)}" y2="${Y(lat)}"/><text class="grat-l" x="${PAD + 2}" y="${Y(lat) - 3}">${lat.toFixed(2).replace('.', ',')}°N</text>`;
+    }
+    for (let lon = 19.0; lon <= 19.9; lon += 0.5) {
+      g += `<line class="grat" y1="${PAD}" y2="${H - PAD}" x1="${X(lon)}" x2="${X(lon)}"/><text class="grat-l" x="${X(lon) + 3}" y="${H - PAD - 4}">${lon.toFixed(1).replace('.', ',')}°E</text>`;
+    }
+    g += `<text class="region" x="${X(18.86)}" y="${Y(50.17)}">GÓRNY ŚLĄSK</text>`;
+    g += `<text class="region" x="${X(19.52)}" y="${Y(50.75)}" transform="rotate(52 ${X(19.52)} ${Y(50.75)})">JURA KRAKOWSKO-CZĘSTOCHOWSKA</text>`;
+    g += `<text class="region" x="${X(19.62)}" y="${Y(50.03)}">MAŁOPOLSKA</text>`;
+
+    P.days.forEach((d) => {
+      const pts = d.via.map((v) => X(v[1]).toFixed(1) + ',' + Y(v[0]).toFixed(1)).join(' ');
+      g += `<g data-stage="${d.stage}" class="dg"><polyline class="seg" data-seg="${d.n}" points="${pts}" style="stroke:${STAGE_VAR[d.stage]}"/>` +
+        `<polyline class="seg-hit" data-pick="${d.n}" points="${pts}"><title>Dzień ${d.n}: ${esc(d.from)} → ${esc(d.to)}</title></polyline></g>`;
+    });
+    P.days.forEach((d) => {
+      if (!END_LABEL[d.n]) return;
+      const e = d.via[d.via.length - 1];
+      const x = X(e[1]), y = Y(e[0]);
+      const right = e[1] < 19.7;
+      g += `<g data-stage="${d.stage}" class="dg"><text class="lbl" x="${right ? x + 14 : x - 14}" y="${y + 4}" text-anchor="${right ? 'start' : 'end'}">${END_LABEL[d.n]}</text>` +
+        `<g class="num" data-pick="${d.n}" data-num="${d.n}" tabindex="-1"><circle cx="${x}" cy="${y}" r="10" style="fill:${STAGE_VAR[d.stage]}"/><text x="${x}" y="${y}">${d.n}</text></g></g>`;
+    });
+    SHRINES.forEach((s) => {
+      const x = X(s.at[1]), y = Y(s.at[0]);
+      const tx = s.side === 'end' ? x - 18 : x + 18, ty = y + (s.dy || 0);
+      g += `<g class="num" data-pick="${s.days[0]}" data-num="${s.days[0]}"><title>${esc(s.name)} – ${esc(s.sub)}</title>` +
+        `<rect x="${x - 11}" y="${y - 11}" width="22" height="22" rx="3" transform="rotate(45 ${x} ${y})" style="fill:var(--gold);stroke:var(--surface);stroke-width:2.5"/>` +
+        `<path d="M${x} ${y - 7}v14M${x - 5} ${y - 2.5}h10" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></g>` +
+        `<text class="shrine-lbl" x="${tx}" y="${ty - 2}" text-anchor="${s.side}">${s.name}</text>` +
+        `<text class="lbl" x="${tx}" y="${ty + 12}" text-anchor="${s.side}" style="font-weight:400;font-size:10px">${s.sub}</text>`;
+    });
+    const sx = W - PAD - 10 * PX_PER_KM - 6, sy = PAD + 14;
+    g += `<line class="scale" x1="${sx}" x2="${sx + 10 * PX_PER_KM}" y1="${sy}" y2="${sy}"/><line class="scale" x1="${sx}" x2="${sx}" y1="${sy - 4}" y2="${sy + 4}"/><line class="scale" x1="${sx + 10 * PX_PER_KM}" x2="${sx + 10 * PX_PER_KM}" y1="${sy - 4}" y2="${sy + 4}"/><text class="scale-t" x="${sx + 5 * PX_PER_KM}" y="${sy - 7}" text-anchor="middle">10 km</text>`;
+    g += `<text class="scale-t" x="${W - PAD - 6}" y="${sy + 22}" text-anchor="end">N ↑</text>`;
+    svg.innerHTML = g;
+    svg.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-pick]');
+      if (t) selectDay(Number(t.dataset.pick), true);
+    });
+    $('#legend').innerHTML = P.stages.map((s) => `<span><i style="background:${STAGE_VAR[s.id]}"></i>${esc(s.short)}</span>`).join('') +
+      '<span>◆ sanktuarium</span><span>● nocleg (nr dnia)</span>';
+  }
+
+  function paintMap() {
+    const svg = $('#map');
+    svg.classList.toggle('has-sel', selected != null);
+    $$('.seg', svg).forEach((el) => el.classList.toggle('sel', Number(el.dataset.seg) === selected));
+    $$('.dg', svg).forEach((el) => { el.style.display = active.has(Number(el.dataset.stage)) ? '' : 'none'; });
+    $$('.num[data-num]', svg).forEach((el) => el.classList.toggle('done', done.has(Number(el.dataset.num)) && !el.querySelector('rect')));
+  }
+
+  function dayCard(d) {
+    const end = d.via[d.via.length - 1];
+    return `<article class="day${done.has(d.n) ? ' done' : ''}" id="day-${d.n}">
+      <button class="day-head" id="dh-${d.n}" aria-expanded="false" data-day="${d.n}">
+        <span class="dn" style="background:${STAGE_VAR[d.stage]}">${d.n}</span>
+        <span class="dt"><strong>${esc(d.from)} → ${esc(d.to)}</strong><span>${esc(fmtDate(d))}</span></span>
+        <span class="km">ok. ${d.km} km</span>
+      </button>
+      <div class="day-body" hidden>
+        <p>${d.special ? `<span class="tag sp">${esc(d.special)}</span>` : ''}<span class="tag l${d.level}">poziom: ${LEVELS[d.level]}</span></p>
+        ${d.start ? `<p><b>Start:</b> ${esc(d.start)}</p>` : ''}
+        <p><b>Przebieg:</b> ${esc(d.route)}</p>
+        ${d.warn ? `<p class="alert">⚠ ${esc(d.warn)}</p>` : ''}
+        <p><b>Punkty orientacyjne:</b></p>
+        <ul>${d.pois.map((p) => `<li><a href="${mapy.show(p.at)}" target="_blank" rel="noopener">${esc(p.name)}</a>${p.note ? ' – ' + esc(p.note) : ''}</li>`).join('')}</ul>
+        <p><b>Punkty trasy:</b> ${d.via.map((v) => esc(v[2])).join(' → ')}</p>
+        <p><b>Nocleg:</b> ${esc(d.sleep)}</p>
+        <p class="intention">Intencja dnia: ${esc(d.intention)}</p>
+        <div class="row">
+          ${link(mapy.route(d.via), 'Nawiguj w Mapy.com', 'primary')}
+          ${link(mapy.search('nocleg', end), 'Noclegi w pobliżu')}
+          ${link(mapy.search('apteka', end), 'Apteki')}
+          ${link(weather(end), 'Pogoda')}
+          <button class="btn listen" data-listen="day-${d.n}" data-only="1">▶ Odsłuchaj dzień</button>
+          <button class="btn ${done.has(d.n) ? 'ok' : ''}" data-done="${d.n}" id="done-${d.n}">${done.has(d.n) ? '✓ Ukończony' : 'Oznacz jako ukończony'}</button>
+        </div>
+      </div>
+    </article>`;
+  }
+
+  function renderPlan() {
+    $('#plan').innerHTML = P.stages.map((s) => `<div class="stage-block tab" style="padding-top:0" data-stage="${s.id}">
+      <div class="stage-head" style="border-color:${STAGE_VAR[s.id]}"><h2>${esc(s.name)}</h2><p>${esc(s.days)}. ${esc(s.about)}</p></div>
+      <div class="days">${P.days.filter((d) => d.stage === s.id).map(dayCard).join('')}</div></div>`).join('');
+    applyFilter();
+    if (selected) openCard(selected, true);
+  }
+
+  function renderChips() {
+    $('#chips').innerHTML = P.stages.map((s) =>
+      `<button class="chip" id="chip-${s.id}" data-stage="${s.id}" aria-pressed="${active.has(s.id)}"><i style="background:${STAGE_VAR[s.id]}"></i>${esc(s.short)}</button>`).join('');
+  }
+  $('#chips').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-stage]');
+    if (!b) return;
+    const id = Number(b.dataset.stage);
+    if (active.has(id) && active.size > 1) active.delete(id); else active.add(id);
+    renderChips(); applyFilter();
+  });
+  function applyFilter() {
+    $$('.stage-block').forEach((b) => { b.hidden = !active.has(Number(b.dataset.stage)); });
+    paintMap();
+  }
+
+  function openCard(n, open) {
+    const c = $('#day-' + n);
+    if (!c) return;
+    $('.day-body', c).hidden = !open;
+    $('.day-head', c).setAttribute('aria-expanded', open);
+    c.classList.toggle('sel', open);
+  }
+  function selectDay(n, scroll) {
+    if (selected && selected !== n) openCard(selected, false);
+    if (selected === n && !scroll) { openCard(n, false); selected = null; paintMap(); return; }
+    selected = n;
+    const d = P.days.find((x) => x.n === n);
+    if (!active.has(d.stage)) { active.add(d.stage); renderChips(); applyFilter(); }
+    showTab('plan');
+    openCard(n, true);
+    paintMap();
+    if (scroll) $('#day-' + n).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+  }
+  $('#plan').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.day) selectDay(Number(b.dataset.day), false);
+    if (b.dataset.done) toggleDone(Number(b.dataset.done));
+  });
+
+  function toggleDone(n) {
+    if (done.has(n)) done.delete(n); else done.add(n);
+    store.set('petla:done', Array.from(done));
+    const c = $('#day-' + n), b = $('#done-' + n);
+    c.classList.toggle('done', done.has(n));
+    b.classList.toggle('ok', done.has(n));
+    b.textContent = done.has(n) ? '✓ Ukończony' : 'Oznacz jako ukończony';
+    progress(); paintMap(); renderToday();
+  }
+  function progress() {
+    const total = P.days.reduce((s, d) => s + d.km, 0);
+    const km = P.days.filter((d) => done.has(d.n)).reduce((s, d) => s + d.km, 0);
+    $('#p-days').textContent = `Ukończone dni: ${done.size} z ${P.days.length}`;
+    $('#p-km').textContent = `${km} z ok. ${total} km`;
+    $('#p-bar').style.width = (km / total * 100) + '%';
+  }
+
+  $('#route-type').value = routeType;
+  $('#route-type').addEventListener('change', (e) => {
+    routeType = e.target.value; store.set('petla:routeType', routeType);
+    renderPlan(); renderToday();
+  });
+
+  function phase() {
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const first = dayDate(P.days[0]), last = dayDate(P.days[P.days.length - 1]);
+    if (t < first) return { k: 'before', d: P.days[0], left: Math.round((first - t) / 864e5) };
+    if (t > last) return { k: 'after', d: P.days[P.days.length - 1] };
+    return { k: 'during', d: P.days.find((d) => dayDate(d).getTime() === t.getTime()) || P.days[0] };
+  }
+  const plural = (n) => n === 1 ? 'dzień' : 'dni';
+  function renderToday() {
+    const ph = phase(), d = ph.d, end = d.via[d.via.length - 1];
+    let head;
+    if (ph.k === 'before') {
+      $('#countdown').textContent = `Do wyjścia: ${ph.left} ${plural(ph.left)}`;
+      head = `<h2>Do wyjścia zostało ${ph.left} ${plural(ph.left)}</h2><p class="muted">Start ${esc(fmtDate(d))} ${YEAR}. Pierwszy dzień drogi:</p>`;
+    } else if (ph.k === 'after') {
+      $('#countdown').textContent = 'Pętla zamknięta. Bogu niech będą dzięki!';
+      head = `<h2>Pętla zamknięta</h2><p>Ukończone dni: ${done.size} z ${P.days.length}.</p>`;
+    } else {
+      $('#countdown').textContent = `Dziś: dzień ${d.n} z ${P.days.length}`;
+      head = `<h2>Dziś: dzień ${d.n}, ${esc(fmtDate(d))}</h2>`;
+    }
+    $('#tab-today').innerHTML = `<div>${head}</div>
+      <div class="card">
+        <h3>Dzień ${d.n}: ${esc(d.from)} → ${esc(d.to)} (ok. ${d.km} km)</h3>
+        <p class="small">${esc(d.route)}</p>
+        ${d.warn ? `<p class="alert small">⚠ ${esc(d.warn)}</p>` : ''}
+        <p class="small"><b>Nocleg:</b> ${esc(d.sleep)}</p>
+        <p class="intention">Intencja: ${esc(d.intention)}</p>
+        <div class="row">${link(mapy.route(d.via), 'Nawiguj cały dzień', 'primary')}${link(weather(end), 'Pogoda u celu')}
+          <button class="btn" id="today-detail" data-goto-day="${d.n}">Szczegóły na mapie</button>
+          <button class="btn listen" data-listen="day-${d.n}" data-only="1">▶ Odsłuchaj</button></div>
+      </div>
+      <div class="card emergency">
+        <h3>Pilne telefony</h3>
+        <div class="row" style="gap:24px"><div><div class="phone">112</div><div class="small muted">numer alarmowy</div></div>
+        <div><div class="phone">999</div><div class="small muted">pogotowie ratunkowe</div></div></div>
+        <div id="team-phones" class="row" style="gap:24px"></div>
+      </div>`;
+    $('#today-detail').onclick = () => selectDay(d.n, true);
+    teamPhones();
+  }
+  function teamPhones() {
+    const box = $('#team-phones');
+    if (!box) return;
+    const list = contacts.filter((c) => c.phone.trim());
+    box.innerHTML = list.length ? list.map((c) => `<div><div class="phone">${esc(c.phone)}</div><div class="small muted">${esc(c.name || c.role)}</div></div>`).join('')
+      : '<p class="small muted">Numery ekipy dopiszesz w zakładce Logistyka.</p>';
+  }
+
+  function renderLogistics() {
+    $('#safety').innerHTML = P.safety.map((s) => `<div class="card"><h3>${esc(s.title)}</h3><p class="small">${esc(s.text)}</p></div>`).join('');
+    $('#checklist').innerHTML = P.checklist.map((g, gi) => `<div class="card check-group"><h3>${esc(g.group)}</h3>${g.items.map((it, ii) => {
+      const k = g.group + '|' + it;
+      return `<label class="check" for="c-${gi}-${ii}"><input type="checkbox" id="c-${gi}-${ii}" data-k="${esc(k)}" ${checks[k] ? 'checked' : ''}><span>${esc(it)}</span></label>`;
+    }).join('')}</div>`).join('');
+    $('#checklist').onchange = (e) => {
+      const k = e.target.dataset.k; if (!k) return;
+      if (e.target.checked) checks[k] = true; else delete checks[k];
+      store.set('petla:checks', checks);
+    };
+    $('#contacts').innerHTML = contacts.map((c, i) => `<p class="small"><b>${esc(c.role)}</b></p><div class="contact">
+      <input class="cname" type="text" id="cn-${i}" data-i="${i}" data-f="name" placeholder="Imię i nazwisko" aria-label="${esc(c.role)}: imię" value="${esc(c.name)}">
+      <input type="tel" id="cp-${i}" data-i="${i}" data-f="phone" placeholder="Telefon" aria-label="${esc(c.role)}: telefon" value="${esc(c.phone)}">
+      <button class="btn" data-copy="${i}">Kopiuj</button></div>`).join('');
+    $('#contacts').oninput = (e) => {
+      const i = e.target.dataset.i; if (i == null) return;
+      contacts[i][e.target.dataset.f] = e.target.value;
+      store.set('petla:contacts', contacts);
+      teamPhones();
+    };
+    $('#contacts').onclick = async (e) => {
+      const b = e.target.closest('[data-copy]'); if (!b) return;
+      const inp = $('#cp-' + b.dataset.copy);
+      try { await navigator.clipboard.writeText(inp.value); b.textContent = 'Skopiowano'; }
+      catch (err) { inp.select(); b.textContent = 'Zaznaczono'; }
+      setTimeout(() => { b.textContent = 'Kopiuj'; }, 1800);
+    };
+  }
+  let resetArmed = false;
+  $('#reset').onclick = (e) => {
+    const b = e.currentTarget;
+    if (!resetArmed) { resetArmed = true; b.textContent = 'Kliknij ponownie, aby potwierdzić'; setTimeout(() => { resetArmed = false; b.textContent = 'Wyzeruj postęp i listę'; }, 4000); return; }
+    resetArmed = false; b.textContent = 'Wyzerowano';
+    done.clear(); Object.keys(checks).forEach((k) => delete checks[k]);
+    store.set('petla:done', []); store.set('petla:checks', {});
+    renderPlan(); renderLogistics(); progress(); paintMap(); renderToday();
+  };
+
+  function renderSpirit() {
+    $('#tab-spirit').innerHTML = `<div class="row"><button class="btn listen" data-listen="rhythm">▶ Odsłuchaj modlitwę i rozważania</button></div><blockquote>„Moc w słabości się doskonali” <span class="small">(2 Kor 12,9)</span></blockquote>
+      <div class="reflect">${P.reflection.map((r) => `<h2>${esc(r.title)}</h2>${r.body.map((b) => `<p>${b}</p>`).join('')}`).join('')}
+      <h2>Intencje na każdy dzień</h2>
+      <ol class="int">${P.days.map((d) => `<li><b>${esc(d.from)} → ${esc(d.to)}.</b> <span class="muted">${esc(d.intention)}</span></li>`).join('')}</ol></div>`;
+  }
+
+  const EXTRA = {
+    law: {
+      title: 'Przepisy ruchu drogowego dla pielgrzyma na wózku',
+      text: [
+        'W polskim prawie osoba poruszająca się na wózku inwalidzkim jest pieszym.',
+        'Pieszy korzysta z chodnika lub drogi dla pieszych. Gdy ich nie ma, idzie poboczem, a dopiero gdy nie ma pobocza, jezdnią, przy jej lewej krawędzi.',
+        'Z drogi dla rowerów pieszy, także na wózku, może korzystać tylko wtedy, gdy nie ma chodnika ani pobocza albo nie da się z nich skorzystać. Musi wtedy ustępować miejsca rowerzystom.',
+        'Poza obszarem zabudowanym, po zmierzchu, pieszy na drodze musi mieć elementy odblaskowe widoczne dla kierowców. Dla wózka to minimum. Lepiej mieć lampy ostrzegawcze z przodu i z tyłu oraz chorągiewkę na wysięgniku.',
+        'Warto wcześniej powiadomić policję oraz parafie na trasie o przejściu grupy, zwłaszcza na odcinkach dróg powiatowych.'
+      ]
+    },
+    health: {
+      title: 'Zdrowie i komfort w drodze',
+      text: [
+        'Czerwiec bywa upalny. Wychodźcie wcześnie rano, a najgorętsze godziny, mniej więcej od jedenastej do piętnastej, spędzajcie w cieniu lub na dłuższym postoju.',
+        'Pijcie wodę regularnie, zanim pojawi się pragnienie. Zapas wody wiezie samochód techniczny.',
+        'Osoba na wózku powinna regularnie zmieniać pozycję i odciążać pośladki. Wieczorem warto obejrzeć skórę w miejscach narażonych na odparzenia i odleżyny. Pomaga poduszka przeciwodleżynowa.',
+        'Asystenci pchający wózek zmieniają się co trzydzieści do czterdziestu pięciu minut. Na zjazdach jeden asystent zawsze trzyma wózek od tyłu i kontroluje prędkość.',
+        'Każdego wieczoru ładujcie dostawkę elektryczną, telefony i powerbanki oraz sprawdzajcie ciśnienie w kołach i hamulce.',
+        'Przy przeciętnym tempie grupy z wózkiem, około trzech kilometrów na godzinę, dwudziestopięciokilometrowy dzień to osiem do dziewięciu godzin w drodze razem z przerwami.',
+        'W nagłym wypadku dzwońcie pod numer alarmowy sto dwanaście. Podajcie numer dnia, nazwę najbliższej miejscowości i to, co widzicie wokół siebie. Pozycję możecie też wysłać z aplikacji Mapy.com.'
+      ]
+    },
+    rhythm: {
+      title: 'Rytm dnia i modlitwa w drodze',
+      text: [
+        'Proponowany rytm dnia: pobudka około szóstej trzydzieści, Msza Święta albo modlitwa poranna, wyjście między siódmą trzydzieści a ósmą.',
+        'Krótki postój mniej więcej co godzinę, na około dziesięć minut. Dłuższa przerwa na posiłek w połowie dnia.',
+        'W południe Anioł Pański. O piętnastej Godzina Miłosierdzia i Koronka do Miłosierdzia Bożego, szczególnie bliska pielgrzymom zmierzającym do Łagiewnik.',
+        'W drodze różaniec, pieśni i chwile ciszy. Każdy dzień ma swoją intencję, którą lektor odczytuje w opisie dnia.',
+        'Wieczorem o dwudziestej pierwszej Apel Jasnogórski. Można go odmówić wspólnie na noclegu albo dołączyć przez radio lub internet.',
+        'Dwudziestego czwartego czerwca, w dniu dojścia do Łagiewnik, przypada uroczystość Narodzenia świętego Jana Chrzciciela.'
+      ]
+    },
+    outro: {
+      title: 'Zakończenie',
+      text: [
+        'To już koniec opowieści o Wielkiej Pętli Trzech Sanktuariów.',
+        'Od Matki Bożej z Lourdes w Kochłowicach, przez Jasną Górę, do Bożego Miłosierdzia w Łagiewnikach i z powrotem do domu.',
+        'Niech ta droga będzie świadectwem, że moc w słabości się doskonali. Szczęść Boże na szlaku!'
+      ]
+    }
+  };
+
+  const ORD_NOM = ['', 'pierwszy', 'drugi', 'trzeci', 'czwarty', 'piąty', 'szósty', 'siódmy', 'ósmy', 'dziewiąty', 'dziesiąty', 'jedenasty', 'dwunasty', 'trzynasty', 'czternasty', 'piętnasty'];
+  const ORD_GEN = { 14: 'czternastego', 15: 'piętnastego', 16: 'szesnastego', 17: 'siedemnastego', 18: 'osiemnastego', 19: 'dziewiętnastego', 20: 'dwudziestego', 21: 'dwudziestego pierwszego', 22: 'dwudziestego drugiego', 23: 'dwudziestego trzeciego', 24: 'dwudziestego czwartego', 25: 'dwudziestego piątego', 26: 'dwudziestego szóstego', 27: 'dwudziestego siódmego', 28: 'dwudziestego ósmego' };
+  const sayDate = (d) => dayDate(d).toLocaleDateString('pl-PL', { weekday: 'long' }) + ', ' + ORD_GEN[Number(d.date.slice(3))] + ' czerwca';
+
+  function sayable(t) {
+    return String(t)
+      .replace(/<[^>]+>/g, '')
+      .replace(/2 Kor 12,9/g, 'Drugi List do Koryntian, rozdział dwunasty, werset dziewiąty')
+      .replace(/Etap III\b/g, 'Etap trzeci').replace(/Etap II\b/g, 'Etap drugi').replace(/Etap I\b/g, 'Etap pierwszy')
+      .replace(/\bok\. (\d+) km\b/g, 'około $1 kilometrów')
+      .replace(/(\d+) km\b/g, '$1 kilometrów')
+      .replace(/\bok\./g, 'około')
+      .replace(/\bDK ?(\d+)/g, 'drogi krajowej numer $1')
+      .replace(/\bMB\b/g, 'Matki Bożej')
+      .replace(/\bNMP\b/g, 'Najświętszej Maryi Panny')
+      .replace(/\bal\. /g, 'alei ')
+      .replace(/\bpłd\. /g, 'południowe ')
+      .replace(/\bnp\. /g, 'na przykład ')
+      .replace(/\bks\. /g, 'księdza ')
+      .replace(/\bśw\. /g, 'świętego ')
+      .replace(/\s*\(([^)]*)\)/g, ', $1,')
+      .replace(/\s*→\s*/g, ', dalej ')
+      .replace(/[„”"]/g, '')
+      .replace(/\s*–\s*/g, ', ')
+      .replace(/\s*\/\s*/g, ' lub ')
+      .replace(/⚠\s*/g, 'Uwaga! ')
+      .replace(/,\s*([.,])/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function sentences(parts) {
+    const out = [];
+    parts.forEach((p) => {
+      sayable(p).split(/(?<=[.!?…])\s+/).forEach((s) => {
+        if (!s) return;
+        while (s.length > 220) {
+          const cut = s.lastIndexOf(',', 200);
+          if (cut < 60) break;
+          out.push(s.slice(0, cut + 1));
+          s = s.slice(cut + 1).trim();
+        }
+        out.push(s);
+      });
+    });
+    return out;
+  }
+  const LEVEL_SAY = { 1: 'łatwy', 2: 'umiarkowany', 3: 'wymagający' };
+
+  function buildChapters() {
+    const ch = [];
+    const total = P.days.reduce((s, d) => s + d.km, 0);
+    ch.push({ id: 'intro', title: 'Wprowadzenie', group: 'Ogólne', parts: [
+      `Szczęść Boże! Witamy na stronie pielgrzymki ${P.title}.`,
+      `To piętnastodniowa droga pokonywana na wózku inwalidzkim, od czternastego do dwudziestego ósmego czerwca dwa tysiące dwudziestego siódmego roku. Liczy około ${total} kilometrów.`,
+      'Trasa tworzy pętlę: z Kochłowic w Rudzie Śląskiej do Jasnej Góry w Częstochowie, dalej Szlakiem Orlich Gniazd przez Jurę Krakowsko-Częstochowską do Sanktuarium Bożego Miłosierdzia w Krakowie-Łagiewnikach, a potem z powrotem do Kochłowic.',
+      'Trasa wykorzystuje drogi asfaltowe, ścieżki rowerowe i utwardzone chodniki, omijając leśne i piaszczyste dukty.',
+      'Pielgrzymka ma trzy etapy. Pierwszy trwa cztery dni, drugi, najtrudniejszy, siedem dni, a trzeci, powrotny, cztery dni.',
+      'Lektor przeczyta opis każdego etapu i dnia, zasady bezpieczeństwa, przepisy, porady zdrowotne, listę kontrolną, rytm modlitwy oraz rozważania o duchowym sensie drogi.',
+      'Możesz w każdej chwili zatrzymać czytanie, przejść do następnego rozdziału albo wybrać rozdział z listy w zakładce Lektor.'
+    ] });
+    P.stages.forEach((s) => {
+      ch.push({ id: 'stage-' + s.id, title: s.name, group: 'Etapy i dni', parts: [s.name + '.', s.days.replace(/(\d+) dni, (\d+)–(\d+) czerwca/, (m, n, a, b) => `${n} dni, od ${ORD_GEN[a]} do ${ORD_GEN[b]} czerwca`) + '.', s.about] });
+      P.days.filter((d) => d.stage === s.id).forEach((d) => {
+        const parts = [
+          `Dzień ${ORD_NOM[d.n]}, ${sayDate(d)}.${d.special ? ' ' + d.special + '.' : ''}`,
+          `Start: ${d.from}. Cel dnia: ${d.to}. Około ${d.km} kilometrów. Poziom trudności: ${LEVEL_SAY[d.level]}.`
+        ];
+        if (d.start) parts.push(d.start);
+        parts.push(d.route);
+        if (d.warn) parts.push('Uwaga! ' + d.warn);
+        parts.push('Punkty orientacyjne:');
+        d.pois.forEach((p) => parts.push(p.name + '.' + (p.note ? ' ' + p.note : '')));
+        parts.push('Nocleg: ' + d.sleep);
+        parts.push('Intencja dnia: ' + d.intention);
+        ch.push({ id: 'day-' + d.n, day: d.n, title: `Dzień ${d.n}: ${d.from} → ${d.to}`, group: 'Etapy i dni', parts });
+      });
+    });
+    ch.push({ id: 'safety', title: 'Bezpieczeństwo na wózku', group: 'Logistyka', parts: P.safety.flatMap((s) => [s.title + '.', s.text]) });
+    ch.push({ id: 'law', title: EXTRA.law.title, group: 'Logistyka', parts: EXTRA.law.text });
+    ch.push({ id: 'health', title: EXTRA.health.title, group: 'Logistyka', parts: EXTRA.health.text });
+    ch.push({ id: 'checklist', title: 'Lista kontrolna sprzętu', group: 'Logistyka', parts: ['Lista rzeczy do sprawdzenia przed wyjściem.'].concat(P.checklist.map((g) => g.group + ': ' + g.items.join(', ') + '.')) });
+    ch.push({ id: 'rhythm', title: EXTRA.rhythm.title, group: 'Duchowość', parts: EXTRA.rhythm.text });
+    P.reflection.forEach((r, i) => ch.push({ id: 'reflect-' + i, title: r.title, group: 'Duchowość', parts: [r.title + '.'].concat(r.body) }));
+    ch.push({ id: 'outro', title: EXTRA.outro.title, group: 'Ogólne', parts: EXTRA.outro.text });
+    ch.forEach((c) => { c.sents = sentences(c.parts); });
+    return ch;
+  }
+
+  const fmtClock = (sec) => { sec = Math.max(0, Math.round(sec || 0)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); };
+
+  // ---------- NARRATOR (Web Speech Synthesis fallback) ----------
+  const Narrator = (() => {
+    const chapters = buildChapters();
+    let ci = 0, state = 'idle', continuous = true;
+    let rate = Number(store.get('petla:rate', 1.0)) || 1.0;
+    let currentSentIndex = 0;
+    let currentUtterance = null;
+
+    function getPolishVoice() {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = window.speechSynthesis.getVoices();
+      return voices.find(v => v.lang.startsWith('pl') || v.lang.includes('PL')) || voices[0] || null;
+    }
+
+    function playSentence(sentIdx) {
+      if (!('speechSynthesis' in window)) {
+        alert('Przeglądarka nie obsługuje syntezy mowy.');
+        return;
+      }
+      const ch = chapters[ci];
+      if (sentIdx >= ch.sents.length) {
+        if (continuous && ci < chapters.length - 1) {
+          ci++;
+          currentSentIndex = 0;
+          chapterChanged();
+          playSentence(0);
+        } else {
+          state = 'idle';
+          ui();
+        }
+        return;
+      }
+      currentSentIndex = sentIdx;
+      window.speechSynthesis.cancel();
+      const text = ch.sents[sentIdx];
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'pl-PL';
+      u.rate = rate;
+      const v = getPolishVoice();
+      if (v) u.voice = v;
+      u.onend = () => {
+        if (state === 'playing') {
+          playSentence(sentIdx + 1);
+        }
+      };
+      u.onerror = () => {
+        if (state === 'playing') {
+          playSentence(sentIdx + 1);
+        }
+      };
+      currentUtterance = u;
+      state = 'playing';
+      ui();
+      window.speechSynthesis.speak(u);
+    }
+
+    function play() {
+      state = 'playing';
+      chapterChanged();
+      playSentence(currentSentIndex);
+    }
+
+    function playChapter(id, onlyThis) {
+      const i = chapters.findIndex((c) => c.id === id);
+      continuous = !onlyThis;
+      ci = i < 0 ? 0 : i;
+      currentSentIndex = 0;
+      play();
+    }
+
+    function toggle() {
+      if (state === 'playing') {
+        window.speechSynthesis.pause();
+        state = 'paused';
+        ui();
+      } else if (state === 'paused') {
+        window.speechSynthesis.resume();
+        state = 'playing';
+        ui();
+      } else {
+        continuous = true;
+        ci = 0;
+        currentSentIndex = 0;
+        play();
+      }
+    }
+
+    function stop() {
+      window.speechSynthesis.cancel();
+      state = 'idle';
+      currentSentIndex = 0;
+      ui();
+    }
+
+    function skip(dir) {
+      window.speechSynthesis.cancel();
+      continuous = true;
+      ci = Math.max(0, Math.min(chapters.length - 1, ci + dir));
+      currentSentIndex = 0;
+      play();
+    }
+
+    function setRate(r) {
+      rate = r;
+      store.set('petla:rate', r);
+      if (state === 'playing') {
+        playSentence(currentSentIndex);
+      }
+      ui();
+      renderList();
+    }
+
+    function chapterChanged() {
+      const ch = chapters[ci];
+      if (ch.day) {
+        if (selected && selected !== ch.day) openCard(selected, false);
+        selected = ch.day;
+        const d = P.days.find((x) => x.n === ch.day);
+        if (!active.has(d.stage)) { active.add(d.stage); renderChips(); applyFilter(); }
+        openCard(ch.day, true);
+        paintMap();
+      }
+      ui();
+    }
+
+    function ui() {
+      const ch = chapters[ci];
+      const showBar = state !== 'idle';
+      $('#nbar').hidden = !showBar;
+      document.body.classList.toggle('has-nbar', showBar);
+      $('#n-title').textContent = ch ? ch.title : '';
+      $('#n-pos').textContent = `Rozdział ${ci + 1} z ${chapters.length} (zdanie ${currentSentIndex + 1} z ${ch ? ch.sents.length : 0})`;
+      $('#n-now').textContent = showBar && ch && ch.sents[currentSentIndex] ? ch.sents[currentSentIndex] : '';
+      const seek = $('#n-seek');
+      if (ch && document.activeElement !== seek) {
+        seek.max = Math.max(1, ch.sents.length - 1);
+        seek.value = currentSentIndex;
+      }
+      $('#n-play').textContent = state === 'playing' ? '❚❚' : '▶';
+      $('#n-play').setAttribute('aria-label', state === 'playing' ? 'Pauza' : 'Odtwarzaj');
+      const main = $('#n-main');
+      if (main) main.textContent = state === 'playing' ? '❚❚ Pauza' : state === 'paused' ? '▶ Wznów' : '▶ Czytaj wszystko od początku';
+      $$('[data-rate]').forEach((b) => b.setAttribute('aria-pressed', Number(b.dataset.rate) === rate));
+      $$('#n-list [data-listen]').forEach((b) => b.classList.toggle('now', showBar && b.dataset.listen === ch.id));
+    }
+
+    function renderList() {
+      const groups = [];
+      chapters.forEach((c) => { let g = groups.find((x) => x.name === c.group); if (!g) groups.push(g = { name: c.group, items: [] }); g.items.push(c); });
+      $('#n-list').innerHTML = groups.map((g) => `<div class="card"><h3>${esc(g.name)}</h3><div class="chapters">${g.items.map((c) => {
+        return `<button class="chapter" data-listen="${c.id}"><span class="pi">▶</span><span>${esc(c.title)}</span><span class="dur">${c.sents.length} zdań</span></button>`;
+      }).join('')}</div></div>`).join('');
+      $('#n-total').textContent = `Łącznie ${chapters.length} rozdziałów.`;
+      ui();
+    }
+
+    function render() {
+      $('#tab-narrator').innerHTML = `
+        <div class="card">
+          <h2>Lektor pielgrzymki (Synteza Głosu)</h2>
+          <p class="small muted">Lektor czyta cały przewodnik: etapy, każdy dzień, punkty orientacyjne, postoje, bezpieczeństwo, przepisy, zdrowie, modlitwę i rozważania. Wybierz rozdział z listy albo słuchaj wszystkiego po kolei. <span id="n-total"></span></p>
+          <div class="row"><button class="btn primary" id="n-main">▶ Czytaj wszystko od początku</button><button class="btn" id="n-stop2">■ Zatrzymaj</button></div>
+          <div class="row"><span class="small muted">Prędkość:</span>
+            ${[0.9, 1, 1.1, 1.2, 1.3].map((r) => `<button class="chip" id="rate-${String(r).replace('.', '-')}" data-rate="${r}" aria-pressed="${r === rate}">${String(r).replace('.', ',')}×</button>`).join('')}
+          </div>
+        </div>
+        <div id="n-list" class="tab" style="padding:0"></div>`;
+      $('#n-main').onclick = toggle;
+      $('#n-stop2').onclick = stop;
+      $('#tab-narrator').addEventListener('click', (e) => { const b = e.target.closest('[data-rate]'); if (b) setRate(Number(b.dataset.rate)); });
+      renderList();
+    }
+
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-listen]');
+      if (b) playChapter(b.dataset.listen, b.dataset.only === '1');
+    });
+    $('#n-play').onclick = toggle;
+    $('#n-stop').onclick = stop;
+    $('#n-prev').onclick = () => skip(-1);
+    $('#n-next').onclick = () => skip(1);
+    $('#n-seek').addEventListener('input', (e) => {
+      currentSentIndex = Number(e.target.value);
+      if (state === 'playing') playSentence(currentSentIndex);
+      ui();
+    });
+
+    return { render };
+  })();
+
+  function showTab(name) {
+    $$('.tabs [data-tab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === name));
+    $$('section > .tab').forEach((t) => { t.hidden = t.id !== 'tab-' + name; });
+    store.set('petla:tab', name);
+  }
+  $('.tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-goto-tab]'); if (b) { showTab(b.dataset.gotoTab); b.closest('body').querySelector('.tabs').scrollIntoView({ block: 'start' }); } });
+
+  $('#title').textContent = P.title;
+  $('#subtitle').textContent = P.subtitle + ' · 15 dni, 14–28 czerwca ' + YEAR + ', trasa dla wózka';
+  drawMap(); renderChips(); renderPlan(); progress(); renderToday(); renderLogistics(); renderSpirit(); Narrator.render(); paintMap();
+  const m = /^#dzien-(\d+)$/.exec(location.hash);
+  if (m && P.days.some((d) => d.n === Number(m[1]))) selectDay(Number(m[1]), true);
+  else showTab(phase().k === 'during' ? 'today' : store.get('petla:tab', 'plan'));
+})();
+</script>
+
+</body>
+</html>
