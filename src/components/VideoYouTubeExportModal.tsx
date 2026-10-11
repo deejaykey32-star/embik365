@@ -44,6 +44,100 @@ import {
 // In-memory client cache for decoded audio buffers to prevent repeated downloads
 const clientTtsAudioCache = new Map<string, AudioBuffer>();
 
+export interface TextPage {
+  pageIndex: number;
+  totalPages: number;
+  startWordIdx: number;
+  endWordIdx: number;
+  words: string[];
+}
+
+/**
+ * Dzieli daną sekcję/modlitwę na zwarte, samowystarczalne strony z pełnymi zdaniami,
+ * które w 100% mieszczą się w polu widzenia ekranu bez ucinania i bez gwałtownego przewijania.
+ */
+export function getPagesForSection(
+  sec: { startWordIdx: number; endWordIdx: number; title?: string },
+  allWords: string[],
+  maxWordsPerPage: number = 60
+): TextPage[] {
+  const clampedStart = Math.max(0, Math.min(sec.startWordIdx, allWords.length - 1));
+  const clampedEnd = Math.max(clampedStart, Math.min(sec.endWordIdx, allWords.length - 1));
+  const secWords = allWords.slice(clampedStart, clampedEnd + 1);
+  const totalSecWords = secWords.length;
+
+  if (totalSecWords === 0) {
+    return [{
+      pageIndex: 1,
+      totalPages: 1,
+      startWordIdx: clampedStart,
+      endWordIdx: clampedEnd,
+      words: []
+    }];
+  }
+
+  // Jeśli modlitwa mieści się z marginesem w maxWordsPerPage + 15, zachowaj jako 1 stronę
+  if (totalSecWords <= maxWordsPerPage + 15) {
+    return [{
+      pageIndex: 1,
+      totalPages: 1,
+      startWordIdx: clampedStart,
+      endWordIdx: clampedEnd,
+      words: secWords
+    }];
+  }
+
+  const pages: TextPage[] = [];
+  let curPageStart = 0;
+
+  while (curPageStart < totalSecWords) {
+    let candidateEnd = Math.min(totalSecWords - 1, curPageStart + maxWordsPerPage - 1);
+
+    if (candidateEnd < totalSecWords - 1) {
+      if (totalSecWords - 1 - candidateEnd < 22) {
+        candidateEnd = totalSecWords - 1;
+      } else {
+        let bestBreak = -1;
+        for (let offset = 0; offset <= 18; offset++) {
+          const checkBack = candidateEnd - offset;
+          if (checkBack > curPageStart + 25) {
+            const w = secWords[checkBack];
+            if (/[.!?]$/.test(w) || /^[„”«»"']/.test(secWords[checkBack + 1] || '')) {
+              bestBreak = checkBack;
+              break;
+            }
+          }
+          const checkForward = candidateEnd + offset;
+          if (checkForward < totalSecWords - 1 && checkForward < curPageStart + maxWordsPerPage + 18) {
+            const w = secWords[checkForward];
+            if (/[.!?]$/.test(w)) {
+              bestBreak = checkForward;
+              break;
+            }
+          }
+        }
+        if (bestBreak !== -1) {
+          candidateEnd = bestBreak;
+        }
+      }
+    }
+
+    const pageSlice = secWords.slice(curPageStart, candidateEnd + 1);
+    pages.push({
+      pageIndex: pages.length + 1,
+      totalPages: 1,
+      startWordIdx: clampedStart + curPageStart,
+      endWordIdx: clampedStart + candidateEnd,
+      words: pageSlice
+    });
+
+    curPageStart = candidateEnd + 1;
+  }
+
+  pages.forEach(p => p.totalPages = pages.length);
+  return pages;
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -164,6 +258,30 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // 0. SŁOWA AUDYCJI I INTELIGENTNY PODZIAŁ NA SEKCJE ORAZ STRONY (100% CZYTELNOŚCI BEZ ZNIKANIA TEKSTU)
+    const words = previewMode === 'sample' 
+      ? activeBroadcastItem.words.slice(0, 45) 
+      : activeBroadcastItem.words;
+    const wordsTotal = words.length;
+
+    const rawSections = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
+      ? activeBroadcastItem.sections
+      : [{
+          id: 'main',
+          title: activeBroadcastItem.headlineTitle,
+          type: 'general' as const,
+          text: activeBroadcastItem.speechText,
+          startWordIdx: 0,
+          endWordIdx: Math.max(0, wordsTotal - 1)
+        }];
+
+    const activeSec = rawSections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx)
+      || (activeWordIdx >= wordsTotal - 1 ? rawSections[rawSections.length - 1] : rawSections[0]);
+
+    const secPages = getPagesForSection(activeSec, words);
+    const activePage = secPages.find(p => activeWordIdx >= p.startWordIdx && activeWordIdx <= p.endWordIdx)
+      || (activeWordIdx >= wordsTotal - 1 ? secPages[secPages.length - 1] : secPages[0]);
+
     // 1. GŁĘBOKIE CZARNE TŁO (standard YouTube)
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, width, height);
@@ -242,10 +360,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
       ) || rosarySegments[0];
       const activeBeadNum = activeSeg.beadIndex; // 0..5 dla Tajemnicy 0, lub 0..11 dla dziesiątka
-
-      const activeSec = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
-        ? (activeBroadcastItem.sections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx) || activeBroadcastItem.sections[0])
-        : null;
 
       const beadCenterY = Math.round(height * 0.245); // ~265px na 1080p
       const largeRadius = Math.round(height * 0.023); // ~25px na 1080p, ~16px na 720p
@@ -363,7 +477,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
         // 4. DUŻY PACIOREK: Chwała Ojcu
         const isGloryActive = activeBeadNum === 5;
-        const isGloryDone = activeWordIdx >= activeBroadcastItem.words.length - 1;
+        const isGloryDone = activeWordIdx >= wordsTotal - 1;
         ctx.save();
         if (isGloryActive) {
           ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 20;
@@ -461,7 +575,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         }
 
         // D. PACIOREK 2 (DUŻY): Chwała Ojcu i O mój Jezu
-        const isConclDone = activeWordIdx >= activeBroadcastItem.words.length - 1;
+        const isConclDone = activeWordIdx >= wordsTotal - 1;
         const isConclActive = activeBeadNum === 11;
 
         ctx.save();
@@ -504,58 +618,73 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = `bold ${Math.round(height * 0.02)}px "Cinzel", Georgia, serif`;
+      let pillFont = Math.round(height * 0.02);
+      ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = '#ffd700';
 
+      const pageSuffix = activePage && activePage.totalPages > 1
+        ? ` • Część ${activePage.pageIndex}/${activePage.totalPages}`
+        : '';
+
+      let pillText = '';
 
       if (isDayZero) {
         if (activeSec?.id === 'sign_of_cross') {
-          ctx.fillText(`✝️ Krok 1 • Znak Krzyża Świętego`, width / 2, pillY + pillH / 2);
+          pillText = `✝️ Krok 1 • Znak Krzyża Świętego`;
         } else if (activeSec?.id === 'hail_holy_queen') {
-          ctx.fillText(`👑 Krok 1 • Witaj Królowo`, width / 2, pillY + pillH / 2);
+          pillText = `👑 Krok 1 • Witaj Królowo`;
         } else if (activeSec?.id === 'credo') {
-          ctx.fillText(`🛡️ Krok 1 • Wierzę w Boga Ojca`, width / 2, pillY + pillH / 2);
+          pillText = `🛡️ Krok 1 • Wierzę w Boga Ojca${pageSuffix}`;
         } else if (activeSec?.id === 'our_father') {
-          ctx.fillText(`🙏 Krok 2 • Ojcze nasz`, width / 2, pillY + pillH / 2);
+          pillText = `🙏 Krok 2 • Ojcze nasz`;
         } else if (activeSec?.id === 'hail_mary_faith') {
-          ctx.fillText(`🔵 Paciorek 1/3 • O Wiarę: „który przymnaża nam wiary”`, width / 2, pillY + pillH / 2);
+          pillText = `🔵 Paciorek 1/3 • O Wiarę: „który przymnaża nam wiary”`;
         } else if (activeSec?.id === 'hail_mary_hope') {
-          ctx.fillText(`🟢 Paciorek 2/3 • O Nadzieję: „który przymnaża nam nadziei”`, width / 2, pillY + pillH / 2);
+          pillText = `🟢 Paciorek 2/3 • O Nadzieję: „który przymnaża nam nadziei”`;
         } else if (activeSec?.id === 'hail_mary_love') {
-          ctx.fillText(`🔴 Paciorek 3/3 • O Miłość: „który przymnaża nam miłości”`, width / 2, pillY + pillH / 2);
+          pillText = `🔴 Paciorek 3/3 • O Miłość: „który przymnaża nam miłości”`;
         } else if (activeSec?.id === 'glory_be') {
-          ctx.fillText(`✨ Krok 4 • Chwała Ojcu`, width / 2, pillY + pillH / 2);
+          pillText = `✨ Krok 4 • Chwała Ojcu`;
         } else if (activeBeadNum === 0) {
-          ctx.fillText(`✝️ Krok 1 • Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
+          pillText = `✝️ Krok 1 • Modlitwy Wstępne Różańca Świętego`;
         } else if (activeBeadNum === 1) {
-          ctx.fillText(`🙏 Krok 2 • Ojcze nasz`, width / 2, pillY + pillH / 2);
+          pillText = `🙏 Krok 2 • Ojcze nasz`;
         } else {
-          ctx.fillText(`✨ Modlitwy Wstępne Różańca Świętego`, width / 2, pillY + pillH / 2);
+          pillText = `✨ Modlitwy Wstępne Różańca Świętego`;
         }
       } else if (hasRosary) {
         if (activeSec?.id === 'intro' || activeSec?.type === 'intro') {
-          ctx.fillText(`ℹ️ ${activeBroadcastItem.subtitle || activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+          pillText = `ℹ️ ${activeBroadcastItem.subtitle || activeBroadcastItem.headlineTitle}${pageSuffix}`;
         } else if (activeSec?.id === 'scripture' || activeSec?.type === 'scripture') {
-          ctx.fillText(`📖 Słowo Boże • ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+          pillText = `📖 Słowo Boże • ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
         } else if (activeSec?.id === 'meditation' || activeSec?.type === 'meditation') {
-          ctx.fillText(`🕊️ Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+          pillText = `🕊️ Rozważanie Tajemnicy: ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
         } else if (activeSec?.id === 'our_father') {
-          ctx.fillText(`🙏 Krok 1 • Ojcze nasz`, width / 2, pillY + pillH / 2);
+          pillText = `🙏 Krok 1 • Ojcze nasz`;
         } else if (activeBeadNum >= 1 && activeBeadNum <= 10) {
-          const ins = activeSeg.insertion ? `„${activeSeg.insertion}”` : '';
-          ctx.fillText(`📿 Paciorek ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`, width / 2, pillY + pillH / 2);
+          const ins = activeSeg?.insertion ? `„${activeSeg.insertion}”` : '';
+          pillText = `📿 Paciorek ${activeBeadNum}/10 • Zdrowaś Maryjo ze wstawką: ${ins}`;
         } else if (activeSec?.id === 'glory_be') {
-          ctx.fillText(`✨ Krok 11 • Chwała Ojcu`, width / 2, pillY + pillH / 2);
+          pillText = `✨ Krok 11 • Chwała Ojcu`;
         } else if (activeSec?.id === 'fatima') {
-          ctx.fillText(`🕊️ Krok 12 • O mój Jezu`, width / 2, pillY + pillH / 2);
-        } else if (activeSec?.id === 'sub_tuum' || activeSec?.type === 'conclusion') {
-          ctx.fillText(`🛡️ Modlitwa na Zakończenie Części • Pod Twoją obronę`, width / 2, pillY + pillH / 2);
+          pillText = `🕊️ Krok 12 • O mój Jezu`;
+        } else if (activeSec?.id === 'sub_tuum') {
+          pillText = `🛡️ Modlitwa na Zakończenie Różańca • Pod Twoją obronę`;
+        } else if (activeSec?.type === 'conclusion') {
+          pillText = `🕊️ Modlitwa na Zakończenie${pageSuffix}`;
         } else {
-          ctx.fillText(`📿 Dziesiątek Różańca Świętego`, width / 2, pillY + pillH / 2);
+          pillText = `📿 Dziesiątek Różańca Świętego`;
         }
       } else {
-        ctx.fillText(`📖 ${activeSec?.title || 'Czytanie'} • ${activeBroadcastItem.headlineTitle}`, width / 2, pillY + pillH / 2);
+        pillText = `📖 ${activeSec?.title || 'Czytanie'} • ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
       }
+
+      const pW = ctx.measureText(pillText).width;
+      if (pW > pillW - 30) {
+        pillFont = Math.max(Math.round(height * 0.014), Math.floor(pillFont * ((pillW - 30) / pW)));
+        ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
+      }
+      ctx.fillText(pillText, width / 2, pillY + pillH / 2);
       ctx.restore();
 
       headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
@@ -580,9 +709,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = selectedStationId === 'biblia365' ? '#34d399' : '#38bdf8';
 
+      const pageSuffix = activePage && activePage.totalPages > 1
+        ? ` • Część ${activePage.pageIndex}/${activePage.totalPages}`
+        : '';
+
       const pillText = selectedStationId === 'biblia365'
-        ? `📖 Pismo Święte & Apokryfy • ${activeBroadcastItem.headlineTitle}`
-        : `🕊️ Widoki na Raj 365 • Refleksja duchowa • ${activeBroadcastItem.headlineTitle}`;
+        ? `📖 Pismo Święte & Apokryfy • ${activeBroadcastItem.headlineTitle}${pageSuffix}`
+        : `🕊️ Widoki na Raj 365 • Refleksja duchowa • ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
 
       const pW = ctx.measureText(pillText).width;
       if (pW > pillW - 30) {
@@ -595,12 +728,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       headerBottom = pillY + pillH;
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & PERFEKCYJNYM WYŚWIETLANIEM BEZ ZNIKANIA TEKSTU
-    const words = previewMode === 'sample' 
-      ? activeBroadcastItem.words.slice(0, 45) 
-      : activeBroadcastItem.words;
-    const wordsTotal = words.length;
-
+    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & INTELIGENTNYM STRONICOWANIEM BEZ ZNIKANIA TEKSTU
     if (wordsTotal > 0) {
       const maxTextWidth = Math.round(width * 0.88);
       const minHeaderGap = Math.round(height * (hasRosary ? 0.030 : 0.036));
@@ -622,16 +750,16 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
-      // ZAWSZE WYŚWIETLAMY PEŁNY, PŁYNNY CIĄG TEKSTU DLA WSZYSTKICH STACJI!
-      // (Zarówno dla stacji różańcowych Nowy RHZ / RHZ365, jak i dla WnR365 i Biblia365)
-      // Żadne słowo ani modlitwa nie znika przed czytaniem, w trakcie czytania ani po przeczytaniu!
-      const effectiveWordTexts = words;
-      const effectiveStartIdx = 0;
+      // INTELIGENTNE STRONICOWANIE:
+      // Każda strona (lub cała modlitwa) mieści się w całości w strefie napisów!
+      // Wyświetlamy dokładnie słowa bieżącej strony (activePage.words) wyśrodkowane w pionie.
+      // Żadne słowo ani zdanie nie znika przed, w trakcie ani po przeczytaniu!
+      const effectiveWordTexts = activePage.words;
+      const effectiveStartIdx = activePage.startWordIdx;
 
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
       const FONT_FAMILY = '"Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-      // Pomocnik dzielenia słów danej sekcji na linie dla zadanego rozmiaru czcionki
       const buildLinesForSection = (fSize: number) => {
         ctx.save();
         ctx.font = `600 ${fSize}px ${FONT_FAMILY}`;
@@ -687,95 +815,60 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         return { builtLines, spaceW };
       };
 
-      // DYNAMICZNY ROZMIAR CZCIONKI:
-      let baseFontSize = Math.round(height * (hasRosary ? 0.035 : 0.033));
+      // DYNAMICZNY, ELEGANCKI ROZMIAR CZCIONKI DLA DANEJ STRONY:
+      let baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
+      if (effectiveWordTexts.length <= 22) {
+        baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.036));
+      } else if (effectiveWordTexts.length <= 48) {
+        baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.032));
+      } else {
+        baseFontSize = Math.round(height * (hasRosary ? 0.029 : 0.028));
+      }
+
       let renderFontSize = baseFontSize;
       let renderLineHeight = Math.round(renderFontSize * 1.48);
 
       let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
 
-      // Jeśli cały tekst audycji mieści się przy minimalnym zmniejszeniu, dopasuj do wysokości strefy
+      // Gwarancja zmieszczenia wszystkich linii strony w pionie bez ucinania
       if (sectionLines.length > 0) {
-        const requiredH = sectionLines.length * renderLineHeight;
-        if (requiredH > zoneHeight) {
-          const candidateLineH = Math.floor(zoneHeight / sectionLines.length);
-          const minAcceptableLineH = Math.round(height * 0.026);
-          if (candidateLineH >= minAcceptableLineH) {
-            renderLineHeight = candidateLineH;
-            renderFontSize = Math.round(candidateLineH / 1.44);
-            const recomputed = buildLinesForSection(renderFontSize);
-            sectionLines = recomputed.builtLines;
-            standardSpaceWidth = recomputed.spaceW;
-          }
+        const maxAllowedBlockH = zoneHeight - 20;
+        let currentBlockH = sectionLines.length * renderLineHeight;
+        if (currentBlockH > maxAllowedBlockH) {
+          const candidateLineH = Math.floor(maxAllowedBlockH / sectionLines.length);
+          renderFontSize = Math.max(16, Math.floor(candidateLineH / 1.44));
+          renderLineHeight = candidateLineH;
+          const recomputed = buildLinesForSection(renderFontSize);
+          sectionLines = recomputed.builtLines;
+          standardSpaceWidth = recomputed.spaceW;
         }
       }
 
-      // PŁYNNY SYSTEM TELEPROMPTERA BEZ UCINANIA LINII I ZNIKANIA WYRAZÓW:
       const totalBlockHeight = sectionLines.length * renderLineHeight;
-      let scrollY = 0;
+      // Strona jest zawsze idealnie wyśrodkowana w pionie (scrollY = 0)
+      const baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
 
-      // Znajdź indeks linii zawierającej aktualnie czytane słowo
-      let activeLineIdx = sectionLines.findIndex(l => l.tokens.some(t => t.wordIdx === activeWordIdx));
-      if (activeLineIdx === -1) {
-        if (activeWordIdx <= 0) {
-          activeLineIdx = 0;
-        } else if (activeWordIdx >= wordsTotal - 1) {
-          activeLineIdx = sectionLines.length - 1;
-        } else {
-          for (let li = 0; li < sectionLines.length; li++) {
-            const lastTok = sectionLines[li].tokens[sectionLines[li].tokens.length - 1];
-            if (lastTok && lastTok.wordIdx >= activeWordIdx) {
-              activeLineIdx = li;
-              break;
-            }
-          }
-          if (activeLineIdx === -1) activeLineIdx = 0;
-        }
-      }
-
-      if (totalBlockHeight <= zoneHeight) {
-        // Wszystkie linie mieszczą się bez przewijania – eleganckie wyśrodkowanie w pionie
-        scrollY = 0;
-      } else {
-        // Tekst przewija się płynnie, utrzymując czytaną linię w naturalnym polu widzenia (~36% wysokości strefy)
-        const targetActiveScreenY = zoneHeight * 0.36;
-        const targetScroll = (activeLineIdx * renderLineHeight) - targetActiveScreenY;
-        const maxScroll = Math.max(0, totalBlockHeight - zoneHeight + Math.round(renderLineHeight * 0.5));
-        scrollY = Math.max(0, Math.min(maxScroll, targetScroll));
-      }
-
-      // Przycinamy rysowanie dokładnie do strefy napisów, aby tekst nie nachodził na nagłówek ani stopkę
       ctx.save();
       ctx.beginPath();
       ctx.rect(40, zoneTop, width - 80, zoneHeight);
       ctx.clip();
 
-      const baseStartY = totalBlockHeight <= zoneHeight
-        ? zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2))
-        : zoneTop - scrollY;
-
       sectionLines.forEach((line, lineIndex) => {
         const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
-        
-        // Pomijamy linie całkowicie poza ekranem (z marginesem 1 linii dla optymalizacji)
-        if (lineY < zoneTop - renderLineHeight || lineY > zoneBottom + renderLineHeight) {
-          return;
-        }
-
         const N = line.tokens.length;
         if (N === 0) return;
 
-        // PEŁNE WYJUSTOWANIE DO LEWEJ I PRAWEJ KRAWĘDZI:
-        // Wszystkie linie rozpoczynają się od lewego marginesu lineStartX.
-        // Linie wewnętrzne (N > 1 i !line.isParagraphEnd) rozciągają się dokładnie do prawego marginesu (lineStartX + maxTextWidth).
-        // Ostatnia linia akapitu (line.isParagraphEnd) lub linia jednowyrazowa jest wyrównana do lewego marginesu ze standardowym odstępem.
-        const lineStartX = Math.round((width - maxTextWidth) / 2);
         const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
-
         const isJustified = !line.isParagraphEnd && N > 1;
         const spaceBetweenWords = isJustified
           ? Math.max(standardSpaceWidth, Math.min((maxTextWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5))
           : standardSpaceWidth;
+
+        // Jeśli cała strona to 1 linijka, wyśrodkuj ją w poziomie dla podniosłego wyglądu
+        const lineContentW = totalWordsW + (N - 1) * spaceBetweenWords;
+        const lineStartX = (sectionLines.length === 1 && !isJustified)
+          ? Math.round((width - lineContentW) / 2)
+          : Math.round((width - maxTextWidth) / 2);
 
         let curX = lineStartX;
 
@@ -791,7 +884,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
 
           if (isCurrent) {
-            // EFEKT KARAOKE: Eleganckie złociste tło o podwyższonym kontraście, bez rozmywania liter
+            // EFEKT KARAOKE: Złoty badge z wyrazistym kontrastem
             const padX = Math.min(Math.round(standardSpaceWidth * 0.35), 8);
             const bgH = Math.round(renderFontSize * 1.28);
             const bgX = tokenX - padX;
@@ -807,7 +900,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Ostry, ciemny cień pod literami zapewnia 100% czytelności polskich znaków diakrytycznych
             ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
             ctx.shadowBlur = 3;
             ctx.shadowOffsetX = 1;
@@ -815,7 +907,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ctx.fillStyle = '#fef08a';
             ctx.fillText(token.text, tokenX, lineY);
           } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel z delikatnym cieniem kontrastowym
+            // PRZECZYTANE SŁOWO: 100% Czysta Biel, kontrastowe i wyraźne
             ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
             ctx.shadowBlur = 3;
             ctx.shadowOffsetX = 1;
@@ -838,25 +930,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       });
 
       ctx.restore(); // Przywrócenie stanu przed clip()
-
-      // Bardzo subtelny gradient wygaszający na samej krawędzi strefy napisów
-      // zapobiega ucinaniu linii bez zakrywania czytanego tekstu
-      if (totalBlockHeight > zoneHeight) {
-        const topFadeH = Math.min(18, Math.round(zoneHeight * 0.04));
-        const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + topFadeH);
-        topGrad.addColorStop(0, '#050505');
-        topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
-        ctx.fillStyle = topGrad;
-        ctx.fillRect(40, zoneTop, width - 80, topFadeH);
-
-        const botFadeH = Math.min(22, Math.round(zoneHeight * 0.05));
-        botGrad = ctx.createLinearGradient(0, zoneBottom - botFadeH, 0, zoneBottom);
-        botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
-        botGrad.addColorStop(1, '#050505');
-        ctx.fillStyle = botGrad;
-        ctx.fillRect(40, zoneBottom - botFadeH, width - 80, botFadeH);
-      }
-
       ctx.shadowBlur = 0;
     } else {
       // Bezpieczny komunikat w przypadku braku słów
@@ -886,8 +959,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
     const currentProgressPercent = wordsTotal > 0 ? Math.round((Math.min(activeWordIdx + 1, wordsTotal) / wordsTotal) * 100) : 0;
+    const pageStatus = activePage && activePage.totalPages > 1 ? ` • Część ${activePage.pageIndex}/${activePage.totalPages}` : '';
     ctx.fillText(
-      `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays} • Słowo ${Math.min(activeWordIdx + 1, wordsTotal)}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
+      `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays}${pageStatus} • Słowo ${Math.min(activeWordIdx + 1, wordsTotal)}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
       width - 80,
       height - 38
     );
