@@ -43,7 +43,7 @@ Po trzecie: Nowy RHZ – interaktywna aplikacja modlitewna na 175 dni, podzielon
 
 Po czwarte: Biblia365 i Apokryfy. Roczny plan czytania Słowa Bożego wraz z cennymi tekstami wczesnochrześcijańskimi.
 
-Po piąte: Sekcja Mapa – poświęcona Wielkiej Pielgrzymce Gwiaździstej oraz pieszemu Szlakowi Orlich Gniazd z Częstochowy do Łagiewnik. Znajdziesz tam interaktywne mapy, trasy w Google Maps, pliki CSV oraz nagranie audioprzewodnika.
+Po piąte: Sekcja Mapa – poświęcona Trójjedynej Pielgrzymce Gwiaździstej oraz pieszemu Szlakowi Orlich Gniazd z Częstochowy do Łagiewnik i powrotowi do Kochłowic. Znajdziesz tam interaktywne mapy, trasy w Google Maps, pliki CSV oraz audioprzewodnik lektora w dwóch wersjach: tylko Szlak Orlich Gniazd (II etap) lub cała pielgrzymka przykładowa (etapy I do III) z Kochłowic przez Częstochowę i Łagiewniki z powrotem do Kochłowic, tworząca geometryczny Trójkąt Trzech Sanktuariów ku czci Trójcy Świętej.
 
 Po szóste: Histada – autorska trylogia gier kulturowo-historycznych dla poszukujących prawdy, łącząca historię, naukę, filozofię i wiarę.
 
@@ -65,8 +65,8 @@ W każdej chwili możesz włączyć lektora online przyciskiem ze słuchawkami. 
   mapa: {
     id: 'mapa',
     sectionName: 'Mapa Pielgrzymki',
-    title: 'Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
-    subtitle: 'Symbolika dwóch gwiazd, Trójkąt Trójcy Świętej, 7 dni szlaku i przesilenie 21 czerwca',
+    title: 'Trójjedyna Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
+    subtitle: 'Symbolika dwóch gwiazd, Trójkąt Trójcy Świętej, 7 dni szlaku oraz Trójkąt Trzech Sanktuariów',
     badge: 'Audioprzewodnik Szlaku',
     script: PILGRIMAGE_LECTOR_SCRIPT
   },

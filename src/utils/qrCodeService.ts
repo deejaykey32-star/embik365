@@ -169,8 +169,8 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
   },
   {
     id: 'qr_mapa',
-    title: 'Wielka Pielgrzymka Gwiaździsta (mapa-aon.pages.dev)',
-    displayLabel: 'Zeskanuj, aby otworzyć interaktywną mapę Pielgrzymki Gwiaździstej',
+    title: 'Trójjedyna Pielgrzymka Gwiaździsta (mapa-aon.pages.dev)',
+    displayLabel: 'Zeskanuj, aby otworzyć interaktywną mapę Trójjedynej Pielgrzymki Gwiaździstej',
     shortUrl: 'https://wnr365.pages.dev/mapa-aon',
     fullUrl: 'https://mapa-aon.pages.dev',
     sectionId: 'mapa',

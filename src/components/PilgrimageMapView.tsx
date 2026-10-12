@@ -41,56 +41,87 @@ import {
   getLectorPlaybackState
 } from '../utils/audioLectorService';
 
-export const PILGRIMAGE_LECTOR_SCRIPT = `
-Witaj na szlaku Wielkiej Pielgrzymki Gwiaździstej i Szlaku Orlich Gniazd. 
+export const PILGRIMAGE_LECTOR_SCRIPT_TRAIL = `
+Witaj na Szlaku Orlich Gniazd – drugim etapie Trójjedynej Pielgrzymki Gwiaździstej.
 
-Oto przewodnik po niezwykłej drodze serca, braterstwa i duchowej odnowy.
+Oto audioprzewodnik po siedmiodniowej, wspólnej wędrówce przez Wyżynę Krakowsko-Częstochowską: od Częstochowy aż do krakowskich Łagiewnik.
 
-O co w niej chodzi i na czym polega ta pielgrzymka?
-Pielgrzymka opiera się na idei dwóch wielkich gwiazd oraz głębokiej symbolice Trójcy Przenajświętszej.
-Jako promienie pierwszej gwiazdy, pielgrzymi wyruszają z różnych zakątków Polski i świata – pieszo, rowerami, pociągami czy autokarami – by zjednoczyć się u stóp Matki Bożej na Jasnej Górze w Częstochowie. 
-Następnie, tworząc jedną wielką rodzinę, wyruszają we wspólną, 7-dniową wędrówkę pieszą liczącą 174 kilometry przez malowniczy Szlak Orlich Gniazd na Wyżynie Krakowsko-Częstochowskiej, aż do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
-Tam, u źródła orędzia Bożego Miłosierdzia, stają się promieniami drugiej gwiazdy – rozchodzącymi się z powrotem na cały świat z przesłaniem pokoju, nadziei, przebaczenia i braterskiej miłości. 
+Na czym polega ten etap?
+Trójjedyna Pielgrzymka Gwiaździsta łączy ludzi ze wszystkich stron Polski i świata. Po pierwszym etapie, w którym pielgrzymi zdążają niczym promienie pierwszej gwiazdy na Jasną Górę, rozpoczyna się Etap Drugi – wspólny, braterski marsz liczący 174 kilometry, odbywający się corocznie od osiemnastego do dwudziestego czwartego czerwca.
+To czas jedności, modlitwy i zachwytu nad pięknem stworzenia, prowadzący przez jurajskie wzgórza, ostańce wapienne i średniowieczne warownie królewskie.
 
-Co niezwykłe i pełne duchowej głębi: każda grupa pielgrzymkowa, wyruszając ze swojego domu na Jasną Górę, wędrując szlakiem do Łagiewnik i wracając stamtąd z powrotem do miejsca wyjścia, tworzy na mapie ramiona wielkiego trójkąta. W ten sposób droga każdej grupy domyka geometryczny trójkąt, w widzialny sposób przypominając o Trójcy Świętej – Ojcu, Synu i Duchu Świętym – oraz wpisując tajemnicę Bożej jedności i miłości w drogi naszej Ojczyzny. To żywe doświadczenie, że wszyscy jesteśmy dziećmi jednego Boga.
+Oto szczegółowy przebieg każdego z siedmiu dni Szlaku Orlich Gniazd:
 
-Oto wspaniały, konkretny przykład takiego szlaku:
-Pielgrzymka rozpoczynająca się w Rudzie Śląskiej, w parafii Trójcy Przenajświętszej w Kochłowicach, tuż obok zabytkowej kaplicy Sanktuarium Matki Bożej z Lourdes.
-Pielgrzymi wyruszają stamtąd na północ przez Piekary Śląskie z Kalwarią Piekarską, Świerklaniec, Woźniki i Poraj, by po czterech dniach dotrzeć na Jasną Górę w Częstochowie.
-Następnie, idąc opisanym, 7-dniowym Szlakiem Orlich Gniazd przez całą Jurę, docierają do Sanktuarium Bożego Miłosierdzia w krakowskich Łagiewnikach.
-Po uroczystym Rozesłaniu, wędrują w drodze powrotnej przez Opactwo Benedyktynów w Tyńcu, Alwernię, Chrzanów, Jaworzno, Mysłowice oraz Bazylikę w Panewnikach, powracając prosto do kościoła Trójcy Przenajświętszej w Rudzie Śląskiej. W ten sposób cała trasa tworzy na mapie przybliżony kształt wielkiego trójkąta, łącząc początek i zwieńczenie drogi w tajemnicy Trójcy Świętej!
+Dzień pierwszy, osiemnastego czerwca. Dystans: dwadzieścia osiem kilometrów. Trasa: Jasna Góra do Złotego Potoku.
+O godzinie siódmej rano na Wałach Jasnogórskich sprawowana jest uroczysta Msza Święta inaugurująca zjednoczenie wszystkich grup. Pielgrzymi ruszają ku jurajskim ostępom, mijając ruiny Zamku w Olsztynie i zabytkowe Zrębice, docierając na nocleg do bukowych lasów Złotego Potoku.
 
-Pielgrzymka nie jest jedynie sprawdzianem kondycyjnym. Jest szkołą patrzenia na naszą codzienność z perspektywy wieczności – tak jak uczy nas blog Widoki na Raj.
-
-Posłuchaj, jak wygląda każdy z siedmiu dni tego szlaku:
-
-Dzień pierwszy, 18 czerwca. Dystans: 28 kilometrów. Trasa: Jasna Góra do Złotego Potoku.
-O godzinie siódmej rano na Wałach Jasnogórskich odbywa się uroczysta Msza Święta inaugurująca zjednoczenie wszystkich promieni. Pielgrzymi ruszają ku jurajskim ostępom, mijając ruiny Zamku w Olsztynie i zabytkowe Zrębice, docierając na nocleg do bukowych lasów Złotego Potoku.
-
-Dzień drugi, 19 czerwca. Dystans: 24 kilometry. Trasa: Złoty Potok do Bobolic i Mirowa.
+Dzień drugi, dziewiętnastego czerwca. Dystans: dwadzieścia cztery kilometry. Trasa: Złoty Potok do Bobolic i Mirowa.
 Dzień rozpoczyna się przejściem przez rezerwat Ostrężnik, a punktem kulminacyjnym jest wędrówka malowniczą Grzędą Mirowską między bliźniaczymi zamkami Mirów i Bobolice. Wieczór to czas wspólnego ogniska i odpoczynku pod jurajskim niebem.
 
-Dzień trzeci, 20 czerwca. Dystans: 26 kilometrów. Trasa: Bobolice do Zamku Ogrodzieniec.
-Szlak prowadzi przez skaliste wzniesienia Góry Zborów w Podlesicach, z której roztacza się zapierająca dech panorama Jury. Następnie przez Zamek Morsko i Skarżyce pielgrzymi docierają do Podzamcza u stóp monumentalnego Zamku Ogrodzieniec, gdzie wieczorem odbywa się modlitewne nabożeństwo światła.
+Dzień trzeci, dwudziestego czerwca. Dystans: dwadzieścia sześć kilometrów. Trasa: Bobolice do Zamku Ogrodzieniec w Podzamczu.
+Szlak prowadzi przez skaliste wzniesienia Góry Zborów w Podlesicach, skąd roztacza się zapierająca dech panorama Jury. Następnie przez Zamek Morsko i Skarżyce pielgrzymi docierają do Podzamcza u stóp monumentalnego Zamku Ogrodzieniec, gdzie wieczorem odbywa się modlitewne nabożeństwo światła.
 
-Dzień czwarty, 21 czerwca. Dystans: 27 kilometrów. Trasa: Ogrodzieniec przez Zamek Smoleń i Bydlin do Klucz i Pustyni Błędowskiej.
+Dzień czwarty, dwudziestego pierwszego czerwca. Dystans: dwadzieścia siedem kilometrów. Trasa: Ogrodzieniec przez Zamek Smoleń i Bydlin do Klucz i Pustyni Błędowskiej.
 To dzień szczególny i duchowy punkt kulminacyjny całej drogi – Dzień Przesilenia Letniego, najdłuższy dzień w roku, tryumf światła nad ciemnością oraz moment duchowego oświecenia.
-Dzień 21 czerwca to także wyjątkowe osobiste święto autora – moje urodziny – i bezpośrednie serce mojego bloga oraz dzieła Widoki na Raj.
+Dzień dwudziesty pierwszy czerwca to także wyjątkowe osobiste święto autora – moje urodziny – i bezpośrednie serce mojego bloga oraz dzieła Widoki na Raj.
 Stając na punkcie widokowym Czubatka i spoglądając na bezkres Pustyni Błędowskiej, doświadczamy prawdy, że nawet pośród najtrudniejszych pustyń naszego życia, w chorobie, cierpieniu, zranieniach czy samotności, Bóg rozlewa Swoje światło. Blog Widoki na Raj uczy nas patrzeć na każdy trud doczesnej wędrówki z perspektywy wieczności i Bożej logiki miłości. Na wzgórzu Czubatka modlimy się o wewnętrzne oświecenie, odrodzenie nadziei i pokój serca dla każdego z nas.
 
-Dzień piąty, 22 czerwca. Dystans: 25 kilometrów. Trasa: Klucze do Zamku Pieskowa Skała.
+Dzień piąty, dwudziestego drugiego czerwca. Dystans: dwadzieścia pięć kilometrów. Trasa: Klucze do Zamku Pieskowa Skała.
 Wkraczamy w granice Ojcowskiego Parku Narodowego. Szlak wiedzie przez zamek Rabsztyn i Sułoszową, otwierając przed pielgrzymami widok na słynną Maczugę Herkulesa oraz renesansowy zamek Pieskowa Skała. Wieczorna kontemplacja w Dolinie Prądnika przywraca siły przed kolejnym etapem.
 
-Dzień szósty, 23 czerwca. Dystans: 18 kilometrów. Trasa: Pieskowa Skała do Ojcowa.
-Ten dzień ma wyjątkowy charakter, ponieważ przypada w Dzień Ojca. Pielgrzymi schodzą w głąb wapiennego wąwozu Doliny Prądnika, mijając Grodzisko i Kaplicę na Wodzie. Wieczorem pod majestatyczną Bramą Krakowską w Ojcowie odbywa się wielkie czuwanie modlitewne w intencji wszystkich ojców, rodzin, przebaczenia w relacjach i odwagi w wierze.
+Dzień szósty, dwudziestego trzeciego czerwca. Dystans: osiemnaście kilometrów. Trasa: Pieskowa Skała do Ojcowa.
+Ten dzień ma wyjątkowy charakter, ponieważ przypada w Dzień Ojca. Pielgrzymi schodzą w głąb wapiennego wąwozu Doliny Prądnika, mijając Grodzisko i Kaplicę na Wodzie. Wieczorem pod majestatyczną Bramą Krakowską w Ojcowie odbywa się wielkie czuwanie modlitewne w intencji wszystkich ojców, rodzin, pojednania w relacjach i odwagi w wierze.
 
-Dzień siódmy, 24 czerwca. Wielki Finał. Dystans: 26 kilometrów. Trasa: Ojców do Krakowa-Łagiewnik.
-Ostatni odcinek prowadzi przez Zamek Korzkiew i Zielonki w stronę Krakowa. Pielgrzymi wkraczają na Wzgórze Miłosierdzia w Łagiewnikach. O godzinie piętnastej, w Godzinie Miłosierdzia, sprawowana jest dziękczynna Msza Święta i odmawiana jest uroczysta Koronka do Bożego Miłosierdzia.
-Tu, u celu drogi, pielgrzymka się nie kończy. Stąd każdy wyrusza z powrotem do swojego domu, do rodziny i pracy – domykając pielgrzymi trójkąt ku czci Trójcy Przenajświętszej i stając się promieniem drugiej gwiazdy niosącym światu orędzie Bożego Miłosierdzia, pokoju i nadziei.
-Przykładem takiego szlaku jest modelowa, piętnastodniowa trasa z Rudy Śląskiej: od parafii Trójcy Przenajświętszej i kaplicy Sanktuarium Matki Bożej z Lourdes przez Piekary Śląskie na Jasną Górę, stamtąd Szlakiem Orlich Gniazd do Łagiewnik, i powrotnie przez Tyniec, Alwernię i Panewniki do Rudy Śląskiej. Pełną trasę z plikami do pobrania możesz otworzyć w Google Maps na naszej mapie.
+Dzień siódmy, dwudziestego czwartego czerwca. Wielki Finał. Dystans: dwadzieścia sześć kilometrów. Trasa: Ojców do Krakowa-Łagiewnik.
+Ostatni odcinek prowadzi przez Zamek Korzkiew i Zielonki w stronę Krakowa. Pielgrzymi wkraczają na Wzgórze Miłosierdzia w Łagiewnikach. O godzinie piętnastej, w Godzinie Miłosierdzia, sprawowana jest dziękczynna Msza Święta i odmawiana uroczysta Koronka do Bożego Miłosierdzia.
 
-Dziękujemy, że jesteś na tej drodze. Niech każdy krok otwiera Twoje serce na prawdziwe Widoki na Raj.
+Tutaj, u stóp Jezusa Miłosiernego, kończy się Etap Drugi, ale nie kończy się pielgrzymka. Stąd pielgrzymi wyruszają jako promienie drugiej gwiazdy w drogę powrotną do swoich domów, domykając geometryczny trójkąt ku czci Trójcy Przenajświętszej.
+
+Dziękujemy, że jesteś na tej drodze. Niech każdy krok otwiera Twoje serce na prawdziwe Widoki na Raj!
 `;
+
+export const PILGRIMAGE_LECTOR_SCRIPT_FULL = `
+Witaj na szlaku Trójjedynej Pielgrzymki Gwiaździstej. 
+
+Oto przewodnik po pełnej, modelowej pielgrzymce przykładowej, obejmującej wszystkie trzy etapy: od wyjścia z Rudy Śląskiej-Kochłowic, przez Częstochowę i Kraków-Łagiewniki, aż po powrót do Kochłowic.
+
+O co w niej chodzi i dlaczego jest to trójkąt, a nie pętla?
+Trasa ta w żaden sposób nie może nazywać się pętlą drogową. To święty geometryczny trójkąt, który w widzialny sposób symbolizuje Trójcę Świętą: Boga Ojca, Syna Bożego i Ducha Świętego.
+Każda grupa pielgrzymkowa wyruszająca z Polski lub z zagranicy tworzy na mapie ramiona takiego trójkąta: najpierw promień ku Częstochowie, następnie wspólny Szlak Orlich Gniazd ku Łagiewnikom, a wreszcie powrót do domu, który domyka trzecie ramię trójkąta ku czci Trójcy Przenajświętszej.
+
+Oto nasza modelowa trasa przykładowa – Pielgrzymi Trójkąt Trzech Sanktuariów:
+Punktem wyjścia i zwieńczenia jest Ruda Śląska - Kochłowice: Kościół Trójcy Świętej oraz zabytkowe Sanktuarium Matki Bożej z Lourdes. Trasa liczy piętnaście dni, około trzysta dwadzieścia dziewięć kilometrów i jest w pełni dostosowana dla osób pieszych, na wózkach inwalidzkich oraz ich asystentów, prowadząc po bezpiecznym asfalcie i drogach utwardzonych z asystą samochodu technicznego.
+
+Oto jak przebiegają poszczególne etapy tej niezwykłej drogi:
+
+Etap Pierwszy, od czternastego do siedemnastego czerwca. Cztery dni wędrówki, siedemdziesiąt pięć kilometrów. Z Kochłowic do Matki Bożej Częstochowskiej.
+Rozpoczynamy Mszą Świętą i uroczystym błogosławieństwem w Sanktuarium Matki Bożej z Lourdes i Kościele Trójcy Świętej w Kochłowicach.
+W Dniu Pierwszym idziemy przez Chorzów Batory, Rynek w Bytomiu i Radzionków do Tarnowskich Gór.
+W Dniu Drugim pokonujemy trasę obok Zalewu Nakło-Chechło przez Nowe Chechło i Tąpkowice do Ożarowic.
+W Dniu Trzecim wędrujemy przez Rynek w Koziegłowach i urokliwy Zalew Porajski do Poraja.
+W Dniu Czwartym wkraczamy do Częstochowy, podążając Aleją Najświętszej Maryi Panny na szczyt Jasnej Góry, gdzie u stóp Królowej Polski łączymy się z pielgrzymami ze wszystkich stron świata.
+
+Etap Drugi, od osiemnastego do dwudziestego czwartego czerwca. Siedem dni, sto siedemdziesiąt cztery kilometry. Główny Szlak Orlich Gniazd z Jasnej Góry do Łagiewnik.
+To serce Trójjedynej Pielgrzymki Gwiaździstej.
+Dzień pierwszy to wymarsz przez Zamek Olsztyn i Zrębice do bukowych lasów Złotego Potoku.
+Dzień drugi prowadzi przez rezerwat Ostrężnik na malowniczą Grzędę Mirowską między zamkami Mirów i Bobolice.
+Dzień trzeci wiedzie przez Górę Zborów w Podlesicach i Zamek Morsko pod monumentalne mury Zamku Ogrodzieniec w Podzamczu.
+Dzień czwarty, dwudziesty pierwszy czerwca – to przesilenie letnie, najdłuższy dzień w roku i urodziny autora bloga Widoki na Raj. Na punkcie widokowym Czubatka nad Pustynią Błędowską kontemplujemy zwycięstwo światła nad ciemnością i Bożą perspektywę wieczności.
+Dzień piąty prowadzi przez Zamek Rabsztyn i Sułoszową do Pieskowej Skały z Maczugą Herkulesa.
+Dzień szósty, dwudziestego trzeciego czerwca, przypada w Dzień Ojca – idziemy wąwozem Doliny Prądnika do Ojcowa na modlitewne czuwanie pod Bramą Krakowską w intencji ojców i rodzin.
+Dzień siódmy, dwudziestego czwartego czerwca – wkraczamy do Krakowa, by o godzinie piętnastej, w Godzinie Miłosierdzia, modlić się w Sanktuarium Bożego Miłosierdzia w Łagiewnikach.
+
+Etap Trzeci, od dwudziestego piątego do dwudziestego ósmego czerwca. Cztery dni, sto kilometrów. Powrót do Kochłowic i domknięcie Trójkąta ku czci Trójcy Świętej.
+Po uroczystym Rozesłaniu z Łagiewnik pielgrzymi ruszają w drogę powrotną na zachód.
+W Dniu Dwunastym wędrujemy wzdłuż Wisły przez Salwator i Opactwo Benedyktynów w Tyńcu do Krzeszowic.
+W Dniu Trzynastym idziemy przez Puszczę Dulowską, Alwernię i Trzebinię do Jaworzna, mijając Park Gródek.
+W Dniu Czternastym bezpiecznymi ścieżkami przez Mysłowice i Dolinę Trzech Stawów docieramy do Bazyliki Świętego Ludwika Króla w Panewnikach.
+Wreszcie Dzień Piętnasty – uroczysty powrót przez Chorzów do Kochłowic! Wchodzimy do Kościoła Trójcy Przenajświętszej i Sanktuarium Matki Bożej z Lourdes. Odśpiewujemy dziękczynne Te Deum. Trzy ramiona pielgrzymiego trójkąta na mapie połączyły się w jedną całość, na chwałę Trójcy Przenajświętszej: Ojca, Syna i Ducha Świętego.
+
+Ta droga uczy nas, że wychodzimy z domu, doświadczamy łaski i trudu, a wracamy przemienieni przez Boga. Niech ta droga przyniesie Ci pokój, nadzieję i głębokie Widoki na Raj!
+`;
+
+export const PILGRIMAGE_LECTOR_SCRIPT = PILGRIMAGE_LECTOR_SCRIPT_FULL;
 
 interface Props {
   section?: SectionMeta;
@@ -105,6 +136,8 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isLectorPlaying, setIsLectorPlaying] = useState(false);
+  const [lectorVersion, setLectorVersion] = useState<'trail' | 'full'>('trail');
+  const [playingVersion, setPlayingVersion] = useState<'trail' | 'full' | null>(null);
   const [showNarrationText, setShowNarrationText] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -114,6 +147,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
       const state = getLectorPlaybackState();
       if (state === 'idle') {
         setIsLectorPlaying(false);
+        setPlayingVersion(null);
       }
     };
     window.addEventListener('drogowskazy_lector_state_changed', handleLectorStateChange);
@@ -123,25 +157,52 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     };
   }, []);
 
-  const handleToggleLector = async () => {
+  const handleToggleLector = async (requestedVersion?: 'trail' | 'full') => {
     unlockMobileAudio();
+    const targetVersion = requestedVersion || lectorVersion;
+
     if (isLectorPlaying) {
+      if (!requestedVersion || requestedVersion === playingVersion) {
+        stopLectorSpeech();
+        setIsLectorPlaying(false);
+        setPlayingVersion(null);
+        return;
+      }
       stopLectorSpeech();
-      setIsLectorPlaying(false);
-      return;
     }
-    stopLectorSpeech();
+
+    setLectorVersion(targetVersion);
+    setPlayingVersion(targetVersion);
     setIsLectorPlaying(true);
+
+    const isTrail = targetVersion === 'trail';
+    const textToPlay = isTrail ? PILGRIMAGE_LECTOR_SCRIPT_TRAIL : PILGRIMAGE_LECTOR_SCRIPT_FULL;
+    const title = isTrail
+      ? 'Trójjedyna Pielgrzymka Gwiaździsta • Szlak Orlich Gniazd (II etap)'
+      : 'Trójjedyna Pielgrzymka Gwiaździsta • Cała Pielgrzymka Przykładowa (Etapy I–III)';
+    const sectionName = isTrail
+      ? 'Szlak Orlich Gniazd (18–24 czerwca, 174 km)'
+      : 'Trójkąt Trzech Sanktuariów (Kochłowice ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice)';
+
     const config = { ...getLectorConfig(), mode: 'online' as const };
     await playLectorSpeech({
-      text: PILGRIMAGE_LECTOR_SCRIPT,
+      text: textToPlay,
       config,
       overrideLang: 'pl',
-      title: 'Wielka Pielgrzymka Gwiaździsta • Przewodnik Audio',
-      sectionName: 'Szlak Orlich Gniazd (18–24 czerwca)',
-      onStart: () => setIsLectorPlaying(true),
-      onEnd: () => setIsLectorPlaying(false),
-      onError: () => setIsLectorPlaying(false)
+      title,
+      sectionName,
+      onStart: () => {
+        setIsLectorPlaying(true);
+        setPlayingVersion(targetVersion);
+      },
+      onEnd: () => {
+        setIsLectorPlaying(false);
+        setPlayingVersion(null);
+      },
+      onError: () => {
+        setIsLectorPlaying(false);
+        setPlayingVersion(null);
+      }
     });
   };
 
@@ -172,8 +233,8 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
-          text: 'Interaktywna mapa i przewodnik Pielgrzymki Gwiaździstej do Częstochowy i Łagiewnik.',
+          title: 'Trójjedyna Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd',
+          text: 'Interaktywna mapa i audioprzewodnik Trójjedynej Pielgrzymki Gwiaździstej do Częstochowy i Łagiewnik.',
           url: shareUrl
         });
       } else {
@@ -323,7 +384,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
 
           <div className="space-y-3">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-serif-book tracking-tight text-[#1f1712] dark:text-white">
-              Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
+              Trójjedyna Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
             </h1>
             <p className="text-base sm:text-lg text-[#614e3e] dark:text-[#94a3b8] max-w-4xl font-sans-ui leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
               Uniwersalny, coroczny szlak wędrówki (18–24 czerwca): 
@@ -387,26 +448,26 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </button>
           </div>
 
-          {/* Dedicated Section Highlight Card: Pętla Trzech Sanktuariów */}
+          {/* Dedicated Section Highlight Card: Trójkąt Trzech Sanktuariów */}
           <div className="mt-4 p-5 rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-blue-600/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-stone-950">
-                  Dedykowana Podsekcja
+                  Dedykowana Podsekcja • Trójkąt Trójcy Świętej
                 </span>
                 <span className="text-xs text-blue-200">15 dni (14–28 czerwca) • Trasa Wózkowa 329 km</span>
               </div>
               <h3 className="font-bold text-base sm:text-lg text-white font-serif-book">
-                Wielka Pętla Trzech Sanktuariów: Kochłowice ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice
+                Trójkąt Trzech Sanktuariów: Kochłowice ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice
               </h3>
               <p className="text-xs text-blue-200/90 leading-relaxed max-w-2xl">
-                Odrębna podsekcja z plikiem PDF (7 stron A4 do pobrania i podglądu), lektorem audio czytającym założenia, teologię, filozofię, punkty orientacyjne, postoje i zasady bezpieczeństwa.
+                Odrębna podsekcja z plikiem PDF (7 stron A4 do pobrania i podglądu), lektorem audio czytającym założenia, teologię, filozofię, punkty orientacyjne, postoje i zasady bezpieczeństwa trasy tworzącej geometryczny trójkąt symbolizujący Trójcę Świętą.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <a
                 href="/pdf/Petla_Trzech_Sanktuariow.pdf"
-                download="Petla_Trzech_Sanktuariow.pdf"
+                download="Trojkat_Trzech_Sanktuariow.pdf"
                 className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition flex items-center gap-1.5"
                 title="Pobierz plik PDF bezpośrednio"
               >
@@ -422,7 +483,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" />
-                <span>Otwórz Podsekcję</span>
+                <span>Otwórz Trójkąt Trzech Sanktuariów</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -611,7 +672,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             }`}
           >
             <FileText className="w-4 h-4 text-rose-500" />
-            <span>Pętla Trzech Sanktuariów (PDF & Lektor)</span>
+            <span>Trójkąt Trzech Sanktuariów (PDF & Lektor)</span>
           </button>
 
           <button
@@ -810,19 +871,21 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                       {isLectorPlaying && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
                           <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                          ODTWARZANIE
+                          ODTWARZANIE: {playingVersion === 'trail' ? 'Szlak Orlich Gniazd (II etap)' : 'Cała Pielgrzymka (Etapy I–III)'}
                         </span>
                       )}
                     </div>
                     <h3 className="text-lg sm:text-xl font-bold font-serif-book text-[#1f1712] dark:text-white">
-                      O co chodzi w pielgrzymce i jak przebiega trasa
+                      {lectorVersion === 'trail'
+                        ? '1. Szlak Orlich Gniazd (II etap Trójjedynej Pielgrzymki Gwiaździstej)'
+                        : '2. Cała Pielgrzymka Przykładowa (Trójkąt Trzech Sanktuariów: Kochłowice ➔ Częstochowa ➔ Łagiewniki ➔ Kochłowice)'}
                     </h3>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button
-                    onClick={handleToggleLector}
+                    onClick={() => handleToggleLector()}
                     className={`px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md transition-all cursor-pointer ${
                       isLectorPlaying
                         ? 'bg-rose-600 hover:bg-rose-700 text-white ring-2 ring-rose-400/50'
@@ -858,26 +921,106 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-[#0f1523]/80 border border-amber-500/20 text-xs text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed flex flex-wrap items-center gap-2">
-                <span className="font-bold text-amber-800 dark:text-amber-300">W audycji:</span>
-                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Idea Dwóch Gwiazd</span>
-                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Trójkąt Trójcy Świętej</span>
-                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Harmonogram Dni 1–7</span>
-                <span className="px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-900 dark:text-rose-200 font-semibold">
-                  ☀️ 21.06: Przesilenie Letnie & Urodziny Autora — „Widoki na Raj”
+              {/* Version Switcher Tabs */}
+              <div className="pt-2 border-t border-amber-500/20">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 block mb-2">
+                  Wybierz wersję audioprzewodnika do odsłuchania:
                 </span>
-                <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">23.06: Dzień Ojca w Ojcowie</span>
-                <span className="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-900 dark:text-emerald-200">24.06: Łagiewniki o 15:00</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (lectorVersion !== 'trail') {
+                        setLectorVersion('trail');
+                        if (isLectorPlaying) handleToggleLector('trail');
+                      }
+                    }}
+                    className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                      lectorVersion === 'trail'
+                        ? 'bg-amber-600 text-white border-amber-600 shadow-md ring-2 ring-amber-400/40'
+                        : 'bg-white/80 dark:bg-[#131b29] text-stone-800 dark:text-stone-200 border-amber-500/30 hover:bg-amber-500/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs sm:text-sm">
+                        1. Tylko Szlak Orlich Gniazd (II etap)
+                      </span>
+                      {lectorVersion === 'trail' && isLectorPlaying && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-500 text-white font-bold animate-pulse">GRA</span>
+                      )}
+                    </div>
+                    <p className={`text-[11px] mt-1 line-clamp-2 ${lectorVersion === 'trail' ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
+                      Częstochowa ➔ Kraków-Łagiewniki · 7 dni wędrówki (18–24 czerwca, 174 km) przez zamki Jury, Pustynię Błędowską i Ojców.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (lectorVersion !== 'full') {
+                        setLectorVersion('full');
+                        if (isLectorPlaying) handleToggleLector('full');
+                      }
+                    }}
+                    className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
+                      lectorVersion === 'full'
+                        ? 'bg-amber-600 text-white border-amber-600 shadow-md ring-2 ring-amber-400/40'
+                        : 'bg-white/80 dark:bg-[#131b29] text-stone-800 dark:text-stone-200 border-amber-500/30 hover:bg-amber-500/10'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs sm:text-sm">
+                        2. Cała Pielgrzymka Przykładowa (Etapy I–III)
+                      </span>
+                      {lectorVersion === 'full' && isLectorPlaying && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-500 text-white font-bold animate-pulse">GRA</span>
+                      )}
+                    </div>
+                    <p className={`text-[11px] mt-1 line-clamp-2 ${lectorVersion === 'full' ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
+                      Pielgrzymi Trójkąt Trzech Sanktuariów: Kochłowice (Kościół Trójcy Świętej i Sanktuarium MB z Lourdes) ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice (15 dni, 329 km).
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic Badges */}
+              <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-[#0f1523]/80 border border-amber-500/20 text-xs text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed flex flex-wrap items-center gap-2">
+                <span className="font-bold text-amber-800 dark:text-amber-300">W tej audycji:</span>
+                {lectorVersion === 'trail' ? (
+                  <>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200 font-semibold">18–24 czerwca (7 dni)</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">174 km Szlakiem Orlich Gniazd</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-900 dark:text-rose-200 font-semibold">
+                      ☀️ 21.06: Przesilenie & Urodziny Autora — „Widoki na Raj”
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">23.06: Dzień Ojca w Ojcowie</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-900 dark:text-emerald-200">24.06: Finał w Łagiewnikach o 15:00</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="px-2 py-0.5 rounded-lg bg-blue-500/15 text-blue-900 dark:text-blue-200 font-semibold">14–28 czerwca (15 dni)</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-blue-500/15 text-blue-900 dark:text-blue-200">329 km trasa dla wózków i pieszych</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200 font-semibold">
+                      Kochłowice: Kościół Trójcy Świętej & Sanktuarium MB z Lourdes
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Etap I: Do Jasnej Góry (4 dni)</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-900 dark:text-amber-200">Etap II: Jura do Łagiewnik (7 dni)</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-900 dark:text-emerald-200">Etap III: Powrót przez Tyniec i Panewniki (4 dni)</span>
+                    <span className="px-2 py-0.5 rounded-lg bg-purple-500/15 text-purple-900 dark:text-purple-200 font-semibold">
+                      Geometryczny Trójkąt Trójcy Świętej (nie pętla!)
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Rozwijany pełny tekst narracji */}
               {showNarrationText && (
                 <div className="p-4 rounded-2xl bg-white dark:bg-[#0e1422] border border-[#e2d6c7] dark:border-[#222e44] text-xs sm:text-sm text-[#3b2d22] dark:text-[#cbd5e1] leading-relaxed whitespace-pre-line max-h-80 overflow-y-auto space-y-2 font-serif-book">
                   <div className="font-sans-ui text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 pb-1 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                    <span>Pełna treść narracji Lektora AI</span>
+                    <span>Pełna treść narracji Lektora AI ({lectorVersion === 'trail' ? 'Szlak Orlich Gniazd' : 'Cała Pielgrzymka Przykładowa - Trójkąt'})</span>
                     <button onClick={() => setShowNarrationText(false)} className="text-xs hover:text-amber-600">Zamknij</button>
                   </div>
-                  {PILGRIMAGE_LECTOR_SCRIPT.trim()}
+                  {(lectorVersion === 'trail' ? PILGRIMAGE_LECTOR_SCRIPT_TRAIL : PILGRIMAGE_LECTOR_SCRIPT_FULL).trim()}
                 </div>
               )}
             </div>
@@ -890,14 +1033,14 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Przewodnik Pielgrzymki</span>
                   <h2 className="text-xl sm:text-2xl font-bold font-serif-book text-[#1f1712] dark:text-white">
-                    Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd (18 – 24 czerwca)
+                    Trójjedyna Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd (18 – 24 czerwca)
                   </h2>
                 </div>
               </div>
 
               <p className="text-sm sm:text-base text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed font-sans-ui">
                 Coroczne wydarzenie w formie gwiaździstej pielgrzymki oraz 7-dniowego pieszego rajdu. 
-                Łączy symbolikę <strong>dwóch wielkich gwiazd</strong> oraz <strong>Trójkąta Trójcy Świętej</strong>: każda grupa pielgrzymkowa, wyruszając ze swojego domu na Jasną Górę, wędrując <strong className="text-amber-800 dark:text-amber-300">Szlakiem Orlich Gniazd</strong> (174 km) do Łagiewnik i wracając do miejsca wyjścia, zamyka na mapie ramiona geometrycznego trójkąta przypominającego o Trójcy Przenajświętszej (np. modelowy szlak: Ruda Śląska ➔ Częstochowa ➔ Łagiewniki ➔ Ruda Śląska).
+                Łączy symbolikę <strong>dwóch wielkich gwiazd</strong> oraz <strong>Trójkąta Trójcy Świętej</strong>: każda grupa pielgrzymkowa, wyruszając ze swojego domu na Jasną Górę, wędrując <strong className="text-amber-800 dark:text-amber-300">Szlakiem Orlich Gniazd</strong> (174 km) do Łagiewnik i wracając do miejsca wyjścia, zamyka na mapie ramiona geometrycznego trójkąta przypominającego o Trójcy Przenajświętszej (np. modelowy szlak: Ruda Śląska ➔ Częstochowa ➔ Łagiewniki ➔ Ruda Śląska). Trasa nie może być nazywana pętlą, lecz trójkątem symbolizującym Trójcę Świętą.
               </p>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -1526,58 +1669,101 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 <span>Informacje & Przewodnik Pielgrzymki</span>
               </div>
               <h2 className="text-xl sm:text-3xl font-heading-cinzel font-bold text-[#2a221b] dark:text-[#f8fafc]">
-                Wielka Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
+                Trójjedyna Pielgrzymka Gwiaździsta & Szlak Orlich Gniazd
               </h2>
               <p className="text-xs sm:text-sm text-[#7a6857] dark:text-[#94a3b8]">
-                Termin: corocznie 18 – 24 czerwca • Dystans pieszy: 174 km (Częstochowa ➔ Kraków-Łagiewniki)
+                Termin: corocznie 18 – 24 czerwca (Etap II: 174 km) • Cała pielgrzymka przykładowa: 14 – 28 czerwca (Etapy I–III: 329 km, Trójkąt Trójcy Świętej)
               </p>
             </div>
 
             {/* AI Lector Audio Player in Modal */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-amber-700/20 dark:from-amber-950/40 dark:via-orange-950/25 dark:to-amber-900/30 border border-amber-500/40 dark:border-amber-500/30 shadow-xs flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <span className={`p-2.5 rounded-xl text-white shadow-xs ${
-                  isLectorPlaying ? 'bg-rose-600 animate-pulse' : 'bg-amber-600'
-                }`}>
-                  {isLectorPlaying ? <Square className="w-4 h-4 fill-white" /> : <Headphones className="w-4 h-4" />}
-                </span>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                      Lektor AI • Audioprzewodnik
-                    </span>
-                    {isLectorPlaying && (
-                      <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
-                        GŁOS WŁĄCZONY
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-amber-700/20 dark:from-amber-950/40 dark:via-orange-950/25 dark:to-amber-900/30 border border-amber-500/40 dark:border-amber-500/30 shadow-xs space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className={`p-2.5 rounded-xl text-white shadow-xs ${
+                    isLectorPlaying ? 'bg-rose-600 animate-pulse' : 'bg-amber-600'
+                  }`}>
+                    {isLectorPlaying ? <Square className="w-4 h-4 fill-white" /> : <Headphones className="w-4 h-4" />}
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                        Lektor AI • Audioprzewodnik
                       </span>
-                    )}
+                      {isLectorPlaying && (
+                        <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold animate-pulse">
+                          GRA: {playingVersion === 'trail' ? 'Szlak Orlich Gniazd (II etap)' : 'Cała Pielgrzymka (Etapy I–III)'}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-sm font-bold text-[#1f1712] dark:text-white">
+                      {lectorVersion === 'trail'
+                        ? 'Wersja 1: Szlak Orlich Gniazd (II etap: 7 dni, 174 km)'
+                        : 'Wersja 2: Cała Pielgrzymka Przykładowa (Trójkąt Trzech Sanktuariów: 15 dni, 329 km)'}
+                    </h4>
                   </div>
-                  <h4 className="text-sm font-bold text-[#1f1712] dark:text-white">
-                    Posłuchaj o idei dwóch gwiazd, Trójkącie Trójcy Świętej, 7 dniach szlaku, przesileniu 21 czerwca i blogu „Widoki na Raj”
-                  </h4>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleLector()}
+                    className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer ${
+                      isLectorPlaying
+                        ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                        : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white'
+                    }`}
+                  >
+                    {isLectorPlaying ? (
+                      <>
+                        <Square className="w-3.5 h-3.5 fill-white" />
+                        <span>Zatrzymaj Lektora AI</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Odsłuchaj Wybraną Wersję</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Version Selector Buttons inside Modal */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-amber-500/20">
                 <button
-                  onClick={handleToggleLector}
-                  className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer ${
-                    isLectorPlaying
-                      ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                      : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white'
+                  type="button"
+                  onClick={() => {
+                    setLectorVersion('trail');
+                    if (isLectorPlaying) handleToggleLector('trail');
+                  }}
+                  className={`p-2.5 rounded-xl text-left border text-xs transition cursor-pointer ${
+                    lectorVersion === 'trail'
+                      ? 'bg-amber-600 text-white border-amber-600 font-bold shadow-xs'
+                      : 'bg-white/70 dark:bg-[#131b29] text-stone-700 dark:text-stone-300 border-amber-500/30 hover:bg-amber-500/10'
                   }`}
                 >
-                  {isLectorPlaying ? (
-                    <>
-                      <Square className="w-3.5 h-3.5 fill-white" />
-                      <span>Zatrzymaj Lektora AI</span>
-                    </>
-                  ) : (
-                    <>
-                      <Volume2 className="w-3.5 h-3.5" />
-                      <span>Odsłuchaj Lektora AI</span>
-                    </>
-                  )}
+                  <div className="font-bold">1. Tylko Szlak Orlich Gniazd (II etap)</div>
+                  <div className={`text-[10px] ${lectorVersion === 'trail' ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
+                    Jasna Góra ➔ Łagiewniki · 7 dni (18–24.06, 174 km)
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLectorVersion('full');
+                    if (isLectorPlaying) handleToggleLector('full');
+                  }}
+                  className={`p-2.5 rounded-xl text-left border text-xs transition cursor-pointer ${
+                    lectorVersion === 'full'
+                      ? 'bg-amber-600 text-white border-amber-600 font-bold shadow-xs'
+                      : 'bg-white/70 dark:bg-[#131b29] text-stone-700 dark:text-stone-300 border-amber-500/30 hover:bg-amber-500/10'
+                  }`}
+                >
+                  <div className="font-bold">2. Cała Pielgrzymka Przykładowa (Etapy I–III)</div>
+                  <div className={`text-[10px] ${lectorVersion === 'full' ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
+                    Trójkąt Trzech Sanktuariów: Kochłowice ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice (329 km)
+                  </div>
                 </button>
               </div>
             </div>
@@ -1599,7 +1785,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
                   <Compass className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Przykładowy Szlak Trójkąta: Ruda Śląska ➔ Jasna Góra ➔ Łagiewniki ➔ Ruda Śląska</span>
+                  <span>Przykładowy Szlak Trójkąta: Ruda Śląska (Kochłowice: Kościół Trójcy Świętej i Sanktuarium MB z Lourdes) ➔ Jasna Góra ➔ Łagiewniki ➔ Kochłowice</span>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <a

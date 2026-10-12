@@ -355,9 +355,9 @@ const CHAPTERS = [
     id: 'intro',
     title: '1. Wprowadzenie i założenia pielgrzymki',
     group: 'Wprowadzenie & Duchowość',
-    text: `Szczęść Boże! Witamy na szlaku Wielkiej Pętli Trzech Sanktuariów: z Kochłowic przez Jasną Górę i Łagiewniki z powrotem do Kochłowic.
+    text: `Szczęść Boże! Witamy na szlaku Trójkąta Trzech Sanktuariów w ramach Trójjedynej Pielgrzymki Gwiaździstej: z Kochłowic przez Jasną Górę i Łagiewniki z powrotem do Kochłowic.
 To piętnastodniowa droga pokonywana pieszo oraz na wózkach inwalidzkich, od czternastego do dwudziestego ósmego czerwca dwa tysiące dwudziestego siódmego roku, licząca około trzysta dwadzieścia dziewięć kilometrów.
-Trasa tworzy pełną geometryczną pętlę i wpisuje się w tajemnicę Trójcy Przenajświętszej.
+Trasa tworzy geometryczny trójkąt symbolizujący Trójcę Świętą: Ojca, Syna i Ducha Świętego. Nie może nazywać się pętlą, lecz trójkątem będącym żywym symbolem Bożej jedności i miłości.
 Wykorzystujemy równe drogi asfaltowe, wydzielone ścieżki rowerowe i utwardzone chodniki, omijając leśne piaski i kamieniste bezdroża.
 Przez całą drogę pielgrzymom towarzyszy dedykowany samochód techniczny, zorganizowana pomoc asystentów oraz przygotowane bazy postojowe i noclegowe.`
   },
@@ -382,10 +382,10 @@ Wybór dróg asfaltowych uczy, że sacrum odnajdujemy w prozie codzienności: na
   },
   {
     id: 'symbols',
-    title: '4. Symbolika: Wózek, Koło, Pętla i Zamki Jurajskie',
+    title: '4. Symbolika: Wózek, Koło, Trójkąt i Zamki Jurajskie',
     group: 'Wprowadzenie & Duchowość',
     text: `Koła wózka obracające się przez piętnaście dni to symbol wytrwałości i cykliczności ludzkiego losu. Wózek ze szpitalnego rekwizytu staje się rydwanem wolności i zwycięstwa ducha nad ograniczeniami ciała.
-Pętla wyjścia i powrotu do Kochłowic pokazuje, że wychodzimy z domu, doświadczamy łaski i trudu, a wracamy do codzienności przemienieni przez Drogę.
+Trójkąt wyjścia i powrotu do Kochłowic pokazuje, że wychodzimy z domu, doświadczamy łaski i trudu, a wracamy do codzienności przemienieni przez Drogę – domykając ramiona trójkąta ku czci Trójcy Przenajświętszej.
 Ruiny jurajskich warowni – Mirów, Bobolice, Ogrodzieniec – przypominają o kruchości ludzkich dzieł. Potężne mury obracają się w ruinę, a kruchy człowiek na wózku jedzie dalej ku wieczności.`
   },
   {
@@ -393,7 +393,7 @@ Ruiny jurajskich warowni – Mirów, Bobolice, Ogrodzieniec – przypominają o 
     title: '5. Etap I (Dni 1–4): Z Kochłowic do Matki Bożej Częstochowskiej',
     group: 'Opisy Dni i Postojów',
     text: `Etap pierwszy trwa cztery dni, od czternastego do siedemnastego czerwca, licząc łącznie siedemdziesiąt pięć kilometrów.
-Dzień pierwszy to start z Sanktuarium Matki Bożej z Lourdes w Kochłowicach, przejazd przez Chorzów Batory, Rynek w Bytomiu i Radzionków do Tarnowskich Gór.
+Dzień pierwszy to start z Sanktuarium Matki Bożej z Lourdes i Kościoła Trójcy Świętej w Kochłowicach, przejazd przez Chorzów Batory, Rynek w Bytomiu i Radzionków do Tarnowskich Gór.
 Dzień drugi liczy osiemnaście kilometrów z Tarnowskich Gór obok Zalewu Nakło-Chechło przez Tąpkowice do Ożarowic.
 Dzień trzeci prowadzi dwadzieścia kilometrów drogami powiatowymi przez rynek w Koziegłowach i malowniczy Zalew Porajski do Poraja.
 Dzień czwarty to siedemnastokilometrowy wjazd do Częstochowy Aleją Najświętszej Maryi Panny prosto na Jasną Górę, gdzie nocujemy w dostosowanych Domach Pielgrzyma.`
@@ -413,13 +413,13 @@ Dzień jedenasty to wielki finał: wejście do Krakowa przez Zielonki, Błonia, 
   },
   {
     id: 'stage-3',
-    title: '7. Etap III (Dni 12–15): Powrót w stronę domu i domknięcie Pętli',
+    title: '7. Etap III (Dni 12–15): Powrót w stronę domu i domknięcie Trójkąta ku czci Trójcy Świętej',
     group: 'Opisy Dni i Postojów',
     text: `Etap trzeci to sto kilometrów powrotu na Górny Śląsk.
 Dzień dwunasty prowadzi z Łagiewnik przez Salwator i Zabierzów do Krzeszowic z parkiem Potockich.
 Dzień trzynasty wiedzie przez Dulową i Trzebinię do Jaworzna z urokliwym Parkiem Gródek.
 Dzień czternasty prowadzi przez Mysłowice do Doliny Trzech Stawów w Katowicach wydzielonymi, bezpiecznymi ścieżkami asfaltowymi.
-Dzień piętnasty to dwadzieścia pięć kilometrów przez Katowice-Załęże i Chorzów prosto do Sanktuarium w Kochłowicach. Uroczyste Te Deum, błogosławieństwo i domknięcie pielgrzymiej pętli.`
+Dzień piętnasty to dwadzieścia pięć kilometrów przez Katowice-Załęże i Chorzów prosto do Kościoła Trójcy Świętej i Sanktuarium Matki Bożej z Lourdes w Kochłowicach. Uroczyste Te Deum, błogosławieństwo i domknięcie pielgrzymiego trójkąta ku czci Trójcy Przenajświętszej.`
   },
   {
     id: 'safety',
@@ -505,8 +505,8 @@ export const PetlaTrzechSanktuariowSubsection: React.FC<Props> = ({ theme = 'lig
       text: `${chapter.title}. \n\n ${chapter.text}`,
       config,
       overrideLang: 'pl',
-      title: `Pętla Trzech Sanktuariów • ${chapter.title}`,
-      sectionName: 'Wielka Pętla (Kochłowice – Jasna Góra – Łagiewniki)',
+      title: `Trójkąt Trzech Sanktuariów • ${chapter.title}`,
+      sectionName: 'Trójkąt Trzech Sanktuariów (Kochłowice – Jasna Góra – Łagiewniki)',
       onStart: () => setIsLectorActive(true),
       onEnd: () => {
         setIsLectorActive(false);
@@ -563,11 +563,11 @@ export const PetlaTrzechSanktuariowSubsection: React.FC<Props> = ({ theme = 'lig
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-serif-book tracking-tight text-white leading-tight">
-            Wielka Pętla Trzech Sanktuariów
+            Trójkąt Trzech Sanktuariów
           </h2>
           <p className="text-base sm:text-lg text-blue-200 font-sans-ui max-w-3xl leading-relaxed">
-            Kochłowice (MB z Lourdes) ➔ Jasna Góra (Częstochowa) ➔ Łagiewniki (Boże Miłosierdzie) ➔ Kochłowice. 
-            Szlak zorganizowany po równym asfalcie, drogach utwardzonych i trasach rowerowych, z asystą samochodu technicznego i kompletnym audioprzewodnikiem lektora.
+            Kochłowice (Kościół Trójcy Świętej & MB z Lourdes) ➔ Jasna Góra (Częstochowa) ➔ Łagiewniki (Boże Miłosierdzie) ➔ Kochłowice. 
+            Szlak tworzy geometryczny trójkąt symbolizujący Trójcę Świętą, zorganizowany po równym asfalcie, drogach utwardzonych i trasach rowerowych, z asystą samochodu technicznego i kompletnym audioprzewodnikiem lektora.
           </p>
 
           {/* Quick Action Badges */}
@@ -640,7 +640,7 @@ export const PetlaTrzechSanktuariowSubsection: React.FC<Props> = ({ theme = 'lig
           }`}
         >
           <Layers className="w-4 h-4 text-blue-400" />
-          <span>Przegląd Pętli & Założenia</span>
+          <span>Przegląd Trójkąta & Założenia</span>
         </button>
 
         <button
@@ -859,7 +859,7 @@ export const PetlaTrzechSanktuariowSubsection: React.FC<Props> = ({ theme = 'lig
                   <FileText className="w-5 h-5" />
                 </span>
                 <h3 className="font-bold text-base sm:text-lg text-[#1f1712] dark:text-white">
-                  Plik PDF: Wielka Pętla Trzech Sanktuariów
+                  Plik PDF: Trójkąt Trzech Sanktuariów
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
@@ -1158,7 +1158,7 @@ export const PetlaTrzechSanktuariowSubsection: React.FC<Props> = ({ theme = 'lig
               „Moc w słabości się doskonali” <span className="text-sm not-italic font-sans-ui text-muted-foreground block mt-1">(2 Kor 12,9)</span>
             </blockquote>
             <p className="text-xs sm:text-sm text-[#4a392b] dark:text-[#cbd5e1] leading-relaxed">
-              Trasa Pętli Trzech Sanktuariów rysuje klasyczny szlak teologii katolickiej: od Maryi do Chrystusa (Ad Iesum per Mariam). Obecność wózka na szlaku jest żywym świadectwem, że przed Bogiem nikt z nas nie staje o własnych siłach, lecz zależny od łaski i miłości drugiego człowieka.
+              Trasa Trójkąta Trzech Sanktuariów rysuje klasyczny szlak teologii katolickiej: od Maryi do Chrystusa (Ad Iesum per Mariam). Obecność wózka na szlaku jest żywym świadectwem, że przed Bogiem nikt z nas nie staje o własnych siłach, lecz zależny od łaski i miłości drugiego człowieka.
             </p>
           </div>
 
