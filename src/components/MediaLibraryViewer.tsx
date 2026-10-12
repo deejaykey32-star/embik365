@@ -1549,7 +1549,7 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
       {/* ------------------------------------------------------------- */}
       {selectedImage && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-          <div className="relative w-full max-w-5xl h-[85vh] flex flex-col justify-between">
+          <div className="relative w-full max-w-5xl h-[85dvh] flex flex-col justify-between">
             {/* Top Modal Controls */}
             <div className="flex items-center justify-between text-white bg-black/50 p-4 rounded-2xl border border-white/10">
               <div>
@@ -1639,7 +1639,7 @@ export const MediaLibraryViewer: React.FC<MediaLibraryViewerProps> = ({ initialT
       {/* ------------------------------------------------------------- */}
       {isUploadModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[#151c28] border border-[#e2d5c7] dark:border-[#2b394e] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-[#151c28] border border-[#e2d5c7] dark:border-[#2b394e] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90dvh]">
             {/* Modal Header */}
             <div className="p-5 border-b border-[#f0e6da] dark:border-[#222d3e] flex items-center justify-between bg-[#faf6f0] dark:bg-[#101725]">
               <div className="flex items-center gap-3">

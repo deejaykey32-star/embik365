@@ -281,7 +281,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="bg-white dark:bg-[#231e19] text-stone-900 dark:text-[#f3eae0] rounded-3xl border border-stone-200 dark:border-[#423425] shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden"
+        className="bg-white dark:bg-[#231e19] text-stone-900 dark:text-[#f3eae0] rounded-3xl border border-stone-200 dark:border-[#423425] shadow-2xl w-full max-w-4xl max-h-[92dvh] flex flex-col overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}

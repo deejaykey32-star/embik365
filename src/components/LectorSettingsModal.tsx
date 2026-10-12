@@ -204,7 +204,7 @@ export const LectorSettingsModal: React.FC<Props> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div 
-        className="w-full max-w-3xl bg-[#faf8f5] dark:bg-[#0c121e] text-stone-900 dark:text-[#f1f5f9] rounded-3xl border-2 border-amber-500/40 shadow-2xl p-4 sm:p-7 relative max-h-[94vh] flex flex-col overflow-hidden"
+        className="w-full max-w-3xl bg-[#faf8f5] dark:bg-[#0c121e] text-stone-900 dark:text-[#f1f5f9] rounded-3xl border-2 border-amber-500/40 shadow-2xl p-4 sm:p-7 relative max-h-[94dvh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

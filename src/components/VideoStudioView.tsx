@@ -108,7 +108,7 @@ export const VideoStudioView: React.FC<Props> = ({
   const estMinutes = Math.max(1, Math.round(wordCount / 130));
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] dark:bg-[#080d1a] text-[#2c2621] dark:text-[#e6edf3] pb-24 transition-colors">
+    <div className="min-h-dvh bg-[#faf8f5] dark:bg-[#080d1a] text-[#2c2621] dark:text-[#e6edf3] pb-24 transition-colors">
       
       {/* 1. Header Bar */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#180808] via-[#100609] to-[#0a0408] text-white border-b border-red-500/30 py-10 px-4 sm:px-6 lg:px-8">

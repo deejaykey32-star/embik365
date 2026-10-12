@@ -13,7 +13,7 @@ export const PdfViewerModal: React.FC<Props> = ({ pdf, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-xs">
       <div 
-        className="bg-[#2a241e] rounded-3xl border border-[#4d3d2e] shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-[#2a241e] rounded-3xl border border-[#4d3d2e] shadow-2xl w-full max-w-5xl h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Modal Top Bar */}

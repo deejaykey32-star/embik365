@@ -1141,7 +1141,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   };
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] dark:bg-[#080d16] text-[#2c241e] dark:text-[#e4e8f0] pb-24 transition-colors duration-300 font-sans-ui">
+    <div className="min-h-dvh bg-[#faf7f2] dark:bg-[#080d16] text-[#2c241e] dark:text-[#e4e8f0] pb-24 transition-colors duration-300 font-sans-ui">
       
       {/* 1. Hero Header Banner */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f2ece2] via-[#faf6ef] to-[#faf7f2] dark:from-[#0d1525] dark:via-[#090f1a] dark:to-[#080d16] border-b border-[#e5d8c8] dark:border-[#1d2738] pt-8 pb-6 px-4 sm:px-6 lg:px-8">

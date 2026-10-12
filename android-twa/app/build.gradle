@@ -1,0 +1,79 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Konfiguracja TWA – host musi zgadzać się z /.well-known/assetlinks.json na serwerze
+def twa = [
+    applicationId  : 'pl.widokinaraj.droga365',
+    hostName       : 'new.widokinaraj.pl',
+    launchUrl      : '/',
+    name           : 'Droga365 – Widoki na Raj',
+    launcherName   : 'Droga365',
+    themeColor     : '#7C4517',
+    navColor       : '#FAF8F5',
+    navColorDark   : '#090D15',
+    backgroundColor: '#FAF8F5'
+]
+
+// Dane podpisu z keystore.properties (plik NIE trafia do repozytorium)
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+android {
+    namespace 'pl.widokinaraj.droga365'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId twa.applicationId
+        minSdk 21
+        targetSdk 35
+        versionCode 2
+        versionName '2.0.0'
+
+        manifestPlaceholders = [
+            hostName  : twa.hostName,
+            defaultUrl: "https://${twa.hostName}${twa.launchUrl}".toString()
+        ]
+        resValue 'string', 'appName', twa.name
+        resValue 'string', 'launcherName', twa.launcherName
+        resValue 'color', 'colorPrimary', twa.themeColor
+        resValue 'color', 'navigationColor', twa.navColor
+        resValue 'color', 'navigationColorDark', twa.navColorDark
+        resValue 'color', 'backgroundColor', twa.backgroundColor
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreProps['storeFile']) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        resValues true
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}

@@ -84,7 +84,7 @@ export const CalendarModal: React.FC<Props> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
       <div 
-        className="bg-[#faf7f2] dark:bg-[#0d121c] rounded-3xl border border-[#e4d7c7] dark:border-[#212b3c] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-[#faf7f2] dark:bg-[#0d121c] rounded-3xl border border-[#e4d7c7] dark:border-[#212b3c] shadow-2xl w-full max-w-4xl max-h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}

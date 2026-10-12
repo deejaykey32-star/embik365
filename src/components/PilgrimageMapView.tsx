@@ -330,7 +330,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
   ];
 
   return (
-    <div className="min-h-screen bg-[#fcf9f4] dark:bg-[#0b0f17] text-[#2e241c] dark:text-[#e2e8f0] pb-24 transition-colors">
+    <div className="min-h-dvh bg-[#fcf9f4] dark:bg-[#0b0f17] text-[#2e241c] dark:text-[#e2e8f0] pb-24 transition-colors">
       
       {/* 1. Header Hero Banner */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f3e7d7] via-[#faf4eb] to-[#fcf9f4] dark:from-[#111827] dark:via-[#0e1420] dark:to-[#0b0f17] border-b border-[#e8ded3] dark:border-[#1e293b] pt-8 pb-10 px-4 sm:px-6 lg:px-8">
@@ -1653,7 +1653,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
       {/* 5. Info Modal Dialog */}
       {showInfoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-xs animate-fade-in overflow-y-auto">
-          <div className="w-full max-w-4xl bg-[#fdfbf7] dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 sm:p-8 relative max-h-[92vh] overflow-y-auto my-6 space-y-6">
+          <div className="w-full max-w-4xl bg-[#fdfbf7] dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 sm:p-8 relative max-h-[92dvh] overflow-y-auto my-6 space-y-6">
             <button
               onClick={() => setShowInfoModal(false)}
               className="absolute top-4 right-4 p-2 rounded-xl bg-stone-200/80 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white cursor-pointer transition"

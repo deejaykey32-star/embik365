@@ -1,29 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Calendar, 
-  ChevronLeft, 
-  ChevronRight, 
-  RotateCcw, 
-  ShieldCheck, 
-  LogIn, 
-  Sparkles, 
-  Sun, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  ShieldCheck,
+  LogIn,
+  Sparkles,
+  Sun,
   Moon,
   GitBranch,
   Download,
-  Globe,
   Link as LinkIcon,
   Check,
   Search,
   Smartphone,
   Headphones,
-  Play,
-  Pause
+  MoreVertical,
+  X
 } from 'lucide-react';
 import { CycleDate, AdminUser, AppTheme, SUPPORTED_LANGUAGES } from '../types';
-import { getUIText } from '../utils/translationService';
 import { copyCurrentPageUrl } from '../utils/slugRouter';
-import { getSerialLectorState, saveSerialLectorState, stopLectorSpeech } from '../utils/audioLectorService';
 
 interface Props {
   currentDate: CycleDate;
@@ -42,6 +39,7 @@ interface Props {
   onOpenDownloadModal: () => void;
   onOpenLectorModal?: () => void;
   onCopyLink?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const NavigationHeader: React.FC<Props> = ({
@@ -60,52 +58,63 @@ export const NavigationHeader: React.FC<Props> = ({
   onLanguageChange,
   onOpenDownloadModal,
   onOpenLectorModal,
-  onCopyLink
+  onCopyLink,
+  onOpenSettings
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalledPwa, setIsInstalledPwa] = useState(false);
-  const [serialState, setSerialState] = useState(() => getSerialLectorState());
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
-
     const handleAppInstalled = () => {
       setIsInstalledPwa(true);
       setDeferredPrompt(null);
     };
 
-    const handleSerialUpdated = (e: CustomEvent) => {
-      if (e.detail) {
-        setSerialState(e.detail);
-      }
-    };
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     window.addEventListener('appinstalled', handleAppInstalled);
-    window.addEventListener('drogowskazy_serial_lector_updated', handleSerialUpdated as EventListener);
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
       setIsInstalledPwa(true);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('drogowskazy_serial_lector_updated', handleSerialUpdated as EventListener);
     };
   }, []);
 
+  // Close the overflow menu on outside click / Escape
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onPointer = (e: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isMenuOpen]);
+
   const handleInstallPwa = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      onOpenSettings?.();
+      return;
+    }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstalledPwa(true);
-    }
+    if (outcome === 'accepted') setIsInstalledPwa(true);
     setDeferredPrompt(null);
   };
 
@@ -119,218 +128,287 @@ export const NavigationHeader: React.FC<Props> = ({
     setTimeout(() => setCopiedLink(false), 2200);
   };
 
+  const runAndClose = (fn?: () => void) => () => {
+    setIsMenuOpen(false);
+    fn?.();
+  };
+
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
+  const menuItemClass =
+    'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-left text-[var(--c-text-soft)] hover:bg-[var(--c-accent-soft)] cursor-pointer';
+
   return (
-    <header className="sticky top-0 z-40 bg-[#fdfbf7]/95 dark:bg-[#0b0f17]/95 backdrop-blur-md border-b border-[#e7ded4] dark:border-[#1e2638] shadow-xs transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap lg:flex-nowrap items-center justify-between py-2 sm:py-2.5 min-h-[3.75rem] lg:min-h-[4.5rem] gap-2 lg:gap-4">
-          
-          {/* Logo & App Title: order-1 (Top Left on Mobile, Left on Desktop) */}
-          <div className="order-1 flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-linear-to-br from-[#8a5327] to-[#452714] dark:from-amber-600 dark:to-amber-800 text-white flex items-center justify-center shadow-md shadow-[#8a5327]/20 dark:shadow-amber-950/40 border border-[#b47a46]/30 dark:border-amber-500/30 shrink-0">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#f6d8ae] dark:text-amber-200" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="font-heading-cinzel font-bold text-base sm:text-2xl text-[#2a221b] dark:text-[#f3e8d2] tracking-wide">
+    <header className="sticky top-0 z-40 bg-[var(--c-header)] backdrop-blur-md border-b border-[var(--c-border)] pt-safe transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap xl:flex-nowrap items-center justify-between gap-x-2 gap-y-2 py-2 xl:py-2.5">
+
+          {/* Logo */}
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="order-1 flex items-center gap-2 sm:gap-3 shrink-0 min-w-0 text-left"
+            aria-label="Droga365 – początek strony"
+          >
+            <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-linear-to-br from-[#8a5327] to-[#452714] dark:from-amber-500 dark:to-amber-700 text-white flex items-center justify-center shadow-sm shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#f6d8ae] dark:text-amber-50" />
+            </span>
+            <span className="min-w-0">
+              <span className="flex items-center gap-2">
+                <span className="font-heading-cinzel font-bold text-base sm:text-xl text-[var(--c-text)] tracking-wide leading-none">
                   Droga365
-                </h1>
-                <span className="hidden md:inline-flex px-2 py-0.5 text-xs font-semibold rounded-full bg-[#eee4d6] dark:bg-[#1a2333] text-[#785434] dark:text-amber-300 border border-[#dac7b3] dark:border-[#2a374f]">
-                  25 XII - 24 XII
                 </span>
+                <span className="hidden 2xl:inline-flex ui-chip">25 XII – 24 XII</span>
                 {githubConnected && (
                   <span className="hidden xl:inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Zsynchronizowano z GitHub & Cloudflare Pages">
                     <GitBranch className="w-3 h-3" />
-                    <span>GitHub Sync</span>
+                    <span>Sync</span>
                   </span>
                 )}
-              </div>
-              <p className="text-[11px] sm:text-xs text-[#7e6e5f] dark:text-[#94a3b8] font-sans-ui hidden sm:block leading-none">
-                {adminUser ? 'WnR365 • RHZ365 • Biblia365 • Flipbooki • Bio365' : 'WnR365 • RHZ365 • Flipbooki'}
-              </p>
-            </div>
-          </div>
+              </span>
+              <span className="hidden sm:block text-[11px] ui-muted leading-tight mt-1">
+                Widoki na Raj · RHZ · Biblia365
+              </span>
+            </span>
+          </button>
 
-          {/* Right Action Bar: order-2 on mobile (Top Right), order-3 on desktop (Right) */}
-          <div className="order-2 lg:order-3 flex items-center flex-wrap justify-end gap-1 sm:gap-1.5 lg:gap-2 max-w-[65%] sm:max-w-none">
-            {/* Prominent Search Button (LUPA) - Always fully visible, never clipped! */}
+          {/* Actions */}
+          <div className="order-2 xl:order-3 flex items-center justify-end gap-1.5 sm:gap-2">
             {onOpenSearch && (
               <button
                 onClick={onOpenSearch}
                 id="btn-header-search"
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#f0e4d4] hover:bg-[#e6d7c4] dark:bg-[#192232] dark:hover:bg-[#232e42] text-[#4d3d2e] dark:text-amber-300 border border-[#d6c7b5] dark:border-[#2a374f] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-                title="Szukaj frazy we wszystkich tomach lub wybranej sekcji (Skrót: Ctrl+K)"
+                className="ui-btn ui-btn-icon lg:w-auto lg:px-3"
+                title="Szukaj (Ctrl+K)"
+                aria-label="Szukaj"
               >
-                <Search className="w-4 h-4 text-[#8a5327] dark:text-amber-400 shrink-0" />
-                <span className="font-bold text-xs sm:text-sm">Szukaj</span>
-                <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-[#0f1522] rounded border border-amber-500/30 text-[#6e5d4e] dark:text-amber-300 ml-1">
-                  Ctrl+K
-                </kbd>
+                <Search className="w-4 h-4 ui-accent" />
+                <span className="hidden lg:inline">Szukaj</span>
+                <kbd className="hidden 2xl:inline-block px-1.5 py-0.5 text-[10px] font-mono rounded border border-[var(--c-border)] ui-muted">Ctrl K</kbd>
               </button>
             )}
 
-            {/* Download & Publish Button (Admin only) */}
+            {onOpenSettings && (
+              <button
+                onClick={onOpenSettings}
+                id="btn-header-app-settings"
+                className="ui-btn hidden md:inline-flex"
+                title="Ustawienia aplikacji oraz instalacja: Android, iOS, PWA, komputer"
+              >
+                <Smartphone className="w-4 h-4 ui-accent" />
+                <span>Aplikacja</span>
+              </button>
+            )}
+
             {adminUser && (
               <button
                 onClick={onOpenDownloadModal}
                 id="btn-header-download-pod"
-                className="hidden md:flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-linear-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all cursor-pointer shrink-0"
-                title="Pobierz E-book (PDF, ePUB, Word DOCX) gotowe do druku POD"
+                className="ui-btn ui-btn-primary hidden lg:inline-flex"
+                title="Pobierz E-book (PDF, ePUB, DOCX) do druku POD"
               >
-                <Download className="w-4 h-4 text-amber-200 shrink-0" />
+                <Download className="w-4 h-4" />
                 <span>POD</span>
               </button>
             )}
 
-            {/* Audio Lector Settings Button (Local / Online Voices) */}
             {onOpenLectorModal && (
               <button
                 onClick={onOpenLectorModal}
                 id="btn-lector-settings"
-                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-[#d6c7b5] dark:border-[#2a374f] bg-white dark:bg-[#161f2e] text-[#4d3d2e] dark:text-amber-300 hover:bg-[#f4ece1] dark:hover:bg-[#212d42] transition-all shadow-xs cursor-pointer text-xs font-semibold shrink-0"
-                title="Wybór lektora mowy (Wersja Lokalna & Online AI)"
+                className="ui-btn ui-btn-icon hidden sm:inline-flex 2xl:w-auto 2xl:px-3"
+                title="Lektor – wybór głosu"
+                aria-label="Lektor"
               >
-                <span className="text-sm">🎧</span>
-                <span className="hidden xl:inline ml-1">Lektor</span>
+                <Headphones className="w-4 h-4 ui-accent" />
+                <span className="hidden 2xl:inline">Lektor</span>
               </button>
             )}
 
-            {/* Language Selector Dropdown */}
-            <div className="relative shrink-0">
-              <label htmlFor="select-app-language" className="sr-only">Wybierz język</label>
-              <div className="flex items-center bg-white dark:bg-[#161f2e] border border-[#d6c7b5] dark:border-[#2a374f] rounded-xl px-1.5 sm:px-2 py-1 sm:py-1.5 shadow-xs">
-                <span className="text-xs sm:text-sm">{currentLangObj.flag}</span>
-                <select
-                  id="select-app-language"
-                  value={currentLang}
-                  onChange={e => onLanguageChange(e.target.value)}
-                  className="bg-transparent text-xs font-semibold text-[#3a2e22] dark:text-[#e2e8f0] focus:outline-hidden cursor-pointer ml-0.5"
-                  title="Wybierz język aplikacji i tłumaczenia"
-                >
-                  {SUPPORTED_LANGUAGES.map(lang => (
-                    <option key={lang.code} value={lang.code} className="dark:bg-[#161f2e] dark:text-white">
-                      {lang.flag} {lang.code.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <label className="ui-btn px-2 gap-1 hidden xs:inline-flex" title="Język aplikacji i tłumaczenia">
+              <span className="sr-only">Wybierz język</span>
+              <span aria-hidden="true">{currentLangObj.flag}</span>
+              <select
+                id="select-app-language"
+                value={currentLang}
+                onChange={e => onLanguageChange(e.target.value)}
+                className="bg-transparent text-xs font-semibold text-[var(--c-text)] focus:outline-hidden cursor-pointer"
+              >
+                {SUPPORTED_LANGUAGES.map(lang => (
+                  <option key={lang.code} value={lang.code} className="bg-[var(--c-card)] text-[var(--c-text)]">
+                    {lang.code.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-            {/* PWA Install Button */}
             {deferredPrompt && !isInstalledPwa && (
               <button
                 onClick={handleInstallPwa}
                 id="btn-install-pwa"
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer animate-pulse shrink-0"
-                title="Zainstaluj aplikację Droga365 na pulpicie (PWA)"
+                className="ui-btn ui-btn-primary hidden sm:inline-flex"
+                title="Zainstaluj aplikację Droga365 (PWA)"
               >
-                <Smartphone className="w-4 h-4 text-amber-200" />
-                <span className="hidden md:inline">PWA</span>
+                <Download className="w-4 h-4" />
+                <span className="hidden md:inline">Zainstaluj</span>
               </button>
             )}
 
-            {/* Theme Toggle Button (Light / Dark) */}
             <button
               onClick={onToggleTheme}
               id="btn-theme-toggle"
-              className="p-1.5 sm:p-2.5 rounded-xl border border-[#d6c7b5] dark:border-[#2a374f] bg-white dark:bg-[#161f2e] text-[#4d3d2e] dark:text-amber-300 hover:bg-[#f4ece1] dark:hover:bg-[#212d42] transition-all shadow-xs active:scale-95 cursor-pointer flex items-center justify-center shrink-0"
+              className="ui-btn ui-btn-icon"
               title={theme === 'dark' ? 'Przełącz na jasny motyw' : 'Przełącz na ciemny motyw'}
+              aria-label={theme === 'dark' ? 'Jasny motyw' : 'Ciemny motyw'}
             >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-300 animate-in spin-in-180 duration-300" />
-              ) : (
-                <Moon className="w-4 h-4 text-[#785434] animate-in spin-in-180 duration-300" />
-              )}
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-[#785434]" />}
             </button>
 
-            {/* Admin / Google Login button */}
             {adminUser ? (
               <button
                 onClick={onOpenAdmin}
                 id="btn-admin-profile"
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#2e261f] dark:bg-[#1a2230] text-white hover:bg-[#3f352b] dark:hover:bg-[#242f42] transition-all shadow-sm active:scale-95 border border-[#524436] dark:border-[#334259] cursor-pointer shrink-0"
-                title="Profil administratora"
+                className="ui-btn hidden sm:inline-flex bg-[#2e261f] dark:bg-[#1a2230] text-white border-[#524436] dark:border-[#334259] hover:bg-[#3f352b]"
+                title="Panel administratora"
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div className="text-left hidden xl:block">
-                  <div className="text-xs font-semibold leading-tight text-white">Dominik Kuta</div>
-                  <div className="text-[10px] text-[#c7b9ab] dark:text-[#94a3b8] leading-none">Admin</div>
-                </div>
-                <span className="text-xs font-bold text-amber-300 xl:hidden">Admin</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Admin</span>
               </button>
             ) : (
               <button
                 onClick={onOpenAdmin}
                 id="btn-login-google"
-                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-white dark:bg-[#161f2e] hover:bg-[#fbf7f1] dark:hover:bg-[#212d42] border border-[#d6c7b5] dark:border-[#2a374f] text-[#2c221a] dark:text-[#e2e8f0] text-xs sm:text-sm font-semibold shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+                className="ui-btn hidden sm:inline-flex"
                 title="Zaloguj się"
               >
-                <LogIn className="w-4 h-4 text-[#8a5327] dark:text-amber-400 shrink-0" />
-                <span className="hidden sm:inline">Zaloguj</span>
+                <LogIn className="w-4 h-4 ui-accent" />
+                <span className="hidden md:inline">Zaloguj</span>
               </button>
             )}
+
+            {/* Overflow menu (smartphones & tablets) */}
+            <div className="relative md:hidden" ref={menuRef}>
+              <button
+                onClick={() => setIsMenuOpen(o => !o)}
+                className="ui-btn ui-btn-icon"
+                aria-haspopup="menu"
+                aria-expanded={isMenuOpen}
+                aria-label="Więcej opcji"
+                id="btn-header-more"
+              >
+                {isMenuOpen ? <X className="w-4 h-4" /> : <MoreVertical className="w-4 h-4" />}
+              </button>
+              {isMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full mt-2 w-[min(18rem,calc(100vw-1.5rem))] ui-card p-2 shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+                >
+                  {onOpenSettings && (
+                    <button role="menuitem" className={menuItemClass} onClick={runAndClose(onOpenSettings)}>
+                      <Smartphone className="w-4 h-4 ui-accent" />
+                      <span>Aplikacja i ustawienia</span>
+                    </button>
+                  )}
+                  {!isInstalledPwa && (
+                    <button role="menuitem" className={menuItemClass} onClick={runAndClose(handleInstallPwa)}>
+                      <Download className="w-4 h-4 ui-accent" />
+                      <span>Zainstaluj aplikację</span>
+                    </button>
+                  )}
+                  {onOpenLectorModal && (
+                    <button role="menuitem" className={menuItemClass} onClick={runAndClose(onOpenLectorModal)}>
+                      <Headphones className="w-4 h-4 ui-accent" />
+                      <span>Lektor – wybór głosu</span>
+                    </button>
+                  )}
+                  {adminUser && (
+                    <button role="menuitem" className={menuItemClass} onClick={runAndClose(onOpenDownloadModal)}>
+                      <Download className="w-4 h-4 ui-accent" />
+                      <span>Pobierz e-book (POD)</span>
+                    </button>
+                  )}
+                  <button role="menuitem" className={menuItemClass} onClick={runAndClose(onOpenAdmin)}>
+                    {adminUser ? <ShieldCheck className="w-4 h-4 text-emerald-500" /> : <LogIn className="w-4 h-4 ui-accent" />}
+                    <span>{adminUser ? 'Panel administratora' : 'Zaloguj się'}</span>
+                  </button>
+                  <div className="xs:hidden border-t border-[var(--c-border)] mt-1 pt-2 px-3 pb-1">
+                    <label htmlFor="select-app-language-menu" className="block text-[11px] font-semibold ui-muted mb-1">Język</label>
+                    <select
+                      id="select-app-language-menu"
+                      value={currentLang}
+                      onChange={e => { onLanguageChange(e.target.value); setIsMenuOpen(false); }}
+                      className="ui-input text-sm"
+                    >
+                      {SUPPORTED_LANGUAGES.map(lang => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.flag} {lang.name || lang.code.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Date Selector & Navigation Controls: order-3 on mobile (Full-width Line 2), order-2 on desktop (Center) */}
-          <div className="order-3 lg:order-2 w-full lg:w-auto flex items-center justify-between sm:justify-center gap-1 sm:gap-2 bg-[#f4ebe1] dark:bg-[#131924] p-1 sm:p-1.5 rounded-2xl border border-[#e2d4c3] dark:border-[#212b3c] shadow-inner shrink-0">
+          {/* Date navigator: full-width second row on phones/tablets, centred on laptops */}
+          <div className="order-3 xl:order-2 w-full xl:w-auto flex items-center gap-1 sm:gap-1.5 bg-[var(--c-surface)] p-1 rounded-2xl border border-[var(--c-border)]">
             <button
               onClick={onPrevDay}
               id="btn-prev-day"
               title="Poprzedni dzień"
-              className="p-1.5 sm:p-2 rounded-xl hover:bg-[#eae0d2] dark:hover:bg-[#1c2434] text-[#4d3d2e] dark:text-[#cbd5e1] transition-colors active:scale-95 cursor-pointer shrink-0"
+              aria-label="Poprzedni dzień"
+              className="ui-btn ui-btn-ghost ui-btn-icon"
             >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
 
             <button
               onClick={onOpenCalendar}
               id="btn-open-calendar"
-              className="flex-1 lg:flex-initial flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a2230] hover:bg-[#faf6f0] dark:hover:bg-[#222c3d] border border-[#dacabb] dark:border-[#2d3a4f] text-[#2c221a] dark:text-[#f1f5f9] shadow-xs transition-all active:scale-98 cursor-pointer min-w-0"
+              className="flex-1 xl:flex-initial xl:min-w-[12rem] flex items-center justify-center gap-2 px-3 min-h-10 rounded-xl bg-[var(--c-card)] hover:border-[var(--c-accent)] border border-[var(--c-border)] text-[var(--c-text)] transition-colors cursor-pointer min-w-0"
+              title="Otwórz kalendarz"
             >
-              <Calendar className="w-4 h-4 text-[#8a5327] dark:text-amber-400 shrink-0" />
-              <div className="text-center sm:text-left min-w-0">
-                <div className="text-xs sm:text-sm font-bold leading-tight font-serif-book text-[#2c221a] dark:text-[#f8fafc] truncate">
+              <Calendar className="w-4 h-4 ui-accent shrink-0" />
+              <span className="text-center min-w-0">
+                <span className="block text-sm font-bold leading-tight font-serif-book truncate">
                   {currentDate.displayDate}
-                </div>
-                <div className="text-[10px] text-[#7a6a5b] dark:text-[#94a3b8] font-medium leading-none truncate">
+                </span>
+                <span className="block text-[11px] ui-muted font-medium leading-tight truncate">
                   Dzień {currentDate.dayNumber} z 365
-                </div>
-              </div>
+                </span>
+              </span>
             </button>
 
             <button
               onClick={onNextDay}
               id="btn-next-day"
               title="Następny dzień"
-              className="p-1.5 sm:p-2 rounded-xl hover:bg-[#eae0d2] dark:hover:bg-[#1c2434] text-[#4d3d2e] dark:text-[#cbd5e1] transition-colors active:scale-95 cursor-pointer shrink-0"
+              aria-label="Następny dzień"
+              className="ui-btn ui-btn-ghost ui-btn-icon"
             >
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              <ChevronRight className="w-5 h-5" />
             </button>
 
             <button
               onClick={onToday}
               id="btn-today"
               title="Przejdź do dzisiejszego dnia"
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-[#e6d8c7] dark:bg-[#20293a] hover:bg-[#dccbbb] dark:hover:bg-[#2a364d] text-[#4a3a2a] dark:text-[#e2e8f0] transition-colors cursor-pointer shrink-0"
+              className="ui-btn ui-btn-ghost ui-btn-icon xs:w-auto xs:px-2.5"
+              aria-label="Dziś"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span className="text-xs font-semibold">Dziś</span>
+              <span className="hidden xs:inline text-xs">Dziś</span>
             </button>
 
-            {/* Copy Direct URL Slug Link Button */}
             <button
               onClick={handleCopy}
               id="btn-copy-direct-link"
-              className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all shadow-xs cursor-pointer text-xs font-semibold shrink-0 ${
-                copiedLink
-                  ? 'bg-emerald-600 text-white border-emerald-700'
-                  : 'border-[#d6c7b5] dark:border-[#2a374f] bg-white dark:bg-[#161f2e] text-[#4d3d2e] dark:text-amber-300 hover:bg-[#f4ece1] dark:hover:bg-[#212d42]'
-              }`}
-              title="Kopiuj bezpośredni odnośnik URL do tej sekcji, dnia i podwidoku"
+              className={`ui-btn ui-btn-icon xs:w-auto xs:px-2.5 ${copiedLink ? '!bg-emerald-600 !text-white !border-emerald-700' : 'ui-btn-ghost'}`}
+              title="Kopiuj bezpośredni link do tej sekcji i dnia"
+              aria-label="Kopiuj link"
             >
-              {copiedLink ? <Check className="w-3.5 h-3.5 text-white" /> : <LinkIcon className="w-3.5 h-3.5 text-[#8a5327] dark:text-amber-400" />}
-              <span className="text-xs font-semibold hidden xs:inline">{copiedLink ? 'Skopiowano!' : 'Link'}</span>
+              {copiedLink ? <Check className="w-4 h-4" /> : <LinkIcon className="w-4 h-4 ui-accent" />}
+              <span className="hidden xs:inline text-xs">{copiedLink ? 'Skopiowano' : 'Link'}</span>
             </button>
           </div>
         </div>

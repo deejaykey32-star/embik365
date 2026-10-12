@@ -2,31 +2,59 @@
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Droga365 - WnR, RHZ, Biblia & Bio</title>
     <meta name="description" content="Aplikacja czytelnicza z sekcjami: info365, blog WnR365, modlitwa RHZ365 z cyfrowym różańcem RGBA/CMYK, Biblia365, e-booki flipbook oraz Bio365 z edytorem WYSIWYG i bazą kodów QR." />
     <meta property="og:title" content="Droga365 - WnR, RHZ, Biblia & Bio" />
     <meta property="og:description" content="Aplikacja czytelnicza z sekcjami: info365, blog WnR365, modlitwa RHZ365 z cyfrowym różańcem RGBA/CMYK, Biblia365, e-booki flipbook oraz Bio365 z edytorem WYSIWYG i bazą kodów QR." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#b45309" />
+    <meta name="theme-color" content="#fdfbf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#090d15" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="application-name" content="Droga365" />
+    <meta name="msapplication-TileColor" content="#7c4517" />
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('drogowskazy_theme');
+          var dark = m === 'dark' || ((!m || m === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Droga365" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
-  <body class="bg-[#faf8f5] text-[#2c2621] antialiased selection:bg-[#d4b996]/30">
+  <body class="antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').then(function (reg) {
+            // Check for a new version whenever the app returns to the foreground
+            document.addEventListener('visibilitychange', function () {
+              if (document.visibilityState === 'visible') reg.update().catch(function () {});
+            });
+          }).catch(function (err) {
             console.warn('SW registration failed:', err);
+          });
+          var refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
           });
         });
       }

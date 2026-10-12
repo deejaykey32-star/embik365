@@ -209,7 +209,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-2 sm:p-6 overflow-y-auto animate-fade-in">
-      <div className="bg-[#faf8f4] dark:bg-[#0d131f] w-full max-w-3xl rounded-2xl sm:rounded-3xl shadow-2xl border border-[#dbcabb] dark:border-[#212b3c] my-2 sm:my-8 overflow-hidden flex flex-col max-h-[94vh]">
+      <div className="bg-[#faf8f4] dark:bg-[#0d131f] w-full max-w-3xl rounded-2xl sm:rounded-3xl shadow-2xl border border-[#dbcabb] dark:border-[#212b3c] my-2 sm:my-8 overflow-hidden flex flex-col max-h-[94dvh]">
         
         {/* Search Header Bar with Input */}
         <div className="p-3.5 sm:p-6 bg-white dark:bg-[#121927] border-b border-[#e2d5c6] dark:border-[#1e2738] space-y-3 sm:space-y-4">

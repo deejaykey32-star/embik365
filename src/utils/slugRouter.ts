@@ -126,7 +126,17 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'youtube': 'wideo',
   'generator': 'wideo',
   'generator-wideo': 'wideo',
-  'studio-wideo': 'wideo'
+  'studio-wideo': 'wideo',
+
+  'ustawienia': 'ustawienia',
+  'settings': 'ustawienia',
+  'aplikacja': 'ustawienia',
+  'app': 'ustawienia',
+  'instalacja': 'ustawienia',
+  'install': 'ustawienia',
+  'apk': 'ustawienia',
+  'pwa': 'ustawienia',
+  'ipa': 'ustawienia'
 };
 
 /**

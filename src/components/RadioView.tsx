@@ -229,7 +229,7 @@ export const RadioView: React.FC<Props> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#faf7f2] dark:bg-[#070b12] text-[#2c241e] dark:text-[#e2e8f0] pb-24 transition-colors duration-300 font-sans-ui">
+    <div className="min-h-dvh bg-[#faf7f2] dark:bg-[#070b12] text-[#2c241e] dark:text-[#e2e8f0] pb-24 transition-colors duration-300 font-sans-ui">
       
       {/* 1. Header Banner & Radio Frequency Waves */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f2ece2] via-[#faf6ef] to-[#faf7f2] dark:from-[#0d1424] dark:via-[#090e1a] dark:to-[#070b12] border-b border-[#e5d8c8] dark:border-[#1d2738] pt-8 pb-8 px-4 sm:px-6 lg:px-8">

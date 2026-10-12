@@ -220,7 +220,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
-      <div className="relative w-full max-w-4xl bg-white dark:bg-[#0c121e] rounded-3xl p-5 sm:p-7 shadow-2xl border border-amber-500/30 my-auto max-h-[92vh] flex flex-col text-[#2c2219] dark:text-[#f1f5f9]">
+      <div className="relative w-full max-w-4xl bg-white dark:bg-[#0c121e] rounded-3xl p-5 sm:p-7 shadow-2xl border border-amber-500/30 my-auto max-h-[92dvh] flex flex-col text-[#2c2219] dark:text-[#f1f5f9]">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b pb-4 border-amber-500/20">

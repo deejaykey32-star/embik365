@@ -1110,7 +1110,7 @@ const ShowcaseEditModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in overflow-y-auto">
-      <div className="w-full max-w-2xl bg-white dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 my-8 relative max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-2xl bg-white dark:bg-[#0c121e] rounded-3xl border border-amber-500/30 shadow-2xl p-6 my-8 relative max-h-[90dvh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"

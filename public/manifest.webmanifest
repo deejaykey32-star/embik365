@@ -1,14 +1,26 @@
 {
+  "id": "/",
   "name": "Droga365 – Widoki na Raj & Biblia365",
   "short_name": "Droga365",
   "description": "Roczny cykl czytań duchowych od 25 grudnia do 24 grudnia: Widoki na Raj, Różaniec Historii Zbawienia oraz Biblia365 i Apokryfy.",
+  "lang": "pl",
+  "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
-  "background_color": "#fbf6f0",
-  "theme_color": "#b45309",
-  "categories": ["lifestyle", "books", "education"],
+  "background_color": "#faf8f5",
+  "theme_color": "#7c4517",
+  "categories": [
+    "lifestyle",
+    "books",
+    "education"
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/img/icon-192.png",
@@ -27,6 +39,52 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Widoki na Raj – dzisiaj",
+      "short_name": "WnR365",
+      "url": "/wnr365",
+      "icons": [
+        {
+          "src": "/img/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Różaniec Historii Zbawienia",
+      "short_name": "RHZ365",
+      "url": "/rhz365",
+      "icons": [
+        {
+          "src": "/img/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Biblia365",
+      "short_name": "Biblia",
+      "url": "/biblia365",
+      "icons": [
+        {
+          "src": "/img/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ustawienia i instalacja",
+      "short_name": "Ustawienia",
+      "url": "/ustawienia",
+      "icons": [
+        {
+          "src": "/img/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

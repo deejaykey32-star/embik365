@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { 
   Feather, 
   Cross, 
@@ -14,7 +14,9 @@ import {
   Sparkles,
   Radio,
   Video,
-  EyeOff
+  EyeOff,
+  Smartphone,
+  Settings
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -43,7 +45,9 @@ const ICONS: Record<string, React.ElementType> = {
   Gamepad2,
   Sparkles,
   Radio,
-  Video
+  Video,
+  Smartphone,
+  Settings
 };
 
 export const SectionNav: React.FC<Props> = ({
@@ -55,89 +59,92 @@ export const SectionNav: React.FC<Props> = ({
   hiddenSectionIds = []
 }) => {
   const visibleSections = SECTIONS.filter(sec => {
-    if (sec.id === 'info365') return true;
+    if (sec.id === 'info365' || sec.id === 'ustawienia') return true;
     if (adminUser) return true;
     return !hiddenSectionIds.includes(sec.id);
   });
 
-  return (
-    <div className="bg-[#f7f2ea] dark:bg-[#0e131d] border-b border-[#e5d9cc] dark:border-[#1e2638] py-2 sm:py-2.5 px-2.5 sm:px-6 lg:px-8 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-1.5 sm:gap-2 py-0.5 overflow-x-auto no-scrollbar scroll-smooth sm:flex-wrap sm:justify-start">
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
+  // Keep the active tab visible inside the horizontally scrolling row
+  useEffect(() => {
+    const el = scrollerRef.current?.querySelector<HTMLElement>(`#nav-section-${activeSection}`);
+    el?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }, [activeSection]);
+
+  const badgeFor = (sec: typeof SECTIONS[number]) => {
+    if (sec.type === 'flipbook') return 'Kartki';
+    if (sec.type !== 'info') return null;
+    return sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : sec.id === 'ustawienia' ? 'PWA' : 'Start';
+  };
+
+  return (
+    <nav aria-label="Sekcje aplikacji" className="bg-[var(--c-surface)] border-b border-[var(--c-border)] transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
+        <div
+          ref={scrollerRef}
+          className="flex items-stretch gap-1.5 sm:gap-2 py-2 px-3 sm:px-0 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-proximity scroll-fade-x xl:flex-wrap xl:overflow-visible xl:[mask-image:none]"
+        >
           {visibleSections.map((sec) => {
             const IconComponent = ICONS[sec.icon] || BookOpen;
             const isActive = activeSection === sec.id;
             const hasPdf = (pdfCounts[sec.id] || 0) > 0;
             const meta = getTranslatedSectionMeta(sec, currentLang);
             const isHiddenForVisitors = hiddenSectionIds.includes(sec.id);
+            const badge = badgeFor(sec);
 
             return (
               <button
                 key={sec.id}
                 id={`nav-section-${sec.id}`}
                 onClick={() => onSelectSection(sec.id)}
-                className={`flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl whitespace-nowrap text-xs sm:text-sm font-medium transition-all shrink-0 cursor-pointer ${
+                aria-current={isActive ? 'page' : undefined}
+                title={meta.shortTitle}
+                className={`snap-start relative flex items-center gap-2 pl-1.5 pr-3 min-h-10 rounded-xl whitespace-nowrap text-[13px] font-semibold transition-colors shrink-0 cursor-pointer border ${
                   isActive
-                    ? 'bg-[#2f251c] dark:bg-gradient-to-r dark:from-amber-600 dark:to-amber-700 text-white shadow-sm ring-1 ring-[#5a4838] dark:ring-amber-400/40 dark:shadow-[0_0_15px_rgba(217,119,6,0.3)]'
+                    ? 'bg-[#2f251c] dark:bg-amber-500 text-white dark:text-[#1a1206] border-transparent shadow-sm'
                     : isHiddenForVisitors
-                    ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-900/50'
-                    : 'bg-white dark:bg-[#151c28] hover:bg-[#eae0d2] dark:hover:bg-[#1d2636] text-[#4d3d2e] dark:text-[#c9d1d9] border border-[#dccdc0] dark:border-[#273244]'
+                    ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-900/60'
+                    : 'bg-[var(--c-card)] hover:border-[var(--c-accent)] text-[var(--c-text-soft)] border-[var(--c-border)]'
                 }`}
               >
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${
-                    isActive 
-                      ? 'bg-[#534132] dark:bg-black/30 text-amber-300' 
-                      : 'bg-[#f4ebe1] dark:bg-[#202a3a] text-[#735339] dark:text-amber-400'
+                <span
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                    isActive
+                      ? 'bg-white/15 dark:bg-black/15 text-amber-300 dark:text-[#1a1206]'
+                      : 'bg-[var(--c-accent-soft)] text-[var(--c-accent)]'
                   }`}
                 >
-                  <IconComponent className="w-3.5 h-3.5" />
-                </div>
+                  <IconComponent className="w-4 h-4" />
+                </span>
 
-                <div className="text-left">
-                  <div className="font-semibold leading-tight flex items-center gap-1.5">
+                <span className="text-left leading-tight">
+                  <span className="flex items-center gap-1.5">
                     <span>{meta.name}</span>
-                    {sec.type === 'info' && (
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-sans-ui ${
-                        isActive 
-                          ? 'bg-violet-500/30 text-violet-200' 
-                          : 'bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300'
+                    {badge && (
+                      <span className={`hidden sm:inline text-[10px] px-1.5 py-px rounded-md font-bold ${
+                        isActive ? 'bg-white/15 dark:bg-black/15' : 'bg-[var(--c-accent-soft)] text-[var(--c-accent)]'
                       }`}>
-                        {sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : 'Start'}
-                      </span>
-                    )}
-                    {sec.type === 'flipbook' && (
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-sans-ui ${
-                        isActive 
-                          ? 'bg-amber-500/20 text-amber-200' 
-                          : 'bg-[#ede1d3] dark:bg-[#222d3e] text-[#735339] dark:text-amber-300'
-                      }`}>
-                        Kartki
+                        {badge}
                       </span>
                     )}
                     {isHiddenForVisitors && (
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-rose-600 text-white font-bold flex items-center gap-0.5" title="Ta sekcja jest ukryta dla odwiedzających">
+                      <span className="text-[10px] px-1.5 py-px rounded-md bg-rose-600 text-white font-bold inline-flex items-center gap-0.5" title="Sekcja ukryta dla odwiedzających">
                         <EyeOff className="w-2.5 h-2.5" />
                         <span>Ukryta</span>
                       </span>
                     )}
-                  </div>
-                  <div className={`text-[11px] leading-none truncate max-w-[130px] sm:max-w-none ${
-                    isActive ? 'text-[#d6c7b7] dark:text-amber-100' : 'text-[#847363] dark:text-[#8b949e]'
-                  }`}>
-                    {meta.shortTitle}
-                  </div>
-                </div>
+                  </span>
+                </span>
 
                 {hasPdf && (
-                  <span className="w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#151c28]" title="Zawiera wgrany plik PDF" />
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500" title="Zawiera plik PDF" />
                 )}
               </button>
             );
           })}
         </div>
       </div>
-    </div>
+    </nav>
   );
 };

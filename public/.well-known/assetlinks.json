@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "pl.widokinaraj.droga365",
+      "sha256_cert_fingerprints": [
+        "9B:91:BF:57:95:89:DD:2D:8C:4E:67:64:56:6F:B4:92:03:BC:70:A5:32:3B:2C:05:4B:E4:CA:BA:86:17:FA:58"
+      ]
+    }
+  }
+]

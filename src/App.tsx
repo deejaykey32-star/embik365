@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, AppTheme, GitHubConfig, HomePageConfig } from './types';
+import { SectionId, CycleDate, AdminUser, UploadedPdf, SectionEntry, AppTheme, AppThemeMode, GitHubConfig, HomePageConfig } from './types';
 import { SECTIONS, getSectionById } from './data/defaultSections';
 import { getTodayCycleDate, getCycleDateByDayNumber } from './utils/dateCycle';
 import { getEntryForSectionAndDate } from './data/sampleEntries';
@@ -14,6 +14,7 @@ import { HistadaView } from './components/HistadaView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
 import { VideoStudioView } from './components/VideoStudioView';
+import { AppSettingsView } from './components/AppSettingsView';
 import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
@@ -34,26 +35,42 @@ export default function App() {
   // Parse initial URL slug route
   const initialRoute = parseUrlRoute();
 
-  // 1. Theme state: 'light' | 'dark'
-  const [theme, setTheme] = useState<AppTheme>(() => {
+  // 1. Theme mode: 'light' | 'dark' | 'system' (system follows the OS setting live)
+  const [themeMode, setThemeMode] = useState<AppThemeMode>(() => {
     try {
-      const saved = localStorage.getItem('drogowskazy_theme') as AppTheme;
-      if (saved === 'dark' || saved === 'light') return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const saved = localStorage.getItem('drogowskazy_theme');
+      if (saved === 'dark' || saved === 'light' || saved === 'system') return saved;
+    } catch {}
+    return 'system';
+  });
+  const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() => {
+    try {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
     } catch {
-      return 'light';
+      return false;
     }
   });
+  const theme: AppTheme = themeMode === 'system' ? (systemPrefersDark ? 'dark' : 'light') : themeMode;
+  const toggleTheme = () => setThemeMode(theme === 'dark' ? 'light' : 'dark');
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem('drogowskazy_theme', theme);
+      localStorage.setItem('drogowskazy_theme', themeMode);
     } catch {}
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+  }, [themeMode]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
+      meta.setAttribute('content', theme === 'dark' ? '#090d15' : '#fdfbf7');
+    });
   }, [theme]);
 
   // 2. Language state (supports all 16 languages)
@@ -500,7 +517,7 @@ export default function App() {
   const uploadedDateKeys = new Set(uploads.map(u => u.dateKey).filter(Boolean) as string[]);
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] dark:bg-[#070b12] text-[#2c2621] dark:text-[#e6edf3] flex flex-col font-sans-ui selection:bg-[#d4b996]/40 dark:selection:bg-amber-600/30 transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--c-bg)] text-[var(--c-text)] flex flex-col font-sans-ui selection:bg-[#d4b996]/40 dark:selection:bg-amber-600/30 transition-colors duration-200">
       {/* 1. Header with date navigation, Theme Toggle & Google Admin status */}
       <NavigationHeader
         currentDate={currentDate}
@@ -512,12 +529,13 @@ export default function App() {
         adminUser={adminUser}
         onOpenAdmin={() => setIsAdminOpen(true)}
         theme={theme}
-        onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+        onToggleTheme={toggleTheme}
         githubConnected={Boolean(githubConfig.token)}
         currentLang={currentLang}
         onLanguageChange={handleLanguageChange}
         onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
         onOpenLectorModal={() => setIsLectorModalOpen(true)}
+        onOpenSettings={() => setActiveSectionId('ustawienia')}
       />
 
       {/* 2. Horizontal Section Tabs */}
@@ -530,8 +548,8 @@ export default function App() {
         hiddenSectionIds={hiddenSectionIds}
       />
 
-      {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader */}
-      <main className="flex-1">
+      {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader vs AppSettings */}
+      <main id="main-content" className="flex-1 w-full min-w-0 pb-28 sm:pb-20">
         {activeSectionId === 'info365' ? (
           <Info365View
             key={`info365-${currentLang}`}
@@ -544,6 +562,16 @@ export default function App() {
             onOpenAdmin={() => setIsAdminOpen(true)}
             onOpenQrModal={() => setIsAdminOpen(true)}
             currentLang={currentLang}
+          />
+        ) : activeSectionId === 'ustawienia' ? (
+          <AppSettingsView
+            key={`ustawienia-${currentLang}`}
+            theme={theme}
+            themeMode={themeMode}
+            onChangeThemeMode={setThemeMode}
+            currentLang={currentLang}
+            onNavigateSection={(secId) => setActiveSectionId(secId as any)}
+            onOpenLectorModal={() => setIsLectorModalOpen(true)}
           />
         ) : activeSectionId === 'mapa' ? (
           <PilgrimageMapView
@@ -630,15 +658,22 @@ export default function App() {
       </main>
 
       {/* 4. Footer */}
-      <footer className="bg-[#f2ece3] dark:bg-[#0a0f18] border-t border-[#e2d5c7] dark:border-[#1d2636] py-6 px-4 text-center text-xs text-[#7b6b5c] dark:text-[#8b949e] transition-colors">
-        <div className="max-w-4xl mx-auto space-y-1.5">
-          <p className="font-heading-cinzel font-semibold text-[#423325] dark:text-[#f0f6fc]">
-            {adminUser
-              ? 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Bio365 • Radio 24/7 • Grafika365 • Wideo YouTube'
-              : 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Mapa • Histada • Radio 24/7 • Grafika365 • Wideo YouTube'}
-          </p>
+      <footer className="bg-[var(--c-surface)] border-t border-[var(--c-border)] pt-6 pb-[calc(1.5rem+var(--safe-bottom))] px-4 text-center text-xs ui-muted transition-colors">
+        <div className="max-w-4xl mx-auto space-y-2">
+          <p className="font-heading-cinzel font-semibold text-sm text-[var(--c-text)]">Droga365 · Widoki na Raj</p>
+          <nav aria-label="Sekcje" className="flex flex-wrap justify-center gap-x-3 gap-y-1 leading-relaxed">
+            {SECTIONS.filter(sec => adminUser || !hiddenSectionIds.includes(sec.id)).map(sec => (
+              <button
+                key={sec.id}
+                onClick={() => { setActiveSectionId(sec.id); window.scrollTo({ top: 0 }); }}
+                className="hover:text-[var(--c-accent)] hover:underline underline-offset-2 cursor-pointer"
+              >
+                {sec.name}
+              </button>
+            ))}
+          </nav>
           <p>
-            Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span>
+            Roczny cykl czytań od <span className="font-semibold ui-accent">25 grudnia</span> do <span className="font-semibold ui-accent">24 grudnia</span>
           </p>
         </div>
       </footer>
@@ -654,17 +689,17 @@ export default function App() {
 
       {/* 5.5 Public Media & Interactive Simulation Viewer Modal */}
       {isPublicMediaViewerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-7xl max-h-[92vh] bg-[#faf7f2] dark:bg-[#0c121e] border border-amber-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-7xl h-[94dvh] sm:h-auto sm:max-h-[92dvh] bg-[var(--c-bg)] border border-[var(--c-border)] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col">
             {/* Header bar with close button */}
-            <div className="px-5 py-3.5 bg-gradient-to-r from-amber-900/40 via-purple-900/30 to-amber-950/40 border-b border-amber-500/30 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>Podgląd multimediów i symulacji interaktywnych</span>
+            <div className="px-4 sm:px-5 py-3 bg-[var(--c-surface)] border-b border-[var(--c-border)] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 font-bold text-sm text-[var(--c-text)] min-w-0">
+                <Sparkles className="w-4 h-4 ui-accent shrink-0" />
+                <span className="truncate">Multimedia i symulacje interaktywne</span>
               </div>
               <button
                 onClick={() => setIsPublicMediaViewerOpen(false)}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                className="ui-btn ui-btn-icon"
                 title="Zamknij podgląd"
               >
                 <X className="w-5 h-5" />

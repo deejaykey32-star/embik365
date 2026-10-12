@@ -141,7 +141,7 @@ export const HistadaView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   ];
 
   return (
-    <div className="min-h-screen bg-[#fcf9f4] dark:bg-[#0b0f17] text-[#2e241c] dark:text-[#e2e8f0] pb-24 transition-colors">
+    <div className="min-h-dvh bg-[#fcf9f4] dark:bg-[#0b0f17] text-[#2e241c] dark:text-[#e2e8f0] pb-24 transition-colors">
       
       {/* 1. Header Hero Banner */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f5ede3] via-[#faf5ee] to-[#fcf9f4] dark:from-[#131124] dark:via-[#0e121d] dark:to-[#0b0f17] border-b border-[#e8ded3] dark:border-[#1e293b] pt-8 pb-10 px-4 sm:px-6 lg:px-8">

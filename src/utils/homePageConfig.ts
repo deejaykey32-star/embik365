@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -20,7 +20,8 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   info365: Compass,
   grafika: ImageIcon,
   radio: Radio,
-  wideo: Video
+  wideo: Video,
+  ustawienia: Smartphone
 };
 
 export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
@@ -204,6 +205,19 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#dc2626',
       bgGradient: 'from-red-950/20 via-rose-900/10 to-transparent',
       qrId: 'qr_wideo',
+      hidden: false
+    },
+    {
+      id: 'ustawienia',
+      name: 'Ustawienia & Aplikacje',
+      badge: 'Natywne APK, iOS & PWA Offline',
+      shortDesc: 'Pobierz aplikację na telefon Android (APK/AAB), iPhone/iPad (iOS) oraz komputer (PWA 100% offline).',
+      fullDesc: 'Centrum instalacji i konfiguracji aplikacji na dowolnym urządzeniu: pobieranie plików APK i AAB na smartfony z systemem Android, instrukcja instalacji na iPhone i iPad (iOS Web Clip / IPA), instalacja PWA na komputerze oraz konfiguracja motywu nocnego, czcionki i lektora.',
+      imageUrl: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&auto=format&fit=crop&q=80',
+      imageAlt: 'Instalacja aplikacji Droga365 na smartfonie, tablecie i komputerze',
+      color: '#0284c7',
+      bgGradient: 'from-sky-950/20 via-blue-900/10 to-transparent',
+      qrId: 'qr_ustawienia',
       hidden: false
     }
   ]
