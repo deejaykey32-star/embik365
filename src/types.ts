@@ -13,7 +13,8 @@ export type SectionId =
   | 'bio365'        // biografia mnie i żony w formie przewracanych kartek
   | 'radio'         // Radio Internetowe 24/7 (4 stacje w pętli)
   | 'grafika'       // galeria materiałów i ilustracji administratora z edytorem WYSIWYG
-  | 'wideo';        // Generator Wideo MP4 dla YouTube (1080p, napisy karaoke, lektor)
+  | 'wideo'         // Generator Wideo MP4 dla YouTube (1080p, napisy karaoke, lektor)
+  | 'ustawienia';   // Ustawienia aplikacji, wersje natywne (Android APK/AAB, iOS IPA, PWA) oraz personalizacja
 
 export type SectionType = 'reader' | 'flipbook' | 'info';
 

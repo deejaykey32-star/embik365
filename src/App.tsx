@@ -14,6 +14,7 @@ import { HistadaView } from './components/HistadaView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
 import { VideoStudioView } from './components/VideoStudioView';
+import { AppSettingsView } from './components/AppSettingsView';
 import { saveHomePageConfig, getHomePageConfig } from './utils/homePageConfig';
 import { CalendarModal } from './components/CalendarModal';
 import { AdminPanel } from './components/AdminPanel';
@@ -518,6 +519,7 @@ export default function App() {
         onLanguageChange={handleLanguageChange}
         onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
         onOpenLectorModal={() => setIsLectorModalOpen(true)}
+        onOpenSettings={() => setActiveSectionId('ustawienia')}
       />
 
       {/* 2. Horizontal Section Tabs */}
@@ -530,8 +532,8 @@ export default function App() {
         hiddenSectionIds={hiddenSectionIds}
       />
 
-      {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader */}
-      <main className="flex-1">
+      {/* 3. Main Content: Info365 vs Flipbook vs Standard Reader vs AppSettings */}
+      <main className="flex-1 pb-24 sm:pb-16">
         {activeSectionId === 'info365' ? (
           <Info365View
             key={`info365-${currentLang}`}
@@ -544,6 +546,15 @@ export default function App() {
             onOpenAdmin={() => setIsAdminOpen(true)}
             onOpenQrModal={() => setIsAdminOpen(true)}
             currentLang={currentLang}
+          />
+        ) : activeSectionId === 'ustawienia' ? (
+          <AppSettingsView
+            key={`ustawienia-${currentLang}-${theme}`}
+            theme={theme}
+            onToggleTheme={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            currentLang={currentLang}
+            onNavigateSection={(secId) => setActiveSectionId(secId as any)}
+            onOpenLectorModal={() => setIsLectorModalOpen(true)}
           />
         ) : activeSectionId === 'mapa' ? (
           <PilgrimageMapView
@@ -634,8 +645,8 @@ export default function App() {
         <div className="max-w-4xl mx-auto space-y-1.5">
           <p className="font-heading-cinzel font-semibold text-[#423325] dark:text-[#f0f6fc]">
             {adminUser
-              ? 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Bio365 • Radio 24/7 • Grafika365 • Wideo YouTube'
-              : 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Mapa • Histada • Radio 24/7 • Grafika365 • Wideo YouTube'}
+              ? 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Bio365 • Radio 24/7 • Grafika365 • Wideo YouTube • Aplikacja & Ustawienia'
+              : 'Droga365 • info365 • WnR365 • RHZ365 • Nowy RHZ • Biblia365 • Mapa • Histada • Radio 24/7 • Grafika365 • Wideo YouTube • Aplikacja & Ustawienia'}
           </p>
           <p>
             Roczny cykl czytań od <span className="font-semibold text-[#8c572b] dark:text-amber-400">25 grudnia</span> do <span className="font-semibold text-[#8c572b] dark:text-amber-400">24 grudnia</span>

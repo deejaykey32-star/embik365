@@ -168,6 +168,18 @@ export const SECTIONS: SectionMeta[] = [
     icon: 'Video',
     accentColor: '#dc2626', // red-600
     bgGradient: 'from-red-950/20 via-rose-900/10 to-transparent'
+  },
+  {
+    id: 'ustawienia',
+    name: 'Ustawienia & Aplikacja',
+    shortTitle: 'Ustawienia & PWA/APK',
+    subtitle: 'Wersje mobilne Android (APK/AAB), iOS (IPA/PWA), Desktop i konfiguracja',
+    type: 'info',
+    description: 'Instalacja aplikacji na smartfonie (Android APK i AAB, iOS IPA i Web Clip), tablecie i komputerze PC/Mac (PWA 100% offline). Personalizacja motywu dark/light, rozmiaru czcionki, lektora mowy oraz synchronizacja.',
+    badge: 'Aplikacja & PWA',
+    icon: 'Smartphone',
+    accentColor: '#0284c7', // sky-600
+    bgGradient: 'from-sky-950/20 via-blue-900/10 to-transparent'
   }
 ];
 

@@ -14,7 +14,9 @@ import {
   Sparkles,
   Radio,
   Video,
-  EyeOff
+  EyeOff,
+  Smartphone,
+  Settings
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -43,7 +45,9 @@ const ICONS: Record<string, React.ElementType> = {
   Gamepad2,
   Sparkles,
   Radio,
-  Video
+  Video,
+  Smartphone,
+  Settings
 };
 
 export const SectionNav: React.FC<Props> = ({
@@ -55,7 +59,7 @@ export const SectionNav: React.FC<Props> = ({
   hiddenSectionIds = []
 }) => {
   const visibleSections = SECTIONS.filter(sec => {
-    if (sec.id === 'info365') return true;
+    if (sec.id === 'info365' || sec.id === 'ustawienia') return true;
     if (adminUser) return true;
     return !hiddenSectionIds.includes(sec.id);
   });
@@ -104,7 +108,7 @@ export const SectionNav: React.FC<Props> = ({
                           ? 'bg-violet-500/30 text-violet-200' 
                           : 'bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300'
                       }`}>
-                        {sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : 'Start'}
+                        {sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : sec.id === 'ustawienia' ? 'PWA/APK' : 'Start'}
                       </span>
                     )}
                     {sec.type === 'flipbook' && (

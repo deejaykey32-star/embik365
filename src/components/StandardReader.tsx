@@ -63,7 +63,20 @@ export const StandardReader: React.FC<Props> = ({
   currentLang = 'pl',
   theme = 'light'
 }) => {
-  const [fontSize, setFontSize] = useState<'compact' | 'normal' | 'large' | 'xlarge'>('normal');
+  const [fontSize, setFontSize] = useState<'compact' | 'normal' | 'large' | 'xlarge'>(() => {
+    try {
+      return (localStorage.getItem('drogowskazy_reader_font_size') as any) || 'normal';
+    } catch {
+      return 'normal';
+    }
+  });
+  const [fontFamily, setFontFamily] = useState<'serif' | 'sans'>(() => {
+    try {
+      return (localStorage.getItem('drogowskazy_reader_font_family') as any) || 'serif';
+    } catch {
+      return 'serif';
+    }
+  });
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
@@ -74,8 +87,22 @@ export const StandardReader: React.FC<Props> = ({
       const state = e.detail?.state;
       setIsSpeaking(state === 'playing');
     };
+    const handleFontChange = (e: any) => {
+      if (e.detail) setFontSize(e.detail);
+    };
+    const handleFamilyChange = (e: any) => {
+      if (e.detail) setFontFamily(e.detail);
+    };
+
     window.addEventListener('drogowskazy_lector_state_changed', handleStateChange);
-    return () => window.removeEventListener('drogowskazy_lector_state_changed', handleStateChange);
+    window.addEventListener('drogowskazy_reader_font_size_changed', handleFontChange);
+    window.addEventListener('drogowskazy_reader_font_family_changed', handleFamilyChange);
+
+    return () => {
+      window.removeEventListener('drogowskazy_lector_state_changed', handleStateChange);
+      window.removeEventListener('drogowskazy_reader_font_size_changed', handleFontChange);
+      window.removeEventListener('drogowskazy_reader_font_family_changed', handleFamilyChange);
+    };
   }, []);
 
   const activeLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
@@ -107,6 +134,13 @@ export const StandardReader: React.FC<Props> = ({
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSetFontSize = (size: 'compact' | 'normal' | 'large' | 'xlarge') => {
+    setFontSize(size);
+    try {
+      localStorage.setItem('drogowskazy_reader_font_size', size);
+    } catch {}
   };
 
   const isTogglingRef = useRef(false);
@@ -208,7 +242,7 @@ export const StandardReader: React.FC<Props> = ({
               <div className="inline-flex items-center bg-white dark:bg-[#17202f] rounded-xl border border-[#dccdc0] dark:border-[#29364b] p-0.5 sm:p-1 text-xs shadow-xs">
                 <button
                   type="button"
-                  onClick={() => setFontSize('compact')}
+                  onClick={() => handleSetFontSize('compact')}
                   className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'compact'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
@@ -220,7 +254,7 @@ export const StandardReader: React.FC<Props> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFontSize('normal')}
+                  onClick={() => handleSetFontSize('normal')}
                   className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'normal'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
@@ -232,7 +266,7 @@ export const StandardReader: React.FC<Props> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFontSize('large')}
+                  onClick={() => handleSetFontSize('large')}
                   className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'large'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
@@ -244,7 +278,7 @@ export const StandardReader: React.FC<Props> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFontSize('xlarge')}
+                  onClick={() => handleSetFontSize('xlarge')}
                   className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all text-xs cursor-pointer ${
                     fontSize === 'xlarge'
                       ? 'bg-[#3b2d21] dark:bg-amber-600 text-white shadow-xs font-bold'
@@ -524,16 +558,16 @@ export const StandardReader: React.FC<Props> = ({
 
       {/* Main Reading Card (for non-RHZ sections, or additional notes) */}
       {section.id !== 'rhz365' && (
-        <article className="bg-white dark:bg-[#111722] rounded-3xl p-6 sm:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
-          {/* Main Content: Wyjustowany obustronnie, Times New Roman, interlinia 1.15, bez zbędnych Enterów */}
+        <article className="bg-white dark:bg-[#111722] rounded-3xl p-5 sm:p-8 md:p-10 border border-[#e8ded3] dark:border-[#1f293d] shadow-xs dark:shadow-xl dark:shadow-black/40 space-y-6 transition-colors duration-300">
+          {/* Main Content: Wyjustowany obustronnie, interlinia 1.15, bez zbędnych Enterów */}
           <div
-            className={`app-reading-content select-text font-serif-book text-[#2e241c] dark:text-[#e2e8f0] ${
+            className={`app-reading-content select-text ${fontFamily === 'sans' ? 'font-sans-ui' : 'font-serif-book'} text-[#2e241c] dark:text-[#e2e8f0] ${
               fontSize === 'compact' ? 'text-[12pt]' :
               fontSize === 'normal' ? 'text-[14pt]' :
               fontSize === 'large' ? 'text-[16pt]' : 'text-[18pt]'
             }`}
             style={{
-              fontFamily: '"Times New Roman", Times, Georgia, serif',
+              fontFamily: fontFamily === 'sans' ? '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif' : '"Times New Roman", Times, Georgia, serif',
               fontSize: fontSize === 'compact' ? '12pt' : fontSize === 'normal' ? '14pt' : fontSize === 'large' ? '16pt' : '18pt',
               lineHeight: '1.15',
               textAlign: 'justify',
@@ -544,12 +578,12 @@ export const StandardReader: React.FC<Props> = ({
 
           {/* Quote if present */}
           {entry.quote && (
-            <div className="p-6 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border-l-4 border-[#8c572b] dark:border-amber-500 my-6 space-y-2 transition-colors">
+            <div className="p-5 sm:p-6 rounded-2xl bg-[#faf5ee] dark:bg-[#18202d] border-l-4 border-[#8c572b] dark:border-amber-500 my-6 space-y-2 transition-colors">
               <Quote className="w-6 h-6 text-[#8c572b] dark:text-amber-400" />
               <p
-                className="font-serif-book italic leading-[1.15] text-[#473729] dark:text-amber-100"
+                className={`${fontFamily === 'sans' ? 'font-sans-ui' : 'font-serif-book'} italic leading-[1.15] text-[#473729] dark:text-amber-100`}
                 style={{
-                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontFamily: fontFamily === 'sans' ? '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif' : '"Times New Roman", Times, Georgia, serif',
                   fontSize: fontSize === 'compact' ? '12pt' : fontSize === 'normal' ? '14pt' : fontSize === 'large' ? '16pt' : '18pt',
                   lineHeight: '1.15',
                   textAlign: 'justify',
@@ -563,19 +597,19 @@ export const StandardReader: React.FC<Props> = ({
 
           {/* Prayer if present */}
           {entry.prayer && (
-            <div className="p-6 rounded-2xl bg-[#fdf9f4] dark:bg-[#161f2c] border border-[#e8ded4] dark:border-[#243042] space-y-2 transition-colors">
+            <div className="p-5 sm:p-6 rounded-2xl bg-[#fdf9f4] dark:bg-[#161f2c] border border-[#e8ded4] dark:border-[#243042] space-y-2 transition-colors">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8c572b] dark:text-amber-400 font-sans-ui">
                 <Heart className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                 <span>Modlitwa Końcowa</span>
               </div>
               <div
-                className={`app-reading-content select-text font-serif-book italic text-[#3f3125] dark:text-[#cbd5e1] ${
+                className={`app-reading-content select-text ${fontFamily === 'sans' ? 'font-sans-ui' : 'font-serif-book'} italic text-[#3f3125] dark:text-[#cbd5e1] ${
                   fontSize === 'compact' ? 'text-[12pt]' :
                   fontSize === 'normal' ? 'text-[14pt]' :
                   fontSize === 'large' ? 'text-[16pt]' : 'text-[18pt]'
                 }`}
                 style={{
-                  fontFamily: '"Times New Roman", Times, Georgia, serif',
+                  fontFamily: fontFamily === 'sans' ? '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif' : '"Times New Roman", Times, Georgia, serif',
                   fontSize: fontSize === 'compact' ? '12pt' : fontSize === 'normal' ? '14pt' : fontSize === 'large' ? '16pt' : '18pt',
                   lineHeight: '1.15',
                   textAlign: 'justify',
@@ -688,24 +722,24 @@ export const StandardReader: React.FC<Props> = ({
       </div>
 
       {/* Bottom Nav between days */}
-      <div className="mt-8 flex items-center justify-between gap-4">
+      <div className="mt-8 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 sm:gap-4">
         <button
           onClick={() => {
             const prev = getCycleDateByDayNumber(currentDate.dayNumber - 1);
             onSelectDate(prev);
           }}
           disabled={currentDate.dayNumber <= 1}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#151c28] hover:bg-[#f5ecdf] dark:hover:bg-[#1f293a] border border-[#dccdc0] dark:border-[#28354a] text-[#3d2f23] dark:text-[#e2e8f0] text-sm font-semibold disabled:opacity-40 transition-all cursor-pointer"
+          className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 rounded-2xl bg-white dark:bg-[#151c28] hover:bg-[#f5ecdf] dark:hover:bg-[#1f293a] border border-[#dccdc0] dark:border-[#28354a] text-[#3d2f23] dark:text-[#e2e8f0] text-xs sm:text-sm font-semibold disabled:opacity-40 transition-all cursor-pointer min-h-[44px]"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 shrink-0" />
           <span>Poprzedni dzień</span>
         </button>
 
         <button
           onClick={onOpenCalendar}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#f0e4d4] dark:bg-[#1e2738] hover:bg-[#e4d6c4] dark:hover:bg-[#273349] border border-[#d6c5b2] dark:border-[#2d3a50] text-[#423223] dark:text-[#f1f5f9] text-sm font-semibold transition-all cursor-pointer"
+          className="order-3 sm:order-2 w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 rounded-2xl bg-[#f0e4d4] dark:bg-[#1e2738] hover:bg-[#e4d6c4] dark:hover:bg-[#273349] border border-[#d6c5b2] dark:border-[#2d3a50] text-[#423223] dark:text-[#f1f5f9] text-xs sm:text-sm font-semibold transition-all cursor-pointer min-h-[44px]"
         >
-          <Calendar className="w-4 h-4 text-[#8a572c] dark:text-amber-400" />
+          <Calendar className="w-4 h-4 text-[#8a572c] dark:text-amber-400 shrink-0" />
           <span>Wybierz inny dzień</span>
         </button>
 
@@ -715,10 +749,10 @@ export const StandardReader: React.FC<Props> = ({
             onSelectDate(next);
           }}
           disabled={currentDate.dayNumber >= 366}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#151c28] hover:bg-[#f5ecdf] dark:hover:bg-[#1f293a] border border-[#dccdc0] dark:border-[#28354a] text-[#3d2f23] dark:text-[#e2e8f0] text-sm font-semibold disabled:opacity-40 transition-all cursor-pointer"
+          className="order-2 sm:order-3 flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 rounded-2xl bg-white dark:bg-[#151c28] hover:bg-[#f5ecdf] dark:hover:bg-[#1f293a] border border-[#dccdc0] dark:border-[#28354a] text-[#3d2f23] dark:text-[#e2e8f0] text-xs sm:text-sm font-semibold disabled:opacity-40 transition-all cursor-pointer min-h-[44px]"
         >
           <span>Następny dzień</span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 shrink-0" />
         </button>
       </div>
     </div>

@@ -38,10 +38,10 @@ interface Props {
   onToggleTheme: () => void;
   githubConnected?: boolean;
   currentLang: string;
-  onLanguageChange: (lang: string) => void;
   onOpenDownloadModal: () => void;
   onOpenLectorModal?: () => void;
   onCopyLink?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const NavigationHeader: React.FC<Props> = ({
@@ -60,7 +60,8 @@ export const NavigationHeader: React.FC<Props> = ({
   onLanguageChange,
   onOpenDownloadModal,
   onOpenLectorModal,
-  onCopyLink
+  onCopyLink,
+  onOpenSettings
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -167,6 +168,19 @@ export const NavigationHeader: React.FC<Props> = ({
                 <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-[#0f1522] rounded border border-amber-500/30 text-[#6e5d4e] dark:text-amber-300 ml-1">
                   Ctrl+K
                 </kbd>
+              </button>
+            )}
+
+            {/* Application & Settings Button (Android APK, iOS, PWA, Desktop) */}
+            {onOpenSettings && (
+              <button
+                onClick={onOpenSettings}
+                id="btn-header-app-settings"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800 font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                title="Ustawienia aplikacji, instalacja Android APK, iOS IPA i PWA"
+              >
+                <Smartphone className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                <span className="font-bold text-xs sm:text-sm hidden xs:inline">Aplikacja</span>
               </button>
             )}
 
