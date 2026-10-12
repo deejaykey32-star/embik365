@@ -7,6 +7,9 @@
  * idealnie odpowiadały każdemu wypowiadanemu słowu bez rozjazdów i opóźnień.
  */
 
+// Sigla, które są jednocześnie zwykłymi polskimi słowami (np. "na 25 grudnia", "za 3 dni", "mi 2")
+const AMBIGUOUS_SIGLA = new Set(['Na', 'Za', 'Mi', 'Ha', 'Ab', 'Am', 'Ag', 'J', 'Oz', 'Ez', 'Dz', 'Rz', 'Jl', 'Lb']);
+
 // 1. SŁOWNIK KSIĄG BIBLIJNYCH (STARY I NOWY TESTAMENT + APOKRYFY)
 export const BIBLICAL_BOOKS_MAP: Record<string, string> = {
   // Stary Testament
@@ -321,7 +324,7 @@ export function expandBiblicalReference(ref: string): string {
     const escapedFull = fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // Regex dopasowujący sigla np. Rdz 1, 1-31, Księga Rodzaju Rdz 1, 1-31, Księga Rodzaju 1, 1-31
-    const regex = new RegExp(`(?:^|\\b)(?:${escapedFull}\\s+)?(?:${escapedAbbr}|${escapedFull})\\s*(\\d+)(?:\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?)?`, 'i');
+    const regex = new RegExp(`(?:^|\\b)(?:${escapedFull}\\s+)?(?:${escapedAbbr}|${escapedFull})\\s*(\\d+)(?:\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?)?`);
     const match = text.match(regex);
     if (match) {
       const chapterNum = parseInt(match[1], 10);
@@ -454,7 +457,7 @@ export function normalizePolishTextForSpeech(rawText: string): string {
     const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     // Wzorzec dopasowujący sigla z wersetami (np. "Księga Rodzaju Rdz 1, 1-31", "Księga Rodzaju 1, 1-31", "Rdz 1, 1-31")
-    const regex = new RegExp(`(?:${escapedFull}\\s+)?(?<!\\p{L})(?:${escapedAbbr}|${escapedFull})\\s+(\\d+)\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?(?!\\p{L})`, 'gui');
+    const regex = new RegExp(`(?:${escapedFull}\\s+)?(?<!\\p{L})(?:${escapedAbbr}|${escapedFull})\\s+(\\d+)\\s*[,:]\\s*(\\d+)(?:\\s*[-–]\\s*(\\d+))?(?!\\p{L})`, 'gu');
     text = text.replace(regex, (_, ch, v1, v2) => {
       const chNum = parseInt(ch, 10);
       const v1Num = parseInt(v1, 10);
@@ -471,7 +474,9 @@ export function normalizePolishTextForSpeech(rawText: string): string {
     });
 
     // Rozdział bez wersetów np. "Ps 23", "Księga Rodzaju 1", "Księga Rodzaju Rdz 1"
-    const regexChapterOnly = new RegExp(`(?:${escapedFull}\\s+)?(?<!\\p{L})(?:${escapedAbbr}|${escapedFull})\\s+(\\d+)(?!\\p{L})`, 'gui');
+    // Krótkie sigla będące zwykłymi słowami (Na, Za, Mi…) rozwijamy tylko w zapisie z wersetem
+    const chapterAlternatives = AMBIGUOUS_SIGLA.has(abbr) ? escapedFull : `${escapedAbbr}|${escapedFull}`;
+    const regexChapterOnly = new RegExp(`(?:${escapedFull}\\s+)?(?<!\\p{L})(?:${chapterAlternatives})\\s+(\\d+)(?!\\p{L})`, 'gu');
     text = text.replace(regexChapterOnly, (_, ch) => {
       const chNum = parseInt(ch, 10);
       const isPsalm = abbr.toLowerCase() === 'ps';

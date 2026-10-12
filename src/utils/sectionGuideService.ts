@@ -49,7 +49,7 @@ Po szóste: Histada – autorska trylogia gier kulturowo-historycznych dla poszu
 
 Po siódme: E-booki w formie flipbooków z realistycznym przewracaniem kartek: Księga Widoki na Raj, Modlitewnik RHZ oraz Księga Biblii i Apokryfów.
 
-Po ósme: Bio365 – osobista autobiografia małżeńska pod tytułem Ja i Moja Żona, rozpisana na 365 dni wspomnień i świadectwa.
+Po ósme: Bio365 – osobista autobiografia małżeńska rozpisana na 365 dni wspomnień i świadectwa.
 
 Po dziewiąte: Radio 24/7 – internetowe radio nadające cztery stacje w pętli dzień i noc, z ciągłym lektorem AI i podsłuchem na żywo.
 
@@ -206,11 +206,11 @@ Korzystaj z nawigacji flipbooka, zakładaj wirtualne zakładki, odsłuchuj tekst
 
   bio365: {
     id: 'bio365',
-    sectionName: 'Bio365 • Ja i Moja Żona',
+    sectionName: 'Bio365 • Biografia',
     title: 'Przewodnik po Autobiografii Małżeńskiej Bio365',
     subtitle: 'Wspomnienia, świadectwo i droga życia Dominika i jego ukochanej żony rozpisane na 365 dni',
     badge: 'Autobiografia',
-    script: `Witaj w sekcji Bio365 – Autobiografii małżeńskiej pod tytułem Ja i Moja Żona.
+    script: `Witaj w sekcji Bio365 – Autobiografii małżeńskiej.
 
 Jest to głęboko osobiste, pełne miłości, wdzięczności i prawdy świadectwo wspólnej drogi życia autora, Dominika, i jego ukochanej żony.
 

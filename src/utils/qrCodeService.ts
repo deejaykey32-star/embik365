@@ -149,7 +149,7 @@ export const DEFAULT_QR_CODES: QrCodeItem[] = [
   },
   {
     id: 'qr_bio365',
-    title: 'Biografia: Ja i Moja Żona (Bio365)',
+    title: 'Biografia (Bio365)',
     displayLabel: 'Zeskanuj, aby czytać wspomnienia małżeńskie',
     shortUrl: 'https://clck.ru/3Vnjre',
     fullUrl: 'https://widokinaraj.pl/#bio365',

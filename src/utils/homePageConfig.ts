@@ -145,7 +145,7 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       id: 'bio365',
       name: 'Bio365',
       badge: 'Autobiografia Flipbook',
-      shortDesc: 'Biografia: Ja i Moja Żona – 365 dni wspomnień, miłości i świadectwa drogi małżeńskiej.',
+      shortDesc: 'Biografia – 365 dni wspomnień, miłości i świadectwa drogi małżeńskiej.',
       fullDesc: 'Osobiste świadectwo życia Dominika i jego ukochanej żony rozpisane na każdy dzień roku: wspólne chwile, przezwyciężane trudności, wdzięczność i Boże prowadzenie.',
       imageUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&auto=format&fit=crop&q=80',
       imageAlt: 'Dłonie z obrączkami – Biografia małżeńska',

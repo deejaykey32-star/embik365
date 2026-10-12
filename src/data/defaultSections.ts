@@ -124,7 +124,7 @@ export const SECTIONS: SectionMeta[] = [
   {
     id: 'bio365',
     name: 'Bio365',
-    shortTitle: 'Biografia: Ja i Moja Żona',
+    shortTitle: 'Biografia',
     subtitle: 'Wspomnienia i droga życia w formie przewracanych kartek',
     type: 'flipbook',
     description: 'Osobista, pełna miłości i wdzięczności autobiografia małżeńska Dominika i jego ukochanej żony rozpisana na 365 dni wspomnień, świadectwa i pamiątek.',
