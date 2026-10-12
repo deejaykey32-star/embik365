@@ -1,10 +1,10 @@
-name = "wnr365"
+name = "new-wnr365"
 compatibility_date = "2026-07-15"
 pages_build_output_dir = "dist"
 
 
 [vars]
 GITHUB_OWNER = "deejaykey32-star"
-GITHUB_REPO = "embik365"
+GITHUB_REPO = "new-wnr365"
 GITHUB_BRANCH = "main"
 

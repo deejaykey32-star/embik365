@@ -227,7 +227,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       JSON.stringify({
         status: 'ok',
         provider: 'Cloudflare Pages Functions',
-        repository: `${env.GITHUB_OWNER || 'deejaykey32-star'}/${env.GITHUB_REPO || 'embik365'}`,
+        repository: `${env.GITHUB_OWNER || 'deejaykey32-star'}/${env.GITHUB_REPO || 'new-wnr365'}`,
         timestamp: new Date().toISOString()
       }),
       { headers: corsHeaders }
@@ -240,7 +240,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       JSON.stringify({
         hasToken: Boolean(env.GITHUB_TOKEN),
         owner: env.GITHUB_OWNER || 'deejaykey32-star',
-        repo: env.GITHUB_REPO || 'embik365',
+        repo: env.GITHUB_REPO || 'new-wnr365',
         branch: env.GITHUB_BRANCH || 'main'
       }),
       { headers: corsHeaders }
@@ -391,7 +391,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
   // Data fetching endpoint
   if (pathname === '/api/data' && request.method === 'GET') {
     const owner = env.GITHUB_OWNER || 'deejaykey32-star';
-    const repo = env.GITHUB_REPO || 'embik365';
+    const repo = env.GITHUB_REPO || 'new-wnr365';
     const branch = env.GITHUB_BRANCH || 'main';
     const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/public/data/entries.json`;
 
@@ -425,7 +425,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
       }
 
       const owner = body.githubConfig?.owner || env.GITHUB_OWNER || 'deejaykey32-star';
-      const repo = body.githubConfig?.repo || env.GITHUB_REPO || 'embik365';
+      const repo = body.githubConfig?.repo || env.GITHUB_REPO || 'new-wnr365';
       const branch = body.githubConfig?.branch || env.GITHUB_BRANCH || 'main';
       const token = body.githubConfig?.token || env.GITHUB_TOKEN;
 
@@ -546,7 +546,7 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
     if (!target && slug) {
       try {
         const owner = env.GITHUB_OWNER || 'deejaykey32-star';
-        const repo = env.GITHUB_REPO || 'embik365';
+        const repo = env.GITHUB_REPO || 'new-wnr365';
         const branch = env.GITHUB_BRANCH || 'main';
         const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/public/data/entries.json`;
         const dataRes = await fetch(`${rawUrl}?t=${Date.now()}`);
