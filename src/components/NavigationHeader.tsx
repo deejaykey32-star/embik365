@@ -35,7 +35,6 @@ interface Props {
   onToggleTheme: () => void;
   githubConnected?: boolean;
   currentLang: string;
-  onLanguageChange: (lang: string) => void;
   onOpenDownloadModal: () => void;
   onOpenLectorModal?: () => void;
   onCopyLink?: () => void;

@@ -381,6 +381,15 @@ div.text-justify,
   margin-bottom: 0 !important;
 }
 
+@media (max-width: 640px) {
+  .rich-text-content p,
+  .app-reading-content p,
+  .app-reading-para {
+    text-indent: 1em;
+    margin-bottom: 0.6em !important;
+  }
+}
+
 .rich-text-content h1,
 .rich-text-content h2,
 .rich-text-content h3,
