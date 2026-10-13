@@ -4,6 +4,7 @@ import {
   Video, 
   Download, 
   Play, 
+  Pause,
   Square, 
   Sparkles, 
   Check, 
@@ -20,7 +21,10 @@ import {
   RotateCcw,
   List,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  FileText,
+  Eye,
+  Sliders
 } from 'lucide-react';
 import { 
   RADIO_STATIONS, 
@@ -43,6 +47,18 @@ import {
 
 // In-memory client cache for decoded audio buffers to prevent repeated downloads
 const clientTtsAudioCache = new Map<string, AudioBuffer>();
+
+export interface WordTiming {
+  wordIdx: number;
+  start: number;
+  end: number;
+}
+
+export interface LoadedAudioResult {
+  audioBuffer: AudioBuffer | null;
+  wordTimings: WordTiming[];
+  totalDuration: number;
+}
 
 export interface TextPage {
   pageIndex: number;
@@ -153,6 +169,259 @@ export function getPagesForSection(
   return pages;
 }
 
+/**
+ * Pomocnik do pobrania audio dla pojedynczego fragmentu z /api/tts oraz bezpośredniego fallbacku
+ */
+export async function fetchAudioForText(
+  txt: string,
+  audioCtx: AudioContext,
+  rate: number = 1.0,
+  pitch: number = 1.0
+): Promise<AudioBuffer | null> {
+  const clean = txt.trim();
+  if (!clean) return null;
+
+  const cacheKey = `${rate}:${clean.toLowerCase()}`;
+  const cached = clientTtsAudioCache.get(cacheKey);
+  if (cached) return cached;
+
+  // A. Próba przez API /api/tts z format: 'json' i wielokrotnym ponawianiem
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const ttsRes = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          text: clean,
+          lang: 'pl',
+          rate,
+          pitch,
+          format: 'json'
+        })
+      });
+
+      if (ttsRes.ok) {
+        const contentType = ttsRes.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await ttsRes.json();
+          if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
+            const decodedList: AudioBuffer[] = [];
+            for (let cIdx = 0; cIdx < data.chunks.length; cIdx++) {
+              const b64 = data.chunks[cIdx];
+              let decoded: AudioBuffer | null = null;
+              try {
+                const bin = atob(b64);
+                const bytes = new Uint8Array(bin.length);
+                for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
+                if (bytes.length > 64) {
+                  decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+                }
+              } catch (eDec) {
+                console.warn('Decode chunk warning:', eDec);
+              }
+              if (!decoded) {
+                const fallbackText = data.textChunks?.[cIdx] || '';
+                const wordsCnt = fallbackText.split(/\s+/).filter(Boolean).length || 5;
+                const fallbackDuration = Math.max(1.0, wordsCnt * 0.44);
+                decoded = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * fallbackDuration), audioCtx.sampleRate);
+              }
+              decodedList.push(decoded);
+            }
+            if (decodedList.length > 0) {
+              const combined = concatenateAudioBuffers(audioCtx, decodedList);
+              if (combined) {
+                clientTtsAudioCache.set(cacheKey, combined);
+                return combined;
+              }
+            }
+          }
+        } else {
+          const arrBuf = await ttsRes.arrayBuffer();
+          if (arrBuf && arrBuf.byteLength > 64) {
+            const decoded = await audioCtx.decodeAudioData(arrBuf);
+            if (decoded) {
+              clientTtsAudioCache.set(cacheKey, decoded);
+              return decoded;
+            }
+          }
+        }
+      }
+    } catch (errApi) {
+      console.warn(`API /api/tts attempt ${attempt} failed:`, errApi);
+    }
+    if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 100));
+  }
+
+  // B. Rezerwowe bezpośrednie pobranie z Google TTS
+  try {
+    const subChunks = splitTextForTts(clean, 140);
+    const decodedDirectList: AudioBuffer[] = [];
+
+    for (const sub of subChunks) {
+      let chunkBuf: AudioBuffer | null = null;
+      for (let att = 1; att <= 2; att++) {
+        try {
+          const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(sub)}&tl=pl&client=tw-ob`;
+          const directRes = await fetch(directUrl);
+          if (directRes.ok) {
+            const arrBuf = await directRes.arrayBuffer();
+            if (arrBuf.byteLength > 64) {
+              chunkBuf = await audioCtx.decodeAudioData(arrBuf);
+              break;
+            }
+          }
+        } catch (eDir) {
+          console.warn(`Direct fetch attempt ${att} failed:`, eDir);
+        }
+        if (att < 2) await new Promise(r => setTimeout(r, 60));
+      }
+      if (chunkBuf) {
+        decodedDirectList.push(chunkBuf);
+      }
+    }
+
+    if (decodedDirectList.length > 0) {
+      const combined = concatenateAudioBuffers(audioCtx, decodedDirectList);
+      if (combined) {
+        clientTtsAudioCache.set(cacheKey, combined);
+        return combined;
+      }
+    }
+  } catch (errDirect) {
+    console.warn('Direct fallback failed:', errDirect);
+  }
+
+  return null;
+}
+
+/**
+ * Pobiera i precyzyjnie kalkuluje timery słów oraz ścieżkę dźwiękową
+ */
+export async function prepareAudioAndTimings(
+  item: RadioBroadcastItem,
+  previewMode: 'full' | 'sample',
+  audioCtx: AudioContext,
+  lectorCfg: LectorConfig,
+  onProgress?: (msg: string) => void
+): Promise<LoadedAudioResult> {
+  const targetWords = previewMode === 'sample' 
+    ? item.words.slice(0, 45) 
+    : item.words;
+  const wordsTotal = targetWords.length;
+
+  let audioBuffer: AudioBuffer | null = null;
+  const wordTimings: WordTiming[] = [];
+
+  if (previewMode === 'sample') {
+    if (onProgress) onProgress('Pobieranie próbki głosu Lektora AI (45 słów)...');
+    const sampleText = targetWords.join(' ');
+    audioBuffer = await fetchAudioForText(sampleText, audioCtx, lectorCfg.rate || 1.0, lectorCfg.pitch || 1.0);
+    const totalDuration = audioBuffer ? audioBuffer.duration : 18;
+
+    const weights = targetWords.map((w, idx) => calculateWordAcousticWeight(w, idx === targetWords.length - 1));
+    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+    let acc = 0;
+    for (let i = 0; i < targetWords.length; i++) {
+      const start = (acc / totalWeight) * totalDuration;
+      acc += weights[i];
+      const end = (acc / totalWeight) * totalDuration;
+      wordTimings.push({ wordIdx: i, start, end });
+    }
+    return { audioBuffer, wordTimings, totalDuration };
+  }
+
+  // PEŁNA AUDYCJA: Pobieranie sekcja po sekcji
+  const sectionsToProcess = (item.sections && item.sections.length > 0)
+    ? item.sections
+    : [{ id: 'full', title: 'Całość audycji', type: 'meditation' as const, text: item.speechText, startWordIdx: 0, endWordIdx: wordsTotal - 1 }];
+
+  const allSectionBuffers: AudioBuffer[] = [];
+  let currentTimelineOffset = 0;
+
+  for (let sIdx = 0; sIdx < sectionsToProcess.length; sIdx++) {
+    const sec = sectionsToProcess[sIdx];
+    if (onProgress) onProgress(`Pobieranie głosu Lektora: ${sec.title} (${sIdx + 1}/${sectionsToProcess.length})...`);
+
+    let secAudio: AudioBuffer | null = null;
+
+    if (sec.text.length > 400) {
+      const subTexts = splitTextForTts(sec.text, 130);
+      const subBuffers: AudioBuffer[] = [];
+      for (const sub of subTexts) {
+        let buf = await fetchAudioForText(sub, audioCtx, lectorCfg.rate || 1.0, lectorCfg.pitch || 1.0);
+        if (!buf) {
+          const wCount = sub.split(/\s+/).filter(Boolean).length || 5;
+          const dur = Math.max(1.2, wCount * 0.44);
+          buf = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+        }
+        subBuffers.push(buf);
+      }
+      if (subBuffers.length > 0) {
+        secAudio = concatenateAudioBuffers(audioCtx, subBuffers);
+      }
+    } else {
+      secAudio = await fetchAudioForText(sec.text, audioCtx, lectorCfg.rate || 1.0, lectorCfg.pitch || 1.0);
+    }
+
+    const secWords = targetWords.slice(sec.startWordIdx, sec.endWordIdx + 1);
+    const wordsCountInSec = secWords.length;
+
+    if (!secAudio) {
+      const fallbackDuration = Math.max(1.5, wordsCountInSec * 0.44);
+      secAudio = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * fallbackDuration), audioCtx.sampleRate);
+    }
+
+    allSectionBuffers.push(secAudio);
+    const secDuration = secAudio.duration;
+
+    if (wordsCountInSec > 0) {
+      const weights = secWords.map((w, idx) => calculateWordAcousticWeight(w, idx === wordsCountInSec - 1));
+      const totalSecWeight = weights.reduce((a, b) => a + b, 0) || 1;
+      let accSecWeight = 0;
+
+      for (let w = 0; w < wordsCountInSec; w++) {
+        const globalIdx = sec.startWordIdx + w;
+        const wStart = currentTimelineOffset + (accSecWeight / totalSecWeight) * secDuration;
+        accSecWeight += weights[w];
+        const wEnd = currentTimelineOffset + (accSecWeight / totalSecWeight) * secDuration;
+
+        wordTimings.push({
+          wordIdx: globalIdx,
+          start: wStart,
+          end: Math.min(currentTimelineOffset + secDuration, wEnd)
+        });
+      }
+    }
+
+    currentTimelineOffset += secDuration;
+    if (sIdx + 1 < sectionsToProcess.length) {
+      await new Promise(r => setTimeout(r, 20));
+    }
+  }
+
+  // Dopełnienie ewentualnych brakujących słów poza sekcjami
+  let highestWordIdx = wordTimings.length > 0 ? Math.max(...wordTimings.map(t => t.wordIdx)) : -1;
+  while (highestWordIdx + 1 < targetWords.length) {
+    highestWordIdx++;
+    wordTimings.push({
+      wordIdx: highestWordIdx,
+      start: currentTimelineOffset,
+      end: currentTimelineOffset + 0.15
+    });
+  }
+  wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
+
+  if (allSectionBuffers.length > 0) {
+    audioBuffer = concatenateAudioBuffers(audioCtx, allSectionBuffers);
+  }
+
+  const totalDuration = audioBuffer ? audioBuffer.duration : currentTimelineOffset || Math.max(20, wordsTotal * 0.44);
+  return { audioBuffer, wordTimings, totalDuration };
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -174,12 +443,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const [catalogSearch, setCatalogSearch] = useState('');
 
   const [resolution, setResolution] = useState<'1080p' | '720p'>('1080p');
+  const [viewMode, setViewMode] = useState<'video' | 'teleprompter' | 'split'>('video');
   const [isRecording, setIsRecording] = useState(false);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [recordProgress, setRecordProgress] = useState(0); // 0 to 100
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [renderedBlob, setRenderedBlob] = useState<Blob | null>(null);
   const [renderedVideoUrl, setRenderedVideoUrl] = useState<string | null>(null);
-  const [recordingStatus, setRecordingStatus] = useState<string>('Gotowy do generowania');
+  const [recordingStatus, setRecordingStatus] = useState<string>('Gotowy do odtwarzania lub generowania');
   const [previewMode, setPreviewMode] = useState<'full' | 'sample'>('full');
   const [recordedDuration, setRecordedDuration] = useState<number>(0);
 
@@ -188,7 +459,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const animationFrameRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const activeAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const previewAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const previewAudioCtxRef = useRef<AudioContext | null>(null);
   const lastElapsedRef = useRef<number>(0);
+  const loadedAudioDataRef = useRef<LoadedAudioResult | null>(null);
 
   const lectorConfig = getLectorConfig();
 
@@ -299,10 +573,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
     const activeSec = rawSections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx)
       || (activeWordIdx >= wordsTotal - 1 ? rawSections[rawSections.length - 1] : rawSections[0]);
-
-    const secPages = getPagesForSection(activeSec, words, 70);
-    const activePage = secPages.find(p => activeWordIdx >= p.startWordIdx && activeWordIdx <= p.endWordIdx)
-      || (activeWordIdx >= wordsTotal - 1 ? secPages[secPages.length - 1] : secPages[0]);
 
     // 1. GŁĘBOKIE CZARNE TŁO (standard YouTube)
     ctx.fillStyle = '#050505';
@@ -644,9 +914,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = '#ffd700';
 
-      const pageSuffix = activePage && activePage.totalPages > 1
-        ? ` • Część ${activePage.pageIndex}/${activePage.totalPages}`
-        : '';
+      const pageSuffix = '';
 
       let pillText = '';
 
@@ -735,13 +1003,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = selectedStationId === 'biblia365' ? '#34d399' : '#38bdf8';
 
-      const pageSuffix = activePage && activePage.totalPages > 1
-        ? ` • Część ${activePage.pageIndex}/${activePage.totalPages}`
-        : '';
-
       const pillText = selectedStationId === 'biblia365'
-        ? `📖 Pismo Święte & Apokryfy • ${activeBroadcastItem.headlineTitle}${pageSuffix}`
-        : `🕊️ Widoki na Raj 365 • Refleksja duchowa • ${activeBroadcastItem.headlineTitle}${pageSuffix}`;
+        ? `📖 Pismo Święte & Apokryfy • ${activeBroadcastItem.headlineTitle}`
+        : `🕊️ Widoki na Raj 365 • Refleksja duchowa • ${activeBroadcastItem.headlineTitle}`;
 
       const pW = ctx.measureText(pillText).width;
       if (pW > pillW - 30) {
@@ -754,11 +1018,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       headerBottom = pillY + pillH;
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE & INTELIGENTNYM STRONICOWANIEM BEZ ZNIKANIA TEKSTU
+    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE – 100% SŁÓW ZAWSZE WIDOCZNYCH (BRAK ZNIKANIA I STRONICOWANIA)
     if (wordsTotal > 0) {
-      const maxTextWidth = Math.round(width * 0.88);
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.030 : 0.036));
-      const footerTop = height - 87; // Krawędź górna stopki YouTube
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.024 : 0.030));
+      const footerTop = height - 85; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
 
       const zoneTop = headerBottom + minHeaderGap;
@@ -776,17 +1039,30 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
-      // INTELIGENTNE STRONICOWANIE:
-      // Każda strona (lub cała modlitwa) mieści się w całości w strefie napisów!
-      // Wyświetlamy dokładnie słowa bieżącej strony (activePage.words) wyśrodkowane w pionie.
-      // Żadne słowo ani zdanie nie znika przed, w trakcie ani po przeczytaniu!
-      const effectiveWordTexts = activePage.words;
-      const effectiveStartIdx = activePage.startWordIdx;
+      // Słowa do wyświetlenia w strefie napisów:
+      // A. W stacjach z różańcem (nowyrhz, rhz365): wyświetlamy w całości bieżącą modlitwę / rozważanie bez dzielenia na strony
+      // B. W stacjach z czytaniem (wnr365, biblia365): wyświetlamy w 100% CAŁY TEKST czytania / rozważania!
+      let effectiveWordTexts: string[] = [];
+      let effectiveStartIdx = 0;
+
+      if (hasRosary) {
+        effectiveStartIdx = activeSec.startWordIdx;
+        effectiveWordTexts = words.slice(activeSec.startWordIdx, activeSec.endWordIdx + 1);
+      } else {
+        effectiveStartIdx = 0;
+        effectiveWordTexts = words;
+      }
 
       const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
       const FONT_FAMILY = '"Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-      const buildLinesForSection = (fSize: number) => {
+      // Decyzja o układzie kolumn dla optymalnej czytelności na ekranie 16:9 Full HD:
+      // - Do 220 słów: 1 szeroka, elegancka kolumna (wyśrodkowana)
+      // - Powyżej 220 słów (np. Dzień 20 z ~400 słowami): 2 zbalansowane kolumny obok siebie (lewa + prawa)
+      // Dzięki temu nawet 550+ słów mieści się w 100% na jednym ekranie bez ucinania ani znikania!
+      const isTwoColumn = !hasRosary && effectiveWordTexts.length > 220;
+
+      const buildLinesFromTokens = (tokensList: { text: string; wordIdx: number }[], fSize: number, maxLineW: number) => {
         ctx.save();
         ctx.font = `600 ${fSize}px ${FONT_FAMILY}`;
         ctx.textAlign = 'left';
@@ -796,10 +1072,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         let curLineTokens: WordToken[] = [];
         let curWordsWidth = 0;
 
-        for (let i = 0; i < effectiveWordTexts.length; i++) {
-          const globalIdx = effectiveStartIdx + i;
-          const wordText = effectiveWordTexts[i];
-          const isExplicitLineBreak = i > 0 && lineBreakIndicesSet.has(globalIdx);
+        for (let i = 0; i < tokensList.length; i++) {
+          const item = tokensList[i];
+          const isExplicitLineBreak = i > 0 && lineBreakIndicesSet.has(item.wordIdx);
 
           if (isExplicitLineBreak && curLineTokens.length > 0) {
             builtLines.push({
@@ -811,11 +1086,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             curWordsWidth = 0;
           }
 
-          const wordW = Math.ceil(ctx.measureText(wordText).width) + 2;
+          const wordW = Math.ceil(ctx.measureText(item.text).width) + 2;
           const gapsCount = curLineTokens.length;
           const testLineWidth = curWordsWidth + wordW + gapsCount * spaceW;
 
-          if (testLineWidth > maxTextWidth && curLineTokens.length > 0) {
+          if (testLineWidth > maxLineW && curLineTokens.length > 0) {
             builtLines.push({
               tokens: curLineTokens,
               hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
@@ -825,7 +1100,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             curWordsWidth = 0;
           }
 
-          curLineTokens.push({ text: wordText, wordIdx: globalIdx, width: wordW });
+          curLineTokens.push({ text: item.text, wordIdx: item.wordIdx, width: wordW });
           curWordsWidth += wordW;
         }
 
@@ -841,132 +1116,245 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         return { builtLines, spaceW };
       };
 
-      // DYNAMICZNY, ELEGANCKI ROZMIAR CZCIONKI DLA DANEJ STRONY:
-      let baseFontSize = Math.round(height * (hasRosary ? 0.034 : 0.032));
-      if (effectiveWordTexts.length <= 40) {
-        baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.036));
-      } else if (effectiveWordTexts.length <= 70) {
-        baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
-      } else {
-        baseFontSize = Math.round(height * (hasRosary ? 0.028 : 0.027));
-      }
+      const allTokens: { text: string; wordIdx: number }[] = effectiveWordTexts.map((txt, idx) => ({
+        text: txt,
+        wordIdx: effectiveStartIdx + idx
+      }));
 
-      let renderFontSize = baseFontSize;
-      let renderLineHeight = Math.round(renderFontSize * 1.44);
+      if (isTwoColumn) {
+        // =========================================================
+        // WIDOK 2-KOLUMNOWY DLA BOGATYCH TEKSTÓW (NP. DZIEŃ 20 WIDOKI NA RAJ)
+        // =========================================================
+        const colWidth = Math.round(width * 0.435);
+        const col1StartX = Math.round(width * 0.045);
+        const col2StartX = Math.round(width * 0.520);
 
-      let { builtLines: sectionLines, spaceW: standardSpaceWidth } = buildLinesForSection(renderFontSize);
-
-      // Pętla dynamicznego dopasowywania – gwarancja zmieszczenia wszystkich linii strony w pionie
-      const maxAllowedBlockH = zoneHeight - 20;
-      while (sectionLines.length * renderLineHeight > maxAllowedBlockH && renderFontSize > 15) {
-        renderFontSize -= 1;
-        renderLineHeight = Math.round(renderFontSize * 1.40);
-        const recomputed = buildLinesForSection(renderFontSize);
-        sectionLines = recomputed.builtLines;
-        standardSpaceWidth = recomputed.spaceW;
-      }
-
-      if (sectionLines.length * renderLineHeight > maxAllowedBlockH) {
-        renderLineHeight = Math.max(16, Math.floor(maxAllowedBlockH / Math.max(1, sectionLines.length)));
-      }
-
-      const totalBlockHeight = sectionLines.length * renderLineHeight;
-      // Strona jest zawsze idealnie wyśrodkowana w pionie z auto-śledzeniem aktywnego słowa
-      let baseStartY: number;
-      if (totalBlockHeight <= zoneHeight) {
-        baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
-      } else {
-        let activeLineIdx = sectionLines.findIndex(l => l.hasActiveWord);
-        if (activeLineIdx === -1) activeLineIdx = 0;
-        const centerTarget = zoneTop + Math.round(zoneHeight / 2);
-        const activeLineCenter = activeLineIdx * renderLineHeight + Math.round(renderLineHeight / 2);
-        baseStartY = centerTarget - activeLineCenter;
-        baseStartY = Math.max(zoneBottom - totalBlockHeight, Math.min(zoneTop, baseStartY));
-      }
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(30, zoneTop - 6, width - 60, zoneHeight + 12);
-      ctx.clip();
-
-      sectionLines.forEach((line, lineIndex) => {
-        const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
-        const N = line.tokens.length;
-        if (N === 0) return;
-
-        const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
-        const isJustified = !line.isParagraphEnd && N > 1;
-        const spaceBetweenWords = isJustified
-          ? Math.max(standardSpaceWidth, Math.min((maxTextWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5))
-          : standardSpaceWidth;
-
-        // Jeśli cała strona to 1 linijka, wyśrodkuj ją w poziomie dla podniosłego wyglądu
-        const lineContentW = totalWordsW + (N - 1) * spaceBetweenWords;
-        const lineStartX = (sectionLines.length === 1 && !isJustified)
-          ? Math.round((width - lineContentW) / 2)
-          : Math.round((width - maxTextWidth) / 2);
-
-        let curX = lineStartX;
-
-        for (let tIdx = 0; tIdx < N; tIdx++) {
-          const token = line.tokens[tIdx];
-          const isCurrent = token.wordIdx === activeWordIdx;
-          const isSpoken = token.wordIdx < activeWordIdx;
-          const tokenX = curX;
-
-          ctx.save();
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
-
-          if (isCurrent) {
-            // EFEKT KARAOKE: Złoty badge z wyrazistym kontrastem
-            const padX = Math.min(Math.round(standardSpaceWidth * 0.35), 8);
-            const bgH = Math.round(renderFontSize * 1.28);
-            const bgX = tokenX - padX;
-            const bgY = Math.round(lineY - bgH / 2);
-            const bgW = token.width + padX * 2;
-
-            ctx.fillStyle = 'rgba(217, 119, 6, 0.45)';
-            ctx.beginPath();
-            ctx.roundRect(bgX, bgY, bgW, bgH, 8);
-            ctx.fill();
-
-            ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            ctx.fillStyle = '#fef08a';
-            ctx.fillText(token.text, tokenX, lineY);
-          } else if (isSpoken) {
-            // PRZECZYTANE SŁOWO: 100% Czysta Biel, kontrastowe i wyraźne
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-            ctx.shadowBlur = 3;
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(token.text, tokenX, lineY);
-          } else {
-            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-300
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-            ctx.shadowBlur = 2;
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            ctx.fillStyle = '#cbd5e1';
-            ctx.fillText(token.text, tokenX, lineY);
+        // Naturalny podział na połowy według kropki lub końca zdania
+        const midIdx = Math.floor(allTokens.length / 2);
+        let splitIdx = midIdx;
+        for (let off = 0; off <= 35; off++) {
+          const checkBack = midIdx - off;
+          if (checkBack > 30 && /[.!?][„”«»"']?$/.test(allTokens[checkBack].text)) {
+            splitIdx = checkBack + 1;
+            break;
           }
-          ctx.restore();
-
-          curX = tokenX + token.width + spaceBetweenWords;
+          const checkFwd = midIdx + off;
+          if (checkFwd < allTokens.length - 30 && /[.!?][„”«»"']?$/.test(allTokens[checkFwd].text)) {
+            splitIdx = checkFwd + 1;
+            break;
+          }
         }
-      });
 
-      ctx.restore(); // Przywrócenie stanu przed clip()
-      ctx.shadowBlur = 0;
+        const col1Tokens = allTokens.slice(0, splitIdx);
+        const col2Tokens = allTokens.slice(splitIdx);
+
+        let renderFontSize = Math.round(height * 0.024); // ~26px na 1080p, ~17px na 720p
+        let renderLineHeight = Math.round(renderFontSize * 1.42);
+
+        let col1Res = buildLinesFromTokens(col1Tokens, renderFontSize, colWidth);
+        let col2Res = buildLinesFromTokens(col2Tokens, renderFontSize, colWidth);
+        let maxLines = Math.max(col1Res.builtLines.length, col2Res.builtLines.length);
+
+        const maxAllowedBlockH = zoneHeight - 16;
+        while (maxLines * renderLineHeight > maxAllowedBlockH && renderFontSize > 13) {
+          renderFontSize -= 1;
+          renderLineHeight = Math.round(renderFontSize * 1.38);
+          col1Res = buildLinesFromTokens(col1Tokens, renderFontSize, colWidth);
+          col2Res = buildLinesFromTokens(col2Tokens, renderFontSize, colWidth);
+          maxLines = Math.max(col1Res.builtLines.length, col2Res.builtLines.length);
+        }
+
+        // Subtelna złota linia pionowa dzieląca kolumny
+        ctx.save();
+        ctx.strokeStyle = 'rgba(217, 119, 6, 0.22)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(width / 2, zoneTop + 6);
+        ctx.lineTo(width / 2, zoneBottom - 6);
+        ctx.stroke();
+        ctx.restore();
+
+        const totalBlockHeight = maxLines * renderLineHeight;
+        const baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
+
+        const drawColumn = (colLines: LineItem[], startX: number, spaceW: number) => {
+          colLines.forEach((line, lineIndex) => {
+            const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
+            const N = line.tokens.length;
+            if (N === 0) return;
+
+            const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
+            const isJustified = !line.isParagraphEnd && N > 1;
+            const spaceBetweenWords = isJustified
+              ? Math.max(spaceW, Math.min((colWidth - totalWordsW) / (N - 1), spaceW * 2.2))
+              : spaceW;
+
+            let curX = startX;
+
+            for (let tIdx = 0; tIdx < N; tIdx++) {
+              const token = line.tokens[tIdx];
+              const isCurrent = token.wordIdx === activeWordIdx;
+              const isSpoken = token.wordIdx < activeWordIdx;
+              const tokenX = curX;
+
+              ctx.save();
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
+
+              if (isCurrent) {
+                // EFEKT KARAOKE: Złoty podświetlony badge
+                const padX = Math.min(Math.round(spaceW * 0.40), 7);
+                const bgH = Math.round(renderFontSize * 1.30);
+                const bgX = tokenX - padX;
+                const bgY = Math.round(lineY - bgH / 2);
+                const bgW = token.width + padX * 2;
+
+                ctx.fillStyle = 'rgba(217, 119, 6, 0.55)';
+                ctx.beginPath();
+                ctx.roundRect(bgX, bgY, bgW, bgH, 7);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
+                ctx.lineWidth = 1.8;
+                ctx.stroke();
+
+                ctx.shadowColor = 'rgba(251, 191, 36, 0.7)';
+                ctx.shadowBlur = 8;
+                ctx.fillStyle = '#fef08a';
+                ctx.fillText(token.text, tokenX, lineY);
+              } else if (isSpoken) {
+                // SŁOWO JUŻ PRZECZYTANE: Czysta biel
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+                ctx.shadowBlur = 3;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(token.text, tokenX, lineY);
+              } else {
+                // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-200
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+                ctx.shadowBlur = 2;
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillText(token.text, tokenX, lineY);
+              }
+              ctx.restore();
+
+              curX = tokenX + token.width + spaceBetweenWords;
+            }
+          });
+        };
+
+        drawColumn(col1Res.builtLines, col1StartX, col1Res.spaceW);
+        drawColumn(col2Res.builtLines, col2StartX, col2Res.spaceW);
+
+      } else {
+        // =========================================================
+        // WIDOK 1-KOLUMNOWY (DO 220 SŁÓW / POJEDYNCZE MODLITWY RÓŻAŃCA)
+        // =========================================================
+        const singleColWidth = Math.round(width * 0.86);
+
+        let baseFontSize = Math.round(height * (hasRosary ? 0.034 : 0.031));
+        if (allTokens.length <= 40) {
+          baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.036));
+        } else if (allTokens.length <= 90) {
+          baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
+        } else {
+          baseFontSize = Math.round(height * (hasRosary ? 0.028 : 0.026));
+        }
+
+        let renderFontSize = baseFontSize;
+        let renderLineHeight = Math.round(renderFontSize * 1.44);
+
+        let res = buildLinesFromTokens(allTokens, renderFontSize, singleColWidth);
+
+        const maxAllowedBlockH = zoneHeight - 16;
+        while (res.builtLines.length * renderLineHeight > maxAllowedBlockH && renderFontSize > 14) {
+          renderFontSize -= 1;
+          renderLineHeight = Math.round(renderFontSize * 1.40);
+          res = buildLinesFromTokens(allTokens, renderFontSize, singleColWidth);
+        }
+
+        const sectionLines = res.builtLines;
+        const standardSpaceWidth = res.spaceW;
+        const totalBlockHeight = sectionLines.length * renderLineHeight;
+
+        let baseStartY: number;
+        if (totalBlockHeight <= zoneHeight) {
+          baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
+        } else {
+          let activeLineIdx = sectionLines.findIndex(l => l.hasActiveWord);
+          if (activeLineIdx === -1) activeLineIdx = 0;
+          const centerTarget = zoneTop + Math.round(zoneHeight / 2);
+          const activeLineCenter = activeLineIdx * renderLineHeight + Math.round(renderLineHeight / 2);
+          baseStartY = centerTarget - activeLineCenter;
+          baseStartY = Math.max(zoneBottom - totalBlockHeight, Math.min(zoneTop, baseStartY));
+        }
+
+        sectionLines.forEach((line, lineIndex) => {
+          const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
+          const N = line.tokens.length;
+          if (N === 0) return;
+
+          const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
+          const isJustified = !line.isParagraphEnd && N > 1;
+          const spaceBetweenWords = isJustified
+            ? Math.max(standardSpaceWidth, Math.min((singleColWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5))
+            : standardSpaceWidth;
+
+          const lineContentW = totalWordsW + (N - 1) * spaceBetweenWords;
+          const lineStartX = (sectionLines.length === 1 && !isJustified)
+            ? Math.round((width - lineContentW) / 2)
+            : Math.round((width - singleColWidth) / 2);
+
+          let curX = lineStartX;
+
+          for (let tIdx = 0; tIdx < N; tIdx++) {
+            const token = line.tokens[tIdx];
+            const isCurrent = token.wordIdx === activeWordIdx;
+            const isSpoken = token.wordIdx < activeWordIdx;
+            const tokenX = curX;
+
+            ctx.save();
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
+
+            if (isCurrent) {
+              const padX = Math.min(Math.round(standardSpaceWidth * 0.40), 8);
+              const bgH = Math.round(renderFontSize * 1.30);
+              const bgX = tokenX - padX;
+              const bgY = Math.round(lineY - bgH / 2);
+              const bgW = token.width + padX * 2;
+
+              ctx.fillStyle = 'rgba(217, 119, 6, 0.55)';
+              ctx.beginPath();
+              ctx.roundRect(bgX, bgY, bgW, bgH, 8);
+              ctx.fill();
+
+              ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
+              ctx.lineWidth = 1.8;
+              ctx.stroke();
+
+              ctx.shadowColor = 'rgba(251, 191, 36, 0.7)';
+              ctx.shadowBlur = 8;
+              ctx.fillStyle = '#fef08a';
+              ctx.fillText(token.text, tokenX, lineY);
+            } else if (isSpoken) {
+              ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+              ctx.shadowBlur = 3;
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(token.text, tokenX, lineY);
+            } else {
+              ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+              ctx.shadowBlur = 2;
+              ctx.fillStyle = '#cbd5e1';
+              ctx.fillText(token.text, tokenX, lineY);
+            }
+            ctx.restore();
+
+            curX = tokenX + token.width + spaceBetweenWords;
+          }
+        });
+      }
     } else {
       // Bezpieczny komunikat w przypadku braku słów
       ctx.save();
@@ -995,9 +1383,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
     const currentProgressPercent = wordsTotal > 0 ? Math.round((Math.min(activeWordIdx + 1, wordsTotal) / wordsTotal) * 100) : 0;
-    const pageStatus = activePage && activePage.totalPages > 1 ? ` • Część ${activePage.pageIndex}/${activePage.totalPages}` : '';
     ctx.fillText(
-      `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays}${pageStatus} • Słowo ${Math.min(activeWordIdx + 1, wordsTotal)}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
+      `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays} • Słowo ${Math.min(activeWordIdx + 1, wordsTotal)}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
       width - 80,
       height - 38
     );
@@ -1048,231 +1435,19 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       audioContextRef.current = audioCtx;
       const audioDest = audioCtx.createMediaStreamDestination();
 
-      // Pomocnik do pobrania audio dla pojedynczego fragmentu z /api/tts oraz bezpośredniego fallbacku
-      const fetchAudioForText = async (txt: string): Promise<AudioBuffer | null> => {
-        const clean = txt.trim();
-        if (!clean) return null;
+      stopPreviewAudio();
 
-        const cacheKey = `${lectorConfig.rate || 1.0}:${clean.toLowerCase()}`;
-        const cached = clientTtsAudioCache.get(cacheKey);
-        if (cached) return cached;
+      setRecordingStatus('Pobieranie pełnej ścieżki dźwiękowej Lektora AI (TTS)...');
+      const loadedAudio = await prepareAudioAndTimings(
+        activeBroadcastItem,
+        previewMode,
+        audioCtx,
+        lectorConfig,
+        (msg) => setRecordingStatus(msg)
+      );
 
-        // A. Próba przez API /api/tts z format: 'json' i wielokrotnym ponawianiem
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            const ttsRes = await fetch('/api/tts', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({
-                text: clean,
-                lang: 'pl',
-                rate: lectorConfig.rate || 1.0,
-                pitch: lectorConfig.pitch || 1.0,
-                format: 'json'
-              })
-            });
-
-            if (ttsRes.ok) {
-              const contentType = ttsRes.headers.get('content-type') || '';
-              if (contentType.includes('application/json')) {
-                const data = await ttsRes.json();
-                if (data && Array.isArray(data.chunks) && data.chunks.length > 0) {
-                  const decodedList: AudioBuffer[] = [];
-                  for (let cIdx = 0; cIdx < data.chunks.length; cIdx++) {
-                    const b64 = data.chunks[cIdx];
-                    let decoded: AudioBuffer | null = null;
-                    try {
-                      const bin = atob(b64);
-                      const bytes = new Uint8Array(bin.length);
-                      for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
-                      if (bytes.length > 64) {
-                        decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
-                      }
-                    } catch (eDec) {
-                      console.warn('Decode chunk warning:', eDec);
-                    }
-                    if (!decoded) {
-                      const fallbackText = data.textChunks?.[cIdx] || '';
-                      const wordsCnt = fallbackText.split(/\s+/).filter(Boolean).length || 5;
-                      const fallbackDuration = Math.max(1.0, wordsCnt * 0.44);
-                      decoded = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * fallbackDuration), audioCtx.sampleRate);
-                    }
-                    decodedList.push(decoded);
-                  }
-                  if (decodedList.length > 0) {
-                    const combined = concatenateAudioBuffers(audioCtx, decodedList);
-                    if (combined) {
-                      clientTtsAudioCache.set(cacheKey, combined);
-                      return combined;
-                    }
-                  }
-                }
-              } else {
-                const arrBuf = await ttsRes.arrayBuffer();
-                if (arrBuf && arrBuf.byteLength > 64) {
-                  const decoded = await audioCtx.decodeAudioData(arrBuf);
-                  if (decoded) {
-                    clientTtsAudioCache.set(cacheKey, decoded);
-                    return decoded;
-                  }
-                }
-              }
-            }
-          } catch (errApi) {
-            console.warn(`API /api/tts attempt ${attempt} failed:`, errApi);
-          }
-          if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 120));
-        }
-
-        // B. Rezerwowe bezpośrednie pobranie z Google TTS
-        try {
-          const subChunks = splitTextForTts(clean, 140);
-          const decodedDirectList: AudioBuffer[] = [];
-
-          for (const sub of subChunks) {
-            let chunkBuf: AudioBuffer | null = null;
-            for (let att = 1; att <= 2; att++) {
-              try {
-                const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(sub)}&tl=pl&client=tw-ob`;
-                const directRes = await fetch(directUrl);
-                if (directRes.ok) {
-                  const arrBuf = await directRes.arrayBuffer();
-                  if (arrBuf.byteLength > 64) {
-                    chunkBuf = await audioCtx.decodeAudioData(arrBuf);
-                    break;
-                  }
-                }
-              } catch (eDir) {
-                console.warn(`Direct fetch attempt ${att} failed:`, eDir);
-              }
-              if (att < 2) await new Promise(r => setTimeout(r, 80));
-            }
-            if (chunkBuf) {
-              decodedDirectList.push(chunkBuf);
-            }
-          }
-
-          if (decodedDirectList.length > 0) {
-            const combined = concatenateAudioBuffers(audioCtx, decodedDirectList);
-            if (combined) {
-              clientTtsAudioCache.set(cacheKey, combined);
-              return combined;
-            }
-          }
-        } catch (errDirect) {
-          console.warn('Direct fallback failed:', errDirect);
-        }
-
-        return null;
-      };
-
-      let audioBuffer: AudioBuffer | null = null;
-      const wordTimings: { wordIdx: number; start: number; end: number }[] = [];
-
-      if (previewMode === 'sample') {
-        setRecordingStatus('Pobieranie próbki głosu Lektora AI (45 słów)...');
-        const sampleText = targetWords.join(' ');
-        audioBuffer = await fetchAudioForText(sampleText);
-        const totalDuration = audioBuffer ? audioBuffer.duration : 18;
-
-        const weights = targetWords.map((w, idx) => calculateWordAcousticWeight(w, idx === targetWords.length - 1));
-        const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
-        let acc = 0;
-        for (let i = 0; i < targetWords.length; i++) {
-          const start = (acc / totalWeight) * totalDuration;
-          acc += weights[i];
-          const end = (acc / totalWeight) * totalDuration;
-          wordTimings.push({ wordIdx: i, start, end });
-        }
-      } else {
-        // PEŁNA AUDYCJA: Pobieranie sekcja po sekcji
-        const sectionsToProcess = (activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0)
-          ? activeBroadcastItem.sections
-          : [{ id: 'full', title: 'Całość audycji', type: 'meditation' as const, text: activeBroadcastItem.speechText, startWordIdx: 0, endWordIdx: wordsTotal - 1 }];
-
-        const allSectionBuffers: AudioBuffer[] = [];
-        let currentTimelineOffset = 0;
-
-        for (let sIdx = 0; sIdx < sectionsToProcess.length; sIdx++) {
-          const sec = sectionsToProcess[sIdx];
-          setRecordingStatus(`Pobieranie głosu Lektora: ${sec.title} (${sIdx + 1}/${sectionsToProcess.length})...`);
-
-          let secAudio: AudioBuffer | null = null;
-
-          if (sec.text.length > 400) {
-            const subTexts = splitTextForTts(sec.text, 130);
-            const subBuffers: AudioBuffer[] = [];
-            for (const sub of subTexts) {
-              let buf = await fetchAudioForText(sub);
-              if (!buf) {
-                const wCount = sub.split(/\s+/).filter(Boolean).length || 5;
-                const dur = Math.max(1.2, wCount * 0.44);
-                buf = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * dur), audioCtx.sampleRate);
-              }
-              subBuffers.push(buf);
-            }
-            if (subBuffers.length > 0) {
-              secAudio = concatenateAudioBuffers(audioCtx, subBuffers);
-            }
-          } else {
-            secAudio = await fetchAudioForText(sec.text);
-          }
-
-          const secWords = targetWords.slice(sec.startWordIdx, sec.endWordIdx + 1);
-          const wordsCountInSec = secWords.length;
-
-          if (!secAudio) {
-            const fallbackDuration = Math.max(1.5, wordsCountInSec * 0.44);
-            secAudio = audioCtx.createBuffer(1, Math.round(audioCtx.sampleRate * fallbackDuration), audioCtx.sampleRate);
-          }
-
-          allSectionBuffers.push(secAudio);
-          const secDuration = secAudio.duration;
-
-          if (wordsCountInSec > 0) {
-            const weights = secWords.map((w, idx) => calculateWordAcousticWeight(w, idx === wordsCountInSec - 1));
-            const totalSecWeight = weights.reduce((a, b) => a + b, 0) || 1;
-            let accSecWeight = 0;
-
-            for (let w = 0; w < wordsCountInSec; w++) {
-              const globalIdx = sec.startWordIdx + w;
-              const wStart = currentTimelineOffset + (accSecWeight / totalSecWeight) * secDuration;
-              accSecWeight += weights[w];
-              const wEnd = currentTimelineOffset + (accSecWeight / totalSecWeight) * secDuration;
-
-              wordTimings.push({
-                wordIdx: globalIdx,
-                start: wStart,
-                end: Math.min(currentTimelineOffset + secDuration, wEnd)
-              });
-            }
-          }
-
-          currentTimelineOffset += secDuration;
-          if (sIdx + 1 < sectionsToProcess.length) {
-            await new Promise(r => setTimeout(r, 35));
-          }
-        }
-
-        // Dopełnienie ewentualnych brakujących słów poza sekcjami
-        let highestWordIdx = wordTimings.length > 0 ? Math.max(...wordTimings.map(t => t.wordIdx)) : -1;
-        while (highestWordIdx + 1 < targetWords.length) {
-          highestWordIdx++;
-          wordTimings.push({
-            wordIdx: highestWordIdx,
-            start: currentTimelineOffset,
-            end: currentTimelineOffset + 0.15
-          });
-        }
-        wordTimings.sort((a, b) => a.wordIdx - b.wordIdx);
-
-        if (allSectionBuffers.length > 0) {
-          audioBuffer = concatenateAudioBuffers(audioCtx, allSectionBuffers);
-        }
-      }
+      const audioBuffer = loadedAudio.audioBuffer;
+      const wordTimings = loadedAudio.wordTimings;
 
       // 4. Połączenie strumienia wideo z Canvasu oraz audio z AudioContext
       const canvasStream = canvas.captureStream(30);
@@ -1444,9 +1619,147 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   };
 
   /**
+   * Zatrzymanie odtwarzania podglądu dźwiękowego
+   */
+  const stopPreviewAudio = () => {
+    if (previewAudioSourceRef.current) {
+      try {
+        previewAudioSourceRef.current.stop();
+        previewAudioSourceRef.current.disconnect();
+      } catch {}
+      previewAudioSourceRef.current = null;
+    }
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    setIsPlayingPreview(false);
+    setRecordingStatus('Gotowy do odtwarzania lub generowania');
+  };
+
+  /**
+   * Przeskakuje do konkretnego słowa i przewija podgląd
+   */
+  const seekToWord = (idx: number) => {
+    if (isRecording) return;
+    const clamped = Math.max(0, Math.min(activeBroadcastItem.words.length - 1, idx));
+    setCurrentWordIndex(clamped);
+    drawVideoFrame(clamped, 0);
+
+    const wordEl = document.getElementById(`dom-word-${clamped}`);
+    if (wordEl) {
+      wordEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  };
+
+  /**
+   * Odtwarza lub zatrzymuje podgląd na żywo z lektorem i synchronicznym podświetlaniem słów
+   */
+  const handleTogglePreviewPlayback = async () => {
+    if (isPlayingPreview) {
+      stopPreviewAudio();
+      return;
+    }
+    if (isRecording) return;
+
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      let audioCtx = previewAudioCtxRef.current;
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new AudioCtx();
+        previewAudioCtxRef.current = audioCtx;
+      }
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      setRecordingStatus('Przygotowywanie głosu Lektora do odsłuchu na żywo...');
+      const loaded = await prepareAudioAndTimings(
+        activeBroadcastItem,
+        previewMode,
+        audioCtx,
+        lectorConfig,
+        (msg) => setRecordingStatus(msg)
+      );
+
+      if (!loaded.audioBuffer) {
+        setRecordingStatus('Nie udało się pobrać ścieżki dźwiękowej Lektora.');
+        return;
+      }
+
+      setIsPlayingPreview(true);
+      setRecordingStatus('Odtwarzanie na żywo z lektorem i synchronicznym podświetlaniem słów...');
+
+      const sourceNode = audioCtx.createBufferSource();
+      sourceNode.buffer = loaded.audioBuffer;
+      previewAudioSourceRef.current = sourceNode;
+      sourceNode.connect(audioCtx.destination);
+
+      const targetWords = previewMode === 'sample' 
+        ? activeBroadcastItem.words.slice(0, 45) 
+        : activeBroadcastItem.words;
+      const wordsTotal = targetWords.length;
+      const totalDuration = loaded.totalDuration;
+
+      // Sprawdź przesunięcie początkowe
+      const initialWordIdx = currentWordIndex >= loaded.wordTimings.length ? 0 : currentWordIndex;
+      const initialOffset = loaded.wordTimings[initialWordIdx]?.start || 0;
+
+      sourceNode.start(0, initialOffset);
+      const startAudioTime = audioCtx.currentTime;
+
+      const previewLoop = () => {
+        if (!previewAudioSourceRef.current) return;
+        const elapsed = (audioCtx.currentTime - startAudioTime) + initialOffset;
+        lastElapsedRef.current = elapsed;
+
+        let activeIdx = 0;
+        for (let i = 0; i < loaded.wordTimings.length; i++) {
+          if (elapsed >= loaded.wordTimings[i].start) {
+            activeIdx = loaded.wordTimings[i].wordIdx;
+          } else {
+            break;
+          }
+        }
+        if (elapsed >= totalDuration && loaded.wordTimings.length > 0) {
+          activeIdx = wordsTotal - 1;
+        }
+
+        setCurrentWordIndex(activeIdx);
+        drawVideoFrame(activeIdx, elapsed);
+
+        const wordEl = document.getElementById(`dom-word-${activeIdx}`);
+        if (wordEl) {
+          wordEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        if (elapsed < totalDuration) {
+          animationFrameRef.current = requestAnimationFrame(previewLoop);
+        } else {
+          setIsPlayingPreview(false);
+          setRecordingStatus('Zakończono odsłuch lektora.');
+        }
+      };
+
+      animationFrameRef.current = requestAnimationFrame(previewLoop);
+
+      sourceNode.onended = () => {
+        setIsPlayingPreview(false);
+      };
+
+    } catch (err) {
+      console.warn('Błąd odtwarzania podglądu:', err);
+      setIsPlayingPreview(false);
+      setRecordingStatus('Błąd odtwarzania podglądu.');
+    }
+  };
+
+  /**
    * Zatrzymanie generowania i reset klatki
    */
   const stopGeneration = () => {
+    stopPreviewAudio();
+
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
@@ -1797,6 +2110,76 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
           </div>
 
+
+
+          {/* Pasek przełączania technologii podglądu & Odsłuch z lektorem */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#0d1422] rounded-2xl border border-slate-800">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Technologia:</span>
+              </span>
+              <div className="inline-flex rounded-xl bg-slate-900 p-1 border border-slate-700/80 text-xs font-semibold gap-1">
+                <button
+                  onClick={() => setViewMode('video')}
+                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'video' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Klasyczny podgląd klatki wideo 16:9 dla YouTube"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Wideo Canvas 16:9</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('teleprompter')}
+                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'teleprompter' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Technologia DOM Karaoke: cały tekst zawsze widoczny z automatycznym przewijaniem"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Teleprompter DOM (Karaoke)</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('split')}
+                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    viewMode === 'split' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Widok zespolony: Wideo 16:9 oraz Teleprompter DOM obok siebie"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Widok Zespolony (Oba)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Przycisk odsłuchu na żywo z lektorem */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleTogglePreviewPlayback}
+                disabled={isRecording}
+                className={`px-4 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer shadow-md ${
+                  isPlayingPreview
+                    ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
+                    : 'bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white'
+                }`}
+                title={isPlayingPreview ? 'Zatrzymaj odsłuch' : 'Odsłuchaj na żywo z głosem lektora i synchronicznym podświetlaniem słów'}
+              >
+                {isPlayingPreview ? (
+                  <>
+                    <Pause className="w-4 h-4 fill-current" />
+                    <span>Wstrzymaj odsłuch lektora</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>▶ Odsłuchaj z lektorem na żywo</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* Szybki skok do sekcji / modlitw / akapitów */}
           {activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0 && (
             <div className="p-2.5 bg-[#0e1624] rounded-xl border border-slate-800 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
@@ -1808,11 +2191,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 return (
                   <button
                     key={sec.id || idx}
-                    onClick={() => {
-                      if (isRecording) return;
-                      setCurrentWordIndex(sec.startWordIdx);
-                      drawVideoFrame(sec.startWordIdx, 0);
-                    }}
+                    onClick={() => seekToWord(sec.startWordIdx)}
                     disabled={isRecording}
                     className={`px-2.5 py-1 rounded-lg shrink-0 transition cursor-pointer text-xs font-semibold ${
                       isSecActive
@@ -1828,37 +2207,92 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             </div>
           )}
 
-          {/* Podgląd Canvas 16:9 na żywo */}
-          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-amber-500/30 shadow-inner flex items-center justify-center">
-            <canvas
-              ref={canvasRef}
-              width={width}
-              height={height}
-              className="w-full h-full object-contain"
-            />
+          {/* Główny obszar podglądu: Wideo Canvas / DOM Teleprompter / Widok Zespolony */}
+          <div className="space-y-4">
+            
+            {/* A. WIDEO CANVAS 16:9 (gdy aktywny tryb 'video' lub 'split') */}
+            {(viewMode === 'video' || viewMode === 'split') && (
+              <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-amber-500/30 shadow-inner flex items-center justify-center">
+                <canvas
+                  ref={canvasRef}
+                  width={width}
+                  height={height}
+                  className="w-full h-full object-contain"
+                />
 
-            {/* Pływający wskaźnik nagrywania na żywo */}
-            {isRecording && (
-              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-red-600/90 text-white font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
-                <div className="w-2.5 h-2.5 rounded-full bg-white" />
-                <span>NAGRYWANIE WIDEO NA ŻYWO ({recordProgress}%)</span>
+                {/* Pływający wskaźnik nagrywania na żywo */}
+                {isRecording && (
+                  <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-red-600/90 text-white font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
+                    <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                    <span>NAGRYWANIE WIDEO NA ŻYWO ({recordProgress}%)</span>
+                  </div>
+                )}
+
+                {/* Pływający wskaźnik odsłuchu na żywo */}
+                {isPlayingPreview && !isRecording && (
+                  <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-amber-500/90 text-slate-950 font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-950" />
+                    <span>ODSŁUCH Z LEKTOREM NA ŻYWO</span>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* B. TELEPROMPTER DOM (KARAOKE) – CAŁY TEKST ZAWSZE WIDOCZNY W DRZEWIE DOM */}
+            {(viewMode === 'teleprompter' || viewMode === 'split') && (
+              <div className="p-5 sm:p-6 rounded-2xl bg-[#080d17] border border-amber-500/30 text-white space-y-4 max-h-[460px] overflow-y-auto custom-scrollbar font-serif leading-relaxed shadow-inner">
+                <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 text-xs text-slate-400 font-sans gap-2">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>TELEPROMPTER DOM KARAOKE • CAŁY TEKST JEST ZAWSZE WIDOCZNY BEZ ZNIKANIA</span>
+                  </div>
+                  <span className="font-mono text-slate-400 text-[11px]">
+                    Kliknij dowolne słowo, aby natychmiast przeskoczyć
+                  </span>
+                </div>
+
+                <div className="text-sm sm:text-base md:text-lg leading-relaxed select-text space-y-2">
+                  {activeBroadcastItem.words.map((w, idx) => {
+                    const isCurrent = idx === currentWordIndex;
+                    const isSpoken = idx < currentWordIndex;
+                    const isNewlineBreak = activeBroadcastItem.lineBreakWordIndices?.includes(idx);
+
+                    return (
+                      <React.Fragment key={idx}>
+                        {isNewlineBreak && <span className="block my-1.5" />}
+                        <span
+                          id={`dom-word-${idx}`}
+                          onClick={() => seekToWord(idx)}
+                          className={`cursor-pointer transition-all duration-150 inline-block px-1 py-0.5 rounded m-0.5 ${
+                            isCurrent
+                              ? 'bg-amber-400 text-slate-950 font-black shadow-lg ring-2 ring-amber-300 scale-110 z-10'
+                              : isSpoken
+                              ? 'text-white font-medium hover:text-amber-200'
+                              : 'text-slate-400 hover:text-slate-200'
+                          }`}
+                          title={`Słowo #${idx + 1}: ${w}`}
+                        >
+                          {w}
+                        </span>{' '}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
           </div>
 
-          {/* Interaktywny suwak podglądu słów i karaoke (gdy nie trwa nagrywanie) */}
+          {/* Interaktywny suwak podglądu słów i karaoke */}
           {!isRecording && activeBroadcastItem.words.length > 0 && (
             <div className="p-3 bg-[#0c121e] rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
                 <span className="text-amber-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1">
                   <Play className="w-3 h-3 text-amber-400" />
-                  <span>Podgląd tekstu:</span>
+                  <span>Podgląd słów:</span>
                 </span>
                 <button
-                  onClick={() => {
-                    setCurrentWordIndex(0);
-                    drawVideoFrame(0, 0);
-                  }}
+                  onClick={() => seekToWord(0)}
                   className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition flex items-center gap-1"
                   title="Początek"
                 >
@@ -1866,11 +2300,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                   <span>Początek</span>
                 </button>
                 <button
-                  onClick={() => {
-                    const newIdx = Math.max(0, currentWordIndex - 5);
-                    setCurrentWordIndex(newIdx);
-                    drawVideoFrame(newIdx, 0);
-                  }}
+                  onClick={() => seekToWord(Math.max(0, currentWordIndex - 5))}
                   disabled={currentWordIndex <= 0}
                   className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-semibold cursor-pointer transition"
                   title="-5 słów"
@@ -1878,11 +2308,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                   -5
                 </button>
                 <button
-                  onClick={() => {
-                    const newIdx = Math.min(activeBroadcastItem.words.length - 1, currentWordIndex + 5);
-                    setCurrentWordIndex(newIdx);
-                    drawVideoFrame(newIdx, 0);
-                  }}
+                  onClick={() => seekToWord(Math.min(activeBroadcastItem.words.length - 1, currentWordIndex + 5))}
                   disabled={currentWordIndex >= activeBroadcastItem.words.length - 1}
                   className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-semibold cursor-pointer transition"
                   title="+5 słów"
@@ -1899,8 +2325,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                   value={currentWordIndex}
                   onChange={(e) => {
                     const idx = parseInt(e.target.value, 10);
-                    setCurrentWordIndex(idx);
-                    drawVideoFrame(idx, 0);
+                    seekToWord(idx);
                   }}
                   className="w-full accent-amber-500 cursor-pointer"
                 />
