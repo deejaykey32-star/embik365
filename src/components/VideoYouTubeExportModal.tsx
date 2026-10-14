@@ -1018,7 +1018,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       headerBottom = pillY + pillH;
     }
 
-    // 3. STREFA NAPISÓW Z EFEKTEM KARAOKE – 100% SŁÓW ZAWSZE WIDOCZNYCH (BRAK ZNIKANIA I STRONICOWANIA)
+    // 3. NOWA TECHNIKA: PŁYNNY TELEPROMPTER KARAOKE (CONTINUOUS SMOOTH TELEPROMPTER)
+    // 100% SŁÓW ZAWSZE DOSTĘPNYCH BEZ ZNIKANIA, BEZ STRONICOWANIA I BEZ UCINANIA TEKSTU
     if (wordsTotal > 0) {
       const minHeaderGap = Math.round(height * (hasRosary ? 0.024 : 0.030));
       const footerTop = height - 85; // Krawędź górna stopki YouTube
@@ -1039,322 +1040,209 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         isParagraphEnd?: boolean;
       }
 
-      // Słowa do wyświetlenia w strefie napisów:
-      // A. W stacjach z różańcem (nowyrhz, rhz365): wyświetlamy w całości bieżącą modlitwę / rozważanie bez dzielenia na strony
-      // B. W stacjach z czytaniem (wnr365, biblia365): wyświetlamy w 100% CAŁY TEKST czytania / rozważania!
-      let effectiveWordTexts: string[] = [];
-      let effectiveStartIdx = 0;
-
-      if (hasRosary) {
-        effectiveStartIdx = activeSec.startWordIdx;
-        effectiveWordTexts = words.slice(activeSec.startWordIdx, activeSec.endWordIdx + 1);
-      } else {
-        effectiveStartIdx = 0;
-        effectiveWordTexts = words;
-      }
-
-      const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
+      // Stała szerokość kolumny tekstu (elegancka, wyśrodkowana)
+      const singleColWidth = Math.round(width * 0.86);
       const FONT_FAMILY = '"Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
-      // Decyzja o układzie kolumn dla optymalnej czytelności na ekranie 16:9 Full HD:
-      // - Do 220 słów: 1 szeroka, elegancka kolumna (wyśrodkowana)
-      // - Powyżej 220 słów (np. Dzień 20 z ~400 słowami): 2 zbalansowane kolumny obok siebie (lewa + prawa)
-      // Dzięki temu nawet 550+ słów mieści się w 100% na jednym ekranie bez ucinania ani znikania!
-      const isTwoColumn = !hasRosary && effectiveWordTexts.length > 220;
+      // Komfortowy, czytelny rozmiar czcionki telewizyjnej (Full HD 31-33px, HD 21-22px)
+      const renderFontSize = Math.round(height * (hasRosary ? 0.029 : 0.032));
+      const renderLineHeight = Math.round(renderFontSize * 1.52);
 
-      const buildLinesFromTokens = (tokensList: { text: string; wordIdx: number }[], fSize: number, maxLineW: number) => {
-        ctx.save();
-        ctx.font = `600 ${fSize}px ${FONT_FAMILY}`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        const spaceW = Math.max(Math.ceil(ctx.measureText(' ').width) + 3, Math.round(fSize * 0.30));
-        const builtLines: LineItem[] = [];
-        let curLineTokens: WordToken[] = [];
-        let curWordsWidth = 0;
+      ctx.save();
+      ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const standardSpaceWidth = Math.max(Math.ceil(ctx.measureText(' ').width) + 2, Math.round(renderFontSize * 0.28));
 
-        for (let i = 0; i < tokensList.length; i++) {
-          const item = tokensList[i];
-          const isExplicitLineBreak = i > 0 && lineBreakIndicesSet.has(item.wordIdx);
-
-          if (isExplicitLineBreak && curLineTokens.length > 0) {
-            builtLines.push({
-              tokens: curLineTokens,
-              hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
-              isParagraphEnd: true
-            });
-            curLineTokens = [];
-            curWordsWidth = 0;
+      // Zbiór indeksów słów wyznaczających początek nowej modlitwy lub akapitu
+      const lineBreakIndicesSet = new Set(activeBroadcastItem.lineBreakWordIndices || []);
+      if (activeBroadcastItem.sections) {
+        activeBroadcastItem.sections.forEach(s => {
+          if (s.startWordIdx > 0 && s.startWordIdx < wordsTotal) {
+            lineBreakIndicesSet.add(s.startWordIdx);
           }
+        });
+      }
 
-          const wordW = Math.ceil(ctx.measureText(item.text).width) + 2;
-          const gapsCount = curLineTokens.length;
-          const testLineWidth = curWordsWidth + wordW + gapsCount * spaceW;
+      // Budowa wszystkich linii wideo dla całego tekstu audycji
+      const sectionLines: LineItem[] = [];
+      let curLineTokens: WordToken[] = [];
+      let curWordsWidth = 0;
 
-          if (testLineWidth > maxLineW && curLineTokens.length > 0) {
-            builtLines.push({
-              tokens: curLineTokens,
-              hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
-              isParagraphEnd: false
-            });
-            curLineTokens = [];
-            curWordsWidth = 0;
-          }
+      for (let i = 0; i < wordsTotal; i++) {
+        const wordText = words[i];
+        const isExplicitBreak = i > 0 && lineBreakIndicesSet.has(i);
 
-          curLineTokens.push({ text: item.text, wordIdx: item.wordIdx, width: wordW });
-          curWordsWidth += wordW;
-        }
-
-        if (curLineTokens.length > 0) {
-          builtLines.push({
+        if (isExplicitBreak && curLineTokens.length > 0) {
+          sectionLines.push({
             tokens: curLineTokens,
             hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
             isParagraphEnd: true
           });
+          curLineTokens = [];
+          curWordsWidth = 0;
         }
 
-        ctx.restore();
-        return { builtLines, spaceW };
-      };
+        const wordW = Math.ceil(ctx.measureText(wordText).width) + 2;
+        const gapsCount = curLineTokens.length;
+        const testLineWidth = curWordsWidth + wordW + gapsCount * standardSpaceWidth;
 
-      const allTokens: { text: string; wordIdx: number }[] = effectiveWordTexts.map((txt, idx) => ({
-        text: txt,
-        wordIdx: effectiveStartIdx + idx
-      }));
-
-      if (isTwoColumn) {
-        // =========================================================
-        // WIDOK 2-KOLUMNOWY DLA BOGATYCH TEKSTÓW (NP. DZIEŃ 20 WIDOKI NA RAJ)
-        // =========================================================
-        const colWidth = Math.round(width * 0.435);
-        const col1StartX = Math.round(width * 0.045);
-        const col2StartX = Math.round(width * 0.520);
-
-        // Naturalny podział na połowy według kropki lub końca zdania
-        const midIdx = Math.floor(allTokens.length / 2);
-        let splitIdx = midIdx;
-        for (let off = 0; off <= 35; off++) {
-          const checkBack = midIdx - off;
-          if (checkBack > 30 && /[.!?][„”«»"']?$/.test(allTokens[checkBack].text)) {
-            splitIdx = checkBack + 1;
-            break;
-          }
-          const checkFwd = midIdx + off;
-          if (checkFwd < allTokens.length - 30 && /[.!?][„”«»"']?$/.test(allTokens[checkFwd].text)) {
-            splitIdx = checkFwd + 1;
-            break;
-          }
-        }
-
-        const col1Tokens = allTokens.slice(0, splitIdx);
-        const col2Tokens = allTokens.slice(splitIdx);
-
-        let renderFontSize = Math.round(height * 0.024); // ~26px na 1080p, ~17px na 720p
-        let renderLineHeight = Math.round(renderFontSize * 1.42);
-
-        let col1Res = buildLinesFromTokens(col1Tokens, renderFontSize, colWidth);
-        let col2Res = buildLinesFromTokens(col2Tokens, renderFontSize, colWidth);
-        let maxLines = Math.max(col1Res.builtLines.length, col2Res.builtLines.length);
-
-        const maxAllowedBlockH = zoneHeight - 16;
-        while (maxLines * renderLineHeight > maxAllowedBlockH && renderFontSize > 13) {
-          renderFontSize -= 1;
-          renderLineHeight = Math.round(renderFontSize * 1.38);
-          col1Res = buildLinesFromTokens(col1Tokens, renderFontSize, colWidth);
-          col2Res = buildLinesFromTokens(col2Tokens, renderFontSize, colWidth);
-          maxLines = Math.max(col1Res.builtLines.length, col2Res.builtLines.length);
-        }
-
-        // Subtelna złota linia pionowa dzieląca kolumny
-        ctx.save();
-        ctx.strokeStyle = 'rgba(217, 119, 6, 0.22)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(width / 2, zoneTop + 6);
-        ctx.lineTo(width / 2, zoneBottom - 6);
-        ctx.stroke();
-        ctx.restore();
-
-        const totalBlockHeight = maxLines * renderLineHeight;
-        const baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
-
-        const drawColumn = (colLines: LineItem[], startX: number, spaceW: number) => {
-          colLines.forEach((line, lineIndex) => {
-            const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
-            const N = line.tokens.length;
-            if (N === 0) return;
-
-            const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
-            const isJustified = !line.isParagraphEnd && N > 1;
-            const spaceBetweenWords = isJustified
-              ? Math.max(spaceW, Math.min((colWidth - totalWordsW) / (N - 1), spaceW * 2.2))
-              : spaceW;
-
-            let curX = startX;
-
-            for (let tIdx = 0; tIdx < N; tIdx++) {
-              const token = line.tokens[tIdx];
-              const isCurrent = token.wordIdx === activeWordIdx;
-              const isSpoken = token.wordIdx < activeWordIdx;
-              const tokenX = curX;
-
-              ctx.save();
-              ctx.textAlign = 'left';
-              ctx.textBaseline = 'middle';
-              ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
-
-              if (isCurrent) {
-                // EFEKT KARAOKE: Złoty podświetlony badge
-                const padX = Math.min(Math.round(spaceW * 0.40), 7);
-                const bgH = Math.round(renderFontSize * 1.30);
-                const bgX = tokenX - padX;
-                const bgY = Math.round(lineY - bgH / 2);
-                const bgW = token.width + padX * 2;
-
-                ctx.fillStyle = 'rgba(217, 119, 6, 0.55)';
-                ctx.beginPath();
-                ctx.roundRect(bgX, bgY, bgW, bgH, 7);
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
-                ctx.lineWidth = 1.8;
-                ctx.stroke();
-
-                ctx.shadowColor = 'rgba(251, 191, 36, 0.7)';
-                ctx.shadowBlur = 8;
-                ctx.fillStyle = '#fef08a';
-                ctx.fillText(token.text, tokenX, lineY);
-              } else if (isSpoken) {
-                // SŁOWO JUŻ PRZECZYTANE: Czysta biel
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-                ctx.shadowBlur = 3;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(token.text, tokenX, lineY);
-              } else {
-                // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-200
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-                ctx.shadowBlur = 2;
-                ctx.fillStyle = '#cbd5e1';
-                ctx.fillText(token.text, tokenX, lineY);
-              }
-              ctx.restore();
-
-              curX = tokenX + token.width + spaceBetweenWords;
-            }
+        if (testLineWidth > singleColWidth && curLineTokens.length > 0) {
+          sectionLines.push({
+            tokens: curLineTokens,
+            hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
+            isParagraphEnd: false
           });
-        };
-
-        drawColumn(col1Res.builtLines, col1StartX, col1Res.spaceW);
-        drawColumn(col2Res.builtLines, col2StartX, col2Res.spaceW);
-
-      } else {
-        // =========================================================
-        // WIDOK 1-KOLUMNOWY (DO 220 SŁÓW / POJEDYNCZE MODLITWY RÓŻAŃCA)
-        // =========================================================
-        const singleColWidth = Math.round(width * 0.86);
-
-        let baseFontSize = Math.round(height * (hasRosary ? 0.034 : 0.031));
-        if (allTokens.length <= 40) {
-          baseFontSize = Math.round(height * (hasRosary ? 0.038 : 0.036));
-        } else if (allTokens.length <= 90) {
-          baseFontSize = Math.round(height * (hasRosary ? 0.033 : 0.031));
-        } else {
-          baseFontSize = Math.round(height * (hasRosary ? 0.028 : 0.026));
+          curLineTokens = [];
+          curWordsWidth = 0;
         }
 
-        let renderFontSize = baseFontSize;
-        let renderLineHeight = Math.round(renderFontSize * 1.44);
+        curLineTokens.push({ text: wordText, wordIdx: i, width: wordW });
+        curWordsWidth += wordW;
+      }
 
-        let res = buildLinesFromTokens(allTokens, renderFontSize, singleColWidth);
-
-        const maxAllowedBlockH = zoneHeight - 16;
-        while (res.builtLines.length * renderLineHeight > maxAllowedBlockH && renderFontSize > 14) {
-          renderFontSize -= 1;
-          renderLineHeight = Math.round(renderFontSize * 1.40);
-          res = buildLinesFromTokens(allTokens, renderFontSize, singleColWidth);
-        }
-
-        const sectionLines = res.builtLines;
-        const standardSpaceWidth = res.spaceW;
-        const totalBlockHeight = sectionLines.length * renderLineHeight;
-
-        let baseStartY: number;
-        if (totalBlockHeight <= zoneHeight) {
-          baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
-        } else {
-          let activeLineIdx = sectionLines.findIndex(l => l.hasActiveWord);
-          if (activeLineIdx === -1) activeLineIdx = 0;
-          const centerTarget = zoneTop + Math.round(zoneHeight / 2);
-          const activeLineCenter = activeLineIdx * renderLineHeight + Math.round(renderLineHeight / 2);
-          baseStartY = centerTarget - activeLineCenter;
-          baseStartY = Math.max(zoneBottom - totalBlockHeight, Math.min(zoneTop, baseStartY));
-        }
-
-        sectionLines.forEach((line, lineIndex) => {
-          const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
-          const N = line.tokens.length;
-          if (N === 0) return;
-
-          const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
-          const isJustified = !line.isParagraphEnd && N > 1;
-          const spaceBetweenWords = isJustified
-            ? Math.max(standardSpaceWidth, Math.min((singleColWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5))
-            : standardSpaceWidth;
-
-          const lineContentW = totalWordsW + (N - 1) * spaceBetweenWords;
-          const lineStartX = (sectionLines.length === 1 && !isJustified)
-            ? Math.round((width - lineContentW) / 2)
-            : Math.round((width - singleColWidth) / 2);
-
-          let curX = lineStartX;
-
-          for (let tIdx = 0; tIdx < N; tIdx++) {
-            const token = line.tokens[tIdx];
-            const isCurrent = token.wordIdx === activeWordIdx;
-            const isSpoken = token.wordIdx < activeWordIdx;
-            const tokenX = curX;
-
-            ctx.save();
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
-
-            if (isCurrent) {
-              const padX = Math.min(Math.round(standardSpaceWidth * 0.40), 8);
-              const bgH = Math.round(renderFontSize * 1.30);
-              const bgX = tokenX - padX;
-              const bgY = Math.round(lineY - bgH / 2);
-              const bgW = token.width + padX * 2;
-
-              ctx.fillStyle = 'rgba(217, 119, 6, 0.55)';
-              ctx.beginPath();
-              ctx.roundRect(bgX, bgY, bgW, bgH, 8);
-              ctx.fill();
-
-              ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
-              ctx.lineWidth = 1.8;
-              ctx.stroke();
-
-              ctx.shadowColor = 'rgba(251, 191, 36, 0.7)';
-              ctx.shadowBlur = 8;
-              ctx.fillStyle = '#fef08a';
-              ctx.fillText(token.text, tokenX, lineY);
-            } else if (isSpoken) {
-              ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-              ctx.shadowBlur = 3;
-              ctx.fillStyle = '#ffffff';
-              ctx.fillText(token.text, tokenX, lineY);
-            } else {
-              ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-              ctx.shadowBlur = 2;
-              ctx.fillStyle = '#cbd5e1';
-              ctx.fillText(token.text, tokenX, lineY);
-            }
-            ctx.restore();
-
-            curX = tokenX + token.width + spaceBetweenWords;
-          }
+      if (curLineTokens.length > 0) {
+        sectionLines.push({
+          tokens: curLineTokens,
+          hasActiveWord: curLineTokens.some(t => t.wordIdx === activeWordIdx),
+          isParagraphEnd: true
         });
       }
+      ctx.restore();
+
+      const totalBlockHeight = sectionLines.length * renderLineHeight;
+      const zoneCenterY = zoneTop + Math.round(zoneHeight / 2);
+
+      let baseStartY: number;
+      if (totalBlockHeight <= zoneHeight) {
+        // Wszystkie linie mieszczą się w oknie telepromptera – wyśrodkowanie pionowe
+        baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
+      } else {
+        // Płynny teleprompter: dynamiczne centrowanie aktywnej linii z mikro-postępem słów
+        let activeLineIdx = sectionLines.findIndex(l => l.hasActiveWord);
+        if (activeLineIdx === -1) {
+          activeLineIdx = activeWordIdx >= wordsTotal - 1 ? sectionLines.length - 1 : 0;
+        }
+
+        const activeLine = sectionLines[activeLineIdx];
+        const tokenIdxInLine = activeLine ? Math.max(0, activeLine.tokens.findIndex(t => t.wordIdx === activeWordIdx)) : 0;
+        const lineWordsCount = activeLine ? Math.max(1, activeLine.tokens.length) : 1;
+        const intraLineProgress = tokenIdxInLine / lineWordsCount;
+
+        const activeLineYCenter = (activeLineIdx + intraLineProgress) * renderLineHeight + Math.round(renderLineHeight / 2);
+        const targetStartY = zoneCenterY - activeLineYCenter;
+
+        // Bezpieczne granice przewijania:
+        // Pierwsza linia nie opada poniżej górnego marginesu
+        const maxStartY = zoneTop + Math.round(renderLineHeight * 0.4);
+        // Ostatnia linia nie ucieka powyżej dolnego marginesu
+        const minStartY = zoneBottom - totalBlockHeight - Math.round(renderLineHeight * 0.4);
+
+        baseStartY = Math.max(minStartY, Math.min(maxStartY, targetStartY));
+      }
+
+      // ŚCISŁE MASKOWANIE OBSZARU WIDEO (VIEWPORT CLIPPING)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, zoneTop, width, zoneHeight);
+      ctx.clip();
+
+      const lineStartXDefault = Math.round((width - singleColWidth) / 2);
+
+      sectionLines.forEach((line, lineIndex) => {
+        const lineY = baseStartY + lineIndex * renderLineHeight + Math.round(renderLineHeight / 2);
+        // Optymalizacja wydajności: pomiń linie całkowicie poza zasięgiem widzenia
+        if (lineY < zoneTop - renderLineHeight * 2 || lineY > zoneBottom + renderLineHeight * 2) {
+          return;
+        }
+
+        const N = line.tokens.length;
+        if (N === 0) return;
+
+        const totalWordsW = line.tokens.reduce((acc, t) => acc + t.width, 0);
+        const isJustified = !line.isParagraphEnd && N > 1;
+        const spaceBetweenWords = isJustified
+          ? Math.max(standardSpaceWidth, Math.min((singleColWidth - totalWordsW) / (N - 1), standardSpaceWidth * 2.5))
+          : standardSpaceWidth;
+
+        const lineContentW = totalWordsW + (N - 1) * spaceBetweenWords;
+        const lineStartX = (sectionLines.length === 1 && !isJustified)
+          ? Math.round((width - lineContentW) / 2)
+          : lineStartXDefault;
+
+        let curX = lineStartX;
+
+        for (let tIdx = 0; tIdx < N; tIdx++) {
+          const token = line.tokens[tIdx];
+          const isCurrent = token.wordIdx === activeWordIdx;
+          const isSpoken = token.wordIdx < activeWordIdx;
+          const tokenX = curX;
+
+          ctx.save();
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.font = `600 ${renderFontSize}px ${FONT_FAMILY}`;
+
+          if (isCurrent) {
+            // EFEKT KARAOKE: Złoty podświetlony badge z obrysem i blaskiem
+            const padX = Math.min(Math.round(standardSpaceWidth * 0.45), 10);
+            const bgH = Math.round(renderFontSize * 1.34);
+            const bgX = tokenX - padX;
+            const bgY = Math.round(lineY - bgH / 2);
+            const bgW = token.width + padX * 2;
+
+            ctx.fillStyle = 'rgba(217, 119, 6, 0.60)';
+            ctx.beginPath();
+            ctx.roundRect(bgX, bgY, bgW, bgH, 8);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.85)';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = '#fef08a';
+            ctx.fillText(token.text, tokenX, lineY);
+          } else if (isSpoken) {
+            // SŁOWO JUŻ PRZECZYTANE: Czysta biel z subtelnym cieniem
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+            ctx.shadowBlur = 3;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(token.text, tokenX, lineY);
+          } else {
+            // SŁOWO DO PRZECZYTANIA: Elegancki, czytelny slate-300
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+            ctx.shadowBlur = 2;
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillText(token.text, tokenX, lineY);
+          }
+          ctx.restore();
+
+          curX = tokenX + token.width + spaceBetweenWords;
+        }
+      });
+
+      // WINIETY GRADIENTOWE (FADE VIGNETTES) – MIĘKKIE ROZPŁYWANIE SIĘ TEKSTU U GÓRY I DOŁU
+      const vignetteH = Math.min(Math.round(zoneHeight * 0.16), 85);
+
+      // Górny gradient wygaszający do tła
+      const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + vignetteH);
+      topGrad.addColorStop(0, '#050505');
+      topGrad.addColorStop(0.35, 'rgba(5, 5, 5, 0.85)');
+      topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(0, zoneTop, width, vignetteH);
+
+      // Dolny gradient wygaszający do tła
+      const botGrad = ctx.createLinearGradient(0, zoneBottom - vignetteH, 0, zoneBottom);
+      botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
+      botGrad.addColorStop(0.65, 'rgba(5, 5, 5, 0.85)');
+      botGrad.addColorStop(1, '#050505');
+      ctx.fillStyle = botGrad;
+      ctx.fillRect(0, zoneBottom - vignetteH, width, vignetteH);
+
+      ctx.restore();
     } else {
       // Bezpieczny komunikat w przypadku braku słów
       ctx.save();
