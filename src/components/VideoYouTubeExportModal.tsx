@@ -626,32 +626,32 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillRect(0, 0, width, height);
 
     // 2. RAMKA GÓRNA & NAGŁÓWEK WIDEO (YouTube Header)
-    const topBarY = Math.round(height * 0.048);
-    const topLabelY = topBarY - Math.round(height * 0.010);
+    const topBarY = Math.round(height * 0.038);
+    const topLabelY = topBarY - Math.round(height * 0.008);
 
     // Złota linia dekoracyjna na górze
     ctx.fillStyle = activeStation.themeColor || '#d97706';
     ctx.fillRect(80, topBarY, width - 160, Math.max(2, Math.round(height * 0.003)));
 
     // Etykieta stacji radiowej / sekcji
-    ctx.font = `bold ${Math.round(height * 0.021)}px "Cinzel", "Times New Roman", serif`;
+    ctx.font = `bold ${Math.round(height * 0.020)}px "Cinzel", "Times New Roman", serif`;
     ctx.fillStyle = '#f59e0b'; // Złoty bursztyn
     ctx.textAlign = 'left';
     ctx.fillText(`🔴 RADIO INTERNETOWE • ${activeBroadcastItem.stationName.toUpperCase()}`, 80, topLabelY);
 
     // Znak wodny / Czas
-    ctx.font = `600 ${Math.round(height * 0.018)}px "Plus Jakarta Sans", sans-serif`;
+    ctx.font = `600 ${Math.round(height * 0.017)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
     ctx.fillText(`widokinaraj.pl`, width - 80, topLabelY);
     ctx.textAlign = 'left';
 
     // 2.2. Linia z datą i informacją o cyklu / dniu
-    const dateY = Math.round(height * 0.082);
+    const dateY = Math.round(height * 0.066);
     ctx.save();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.font = `bold ${Math.round(height * 0.018)}px "Plus Jakarta Sans", sans-serif`;
+    ctx.font = `bold ${Math.round(height * 0.017)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#fbbf24'; // Ciepłe bursztynowe złoto
     ctx.fillText(activeBroadcastItem.displayDate, 80, dateY);
     ctx.restore();
@@ -664,7 +664,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
 
-    let titleFontSize = Math.round(height * 0.033);
+    let titleFontSize = Math.round(height * 0.030);
     ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
 
     let titleLines: string[] = [];
@@ -692,8 +692,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillStyle = '#ffffff';
 
     const isMultiLineTitle = titleLines.length > 1;
-    const titleY1 = Math.round(height * (isMultiLineTitle ? 0.118 : 0.126));
-    const titleY2 = Math.round(height * 0.154);
+    const titleY1 = Math.round(height * (isMultiLineTitle ? 0.098 : 0.106));
+    const titleY2 = Math.round(height * 0.130);
 
     ctx.fillText(titleLines[0], 80, titleY1);
     if (isMultiLineTitle && titleLines[1]) {
@@ -703,17 +703,17 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.restore();
 
     // 2.4. Podtytuł / Ścieżka / Źródło z bezpiecznym dopasowaniem
-    const subY = Math.round(height * (isMultiLineTitle ? 0.185 : 0.165));
-    const sepY = Math.round(height * (isMultiLineTitle ? 0.208 : 0.188));
+    const subY = Math.round(height * (isMultiLineTitle ? 0.156 : 0.136));
+    const sepY = Math.round(height * (isMultiLineTitle ? 0.174 : 0.154));
 
     ctx.save();
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    let subFontSize = Math.round(height * 0.019);
+    let subFontSize = Math.round(height * 0.017);
     ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
     const subWidth = ctx.measureText(activeBroadcastItem.subtitle).width;
     if (subWidth > maxHeaderW) {
-      subFontSize = Math.max(Math.round(height * 0.014), Math.floor(subFontSize * (maxHeaderW / subWidth)));
+      subFontSize = Math.max(Math.round(height * 0.013), Math.floor(subFontSize * (maxHeaderW / subWidth)));
       ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
     }
     ctx.fillStyle = '#cbd5e1';
@@ -736,9 +736,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ) || rosarySegments[0];
       const activeBeadNum = activeSeg.beadIndex;
 
-      const beadCenterY = Math.round(height * (isMultiLineTitle ? 0.275 : 0.255));
-      const largeRadius = Math.round(height * 0.023);
-      const smallRadius = Math.round(height * 0.013);
+      const beadCenterY = Math.round(height * (isMultiLineTitle ? 0.220 : 0.200));
+      const largeRadius = Math.round(height * 0.020);
+      const smallRadius = Math.round(height * 0.011);
 
       const leftX = Math.round(width * 0.12);
       const rightX = Math.round(width * 0.88);
@@ -787,7 +787,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `bold ${Math.round(height * 0.015)}px "Cinzel", serif`;
         ctx.fillStyle = isCruxActive ? '#ffd700' : isCruxDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText('Krzyżyk • Wstęp', t0CruxX, beadCenterY + largeRadius + 18);
+        ctx.fillText('Krzyżyk • Wstęp', t0CruxX, beadCenterY + largeRadius + 14);
 
         // 2. DUŻY PACIOREK: Ojcze nasz
         const isPaterActive = activeBeadNum === 1;
@@ -813,7 +813,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `bold ${Math.round(height * 0.015)}px "Cinzel", serif`;
         ctx.fillStyle = isPaterActive ? '#ffd700' : isPaterDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText('Ojcze nasz', t0PaterX, beadCenterY + largeRadius + 18);
+        ctx.fillText('Ojcze nasz', t0PaterX, beadCenterY + largeRadius + 14);
 
         // 3. TRZY MAŁE PACIORKI: Wiara, Nadzieja, Miłość
         const t0SmallBeads = [
@@ -847,7 +847,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.font = `bold ${Math.round(height * 0.014)}px sans-serif`;
           ctx.fillStyle = isBeadActive ? '#ffd700' : isBeadDone ? '#a7f3d0' : '#94a3b8';
           ctx.textAlign = 'center';
-          ctx.fillText(b.shortLabel, b.x, beadCenterY + smallRadius + 18);
+          ctx.fillText(b.shortLabel, b.x, beadCenterY + smallRadius + 14);
         });
 
         // 4. DUŻY PACIOREK: Chwała Ojcu
@@ -874,7 +874,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `bold ${Math.round(height * 0.015)}px "Cinzel", serif`;
         ctx.fillStyle = isGloryActive ? '#ffd700' : isGloryDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText('Chwała Ojcu', t0GloryX, beadCenterY + largeRadius + 18);
+        ctx.fillText('Chwała Ojcu', t0GloryX, beadCenterY + largeRadius + 14);
 
       } else {
         // =========================================================
@@ -915,7 +915,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             ? 'Rozważanie'
             : (activeSec?.id === 'our_father' ? 'Ojcze nasz' : (isIntroActive ? 'Rozważanie' : 'Rozważanie & Ojcze nasz')),
           leftX,
-          beadCenterY + largeRadius + 18
+          beadCenterY + largeRadius + 14
         );
 
         // C. 10 MAŁYCH PACIORKÓW: Zdrowaś Maryjo ze wstawką
@@ -946,7 +946,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           ctx.font = `600 ${Math.round(height * 0.013)}px sans-serif`;
           ctx.fillStyle = isBeadActive ? '#ffd700' : '#94a3b8';
           ctx.textAlign = 'center';
-          ctx.fillText(`#${b}`, beadX, beadCenterY - smallRadius - 8);
+          ctx.fillText(`#${b}`, beadX, beadCenterY - smallRadius - 7);
         }
 
         // D. PACIOREK 2 (DUŻY): Chwała Ojcu i O mój Jezu
@@ -974,17 +974,17 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         ctx.font = `bold ${Math.round(height * 0.016)}px "Cinzel", serif`;
         ctx.fillStyle = isConclActive ? '#ffd700' : isConclDone ? '#a7f3d0' : '#cbd5e1';
         ctx.textAlign = 'center';
-        ctx.fillText('Chwała Ojcu & O mój Jezu', rightX, beadCenterY + largeRadius + 18);
+        ctx.fillText('Chwała Ojcu & O mój Jezu', rightX, beadCenterY + largeRadius + 14);
       }
 
       // E. BELKA INFORMACYJNA O AKTUALNYM PACIORKU
-      const pillY = beadCenterY + largeRadius + Math.round(height * 0.038);
+      const pillY = beadCenterY + largeRadius + Math.round(height * 0.028);
       ctx.save();
       ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
       ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
       ctx.lineWidth = 1;
       const pillW = width - 180;
-      const pillH = Math.round(height * 0.046);
+      const pillH = Math.round(height * 0.038);
       
       ctx.beginPath();
       ctx.roundRect(90, pillY, pillW, pillH, 12);
@@ -993,7 +993,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      let pillFont = Math.round(height * 0.02);
+      let pillFont = Math.round(height * 0.019);
       ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = '#ffd700';
 
@@ -1067,9 +1067,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca
     } else {
       // Belka informacyjna dla czytań biblijnych (Biblia365) i wpisów (Widoki na Raj)
-      const pillY = Math.round(height * (isMultiLineTitle ? 0.235 : 0.210));
+      const pillY = Math.round(height * (isMultiLineTitle ? 0.194 : 0.174));
       const pillW = width - 180;
-      const pillH = Math.round(height * 0.046);
+      const pillH = Math.round(height * 0.038);
 
       ctx.save();
       ctx.fillStyle = selectedStationId === 'biblia365' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(2, 132, 199, 0.15)';
@@ -1082,7 +1082,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      let pillFont = Math.round(height * 0.020);
+      let pillFont = Math.round(height * 0.019);
       ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       ctx.fillStyle = selectedStationId === 'biblia365' ? '#34d399' : '#38bdf8';
 
@@ -1092,7 +1092,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       const pW = ctx.measureText(pillText).width;
       if (pW > pillW - 30) {
-        pillFont = Math.max(Math.round(height * 0.015), Math.floor(pillFont * ((pillW - 30) / pW)));
+        pillFont = Math.max(Math.round(height * 0.014), Math.floor(pillFont * ((pillW - 30) / pW)));
         ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
       }
       ctx.fillText(pillText, width / 2, pillY + pillH / 2);
@@ -1102,9 +1102,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     }
 
     // 3. PŁYNNY TELEPROMPTER KARAOKE (CONTINUOUS SMOOTH TELEPROMPTER)
-    // Zwiększony margines, aby nagłówek nigdy nie przysłaniał podstawowego tekstu modlitwy
+    // Bezpieczny margines, aby nagłówek nigdy nie przysłaniał podstawowego tekstu modlitwy
     if (wordsTotal > 0) {
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.055 : 0.065));
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.045 : 0.050));
       const footerH = Math.round(height * 0.078);
       const footerTop = height - footerH; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
@@ -1195,12 +1195,15 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.restore();
 
       const totalBlockHeight = sectionLines.length * renderLineHeight;
-      const zoneCenterY = zoneTop + Math.round(zoneHeight / 2);
+
+      // Bezpieczny margines górny dla tekstu, aby pierwsza linia była w 100% czytelna i odsunięta od nagłówka
+      const topTextPadding = Math.round(renderLineHeight * 0.70);
+      const bottomTextPadding = Math.round(renderLineHeight * 0.40);
 
       let baseStartY: number;
       if (totalBlockHeight <= zoneHeight) {
         // Wszystkie linie mieszczą się w oknie telepromptera – wyśrodkowanie pionowe
-        baseStartY = zoneTop + Math.max(0, Math.round((zoneHeight - totalBlockHeight) / 2));
+        baseStartY = Math.max(zoneTop + topTextPadding, zoneTop + Math.round((zoneHeight - totalBlockHeight) / 2));
       } else {
         // Płynny teleprompter: dynamiczne centrowanie aktywnej linii z mikro-postępem słów
         let activeLineIdx = sectionLines.findIndex(l => l.hasActiveWord);
@@ -1214,13 +1217,14 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         const intraLineProgress = tokenIdxInLine / lineWordsCount;
 
         const activeLineYCenter = (activeLineIdx + intraLineProgress) * renderLineHeight + Math.round(renderLineHeight / 2);
-        const targetStartY = zoneCenterY - activeLineYCenter;
+        const targetActiveY = zoneTop + Math.round(zoneHeight * 0.38);
+        const targetStartY = targetActiveY - activeLineYCenter;
 
         // Bezpieczne granice przewijania:
-        // Pierwsza linia nie opada poniżej górnego marginesu
-        const maxStartY = zoneTop + Math.round(renderLineHeight * 0.4);
+        // Pierwsza linia nie opada poniżej górnego marginesu ani nie nachodzi na nagłówek
+        const maxStartY = zoneTop + topTextPadding;
         // Ostatnia linia nie ucieka powyżej dolnego marginesu
-        const minStartY = zoneBottom - totalBlockHeight - Math.round(renderLineHeight * 0.4);
+        const minStartY = zoneBottom - totalBlockHeight - bottomTextPadding;
 
         baseStartY = Math.max(minStartY, Math.min(maxStartY, targetStartY));
       }
@@ -1308,25 +1312,36 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       });
 
       // WINIETY GRADIENTOWE (FADE VIGNETTES) – MIĘKKIE ROZPŁYWANIE SIĘ TEKSTU U GÓRY I DOŁU
-      const vignetteH = Math.min(Math.round(zoneHeight * 0.20), 80);
+      // Górna winieta ma działać TYLKO wtedy, gdy tekst faktycznie zaczął przewijać się poza górną krawędź zoneTop!
+      // Gdy jesteśmy na początku tekstu (baseStartY >= zoneTop), górna winieta NIE MOŻE zasłaniać pierwszej linii!
+      const scrolledPastTop = zoneTop - baseStartY;
+      if (scrolledPastTop > 0) {
+        const topFadeProgress = Math.min(1, scrolledPastTop / (renderLineHeight * 1.5));
+        const vignetteH = Math.min(Math.round(zoneHeight * 0.14), 50);
 
-      // Górny gradient wygaszający do tła (pełna nieprzezroczystość na samej krawędzi)
-      const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + vignetteH);
-      topGrad.addColorStop(0, '#050505');
-      topGrad.addColorStop(0.45, '#050505');
-      topGrad.addColorStop(0.8, 'rgba(5, 5, 5, 0.6)');
-      topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
-      ctx.fillStyle = topGrad;
-      ctx.fillRect(0, zoneTop, width, vignetteH);
+        const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + vignetteH);
+        topGrad.addColorStop(0, '#050505');
+        topGrad.addColorStop(0.35, `rgba(5, 5, 5, ${(0.85 * topFadeProgress).toFixed(2)})`);
+        topGrad.addColorStop(0.7, `rgba(5, 5, 5, ${(0.4 * topFadeProgress).toFixed(2)})`);
+        topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
+        ctx.fillStyle = topGrad;
+        ctx.fillRect(0, zoneTop, width, vignetteH);
+      }
 
-      // Dolny gradient wygaszający do tła
-      const botGrad = ctx.createLinearGradient(0, zoneBottom - vignetteH, 0, zoneBottom);
-      botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
-      botGrad.addColorStop(0.2, 'rgba(5, 5, 5, 0.6)');
-      botGrad.addColorStop(0.55, '#050505');
-      botGrad.addColorStop(1, '#050505');
-      ctx.fillStyle = botGrad;
-      ctx.fillRect(0, zoneBottom - vignetteH, width, vignetteH);
+      // Dolny gradient wygaszający do tła – tylko jeśli tekst wystaje poza dolną krawędź
+      const scrolledPastBottom = (baseStartY + totalBlockHeight) - zoneBottom;
+      if (scrolledPastBottom > 0) {
+        const botFadeProgress = Math.min(1, scrolledPastBottom / (renderLineHeight * 1.5));
+        const vignetteH = Math.min(Math.round(zoneHeight * 0.14), 50);
+
+        const botGrad = ctx.createLinearGradient(0, zoneBottom - vignetteH, 0, zoneBottom);
+        botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
+        botGrad.addColorStop(0.3, `rgba(5, 5, 5, ${(0.4 * botFadeProgress).toFixed(2)})`);
+        botGrad.addColorStop(0.65, `rgba(5, 5, 5, ${(0.85 * botFadeProgress).toFixed(2)})`);
+        botGrad.addColorStop(1, '#050505');
+        ctx.fillStyle = botGrad;
+        ctx.fillRect(0, zoneBottom - vignetteH, width, vignetteH);
+      }
 
       ctx.restore();
     } else {

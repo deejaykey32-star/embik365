@@ -1,4 +1,4 @@
-const VERSION = 'v3-2026-10-16-clean-headers';
+const VERSION = 'v4-2026-10-16-header-margins';
 const SHELL_CACHE = `droga365-shell-${VERSION}`;
 const ASSET_CACHE = `droga365-assets-${VERSION}`;
 const RUNTIME_CACHE = `droga365-runtime-${VERSION}`;
