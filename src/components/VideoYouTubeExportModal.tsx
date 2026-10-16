@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { 
   X, 
   Video, 
@@ -11,20 +11,14 @@ import {
   Radio, 
   Clock, 
   Volume2, 
-  Layers,
   Settings,
   ChevronLeft,
   ChevronRight,
   Search,
   Calendar,
   BookOpen,
-  RotateCcw,
   List,
-  Flame,
-  CheckCircle2,
-  FileText,
-  Eye,
-  Sliders
+  CheckCircle2
 } from 'lucide-react';
 import { 
   RADIO_STATIONS, 
@@ -447,7 +441,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const [catalogSearch, setCatalogSearch] = useState('');
 
   const [resolution, setResolution] = useState<'1080p' | '720p'>('1080p');
-  const [viewMode, setViewMode] = useState<'video' | 'teleprompter' | 'split'>('video');
   const [isRecording, setIsRecording] = useState(false);
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [recordProgress, setRecordProgress] = useState(0); // 0 to 100
@@ -470,6 +463,25 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
   const lectorConfig = getLectorConfig();
 
+  /**
+   * Zatrzymanie odtwarzania podglądu dźwiękowego
+   */
+  const stopPreviewAudio = useCallback(() => {
+    if (previewAudioSourceRef.current) {
+      try {
+        previewAudioSourceRef.current.stop();
+        previewAudioSourceRef.current.disconnect();
+      } catch {}
+      previewAudioSourceRef.current = null;
+    }
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    setIsPlayingPreview(false);
+    setRecordingStatus('Gotowy do odtwarzania lub generowania');
+  }, []);
+
   // Aktywna stacja i bezpieczny numer dnia
   const activeStation = RADIO_STATIONS.find(s => s.id === selectedStationId) || RADIO_STATIONS[0];
   const minDay = selectedStationId === 'nowyrhz' ? 0 : 1;
@@ -488,6 +500,18 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       }
     }
   }, [broadcastItem, cycle]);
+
+  // Resetowanie indeksu słowa i zatrzymanie odsłuchu przy każdej zmianie stacji, dnia, cyklu lub otwarciu modalnego okna
+  useEffect(() => {
+    setCurrentWordIndex(0);
+    setRecordProgress(0);
+    setRenderedBlob(null);
+    setRenderedVideoUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    stopPreviewAudio();
+  }, [selectedStationId, safeDayNumber, selectedBibliaYear, selectedNowyRhzCycle, isOpen, stopPreviewAudio]);
 
   // Pełna lista wszystkich dni / tajemnic / wpisów dla wybranej stacji
   const allStationItems = useMemo(() => {
@@ -602,54 +626,60 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillRect(0, 0, width, height);
 
     // 2. RAMKA GÓRNA & NAGŁÓWEK WIDEO (YouTube Header)
+    const topBarY = Math.round(height * 0.065);
+    const topLabelY = topBarY - Math.round(height * 0.010);
+    const titleY = Math.round(height * 0.125);
+    const subY = Math.round(height * 0.165);
+    const sepY = Math.round(height * 0.190);
+
     // Złota linia dekoracyjna na górze
     ctx.fillStyle = activeStation.themeColor || '#d97706';
-    ctx.fillRect(80, 70, width - 160, 3);
+    ctx.fillRect(80, topBarY, width - 160, Math.max(2, Math.round(height * 0.003)));
 
     // Etykieta stacji radiowej / sekcji
     ctx.font = `bold ${Math.round(height * 0.024)}px "Cinzel", "Times New Roman", serif`;
     ctx.fillStyle = '#f59e0b'; // Złoty bursztyn
     ctx.textAlign = 'left';
-    ctx.fillText(`🔴 RADIO INTERNETOWE • ${activeBroadcastItem.stationName.toUpperCase()}`, 80, 60);
+    ctx.fillText(`🔴 RADIO INTERNETOWE • ${activeBroadcastItem.stationName.toUpperCase()}`, 80, topLabelY);
 
     // Znak wodny / Czas
     ctx.font = `600 ${Math.round(height * 0.02)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
-    ctx.fillText(`widokinaraj.pl`, width - 80, 60);
+    ctx.fillText(`widokinaraj.pl`, width - 80, topLabelY);
 
     // Tytuł Dnia & Informacja nagłówkowa z bezpiecznym skalowaniem
     ctx.save();
     const maxHeaderW = width - 160;
-    let titleFontSize = Math.round(height * 0.044);
+    let titleFontSize = Math.round(height * 0.040);
     ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
     const fullTitleText = `${activeBroadcastItem.displayDate} • ${activeBroadcastItem.headlineTitle}`;
     const titleWidth = ctx.measureText(fullTitleText).width;
     if (titleWidth > maxHeaderW) {
-      titleFontSize = Math.max(Math.round(height * 0.024), Math.floor(titleFontSize * (maxHeaderW / titleWidth)));
+      titleFontSize = Math.max(Math.round(height * 0.022), Math.floor(titleFontSize * (maxHeaderW / titleWidth)));
       ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
     }
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
-    ctx.fillText(fullTitleText, 80, 130);
+    ctx.fillText(fullTitleText, 80, titleY);
     ctx.restore();
 
     // Podtytuł / Ścieżka / Źródło z bezpiecznym dopasowaniem
     ctx.save();
-    let subFontSize = Math.round(height * 0.022);
+    let subFontSize = Math.round(height * 0.021);
     ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
     const subWidth = ctx.measureText(activeBroadcastItem.subtitle).width;
     if (subWidth > maxHeaderW) {
-      subFontSize = Math.max(Math.round(height * 0.016), Math.floor(subFontSize * (maxHeaderW / subWidth)));
+      subFontSize = Math.max(Math.round(height * 0.015), Math.floor(subFontSize * (maxHeaderW / subWidth)));
       ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
     }
     ctx.fillStyle = '#cbd5e1';
-    ctx.fillText(activeBroadcastItem.subtitle, 80, 170);
+    ctx.fillText(activeBroadcastItem.subtitle, 80, subY);
     ctx.restore();
 
     // Cienka linia oddzielająca nagłówek od strefy napisów
     ctx.fillStyle = '#263040';
-    ctx.fillRect(80, 195, width - 160, 2);
+    ctx.fillRect(80, sepY, width - 160, 2);
 
     // 2.5. WIZUALIZACJA POSTĘPU DZIESIĄTKA RÓŻAŃCA (dla RHZ365 i Nowy RHZ):
     // Duży okrąg (Rozważanie i Ojcze nasz) + 10 małych paciorków (Zdrowaś Maryjo ze wstawką) + Duży okrąg (Chwała Ojcu i O mój Jezu)
@@ -665,7 +695,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ) || rosarySegments[0];
       const activeBeadNum = activeSeg.beadIndex; // 0..5 dla Tajemnicy 0, lub 0..11 dla dziesiątka
 
-      const beadCenterY = Math.round(height * 0.245); // ~265px na 1080p
+      const beadCenterY = Math.round(height * 0.255); // ~275px na 1080p, ~184px na 720p
       const largeRadius = Math.round(height * 0.023); // ~25px na 1080p, ~16px na 720p
       const smallRadius = Math.round(height * 0.013); // ~14px na 1080p, ~9px na 720p
 
@@ -996,7 +1026,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
     } else {
       // Belka informacyjna dla czytań biblijnych (Biblia365) i wpisów (Widoki na Raj)
-      const pillY = 215;
+      const pillY = Math.round(height * 0.210);
       const pillW = width - 180;
       const pillH = Math.round(height * 0.046);
 
@@ -1034,12 +1064,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     // 100% SŁÓW ZAWSZE DOSTĘPNYCH BEZ ZNIKANIA, BEZ STRONICOWANIA I BEZ UCINANIA TEKSTU
     if (wordsTotal > 0) {
       const minHeaderGap = Math.round(height * (hasRosary ? 0.024 : 0.030));
-      const footerTop = height - 85; // Krawędź górna stopki YouTube
+      const footerH = Math.round(height * 0.078);
+      const footerTop = height - footerH; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
 
       const zoneTop = headerBottom + minHeaderGap;
       const zoneBottom = footerTop - bottomPadding;
-      const zoneHeight = Math.max(160, zoneBottom - zoneTop);
+      const zoneHeight = Math.max(120, zoneBottom - zoneTop);
 
       interface WordToken {
         text: string;
@@ -1236,12 +1267,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       });
 
       // WINIETY GRADIENTOWE (FADE VIGNETTES) – MIĘKKIE ROZPŁYWANIE SIĘ TEKSTU U GÓRY I DOŁU
-      const vignetteH = Math.min(Math.round(zoneHeight * 0.16), 85);
+      const vignetteH = Math.min(Math.round(zoneHeight * 0.20), 80);
 
-      // Górny gradient wygaszający do tła
+      // Górny gradient wygaszający do tła (pełna nieprzezroczystość na samej krawędzi)
       const topGrad = ctx.createLinearGradient(0, zoneTop, 0, zoneTop + vignetteH);
       topGrad.addColorStop(0, '#050505');
-      topGrad.addColorStop(0.35, 'rgba(5, 5, 5, 0.85)');
+      topGrad.addColorStop(0.45, '#050505');
+      topGrad.addColorStop(0.8, 'rgba(5, 5, 5, 0.6)');
       topGrad.addColorStop(1, 'rgba(5, 5, 5, 0)');
       ctx.fillStyle = topGrad;
       ctx.fillRect(0, zoneTop, width, vignetteH);
@@ -1249,7 +1281,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       // Dolny gradient wygaszający do tła
       const botGrad = ctx.createLinearGradient(0, zoneBottom - vignetteH, 0, zoneBottom);
       botGrad.addColorStop(0, 'rgba(5, 5, 5, 0)');
-      botGrad.addColorStop(0.65, 'rgba(5, 5, 5, 0.85)');
+      botGrad.addColorStop(0.2, 'rgba(5, 5, 5, 0.6)');
+      botGrad.addColorStop(0.55, '#050505');
       botGrad.addColorStop(1, '#050505');
       ctx.fillStyle = botGrad;
       ctx.fillRect(0, zoneBottom - vignetteH, width, vignetteH);
@@ -1267,16 +1300,17 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     }
 
     // 4. STOPKA WIDEO & PASEK STATUSU YOUTUBE
+    const footerH = Math.round(height * 0.078);
     ctx.fillStyle = '#0d131f';
-    ctx.fillRect(0, height - 85, width, 85);
+    ctx.fillRect(0, height - footerH, width, footerH);
     ctx.fillStyle = activeStation.themeColor || '#d97706';
-    ctx.fillRect(0, height - 87, width, 2);
+    ctx.fillRect(0, height - footerH - 2, width, 2);
 
     // Złota ikona różańca / radia po lewej
     ctx.font = `bold ${Math.round(height * 0.022)}px "Cinzel", serif`;
     ctx.fillStyle = '#d97706';
     ctx.textAlign = 'left';
-    ctx.fillText(`✨ DROGA365 • WIDOKI NA RAJ • RHZ • BIBLIA`, 80, height - 38);
+    ctx.fillText(`✨ DROGA365 • WIDOKI NA RAJ • RHZ • BIBLIA`, 80, height - Math.round(footerH * 0.45));
 
     // Dynamiczny wskaźnik słów i czasu po prawej
     ctx.font = `500 ${Math.round(height * 0.02)}px "Plus Jakarta Sans", sans-serif`;
@@ -1286,7 +1320,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillText(
       `Dzień ${activeBroadcastItem.dayNumber}/${activeStation.totalDays} • Słowo ${Math.min(activeWordIdx + 1, wordsTotal)}/${wordsTotal} (${currentProgressPercent}%) • Lektor AI TTS`,
       width - 80,
-      height - 38
+      height - Math.round(footerH * 0.45)
     );
   };
 
@@ -1519,37 +1553,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   };
 
   /**
-   * Zatrzymanie odtwarzania podglądu dźwiękowego
-   */
-  const stopPreviewAudio = () => {
-    if (previewAudioSourceRef.current) {
-      try {
-        previewAudioSourceRef.current.stop();
-        previewAudioSourceRef.current.disconnect();
-      } catch {}
-      previewAudioSourceRef.current = null;
-    }
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    setIsPlayingPreview(false);
-    setRecordingStatus('Gotowy do odtwarzania lub generowania');
-  };
-
-  /**
-   * Przeskakuje do konkretnego słowa i przewija podgląd
+   * Przeskakuje do konkretnego słowa i odświeża klatkę
    */
   const seekToWord = (idx: number) => {
     if (isRecording) return;
     const clamped = Math.max(0, Math.min(activeBroadcastItem.words.length - 1, idx));
     setCurrentWordIndex(clamped);
     drawVideoFrame(clamped, 0);
-
-    const wordEl = document.getElementById(`dom-word-${clamped}`);
-    if (wordEl) {
-      wordEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
   };
 
   /**
@@ -1628,10 +1638,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         setCurrentWordIndex(activeIdx);
         drawVideoFrame(activeIdx, elapsed);
 
-        const wordEl = document.getElementById(`dom-word-${activeIdx}`);
-        if (wordEl) {
-          wordEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
 
         if (elapsed < totalDuration) {
           animationFrameRef.current = requestAnimationFrame(previewLoop);
@@ -1709,7 +1715,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-xl overflow-y-auto">
       <div className="relative w-full max-w-5xl bg-[#0c121d] border border-amber-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col text-slate-100 my-auto max-h-[96dvh]">
         
         {/* Header Modala */}
@@ -2101,19 +2107,19 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               </div>
             )}
 
-            {/* Podsumowanie wybranego wpisu */}
-            <div className="pt-2 border-t border-slate-700/50 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="min-w-0">
+            {/* Podsumowanie wybranego wpisu, opcje jakości oraz odsłuch na żywo */}
+            <div className="pt-2 border-t border-slate-700/50 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="min-w-0 flex-1">
                 <span className="text-amber-400 font-bold">{activeBroadcastItem.displayDate}:</span>{' '}
                 <span className="text-white font-semibold">{activeBroadcastItem.headlineTitle}</span>
                 <span className="text-slate-400 text-[11px] block truncate">{activeBroadcastItem.subtitle}</span>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                 <span className="text-slate-400 text-[11px] font-mono">
                   {activeBroadcastItem.words.length} słów
                 </span>
                 
-                {/* Opcje rozdzielczości i próbki */}
+                {/* Opcje rozdzielczości */}
                 <div className="flex items-center gap-1 bg-[#0a0f18] p-1 rounded-lg border border-slate-700">
                   <button
                     onClick={() => setResolution('1080p')}
@@ -2135,6 +2141,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                   </button>
                 </div>
 
+                {/* Tryb pełny / próbka */}
                 <div className="flex items-center gap-1 bg-[#0a0f18] p-1 rounded-lg border border-slate-700">
                   <button
                     onClick={() => setPreviewMode('full')}
@@ -2157,237 +2164,60 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                     Próbka 30s
                   </button>
                 </div>
+
+                {/* Przycisk odsłuchu na żywo z lektorem */}
+                <button
+                  onClick={handleTogglePreviewPlayback}
+                  disabled={isRecording}
+                  className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md ${
+                    isPlayingPreview
+                      ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
+                      : 'bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white'
+                  }`}
+                  title={isPlayingPreview ? 'Zatrzymaj odsłuch' : 'Odsłuchaj na żywo z głosem lektora i synchronicznym podświetlaniem słów'}
+                >
+                  {isPlayingPreview ? (
+                    <>
+                      <Pause className="w-3.5 h-3.5 fill-current" />
+                      <span>Wstrzymaj odsłuch</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>▶ Odsłuchaj na żywo</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 
           </div>
 
+          {/* Główny podgląd wideo Canvas 16:9 */}
+          <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-amber-500/30 shadow-2xl flex items-center justify-center">
+            <canvas
+              ref={canvasRef}
+              width={width}
+              height={height}
+              className="w-full h-full object-contain"
+            />
 
-
-          {/* Pasek przełączania technologii podglądu & Odsłuch z lektorem */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-[#0d1422] rounded-2xl border border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Technologia:</span>
-              </span>
-              <div className="inline-flex rounded-xl bg-slate-900 p-1 border border-slate-700/80 text-xs font-semibold gap-1">
-                <button
-                  onClick={() => setViewMode('video')}
-                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
-                    viewMode === 'video' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-400 hover:text-white'
-                  }`}
-                  title="Klasyczny podgląd klatki wideo 16:9 dla YouTube"
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  <span>Wideo Canvas 16:9</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('teleprompter')}
-                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
-                    viewMode === 'teleprompter' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-400 hover:text-white'
-                  }`}
-                  title="Technologia DOM Karaoke: cały tekst zawsze widoczny z automatycznym przewijaniem"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>Teleprompter DOM (Karaoke)</span>
-                </button>
-                <button
-                  onClick={() => setViewMode('split')}
-                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
-                    viewMode === 'split' ? 'bg-amber-500 text-slate-950 font-bold shadow-xs' : 'text-slate-400 hover:text-white'
-                  }`}
-                  title="Widok zespolony: Wideo 16:9 oraz Teleprompter DOM obok siebie"
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Widok Zespolony (Oba)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Przycisk odsłuchu na żywo z lektorem */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleTogglePreviewPlayback}
-                disabled={isRecording}
-                className={`px-4 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 transition cursor-pointer shadow-md ${
-                  isPlayingPreview
-                    ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 animate-pulse ring-2 ring-amber-300'
-                    : 'bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white'
-                }`}
-                title={isPlayingPreview ? 'Zatrzymaj odsłuch' : 'Odsłuchaj na żywo z głosem lektora i synchronicznym podświetlaniem słów'}
-              >
-                {isPlayingPreview ? (
-                  <>
-                    <Pause className="w-4 h-4 fill-current" />
-                    <span>Wstrzymaj odsłuch lektora</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-current" />
-                    <span>▶ Odsłuchaj z lektorem na żywo</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Szybki skok do sekcji / modlitw / akapitów */}
-          {activeBroadcastItem.sections && activeBroadcastItem.sections.length > 0 && (
-            <div className="p-2.5 bg-[#0e1624] rounded-xl border border-slate-800 flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
-              <span className="text-[11px] text-amber-400 font-bold shrink-0 uppercase tracking-wide">
-                Sekcje:
-              </span>
-              {activeBroadcastItem.sections.map((sec, idx) => {
-                const isSecActive = currentWordIndex >= sec.startWordIdx && currentWordIndex <= sec.endWordIdx;
-                return (
-                  <button
-                    key={sec.id || idx}
-                    onClick={() => seekToWord(sec.startWordIdx)}
-                    disabled={isRecording}
-                    className={`px-2.5 py-1 rounded-lg shrink-0 transition cursor-pointer text-xs font-semibold ${
-                      isSecActive
-                        ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60'
-                    }`}
-                    title={`Przejdź do: ${sec.title}`}
-                  >
-                    {sec.title}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Główny obszar podglądu: Wideo Canvas / DOM Teleprompter / Widok Zespolony */}
-          <div className="space-y-4">
-            
-            {/* A. WIDEO CANVAS 16:9 (gdy aktywny tryb 'video' lub 'split') */}
-            {(viewMode === 'video' || viewMode === 'split') && (
-              <div className="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-amber-500/30 shadow-inner flex items-center justify-center">
-                <canvas
-                  ref={canvasRef}
-                  width={width}
-                  height={height}
-                  className="w-full h-full object-contain"
-                />
-
-                {/* Pływający wskaźnik nagrywania na żywo */}
-                {isRecording && (
-                  <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-red-600/90 text-white font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
-                    <div className="w-2.5 h-2.5 rounded-full bg-white" />
-                    <span>NAGRYWANIE WIDEO NA ŻYWO ({recordProgress}%)</span>
-                  </div>
-                )}
-
-                {/* Pływający wskaźnik odsłuchu na żywo */}
-                {isPlayingPreview && !isRecording && (
-                  <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-amber-500/90 text-slate-950 font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-950" />
-                    <span>ODSŁUCH Z LEKTOREM NA ŻYWO</span>
-                  </div>
-                )}
+            {/* Pływający wskaźnik nagrywania na żywo */}
+            {isRecording && (
+              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-red-600/90 text-white font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
+                <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                <span>NAGRYWANIE WIDEO NA ŻYWO ({recordProgress}%)</span>
               </div>
             )}
 
-            {/* B. TELEPROMPTER DOM (KARAOKE) – CAŁY TEKST ZAWSZE WIDOCZNY W DRZEWIE DOM */}
-            {(viewMode === 'teleprompter' || viewMode === 'split') && (
-              <div className="p-5 sm:p-6 rounded-2xl bg-[#080d17] border border-amber-500/30 text-white space-y-4 max-h-[460px] overflow-y-auto custom-scrollbar font-serif leading-relaxed shadow-inner">
-                <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 text-xs text-slate-400 font-sans gap-2">
-                  <div className="flex items-center gap-2 text-amber-400 font-bold">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>TELEPROMPTER DOM KARAOKE • CAŁY TEKST JEST ZAWSZE WIDOCZNY BEZ ZNIKANIA</span>
-                  </div>
-                  <span className="font-mono text-slate-400 text-[11px]">
-                    Kliknij dowolne słowo, aby natychmiast przeskoczyć
-                  </span>
-                </div>
-
-                <div className="text-sm sm:text-base md:text-lg leading-relaxed select-text space-y-2">
-                  {activeBroadcastItem.words.map((w, idx) => {
-                    const isCurrent = idx === currentWordIndex;
-                    const isSpoken = idx < currentWordIndex;
-                    const isNewlineBreak = activeBroadcastItem.lineBreakWordIndices?.includes(idx);
-
-                    return (
-                      <React.Fragment key={idx}>
-                        {isNewlineBreak && <span className="block my-1.5" />}
-                        <span
-                          id={`dom-word-${idx}`}
-                          onClick={() => seekToWord(idx)}
-                          className={`cursor-pointer transition-all duration-150 inline-block px-1 py-0.5 rounded m-0.5 ${
-                            isCurrent
-                              ? 'bg-amber-400 text-slate-950 font-black shadow-lg ring-2 ring-amber-300 scale-110 z-10'
-                              : isSpoken
-                              ? 'text-white font-medium hover:text-amber-200'
-                              : 'text-slate-400 hover:text-slate-200'
-                          }`}
-                          title={`Słowo #${idx + 1}: ${w}`}
-                        >
-                          {w}
-                        </span>{' '}
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+            {/* Pływający wskaźnik odsłuchu na żywo */}
+            {isPlayingPreview && !isRecording && (
+              <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-amber-500/90 text-slate-950 font-bold text-xs flex items-center gap-2 animate-pulse shadow-lg backdrop-blur-sm">
+                <span className="w-2.5 h-2.5 rounded-full bg-slate-950" />
+                <span>ODSŁUCH Z LEKTOREM NA ŻYWO</span>
               </div>
             )}
-
           </div>
-
-          {/* Interaktywny suwak podglądu słów i karaoke */}
-          {!isRecording && activeBroadcastItem.words.length > 0 && (
-            <div className="p-3 bg-[#0c121e] rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-amber-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1">
-                  <Play className="w-3 h-3 text-amber-400" />
-                  <span>Podgląd słów:</span>
-                </span>
-                <button
-                  onClick={() => seekToWord(0)}
-                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition flex items-center gap-1"
-                  title="Początek"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Początek</span>
-                </button>
-                <button
-                  onClick={() => seekToWord(Math.max(0, currentWordIndex - 5))}
-                  disabled={currentWordIndex <= 0}
-                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-semibold cursor-pointer transition"
-                  title="-5 słów"
-                >
-                  -5
-                </button>
-                <button
-                  onClick={() => seekToWord(Math.min(activeBroadcastItem.words.length - 1, currentWordIndex + 5))}
-                  disabled={currentWordIndex >= activeBroadcastItem.words.length - 1}
-                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 text-xs font-semibold cursor-pointer transition"
-                  title="+5 słów"
-                >
-                  +5
-                </button>
-              </div>
-
-              <div className="flex-1 min-w-[200px] flex items-center gap-2">
-                <input
-                  type="range"
-                  min={0}
-                  max={activeBroadcastItem.words.length - 1}
-                  value={currentWordIndex}
-                  onChange={(e) => {
-                    const idx = parseInt(e.target.value, 10);
-                    seekToWord(idx);
-                  }}
-                  className="w-full accent-amber-500 cursor-pointer"
-                />
-              </div>
-
-              <div className="text-[11px] font-mono text-slate-400 font-semibold shrink-0">
-                Słowo <span className="text-amber-400 font-bold">{currentWordIndex + 1}</span> / {activeBroadcastItem.words.length}
-              </div>
-            </div>
-          )}
 
           {/* Pasek postępu */}
           {isRecording && (
