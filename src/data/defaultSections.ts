@@ -39,12 +39,12 @@ export const SECTIONS: SectionMeta[] = [
   },
   {
     id: 'nowyRHZ',
-    name: 'Nowy RHZ',
-    shortTitle: 'Nowy Różaniec HZ',
-    subtitle: '7 etapów × 5 części × 5 tajemnic = 175 dni modlitwy',
+    name: 'nowyRHZ365',
+    shortTitle: 'nowyRHZ365',
+    subtitle: '2 cykle po 175 tajemnic • 365 dni modlitwy',
     type: 'info',
-    description: 'Nowy Różaniec Historii Zbawienia – 175 dni modlitwy przez całą historię zbawienia (7 etapów × 5 części × 5 tajemnic). Interaktywna aplikacja różańcowa z lektorem mowy, dopowiedzeniami, automatycznym odtwarzaniem i zliczaniem dziesiątek.',
-    badge: 'Nowy RHZ 175',
+    description: 'nowyRHZ365 – Nowy Różaniec Historii Zbawienia na 365 dni w 2 cyklach po 175 tajemnic z przerwą letnią (18–24 VI) i adwentową (17–24 XII). Interaktywna aplikacja różańcowa z lektorem mowy, dopowiedzeniami po słowie „Jezus” i zliczaniem dziesiątek.',
+    badge: 'nowyRHZ365',
     icon: 'Sparkles',
     accentColor: '#b8892b', // gold
     bgGradient: 'from-amber-950/20 via-sky-900/10 to-transparent'

@@ -3,6 +3,7 @@ import { getWnrEntryForDay } from './wnr365Data';
 import { getRhzEntryForDay } from './rhz365Data';
 import { getBibliaEntryForDayAndYear } from './biblia365Data';
 import { NOWY_RHZ_MYSTERIES } from './nowyRhzData';
+import { getNowyRhzCalendarStatus } from '../utils/nowyRhzCalendar';
 import {
   buildFullHailMary,
   OJCZE_NASZ_PELNY,
@@ -189,11 +190,29 @@ ${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim();
     }
 
     case 'nowyRHZ': {
-      const day175 = ((dayNumber - 1) % 175) + 1;
-      const mystery = NOWY_RHZ_MYSTERIES.find(m => m.day === day175) || NOWY_RHZ_MYSTERIES[day175] || NOWY_RHZ_MYSTERIES[0];
+      const status = getNowyRhzCalendarStatus(cycleDate.month, cycleDate.day);
+      if (status.isBreak) {
+        const breakInfo = status.breakInfo!;
+        return {
+          id: `nowyRHZ-${cycleDate.dateKey}`,
+          sectionId: 'nowyRHZ',
+          dateKey: cycleDate.dateKey,
+          dayNumber,
+          title: breakInfo.title,
+          subtitle: `${displayDate} • Nowy RHZ • ${breakInfo.subtitle}`,
+          mystery: breakInfo.title,
+          intention: breakInfo.subtitle,
+          passage: `Przerwa modlitewna • Kolejny cykl rozpocznie się: ${breakInfo.nextCycleDate}`,
+          content: `${breakInfo.title}\n${breakInfo.subtitle}\n\n${breakInfo.description}\n\nW dniach przerwy zapraszamy do odmówienia Modlitw Wstępnych Różańca (Tajemnica 0), rozważenia dowolnej tajemnicy z Cyklu 1 lub Cyklu 2, bądź cichej adoracji Najświętszego Sakramentu.`,
+          prayer: `${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}`
+        };
+      }
+
+      const mystery = status.mystery;
       const beadsFormatted = mystery.cl.map(cl => buildFullHailMary(cl)).join('\n\n');
 
-      const fullNowyRhzContent = `Etap ${mystery.stage}: ${mystery.stageTitle}
+      const fullNowyRhzContent = `Cykl ${status.cycle}
+Etap ${mystery.stage}: ${mystery.stageTitle}
 Część ${mystery.part}: ${mystery.partTitle}
 Tajemnica: ${mystery.t} – ${mystery.sub}
 
@@ -217,9 +236,9 @@ ${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim();
         dateKey: cycleDate.dateKey,
         dayNumber,
         title: `${mystery.t} – ${mystery.sub}`,
-        subtitle: `${displayDate} • Nowy RHZ • Dzień ${day175} ze 175 (Etap ${mystery.stage}, Część ${mystery.part})`,
+        subtitle: `${displayDate} • Nowy RHZ • Cykl ${status.cycle} • Dzień ${status.dayInCycle} ze 175 (Etap ${mystery.stage}, Część ${mystery.part})`,
         mystery: `${mystery.t} – ${mystery.sub}`,
-        intention: `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`,
+        intention: `Cykl ${status.cycle} • Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`,
         passage: mystery.ref,
         content: fullNowyRhzContent,
         prayer: `${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim()

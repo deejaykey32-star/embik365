@@ -2,6 +2,7 @@ import { WNR365_FULL_DATA } from '../data/wnr365Data';
 import { RHZ365_FULL_DATA } from '../data/rhz365Data';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 import { NOWY_RHZ_MYSTERIES, NowyRhzMystery } from '../data/nowyRhzData';
+import { getNowyRhzMystery, getDateFormattedForCycleDay } from './nowyRhzCalendar';
 import {
   normalizePolishTextForSpeech,
   extractCleanWordsForKaraoke,
@@ -47,15 +48,15 @@ export interface RadioStationMeta {
 export const RADIO_STATIONS: RadioStationMeta[] = [
   {
     id: 'nowyrhz',
-    name: 'Nowy Różaniec Historii Zbawienia',
-    shortName: 'Nowy RHZ',
-    badge: '175 Dni Modlitwy',
+    name: 'nowyRHZ365 – Nowy Różaniec Historii Zbawienia',
+    shortName: 'nowyRHZ365',
+    badge: '2 Cykle × 175 Dni',
     themeColor: '#d97706', // amber-600
-    tagline: '7 etapów × 5 części × 5 tajemnic w pętli 24/7',
-    description: 'Kompletny cykl 175 tajemnic różańca z Pismem Świętym, rozważaniem, 10 dopowiedzeniami do każdego Zdrowaś Maryjo oraz modlitwą końcową.',
+    tagline: '2 Cykle po 175 tajemnic • 365 dni (przerwy 18–24 VI i 17–24 XII)',
+    description: 'Kompletne 2 cykle po 175 tajemnic różańca z Pismem Świętym, rozważaniem, 10 dopowiedzeniami do każdego Zdrowaś Maryjo oraz modlitwą końcową.',
     totalDays: 175,
     shareSlug: 'nowyrhz',
-    channelName: 'Stacja 1: Nowy RHZ',
+    channelName: 'Stacja 1: nowyRHZ365',
     gradient: 'from-amber-500/20 via-amber-600/10 to-transparent'
   },
   {
@@ -240,7 +241,8 @@ export function calculateRosarySegmentsFromSections(
 export function getRadioBroadcastItem(
   stationId: RadioStationId,
   dayNumber: number,
-  bibliaYear: 1 | 2 | 3 | 4 = 1
+  bibliaYear: 1 | 2 | 3 | 4 = 1,
+  cycle: 1 | 2 = 1
 ): RadioBroadcastItem {
   const station = RADIO_STATIONS.find(s => s.id === stationId) || RADIO_STATIONS[0];
   const totalDays = station.totalDays;
@@ -402,9 +404,9 @@ export function getRadioBroadcastItem(
       };
     }
 
-    const mystery = NOWY_RHZ_MYSTERIES.find(m => m.day === safeDay) || NOWY_RHZ_MYSTERIES[safeDay] || NOWY_RHZ_MYSTERIES[0];
+    const mystery = getNowyRhzMystery(cycle, safeDay);
     const headlineTitle = `${mystery.t} – ${mystery.sub}`;
-    const subtitle = `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
+    const subtitle = `Cykl ${cycle} • Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
     
     const bibRefSpoken = expandBiblicalReference(mystery.ref);
     const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
@@ -510,12 +512,14 @@ export function getRadioBroadcastItem(
       ...(modlitwaKoncowaText ? [modlitwaKoncowaText] : [])
     ].join('\n\n');
 
+    const dateFormatted = getDateFormattedForCycleDay(cycle, safeDay);
+
     return {
       stationId: 'nowyrhz',
       stationName: station.name,
       dayNumber: safeDay,
       totalDays: 175,
-      displayDate: `Dzień ${safeDay} ze 175`,
+      displayDate: `Cykl ${cycle} • Dzień ${safeDay} (${dateFormatted})`,
       headlineTitle,
       subtitle,
       stageName: mystery.stageTitle,

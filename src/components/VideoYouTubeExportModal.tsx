@@ -44,6 +44,7 @@ import {
   calculateWordAcousticWeight,
   extractCleanWordsForKaraoke 
 } from '../utils/polishSpeechNormalizer';
+import { getDateFormattedForCycleDay } from '../utils/nowyRhzCalendar';
 
 // In-memory client cache for decoded audio buffers to prevent repeated downloads
 const clientTtsAudioCache = new Map<string, AudioBuffer>();
@@ -429,16 +430,19 @@ interface Props {
   stationMeta?: RadioStationMeta;
   currentDayNumber?: number;
   totalDays?: number;
+  cycle?: 1 | 2;
 }
 
 export const VideoYouTubeExportModal: React.FC<Props> = ({
   isOpen,
   onClose,
-  broadcastItem
+  broadcastItem,
+  cycle = 1
 }) => {
   const [selectedStationId, setSelectedStationId] = useState<RadioStationId>(broadcastItem.stationId || 'nowyrhz');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(broadcastItem.dayNumber || 1);
   const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
+  const [selectedNowyRhzCycle, setSelectedNowyRhzCycle] = useState<1 | 2>(cycle || 1);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState('');
 
@@ -471,32 +475,37 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   const minDay = selectedStationId === 'nowyrhz' ? 0 : 1;
   const safeDayNumber = Math.max(minDay, Math.min(activeStation.totalDays, selectedDayNumber));
   const activeBroadcastItem: RadioBroadcastItem = useMemo(() => {
-    return getRadioBroadcastItem(selectedStationId, safeDayNumber, selectedBibliaYear);
-  }, [selectedStationId, safeDayNumber, selectedBibliaYear]);
+    return getRadioBroadcastItem(selectedStationId, safeDayNumber, selectedBibliaYear, selectedNowyRhzCycle);
+  }, [selectedStationId, safeDayNumber, selectedBibliaYear, selectedNowyRhzCycle]);
 
   // Synchronizacja przy pierwszym otwarciu z props
   useEffect(() => {
     if (broadcastItem) {
       setSelectedStationId(broadcastItem.stationId);
       setSelectedDayNumber(broadcastItem.dayNumber);
+      if (cycle) {
+        setSelectedNowyRhzCycle(cycle);
+      }
     }
-  }, [broadcastItem]);
+  }, [broadcastItem, cycle]);
 
   // Pełna lista wszystkich dni / tajemnic / wpisów dla wybranej stacji
   const allStationItems = useMemo(() => {
-    const list: { day: number; title: string; subtitle: string; ref?: string }[] = [];
+    const list: { day: number; title: string; subtitle: string; dateFormatted?: string; ref?: string }[] = [];
     const startDay = selectedStationId === 'nowyrhz' ? 0 : 1;
     for (let d = startDay; d <= activeStation.totalDays; d++) {
-      const item = getRadioBroadcastItem(selectedStationId, d, selectedBibliaYear);
+      const item = getRadioBroadcastItem(selectedStationId, d, selectedBibliaYear, selectedNowyRhzCycle);
+      const dateFormatted = selectedStationId === 'nowyrhz' ? getDateFormattedForCycleDay(selectedNowyRhzCycle, d) : undefined;
       list.push({
         day: d,
         title: item.headlineTitle,
         subtitle: item.subtitle,
+        dateFormatted,
         ref: item.reference
       });
     }
     return list;
-  }, [selectedStationId, selectedBibliaYear, activeStation.totalDays]);
+  }, [selectedStationId, selectedBibliaYear, selectedNowyRhzCycle, activeStation.totalDays]);
 
   // Filtrowana lista katalogu
   const filteredStationItems = useMemo(() => {
@@ -1807,13 +1816,107 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                   ))}
                 </div>
               )}
+
+              {selectedStationId === 'nowyrhz' && (
+                <div className="flex items-center gap-1 bg-[#0b1019] p-1 rounded-xl border border-amber-500/30 text-xs">
+                  <span className="text-slate-400 text-[11px] px-1 font-semibold">Cykl:</span>
+                  <button
+                    onClick={() => setSelectedNowyRhzCycle(1)}
+                    disabled={isRecording}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
+                      selectedNowyRhzCycle === 1
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>Cykl 1</span>
+                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(25 XII – 17 VI)</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedNowyRhzCycle(2)}
+                    disabled={isRecording}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
+                      selectedNowyRhzCycle === 2
+                        ? 'bg-amber-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>Cykl 2</span>
+                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(25 VI – 16 XII)</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Informacja o kalendarzu i okresach przerw dla nowyRHZ365 */}
+            {selectedStationId === 'nowyrhz' && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 leading-relaxed">
+                <div>
+                  <strong>{selectedNowyRhzCycle === 1 ? 'Cykl 1 (175 dni): 25 grudnia – 17 czerwca' : 'Cykl 2 (175 dni): 25 czerwca – 16 grudnia'}</strong>
+                  <span className="block sm:inline sm:ml-1 text-slate-300">
+                    {selectedNowyRhzCycle === 1 
+                      ? '• Pominięcie: Letnia Przerwa od 18 do 24 czerwca (7 dni).' 
+                      : '• Pominięcie: Adwentowa Przerwa od 17 do 24 grudnia (8 dni do Wigilii).'}
+                  </span>
+                </div>
+                <div className="text-[10px] text-amber-400/90 font-mono shrink-0">
+                  29 lutego pomijany (rok przestępny)
+                </div>
+              </div>
+            )}
+
+            {/* POLE SELECT: Szybki wybór konkretnego dnia, tajemnicy lub wpisu */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[11px]">
+                <label htmlFor="station-item-select" className="font-bold text-amber-300">
+                  Lista wyboru dnia i tajemnicy:
+                </label>
+                {selectedStationId === 'nowyrhz' && (
+                  <span className="text-[11px] text-amber-400 font-mono">
+                    Dzień {safeDayNumber}/175 • {getDateFormattedForCycleDay(selectedNowyRhzCycle, safeDayNumber)}
+                  </span>
+                )}
+              </div>
+              <select
+                id="station-item-select"
+                value={safeDayNumber}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val)) setSelectedDayNumber(val);
+                }}
+                disabled={isRecording}
+                className="w-full px-3 py-2 bg-[#090e17] border border-amber-500/40 hover:border-amber-400 rounded-xl text-xs text-white font-medium focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer transition shadow-inner"
+              >
+                {selectedStationId === 'nowyrhz' && (
+                  <option value={0}>
+                    Dzień 0 (Wstęp) • Tajemnica 0: Modlitwy Wstępne Różańca Świętego
+                  </option>
+                )}
+                {allStationItems
+                  .filter(item => selectedStationId !== 'nowyrhz' || item.day > 0)
+                  .map(item => (
+                    <option key={item.day} value={item.day}>
+                      Dzień {item.day}{item.dateFormatted ? ` (${item.dateFormatted})` : ''} • {item.title}
+                    </option>
+                  ))}
+                {selectedStationId === 'nowyrhz' && selectedNowyRhzCycle === 1 && (
+                  <option disabled value={-1}>
+                    ────────── Pominięcie: Letnia Przerwa (18 VI – 24 VI, 7 dni) ──────────
+                  </option>
+                )}
+                {selectedStationId === 'nowyrhz' && selectedNowyRhzCycle === 2 && (
+                  <option disabled value={-2}>
+                    ────────── Pominięcie: Adwentowa Przerwa (17 XII – 24 XII, 8 dni) ──────────
+                  </option>
+                )}
+              </select>
             </div>
 
             {/* Pasek sterowania numerem dnia: -10, -1, [Input], +1, +10 + Katalog */}
             <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() => setSelectedDayNumber(Math.max(1, safeDayNumber - 10))}
-                disabled={isRecording || safeDayNumber <= 1}
+                onClick={() => setSelectedDayNumber(Math.max(minDay, safeDayNumber - 10))}
+                disabled={isRecording || safeDayNumber <= minDay}
                 className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs font-bold cursor-pointer transition"
                 title="Wstecz o 10 dni"
               >
@@ -1821,8 +1924,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               </button>
 
               <button
-                onClick={() => setSelectedDayNumber(Math.max(1, safeDayNumber - 1))}
-                disabled={isRecording || safeDayNumber <= 1}
+                onClick={() => setSelectedDayNumber(Math.max(minDay, safeDayNumber - 1))}
+                disabled={isRecording || safeDayNumber <= minDay}
                 className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 cursor-pointer transition"
                 title="Poprzedni dzień"
               >
@@ -1834,19 +1937,24 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 <span className="text-xs text-amber-400 font-bold">Dzień</span>
                 <input
                   type="number"
-                  min={1}
+                  min={minDay}
                   max={activeStation.totalDays}
                   value={safeDayNumber}
                   onChange={(e) => {
                     const val = parseInt(e.target.value, 10);
                     if (!isNaN(val)) {
-                      setSelectedDayNumber(Math.max(1, Math.min(activeStation.totalDays, val)));
+                      setSelectedDayNumber(Math.max(minDay, Math.min(activeStation.totalDays, val)));
                     }
                   }}
                   disabled={isRecording}
                   className="w-14 bg-transparent text-center text-white font-mono font-extrabold text-sm focus:outline-none"
                 />
                 <span className="text-xs text-slate-400 font-mono">/ {activeStation.totalDays}</span>
+                {selectedStationId === 'nowyrhz' && (
+                  <span className="text-[11px] text-amber-300 font-mono ml-1 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
+                    {getDateFormattedForCycleDay(selectedNowyRhzCycle, safeDayNumber)}
+                  </span>
+                )}
               </div>
 
               <button
@@ -1878,7 +1986,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 }`}
               >
                 <List className="w-3.5 h-3.5" />
-                <span>{isCatalogOpen ? 'Zamknij listę' : `Wszystkie ${activeStation.totalDays} dni (Szukaj...)`}</span>
+                <span>{isCatalogOpen ? 'Zamknij listę' : `Katalog ${activeStation.totalDays} dni (Szukaj...)`}</span>
               </button>
             </div>
 
@@ -1918,6 +2026,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                           }`}>
                             Dzień {item.day}
                           </span>
+                          {item.dateFormatted && (
+                            <span className="text-[10px] text-amber-300 font-mono shrink-0 hidden sm:inline">
+                              {item.dateFormatted}
+                            </span>
+                          )}
                           <span className="truncate">{item.title}</span>
                         </div>
                         {item.ref && (

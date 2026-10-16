@@ -33,6 +33,8 @@ import {
 import { SectionMeta } from '../types';
 import { generateAndDownloadQrBadgePng } from '../utils/qrCodeService';
 import { NOWY_RHZ_MYSTERIES, NowyRhzMystery } from '../data/nowyRhzData';
+import { NOWY_RHZ_CYCLE_2_MYSTERIES } from '../data/nowyRhzCycle2Data';
+import { getNowyRhzCalendarStatus, getNowyRhzMystery, NowyRhzCalendarStatus } from '../utils/nowyRhzCalendar';
 import { RosaryDecadeProgressTracker } from './RosaryDecadeProgressTracker';
 import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
 import { 
@@ -64,16 +66,20 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
   // Tryb widoku: okno z tekstem modlitwy, aplikacja PWA, lub katalog 7 etapów
   const [activeTab, setActiveTab] = useState<'text_reader' | 'pwa_app' | 'stages'>('text_reader');
 
+  // Obliczenie aktualnego statusu kalendarzowego wg daty (dzień i miesiąc, niezależnie od roku)
+  const todayCalendarStatus = useMemo<NowyRhzCalendarStatus>(() => {
+    const now = new Date();
+    return getNowyRhzCalendarStatus(now.getMonth() + 1, now.getDate());
+  }, []);
+
+  // Wybrany cykl: 1 (25 XII – 17 VI) lub 2 (25 VI – 16 XII)
+  const [selectedCycle, setSelectedCycle] = useState<1 | 2>(() => {
+    return todayCalendarStatus.cycle || 1;
+  });
+
   // Bieżący dzień tajemnicy (1..175)
   const [currentDay, setCurrentDay] = useState<number>(() => {
-    try {
-      const now = new Date();
-      const start = new Date(now.getFullYear(), 0, 1);
-      const diff = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      return ((diff % 175) + 1);
-    } catch {
-      return 1;
-    }
+    return todayCalendarStatus.dayInCycle || 1;
   });
 
   // Stany odznaczeń modlitwy w oknie z tekstem
@@ -93,16 +99,21 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
 
   const standaloneUrl = '/nowyrhz/';
 
+  // Baza tajemnic dla wybranego cyklu
+  const activeCycleMysteries = useMemo(() => {
+    return selectedCycle === 2 ? NOWY_RHZ_CYCLE_2_MYSTERIES : NOWY_RHZ_MYSTERIES;
+  }, [selectedCycle]);
+
   // Aktualna tajemnica z bazy 175 dni (0 = Tajemnica 0, 1..175)
   const safeDay = Math.max(0, Math.min(175, currentDay));
   const mystery: NowyRhzMystery = useMemo(() => {
-    return NOWY_RHZ_MYSTERIES.find(m => m.day === safeDay) || NOWY_RHZ_MYSTERIES[0];
-  }, [safeDay]);
+    return getNowyRhzMystery(selectedCycle, safeDay);
+  }, [selectedCycle, safeDay]);
 
   // Radio broadcast item dla generatora wideo MP4
   const broadcastItem = useMemo(() => {
-    return getRadioBroadcastItem('nowyrhz', safeDay);
-  }, [safeDay]);
+    return getRadioBroadcastItem('nowyrhz', safeDay, selectedCycle);
+  }, [safeDay, selectedCycle]);
 
   // Zakres modlitwy: 'single' (1 tajemnica), 'part' (5 tajemnic w części), 'stage' (25 tajemnic w etapie)
   const [prayerScope, setPrayerScope] = useState<'single' | 'part' | 'stage'>('single');
@@ -128,13 +139,13 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
 
   // Tajemnice dla wybranej części (5 tajemnic)
   const partMysteries = useMemo(() => {
-    return NOWY_RHZ_MYSTERIES.filter(m => m.stage === selectedStageNum && m.part === selectedPartNum && m.day > 0);
-  }, [selectedStageNum, selectedPartNum]);
+    return activeCycleMysteries.filter(m => m.stage === selectedStageNum && m.part === selectedPartNum && m.day > 0);
+  }, [activeCycleMysteries, selectedStageNum, selectedPartNum]);
 
   // Tajemnice dla wybranego etapu (25 tajemnic)
   const stageMysteries = useMemo(() => {
-    return NOWY_RHZ_MYSTERIES.filter(m => m.stage === selectedStageNum && m.day > 0);
-  }, [selectedStageNum]);
+    return activeCycleMysteries.filter(m => m.stage === selectedStageNum && m.day > 0);
+  }, [activeCycleMysteries, selectedStageNum]);
 
   // Budowanie kolejki modlitw do odmawiania z lektorem
   const buildPrayerQueue = (mysteriesList: NowyRhzMystery[], withIntro: boolean): SequenceItem[] => {
@@ -411,20 +422,20 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     });
   };
 
-  // 7 Etapów Nowego RHZ (175 dni)
-  const stages = [
+  // 7 Etapów Cyklu 1 Nowego RHZ (175 dni: 25 XII – 17 VI)
+  const stagesCycle1 = [
     {
       num: 'I',
-      title: 'Księgi Historyczne Starego Przymierza',
-      days: 'Dni 1 – 25',
-      desc: 'Od Stworzenia, przez Przymierze z Abrahamem, Wyjście z Egiptu i Ziemię Obiecaną, aż po Królestwo Dawida i Niewolę Babilońską.',
+      title: 'Księgi Historyczne Starego Przymierza (Część 1)',
+      days: 'Dni 1 – 25 (25 XII – 18 I)',
+      desc: 'Od Stworzenia, przez Przymierze z Abrahamem, Wyjście z Egiptu i Ziemię Obiecaną, aż po Królestwo Dawida i Niewolę Babilońską (Rdz – 2 Krl).',
       parts: ['Tajemnice Początku', 'Tajemnice Wiary', 'Tajemnice Wyzwolenia', 'Tajemnice Przymierza', 'Tajemnice Królestwa'],
       badgeColor: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
     },
     {
       num: 'II',
       title: 'Księgi Mądrościowe i Modlitwy ST',
-      days: 'Dni 26 – 50',
+      days: 'Dni 26 – 50 (19 I – 12 II)',
       desc: 'Mądrość serca, tajemnica cierpienia Hioba, modlitwa Psalmów, zmaganie Koheleta i mistyczna miłość Pieśni nad Pieśniami.',
       parts: ['Tajemnice Mądrości', 'Tajemnice Cierpienia i Próby', 'Tajemnice Uwielbienia (Psalmy)', 'Tajemnice Miłości Oblubieńczej', 'Tajemnice Zaufania w Przemijaniu'],
       badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
@@ -432,7 +443,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     {
       num: 'III',
       title: 'Prorocy i Zapowiedzi Mesjańskie',
-      days: 'Dni 51 – 75',
+      days: 'Dni 51 – 75 (13 II – 9 III)',
       desc: 'Głos wołających na pustyni: obietnica Emmanuela, Nowego Przymierza, Cierpiącego Sługi Jahwe i Ducha wylewającego się na wszelkie ciało.',
       parts: ['Tajemnice Powołania Proroków', 'Tajemnice Sprawiedliwości i Sądu', 'Tajemnice Pocieszenia i Nadziei', 'Tajemnice Cierpiącego Sługi Jahwe', 'Tajemnice Nowego Serca i Nowego Ducha'],
       badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
@@ -440,7 +451,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     {
       num: 'IV',
       title: 'Życie Jezusa i Maryi (Centrum Historii)',
-      days: 'Dni 76 – 100',
+      days: 'Dni 76 – 100 (10 III – 3 IV)',
       desc: 'Serce całego różańca: Tajemnice Radosne, Światła, Bolesne, Chwalebne oraz Tajemnice Ciszy i Ukrytego Życia w Nazarecie.',
       parts: ['Tajemnice Radosne (Wcielenie)', 'Tajemnice Światła (Objawienie Królestwa)', 'Tajemnice Bolesne (Odkupienie)', 'Tajemnice Chwalebne (Zmartwychwstanie)', 'Tajemnice Ciszy i Trwania'],
       badgeColor: 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800'
@@ -448,7 +459,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     {
       num: 'V',
       title: 'Dzieje Apostolskie i Narodziny Kościoła',
-      days: 'Dni 101 – 125',
+      days: 'Dni 101 – 125 (4 IV – 28 IV)',
       desc: 'Zesłanie Ducha Świętego, ogień Wieczernika, pierwsze wspólnoty w Jerozolimie, męczeństwo Szczepana i misja narodów aż po krańce ziemi.',
       parts: ['Tajemnice Ognia Ducha Świętego', 'Tajemnice Pierwszej Wspólnoty', 'Tajemnice Świadectwa i Męczeństwa', 'Tajemnice Drogi do Pogan (Św. Paweł)', 'Tajemnice Kościoła w Drodze'],
       badgeColor: 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
@@ -456,7 +467,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     {
       num: 'VI',
       title: 'Listy Apostolskie i Życie w Chrystusie',
-      days: 'Dni 126 – 150',
+      days: 'Dni 126 – 150 (29 IV – 23 V)',
       desc: 'Teologia łaski, hymn o miłości, zbroja Boża, walka duchowa, życie w Duchu i codzienna wierność Ewangelii we wspólnocie.',
       parts: ['Tajemnice Łaski i Usprawiedliwienia', 'Tajemnice Ciała Chrystusa', 'Tajemnice Hymnu o Miłości', 'Tajemnice Zbroi Bożej i Walki', 'Tajemnice Nadziei i Wytrwałości'],
       badgeColor: 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
@@ -464,12 +475,74 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     {
       num: 'VII',
       title: 'Apokalipsa i Nowe Jeruzalem',
-      days: 'Dni 151 – 175',
+      days: 'Dni 151 – 175 (24 V – 17 VI)',
       desc: 'Zwycięski Baranek na Tronie, pokonanie wszelkiego zła, Ostateczne Zwycięstwo Boga, Wesele Baranka oraz Nowe Niebo i Nowa Ziemia.',
       parts: ['Tajemnice Zwycięzcy i Świadka Wiernego', 'Tajemnice Baranka na Tronie', 'Tajemnice Niewiasty Obleczonej w Słońce', 'Tajemnice Wesela Baranka i Oblubienicy', 'Tajemnice Nowego Nieba i Nowej Ziemi'],
       badgeColor: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
     }
   ];
+
+  // 7 Etapów Cyklu 2 Nowego RHZ (175 dni: 25 VI – 16 XII)
+  const stagesCycle2 = [
+    {
+      num: 'I',
+      title: 'Kolejnych 7 Ksiąg Historycznych Starego Przymierza',
+      days: 'Dni 1 – 25 (25 VI – 19 VII)',
+      desc: 'Dopełnienie historii Izraela po wygnaniu: 1 i 2 Kronik, Ezdrasz, Nehemiasz, Tobiasz, Judyta, Estera oraz 1 i 2 Machabejska.',
+      parts: ['Tajemnice Świątyni i Odnowy Przymierza (1-2 Krn)', 'Tajemnice Powrotu z Wygnania i Odbudowy (Ezd, Ne)', 'Tajemnice Bożej Opatrzności i Anioła Rafała (Tb)', 'Tajemnice Odwagi i Ocalenia Ludu (Jdt, Est)', 'Tajemnice Wierności Prawu i Nadziei Zmartwychwstania (1-2 Mch)'],
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+    },
+    {
+      num: 'II',
+      title: 'Brakujące Księgi i Tematy Mądrościowe ST',
+      days: 'Dni 26 – 50 (20 VII – 13 VIII)',
+      desc: 'Głęboka mądrość życia codziennego: Księga Przysłów, Księga Mądrości, Mądrość Syracha, mistyczna Pieśń nad Pieśniami oraz Psalmy Dziękczynienia i Zaufania.',
+      parts: ['Tajemnice Bojaźni Pańskiej i Prawości (Prz)', 'Tajemnice Nieśmiertelności i Ducha Mądrości (Mdr)', 'Tajemnice Mądrości Codziennego Życia (Syr)', 'Tajemnice Oblubieńczej Miłości Boga do Duszy (Pnp)', 'Tajemnice Przymierza i Królewskiego Majestatu Boga (Psalmy)'],
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+    },
+    {
+      num: 'III',
+      title: 'Brakujące Księgi i Tematy Prorockie ST',
+      days: 'Dni 51 – 75 (14 VIII – 7 IX)',
+      desc: 'Prorocy mniejsi i wielkie wizje eschatologiczne: Księga Barucha, Daniel w jaskini lwów, Abdiasz, Jonasz, Micheasz, Nahum, Habakuk, Sofoniasz, Aggeusz, Zachariasz, Malachiasz, Ezechiel i Izajasz.',
+      parts: ['Tajemnice Pokuty i Nowego Porządku (Bar, Jon, Abd)', 'Tajemnice Sprawiedliwości i Pokoju (Mi, Na, Ha)', 'Tajemnice Odnowienia Świątyni i Mesjańskiego Króla (So, Ag, Za, Ml)', 'Tajemnice Królestwa Bożego i Syna Człowieczego (Dn)', 'Tajemnice Wszechmocy i Pocieszenia Ducha (Ez, Iz)'],
+      badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
+    },
+    {
+      num: 'IV',
+      title: 'Życie Jezusa i Maryi (Różaniec i Życie Ukryte)',
+      days: 'Dni 76 – 100 (8 IX – 2 X)',
+      desc: 'Życie Jezusa i Maryi z nowymi cytatami biblijnymi, rozważaniami i 10 dopowiedzeniami klauzulowymi po słowie „Jezus” w każdym Zdrowaś Maryjo: Tajemnice Radosne, Tajemnice Światła, Tajemnice Bolesne, Tajemnice Chwalebne oraz Tajemnice Ciszy (życie ukryte Jezusa w Nazarecie).',
+      parts: ['Tajemnice Radosne', 'Tajemnice Światła', 'Tajemnice Bolesne', 'Tajemnice Chwalebne', 'Tajemnice Ciszy'],
+      badgeColor: 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800'
+    },
+    {
+      num: 'V',
+      title: 'Historia Kościoła i Świadkowie Wieków',
+      days: 'Dni 101 – 125 (3 X – 27 X)',
+      desc: 'Dwa tysiąclecia żywego Ciała Chrystusa: Ojcowie Apostolscy (Didache, Ignacy, Polikarp, Ireneusz), męczennicy rzymscy, Edykt Mediolański, Chrzest Narodów, monastycyzm (Benedykt), zakony żebracze (Franciszek, Dominik) aż po męczenników XX wieku (Kolbe, Popiełuszko).',
+      parts: ['Tajemnice Ojców Apostolskich i Pierwszych Męczenników', 'Tajemnice Zwycięstwa Wiary i Chrztu Narodów', 'Tajemnice Odnowy Monastycznej i Ewangelicznej', 'Tajemnice Misji i Nowych Horyzontów Kościoła', 'Tajemnice Świadectwa Krwi i Wiary w Czasach Współczesnych'],
+      badgeColor: 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
+    },
+    {
+      num: 'VI',
+      title: 'Mądrość Kościoła w Pismach Świętych i Doktorów',
+      days: 'Dni 126 – 150 (28 X – 21 XI)',
+      desc: 'Skarbnica duchowa Kościoła: św. Augustyn, św. Grzegorz Wielki, św. Tomasz z Akwinu, Naśladowanie Chrystusa, św. Jan od Krzyża, św. Teresa z Avili, św. Franciszek Salezy, św. Teresa z Lisieux, św. Edyta Stein i bł. kard. Stefan Wyszyński.',
+      parts: ['Tajemnice Oświecenia Umysłu i Miłości Bożej (Ojcowie Kościoła)', 'Tajemnice Teologii Miłości i Eucharystii (Średniowiecze)', 'Tajemnice Nocy Ciemnej i Zjednoczenia Mistycznego (Złoty Wiek)', 'Tajemnice Małej Drogi i Ofiary z Miłości (XIX/XX wiek)', 'Tajemnice Mądrości Krzyża i Nowego Tysiąclecia'],
+      badgeColor: 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800'
+    },
+    {
+      num: 'VII',
+      title: 'Prorocki Głos Ducha w Kościele i Oczekiwanie Paruzji',
+      days: 'Dni 151 – 175 (22 XI – 16 XII)',
+      desc: 'Duch Święty w historii: mistyczne wizje św. Hildegardy, św. Brygidy, św. Katarzyny ze Sieny, św. Jana Bosko; orędzia z La Salette, Lourdes, Gietrzwałdu, Fatimy, Akita; orędzie Miłosierdzia Bożego (św. Faustyna) oraz ostateczne oczekiwanie na powtórne Przyjście Chrystusa.',
+      parts: ['Tajemnice Prorockich Wizji i Wołania o Nawrócenie', 'Tajemnice Macierzyńskich Upomnień i Znaków Nieba', 'Tajemnice Orędzia Fatimskiego i Niewolnictwa Miłości', 'Tajemnice Nieskończonego Miłosierdzia Bożego', 'Tajemnice Ostatniego Przyjścia Pana i Triumfu Niepokalanego Serca'],
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+    }
+  ];
+
+  const stages = selectedCycle === 2 ? stagesCycle2 : stagesCycle1;
 
   // Mapowanie ukończonych paciorków 1..10
   const completedBeadsMap: Record<number, boolean> = {};
@@ -1151,7 +1224,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-600/15 to-sky-600/15 border border-amber-600/30 text-amber-800 dark:text-amber-300 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Nowy Różaniec Historii Zbawienia • 175 Dni</span>
+              <span>nowyRHZ365 • 2 Cykle po 175 Dni (365 Dni)</span>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
@@ -1187,14 +1260,14 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           {/* Title and summary */}
           <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-serif-book tracking-tight text-[#1c1611] dark:text-white flex items-center gap-3">
-              <span>Nowy RHZ</span>
+              <span>nowyRHZ365</span>
               <span className="text-base sm:text-xl font-light text-amber-700 dark:text-amber-400 font-sans-ui">
                 – Różaniec Historii Zbawienia
               </span>
             </h1>
 
             <p className="text-xs sm:text-sm text-[#5e4b3b] dark:text-[#9bb0cf] max-w-4xl font-sans-ui leading-relaxed">
-              7 etapów × 5 części × 5 tajemnic = 175 dni modlitwy. Każdego dnia rozważana jest jedna tajemnica z 10 dopowiedzeniami po słowie „Jezus” oraz syntezą lektora AI TTS.
+              Dwa cykle modlitwy po 175 dni (łącznie 365 dni w roku). Cykl 1 (25 XII – 17 VI), Letnia Przerwa (18 – 24 VI), Cykl 2 (25 VI – 16 XII), Adwentowa Przerwa (17 – 24 XII). Każdego dnia rozważana jest jedna tajemnica z 10 dopowiedzeniami po słowie „Jezus” oraz syntezą lektora AI TTS.
             </p>
 
             {/* Lektor AI Audio Guide Bar */}
@@ -1206,6 +1279,74 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
               />
             </div>
           </div>
+
+          {/* Przełącznik Cyklu 1 i Cyklu 2 z uwzględnieniem kalendarza 365 dni */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 pb-1 border-t border-[#e2d5c4] dark:border-[#1e293c]">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-950 dark:text-amber-300">
+                Wybór Cyklu:
+              </span>
+              <div className="inline-flex rounded-2xl bg-[#efe6d8] dark:bg-[#141e2e] p-1 border border-[#dfceb9] dark:border-[#22314a]">
+                <button
+                  onClick={() => {
+                    setSelectedCycle(1);
+                    if (todayCalendarStatus.cycle === 1 && todayCalendarStatus.dayInCycle) {
+                      setCurrentDay(todayCalendarStatus.dayInCycle);
+                    }
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    selectedCycle === 1
+                      ? 'bg-amber-600 text-white shadow-sm'
+                      : 'text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-300'
+                  }`}
+                >
+                  <span>Cykl 1</span>
+                  <span className="text-[10px] opacity-80 font-normal hidden sm:inline">(25 XII – 17 VI)</span>
+                  {todayCalendarStatus.cycle === 1 && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" title="Bieżący cykl wg kalendarza" />
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedCycle(2);
+                    if (todayCalendarStatus.cycle === 2 && todayCalendarStatus.dayInCycle) {
+                      setCurrentDay(todayCalendarStatus.dayInCycle);
+                    }
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    selectedCycle === 2
+                      ? 'bg-amber-600 text-white shadow-sm'
+                      : 'text-stone-700 dark:text-stone-300 hover:text-amber-700 dark:hover:text-amber-300'
+                  }`}
+                >
+                  <span>Cykl 2</span>
+                  <span className="text-[10px] opacity-80 font-normal hidden sm:inline">(25 VI – 16 XII)</span>
+                  {todayCalendarStatus.cycle === 2 && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" title="Bieżący cykl wg kalendarza" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Status kalendarza dzisiejszego dnia */}
+            <div className="flex items-center gap-2 self-start sm:self-auto text-xs px-3 py-1.5 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-200">
+              <Calendar className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>
+                <strong>Dziś:</strong> {todayCalendarStatus.dateFormatted} – {todayCalendarStatus.cycleName}
+                {todayCalendarStatus.dayInCycle ? ` (Dzień ${todayCalendarStatus.dayInCycle}/175)` : ''}
+              </span>
+            </div>
+          </div>
+
+          {/* Baner informacyjny o przerwie modlitewnej jeśli dotyczy */}
+          {todayCalendarStatus.isBreak && (
+            <div className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 text-xs flex items-center gap-2.5">
+              <Info className="w-4 h-4 text-sky-600 shrink-0" />
+              <span>
+                <strong>Czas przerwy modlitewnej ({todayCalendarStatus.breakName}):</strong> W kalendarzu przewidziano czas na wyciszenie i podsumowanie. Możesz jednak w dowolnym momencie wybrać dowolny dzień z Cyklu 1 lub 2 poniżej.
+              </span>
+            </div>
+          )}
 
           {/* 3 Zakładki: Okno z tekstem, Aplikacja PWA, 7 Etapów */}
           <div className="flex items-center gap-2 pt-2 border-t border-[#e2d5c4] dark:border-[#1e293c]">
@@ -2005,6 +2146,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           broadcastItem={broadcastItem}
           currentDayNumber={safeDay}
           totalDays={175}
+          cycle={selectedCycle}
         />
       )}
 

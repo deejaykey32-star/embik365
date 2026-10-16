@@ -1,6 +1,7 @@
 // Auto-generated 175-day dataset for Nowy Różaniec Historii Zbawienia
 export interface NowyRhzMystery {
   day: number;
+  cycle?: number;
   t: string;
   sub: string;
   ref: string;
@@ -4588,3 +4589,5 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "passage": "(Objawienie Apokalipsy 22,16-21) Ja, Jezus, posłałem mojego anioła, by wam zaświadczyć o tym, co dotyczy Kościołów. Jam jest Odrośl i Potomstwo Dawida, Gwiazda świecąca, poranna\". A Duch i Oblubienica mówią: \"Przyjdź!\" A kto słyszy, niech powie: \"Przyjdź!\" I kto odczuwa pragnienie, niech przyjdzie, kto chce, niech wody życia darmo zaczerpnie. Ja świadczę każdemu, kto słucha słów proroctwa tej księgi: jeśliby ktoś do nich cokolwiek dołożył, Bóg mu dołoży plag zapisanych w tej księdze. A jeśliby ktoś odjął co ze słów księgi tego proroctwa, to Bóg odejmie jego udział w drzewie życia i w Mieście Świętym - które są opisane w tej księdze. Mówi Ten, który o tym świadczy: \"Zaiste, przyjdę niebawem\". Amen. Przyjdź, Panie Jezu! Łaska Pana Jezusa ze wszystkimi!"
   }
 ];
+
+export { NOWY_RHZ_CYCLE_2_MYSTERIES } from './nowyRhzCycle2Data';
