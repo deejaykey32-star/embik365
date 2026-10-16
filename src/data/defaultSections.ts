@@ -139,7 +139,7 @@ export const SECTIONS: SectionMeta[] = [
     shortTitle: 'Radio Internetowe',
     subtitle: '4 stacje w ciągłej pętli 24/7 z lektorem AI',
     type: 'info',
-    description: 'Internetowe Radio Widoki na Raj nadające w pętli 24/7 cztery stacje: Nowy RHZ (175 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni) z automatycznym lektorem mowy i ciągłym podsłuchem eteru.',
+    description: 'Internetowe Radio Widoki na Raj nadające w pętli 24/7 cztery stacje: nowyRHZ365 (365 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni) z automatycznym lektorem mowy i ciągłym podsłuchem eteru.',
     badge: 'Radio 24/7',
     icon: 'Radio',
     accentColor: '#e11d48',

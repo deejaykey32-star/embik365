@@ -2,7 +2,7 @@ import { WNR365_FULL_DATA } from '../data/wnr365Data';
 import { RHZ365_FULL_DATA } from '../data/rhz365Data';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 import { NOWY_RHZ_MYSTERIES, NowyRhzMystery } from '../data/nowyRhzData';
-import { getNowyRhzMystery, getDateFormattedForCycleDay } from './nowyRhzCalendar';
+import { getNowyRhzMystery, getDateFormattedForCycleDay, getDayDetails365, getDateFormattedFor365Day } from './nowyRhzCalendar';
 import {
   normalizePolishTextForSpeech,
   extractCleanWordsForKaraoke,
@@ -50,11 +50,11 @@ export const RADIO_STATIONS: RadioStationMeta[] = [
     id: 'nowyrhz',
     name: 'nowyRHZ365 – Nowy Różaniec Historii Zbawienia',
     shortName: 'nowyRHZ365',
-    badge: '2 Cykle × 175 Dni',
+    badge: '365 Dni (2 Cykle)',
     themeColor: '#d97706', // amber-600
-    tagline: '2 Cykle po 175 tajemnic • 365 dni (przerwy 18–24 VI i 17–24 XII)',
-    description: 'Kompletne 2 cykle po 175 tajemnic różańca z Pismem Świętym, rozważaniem, 10 dopowiedzeniami do każdego Zdrowaś Maryjo oraz modlitwą końcową.',
-    totalDays: 175,
+    tagline: '365 Dni • 2 Cykle po 175 tajemnic + 2 przerwy',
+    description: 'Całoroczny modlitewnik 365 dni: 2 cykle po 175 tajemnic różańca z przerwą letnią (18–24 VI) i przerwą adwentową (17–24 XII).',
+    totalDays: 365,
     shareSlug: 'nowyrhz',
     channelName: 'Stacja 1: nowyRHZ365',
     gradient: 'from-amber-500/20 via-amber-600/10 to-transparent'
@@ -388,8 +388,8 @@ export function getRadioBroadcastItem(
         stationId: 'nowyrhz',
         stationName: station.name,
         dayNumber: 0,
-        totalDays: 175,
-        displayDate: 'Tajemnica 0',
+        totalDays: 365,
+        displayDate: 'Tajemnica 0 (Modlitwy Wstępne)',
         headlineTitle,
         subtitle,
         stageName: 'Wprowadzenie do Różańca Świętego',
@@ -404,14 +404,157 @@ export function getRadioBroadcastItem(
       };
     }
 
-    const mystery = getNowyRhzMystery(cycle, safeDay);
+    // Wyznaczenie właściwego dnia w 365-dniowym roku (1..365)
+    const effDay365 = (cycle === 2 && safeDay <= 175) ? (182 + safeDay) : Math.max(1, Math.min(365, safeDay));
+    const details = getDayDetails365(effDay365);
+
+    if (details.isBreak) {
+      const isSummer = details.dayInBreak !== undefined && effDay365 <= 182;
+      const breakTitle = isSummer
+        ? `Letnia Przerwa Modlitewna – Dzień ${details.dayInBreak} z 7 (${details.dateFormatted})`
+        : `Adwentowa Przerwa Przedświąteczna – Dzień ${details.dayInBreak} z 8 (${details.dateFormatted})`;
+      const breakSubtitle = isSummer
+        ? 'Czas dziękczynienia za owoce Cyklu 1 i przygotowania do Cyklu 2 (start 25 czerwca)'
+        : 'Czas oczekiwania adwentowego na Uroczystość Narodzenia Pańskiego (start Cyklu 1: 25 grudnia)';
+
+      const scriptureRaw = isSummer
+        ? 'Pismo Święte: Syr 51, 1-12; Ps 119, 1-8'
+        : 'Pismo Święte: Iz 7, 14; Łk 1, 26-38; Ap 22, 20';
+
+      const meditationRawText = isSummer
+        ? `Letnia Przerwa Modlitewna. Dzień ${details.dayInBreak} z siedmiu dni wyciszenia, od osiemnastego do dwudziestego czwartego czerwca. Dziękujemy Bogu za dar przejścia przez sto siedemdziesiąt pięć tajemnic pierwszego cyklu Różańca Historii Zbawienia, od Stworzenia Świata przez przymierza, królów, proroków, życie Chrystusa aż po Paruzję. W tym czasie wyciszenia i odpoczynku prosimy o światło Ducha Świętego na nadchodzący drugi cykl, który rozpocznie się dwudziestego piątego czerwca kolejnymi siedmioma księgami historycznymi, pismami mądrościowymi, prorockimi oraz dziejami Kościoła.`
+        : `Adwentowa Przerwa Przedświąteczna. Dzień ${details.dayInBreak} z ośmiu dni bezpośredniego przygotowania do Uroczystości Narodzenia Pańskiego, od siedemnastego do dwudziestego czwartego grudnia. Łączymy się z modlitwą całego Kościoła śpiewającego Wielkie Antyfony Adwentowe, otwierając serca na przyjście Zbawiciela. Już dwudziestego piątego grudnia rozpocznie się na nowo całoroczny Cykl Pierwszy Różańca Historii Zbawienia.`;
+
+      const breakClList = isSummer
+        ? [
+            'który uświęca nas w prawdzie',
+            'który prowadzi nas przez historię zbawienia',
+            'który odnawia nasze serca w Duchu Świętym',
+            'który napełnia nas pokojem i mocą',
+            'który obdarza nas darami mądrości i rozumu',
+            'który umacnia naszą wiarę, nadzieję i miłość',
+            'który uczy nas modlitwy i kontemplacji',
+            'który posyła nas jako świadków Ewangelii',
+            'który przygotowuje nas na kolejne etapy przymierza',
+            'który króluje z Ojcem i Duchem Świętym na wieki'
+          ]
+        : [
+            'na którego przyjście czekamy z tęsknotą',
+            'Obiecany przez wszystkich proroków',
+            'Wschód słońca i Światłość prawdziwa',
+            'Mądrość, która wyszła z ust Najwyższego',
+            'Wódz i Prawodawca nowego przymierza',
+            'Klucz Dawida otwierający bramy zbawienia',
+            'Upragniony przez wszystkie narody',
+            'Emmanuel – Bóg z nami',
+            'którego Niepokalana Dziewica z miłością nosiła pod sercem',
+            'który wkrótce narodzi się w Betlejem dla naszego odkupienia'
+          ];
+
+      const smallBeadsData = breakClList.map(cl => ({
+        text: buildFullHailMary(cl),
+        dopowiedzenie: cl
+      }));
+      const dopowiedzeniaList = smallBeadsData.map(b => b.text);
+
+      interface SectionDef {
+        id: string;
+        title: string;
+        type: RadioSection['type'];
+        beadIndex?: number;
+        rawText: string;
+      }
+
+      const introBlockRaw = `${breakTitle}\n\n${scriptureRaw}\n\nRozważanie: ${meditationRawText}`;
+
+      const sectionDefs: SectionDef[] = [
+        { id: 'meditation', title: 'Rozważanie na czas przerwy', type: 'meditation', beadIndex: 0, rawText: introBlockRaw },
+        { id: 'our_father', title: 'Ojcze nasz', type: 'our_father', beadIndex: 0, rawText: OJCZE_NASZ_PELNY },
+        ...smallBeadsData.map((b, idx) => ({
+          id: `hail_mary_${idx + 1}`,
+          title: `Zdrowaś Maryjo #${idx + 1}`,
+          type: 'hail_mary' as const,
+          beadIndex: idx + 1,
+          rawText: b.text
+        })),
+        { id: 'glory_and_fatima', title: 'Chwała Ojcu & O mój Jezu', type: 'conclusion', beadIndex: 11, rawText: `${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}` },
+        { id: 'sub_tuum', title: 'Pod Twoją obronę', type: 'conclusion', beadIndex: 11, rawText: POD_TWOJA_OBRONE_PELNE }
+      ];
+
+      const cleanWords: string[] = [];
+      const lineBreakWordIndices: number[] = [];
+      const sections: RadioSection[] = [];
+      const normalizedSectionTexts: string[] = [];
+
+      for (let sIdx = 0; sIdx < sectionDefs.length; sIdx++) {
+        const def = sectionDefs[sIdx];
+        const normText = normalizePolishTextForSpeech(def.rawText);
+        normalizedSectionTexts.push(normText);
+        const sWords = extractCleanWordsForKaraoke(normText);
+        if (sWords.length === 0) continue;
+        const startWordIdx = cleanWords.length;
+        if (cleanWords.length > 0) lineBreakWordIndices.push(startWordIdx);
+        for (const w of sWords) cleanWords.push(w);
+        const endWordIdx = cleanWords.length - 1;
+        sections.push({
+          id: def.id,
+          title: def.title,
+          type: def.type,
+          beadIndex: def.beadIndex,
+          text: normText,
+          startWordIdx,
+          endWordIdx
+        });
+      }
+
+      const speechText = normalizedSectionTexts.join('\n\n');
+      const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
+
+      const displayContent = [
+        breakTitle,
+        breakSubtitle,
+        scriptureRaw,
+        meditationRawText,
+        OJCZE_NASZ_PELNY,
+        ...dopowiedzeniaList,
+        CHWALA_OJCU_PELNE,
+        MODLITWA_FATIMSKA_PELNA,
+        POD_TWOJA_OBRONE_PELNE
+      ].join('\n\n');
+
+      return {
+        stationId: 'nowyrhz',
+        stationName: station.name,
+        dayNumber: details.day365,
+        totalDays: 365,
+        displayDate: `Dzień ${details.day365}/365 • ${details.displayShort} (${details.dateFormatted})`,
+        headlineTitle: breakTitle,
+        subtitle: breakSubtitle,
+        stageName: isSummer ? 'Letnia Przerwa (18–24 VI)' : 'Adwentowa Przerwa (17–24 XII)',
+        partName: `Dzień ${details.dayInBreak} z ${details.totalBreakDays}`,
+        reference: scriptureRaw.replace(/^Pismo Święte:\s*/i, ''),
+        speechText,
+        displayContent,
+        words: cleanWords,
+        lineBreakWordIndices,
+        sections,
+        rosarySegments
+      };
+    }
+
+    const effCycle = details.cycle;
+    const effDayInCycle = details.dayInCycle;
+    const mystery = details.mystery;
     const headlineTitle = `${mystery.t} – ${mystery.sub}`;
-    const subtitle = `Cykl ${cycle} • Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
+    const subtitle = `Cykl ${effCycle} • Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
     
-    const bibRefSpoken = expandBiblicalReference(mystery.ref);
-    const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
-    const stageOrdSpoken = numberToPolishOrdinal(mystery.stage, 'm');
-    const partOrdSpoken = numberToPolishOrdinal(mystery.part, 'f');
+    const scriptureRaw = mystery.passage || (mystery.ref ? `Pismo Święte: ${mystery.ref}` : '');
+    const meditationRawText = `Rozważanie tajemnicy: ${mystery.t} – ${mystery.sub}. ${mystery.med}`;
+    const ojczeNaszText = OJCZE_NASZ_PELNY;
+    const chwalaOjcuText = CHWALA_OJCU_PELNE;
+    const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
+    const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
+    const modlitwaKoncowaText = mystery.prayer ? mystery.prayer.replace(/^Modlitwa na zakończenie:\s*/i, '').trim() : '';
 
     // 10 pełnych modlitw Zdrowaś Maryjo z dopowiedzeniami
     const smallBeadsData = mystery.cl.map((cl) => ({
@@ -421,14 +564,7 @@ export function getRadioBroadcastItem(
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
     // KROK 1: Informacja z nagłówka, Pismo Święte, Rozważanie tajemnicy oraz komplet pełnych modlitw
-    const introHeaderRaw = `Etap ${mystery.stage}: ${mystery.stageTitle}. Część ${mystery.part}: ${mystery.partTitle}. Tajemnica ${mystery.inPart || safeDay}: ${mystery.t} – ${mystery.sub}.`;
-    const scriptureRaw = mystery.passage || (mystery.ref ? `Pismo Święte: ${mystery.ref}` : '');
-    const meditationRawText = `Rozważanie tajemnicy: ${mystery.t} – ${mystery.sub}. ${mystery.med}`;
-    const ojczeNaszText = OJCZE_NASZ_PELNY;
-    const chwalaOjcuText = CHWALA_OJCU_PELNE;
-    const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
-    const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
-    const modlitwaKoncowaText = mystery.prayer ? mystery.prayer.replace(/^Modlitwa na zakończenie:\s*/i, '').trim() : '';
+    const introHeaderRaw = `Etap ${mystery.stage}: ${mystery.stageTitle}. Część ${mystery.part}: ${mystery.partTitle}. Tajemnica ${mystery.inPart || effDayInCycle}: ${mystery.t} – ${mystery.sub}.`;
 
     interface SectionDef {
       id: string;
@@ -457,8 +593,8 @@ export function getRadioBroadcastItem(
         rawText: b.text
       })),
       { id: 'glory_and_fatima', title: 'Chwała Ojcu & O mój Jezu', type: 'conclusion', beadIndex: 11, rawText: `${chwalaOjcuText}\n\n${oMojJezuText}` },
-      ...(safeDay === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę & Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: `${podTwojaObroneText}${modlitwaKoncowaText ? `\n\n${modlitwaKoncowaText}` : ''}` }] : []),
-      ...(safeDay !== 175 && modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
+      ...(effDayInCycle === 175 ? [{ id: 'sub_tuum', title: 'Pod Twoją obronę & Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: `${podTwojaObroneText}${modlitwaKoncowaText ? `\n\n${modlitwaKoncowaText}` : ''}` }] : []),
+      ...(effDayInCycle !== 175 && modlitwaKoncowaText ? [{ id: 'conclusion', title: 'Modlitwa na zakończenie', type: 'conclusion' as const, beadIndex: 11, rawText: modlitwaKoncowaText }] : [])
     ];
 
     const cleanWords: string[] = [];
@@ -497,8 +633,8 @@ export function getRadioBroadcastItem(
     const speechText = normalizedSectionTexts.join('\n\n');
     const rosarySegments = calculateRosarySegmentsFromSections(sections, smallBeadsData, cleanWords.length);
 
-    const meditationDisplay = `Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}\nRozważanie: ${mystery.med}`;
-    const displayHeader = `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle} • Tajemnica ${safeDay}: ${mystery.t} – ${mystery.sub}`;
+    const meditationDisplay = `Tajemnica ${effDayInCycle}: ${mystery.t} – ${mystery.sub}\nRozważanie: ${mystery.med}`;
+    const displayHeader = `Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle} • Tajemnica ${effDayInCycle}: ${mystery.t} – ${mystery.sub}`;
 
     const displayContent = [
       displayHeader,
@@ -508,18 +644,16 @@ export function getRadioBroadcastItem(
       ...dopowiedzeniaList,
       CHWALA_OJCU_PELNE,
       MODLITWA_FATIMSKA_PELNA,
-      ...(safeDay === 175 ? [POD_TWOJA_OBRONE_PELNE] : []),
+      ...(effDayInCycle === 175 ? [POD_TWOJA_OBRONE_PELNE] : []),
       ...(modlitwaKoncowaText ? [modlitwaKoncowaText] : [])
     ].join('\n\n');
-
-    const dateFormatted = getDateFormattedForCycleDay(cycle, safeDay);
 
     return {
       stationId: 'nowyrhz',
       stationName: station.name,
-      dayNumber: safeDay,
-      totalDays: 175,
-      displayDate: `Cykl ${cycle} • Dzień ${safeDay} (${dateFormatted})`,
+      dayNumber: details.day365,
+      totalDays: 365,
+      displayDate: `Dzień ${details.day365}/365 • Cykl ${effCycle} (Dzień ${effDayInCycle}/175) • ${details.dateFormatted}`,
       headlineTitle,
       subtitle,
       stageName: mystery.stageTitle,

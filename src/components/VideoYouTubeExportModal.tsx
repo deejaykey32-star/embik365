@@ -44,7 +44,7 @@ import {
   calculateWordAcousticWeight,
   extractCleanWordsForKaraoke 
 } from '../utils/polishSpeechNormalizer';
-import { getDateFormattedForCycleDay } from '../utils/nowyRhzCalendar';
+import { getDateFormattedForCycleDay, getDateFormattedFor365Day, getDayDetails365 } from '../utils/nowyRhzCalendar';
 
 // In-memory client cache for decoded audio buffers to prevent repeated downloads
 const clientTtsAudioCache = new Map<string, AudioBuffer>();
@@ -491,17 +491,20 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
   // Pełna lista wszystkich dni / tajemnic / wpisów dla wybranej stacji
   const allStationItems = useMemo(() => {
-    const list: { day: number; title: string; subtitle: string; dateFormatted?: string; ref?: string }[] = [];
+    const list: { day: number; title: string; subtitle: string; dateFormatted?: string; ref?: string; isBreak?: boolean; cycleLabel?: string }[] = [];
     const startDay = selectedStationId === 'nowyrhz' ? 0 : 1;
     for (let d = startDay; d <= activeStation.totalDays; d++) {
       const item = getRadioBroadcastItem(selectedStationId, d, selectedBibliaYear, selectedNowyRhzCycle);
-      const dateFormatted = selectedStationId === 'nowyrhz' ? getDateFormattedForCycleDay(selectedNowyRhzCycle, d) : undefined;
+      const dateFormatted = selectedStationId === 'nowyrhz' ? getDateFormattedFor365Day(d) : undefined;
+      const details = selectedStationId === 'nowyrhz' ? getDayDetails365(d) : undefined;
       list.push({
         day: d,
         title: item.headlineTitle,
         subtitle: item.subtitle,
         dateFormatted,
-        ref: item.reference
+        ref: item.reference,
+        isBreak: details?.isBreak,
+        cycleLabel: details?.cycleLabel
       });
     }
     return list;
@@ -1818,31 +1821,59 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
               )}
 
               {selectedStationId === 'nowyrhz' && (
-                <div className="flex items-center gap-1 bg-[#0b1019] p-1 rounded-xl border border-amber-500/30 text-xs">
-                  <span className="text-slate-400 text-[11px] px-1 font-semibold">Cykl:</span>
+                <div className="flex flex-wrap items-center gap-1 bg-[#0b1019] p-1 rounded-xl border border-amber-500/30 text-xs">
+                  <span className="text-slate-400 text-[11px] px-1 font-semibold">Skocz do:</span>
                   <button
-                    onClick={() => setSelectedNowyRhzCycle(1)}
+                    onClick={() => { setSelectedDayNumber(1); setSelectedNowyRhzCycle(1); }}
                     disabled={isRecording}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
-                      selectedNowyRhzCycle === 1
+                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
+                      safeDayNumber >= 1 && safeDayNumber <= 175
                         ? 'bg-amber-600 text-white shadow-xs'
                         : 'text-slate-400 hover:text-white'
                     }`}
+                    title="Cykl 1: dni 1–175 (25 XII – 17 VI)"
                   >
                     <span>Cykl 1</span>
-                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(25 XII – 17 VI)</span>
+                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(1–175: 25 XII – 17 VI)</span>
                   </button>
                   <button
-                    onClick={() => setSelectedNowyRhzCycle(2)}
+                    onClick={() => setSelectedDayNumber(176)}
                     disabled={isRecording}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
-                      selectedNowyRhzCycle === 2
+                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
+                      safeDayNumber >= 176 && safeDayNumber <= 182
+                        ? 'bg-amber-700 text-white shadow-xs'
+                        : 'text-amber-300/80 hover:text-white'
+                    }`}
+                    title="Letnia Przerwa: dni 176–182 (18–24 VI)"
+                  >
+                    <span>⏸ Letnia Przerwa</span>
+                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(176–182: 18–24 VI)</span>
+                  </button>
+                  <button
+                    onClick={() => { setSelectedDayNumber(183); setSelectedNowyRhzCycle(2); }}
+                    disabled={isRecording}
+                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
+                      safeDayNumber >= 183 && safeDayNumber <= 357
                         ? 'bg-amber-600 text-white shadow-xs'
                         : 'text-slate-400 hover:text-white'
                     }`}
+                    title="Cykl 2: dni 183–357 (25 VI – 16 XII)"
                   >
                     <span>Cykl 2</span>
-                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(25 VI – 16 XII)</span>
+                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(183–357: 25 VI – 16 XII)</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedDayNumber(358)}
+                    disabled={isRecording}
+                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold cursor-pointer transition flex items-center gap-1 ${
+                      safeDayNumber >= 358 && safeDayNumber <= 365
+                        ? 'bg-amber-700 text-white shadow-xs'
+                        : 'text-amber-300/80 hover:text-white'
+                    }`}
+                    title="Adwentowa Przerwa: dni 358–365 (17–24 XII)"
+                  >
+                    <span>⏸ Adwentowa Przerwa</span>
+                    <span className="opacity-75 font-normal text-[10px] hidden sm:inline">(358–365: 17–24 XII)</span>
                   </button>
                 </div>
               )}
@@ -1852,15 +1883,23 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             {selectedStationId === 'nowyrhz' && (
               <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 leading-relaxed">
                 <div>
-                  <strong>{selectedNowyRhzCycle === 1 ? 'Cykl 1 (175 dni): 25 grudnia – 17 czerwca' : 'Cykl 2 (175 dni): 25 czerwca – 16 grudnia'}</strong>
+                  <strong>
+                    {safeDayNumber === 0 && 'Tajemnica 0: Modlitwy Wstępne Różańca Świętego'}
+                    {safeDayNumber >= 1 && safeDayNumber <= 175 && `Cykl 1 (Dzień ${safeDayNumber} ze 175): ${getDateFormattedFor365Day(safeDayNumber)} • 25 grudnia – 17 czerwca`}
+                    {safeDayNumber >= 176 && safeDayNumber <= 182 && `⏸ Letnia Przerwa (Dzień ${safeDayNumber - 175} z 7): ${getDateFormattedFor365Day(safeDayNumber)} • Pominięcie 18–24 czerwca`}
+                    {safeDayNumber >= 183 && safeDayNumber <= 357 && `Cykl 2 (Dzień ${safeDayNumber - 182} ze 175): ${getDateFormattedFor365Day(safeDayNumber)} • 25 czerwca – 16 grudnia`}
+                    {safeDayNumber >= 358 && safeDayNumber <= 365 && `⏸ Adwentowa Przerwa (Dzień ${safeDayNumber - 357} z 8): ${getDateFormattedFor365Day(safeDayNumber)} • Pominięcie 17–24 grudnia`}
+                  </strong>
                   <span className="block sm:inline sm:ml-1 text-slate-300">
-                    {selectedNowyRhzCycle === 1 
-                      ? '• Pominięcie: Letnia Przerwa od 18 do 24 czerwca (7 dni).' 
-                      : '• Pominięcie: Adwentowa Przerwa od 17 do 24 grudnia (8 dni do Wigilii).'}
+                    {safeDayNumber >= 176 && safeDayNumber <= 182
+                      ? '• 7 dni modlitewnego odpoczynku i wyciszenia przed rozpoczęciem Cyklu 2 (start 25 VI).'
+                      : safeDayNumber >= 358 && safeDayNumber <= 365
+                      ? '• 8 dni oczekiwania adwentowego na Uroczystość Narodzenia Pańskiego (nowy Cykl 1 od 25 XII).'
+                      : '• Dwa cykle po 175 tajemnic + 7 dni przerwy letniej + 8 dni przerwy adwentowej = 365 dni.'}
                   </span>
                 </div>
                 <div className="text-[10px] text-amber-400/90 font-mono shrink-0">
-                  29 lutego pomijany (rok przestępny)
+                  29 lutego pomijany w roku przestępnym
                 </div>
               </div>
             )}
@@ -1869,11 +1908,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             <div className="space-y-1">
               <div className="flex items-center justify-between text-[11px]">
                 <label htmlFor="station-item-select" className="font-bold text-amber-300">
-                  Lista wyboru dnia i tajemnicy:
+                  Lista wyboru dnia i tajemnicy (365 dni):
                 </label>
                 {selectedStationId === 'nowyrhz' && (
                   <span className="text-[11px] text-amber-400 font-mono">
-                    Dzień {safeDayNumber}/175 • {getDateFormattedForCycleDay(selectedNowyRhzCycle, safeDayNumber)}
+                    Dzień {safeDayNumber}/365 • {getDateFormattedFor365Day(safeDayNumber)}
                   </span>
                 )}
               </div>
@@ -1882,7 +1921,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 value={safeDayNumber}
                 onChange={(e) => {
                   const val = parseInt(e.target.value, 10);
-                  if (!isNaN(val)) setSelectedDayNumber(val);
+                  if (!isNaN(val)) {
+                    setSelectedDayNumber(val);
+                    if (val >= 183 && val <= 357) setSelectedNowyRhzCycle(2);
+                    else if (val >= 1 && val <= 175) setSelectedNowyRhzCycle(1);
+                  }
                 }}
                 disabled={isRecording}
                 className="w-full px-3 py-2 bg-[#090e17] border border-amber-500/40 hover:border-amber-400 rounded-xl text-xs text-white font-medium focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 cursor-pointer transition shadow-inner"
@@ -1894,21 +1937,27 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 )}
                 {allStationItems
                   .filter(item => selectedStationId !== 'nowyrhz' || item.day > 0)
-                  .map(item => (
-                    <option key={item.day} value={item.day}>
-                      Dzień {item.day}{item.dateFormatted ? ` (${item.dateFormatted})` : ''} • {item.title}
-                    </option>
-                  ))}
-                {selectedStationId === 'nowyrhz' && selectedNowyRhzCycle === 1 && (
-                  <option disabled value={-1}>
-                    ────────── Pominięcie: Letnia Przerwa (18 VI – 24 VI, 7 dni) ──────────
-                  </option>
-                )}
-                {selectedStationId === 'nowyrhz' && selectedNowyRhzCycle === 2 && (
-                  <option disabled value={-2}>
-                    ────────── Pominięcie: Adwentowa Przerwa (17 XII – 24 XII, 8 dni) ──────────
-                  </option>
-                )}
+                  .map(item => {
+                    let label = `Dzień ${item.day}`;
+                    if (selectedStationId === 'nowyrhz') {
+                      if (item.day >= 1 && item.day <= 175) {
+                        label = `Dzień ${item.day} (${item.dateFormatted}) • Cykl 1 [Tajemnica ${item.day}/175] • ${item.title}`;
+                      } else if (item.day >= 176 && item.day <= 182) {
+                        label = `Dzień ${item.day} (${item.dateFormatted}) • ⏸ Letnia Przerwa [Dzień ${item.day - 175}/7] • ${item.title}`;
+                      } else if (item.day >= 183 && item.day <= 357) {
+                        label = `Dzień ${item.day} (${item.dateFormatted}) • Cykl 2 [Tajemnica ${item.day - 182}/175] • ${item.title}`;
+                      } else {
+                        label = `Dzień ${item.day} (${item.dateFormatted}) • ⏸ Adwentowa Przerwa [Dzień ${item.day - 357}/8] • ${item.title}`;
+                      }
+                    } else {
+                      label = `Dzień ${item.day}${item.dateFormatted ? ` (${item.dateFormatted})` : ''} • ${item.title}`;
+                    }
+                    return (
+                      <option key={item.day} value={item.day}>
+                        {label}
+                      </option>
+                    );
+                  })}
               </select>
             </div>
 
@@ -1944,6 +1993,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                     const val = parseInt(e.target.value, 10);
                     if (!isNaN(val)) {
                       setSelectedDayNumber(Math.max(minDay, Math.min(activeStation.totalDays, val)));
+                      if (val >= 183 && val <= 357) setSelectedNowyRhzCycle(2);
+                      else if (val >= 1 && val <= 175) setSelectedNowyRhzCycle(1);
                     }
                   }}
                   disabled={isRecording}
@@ -1952,7 +2003,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
                 <span className="text-xs text-slate-400 font-mono">/ {activeStation.totalDays}</span>
                 {selectedStationId === 'nowyrhz' && (
                   <span className="text-[11px] text-amber-300 font-mono ml-1 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">
-                    {getDateFormattedForCycleDay(selectedNowyRhzCycle, safeDayNumber)}
+                    {getDateFormattedFor365Day(safeDayNumber)}
                   </span>
                 )}
               </div>

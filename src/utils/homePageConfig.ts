@@ -186,7 +186,7 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       name: 'Radio 24/7 (4 Stacje)',
       badge: 'Radio Internetowe • Nadawanie 24/7',
       shortDesc: 'Wirtualny odbiornik radiowy 24/7 – 4 stacje w ciągłej pętli z lektorem AI.',
-      fullDesc: 'Całodobowe radio internetowe z wirtualnym odbiornikiem radiowym. Nadaje w pętli 24/7 cztery stacje: Nowy RHZ (175 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni) z automatycznym lektorem mowy i odsłuchem w czasie rzeczywistym.',
+      fullDesc: 'Całodobowe radio internetowe z wirtualnym odbiornikiem radiowym. Nadaje w pętli 24/7 cztery stacje: nowyRHZ365 (365 dni), Widoki na Raj (365 dni), Biblia i Apokryfy (365 dni) oraz pierwotny RHZ (365 dni) z automatycznym lektorem mowy i odsłuchem w czasie rzeczywistym.',
       imageUrl: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&auto=format&fit=crop&q=80',
       imageAlt: 'Radio Internetowe 24/7 – 4 Stacje na Żywo',
       color: '#e11d48',

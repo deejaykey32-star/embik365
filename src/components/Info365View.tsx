@@ -679,8 +679,8 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between text-xs font-bold mb-1">
-                  <span className="text-amber-400 group-hover:text-amber-300">1. Nowy RHZ</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono">175 dni</span>
+                  <span className="text-amber-400 group-hover:text-amber-300">1. nowyRHZ365</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono">365 dni</span>
                 </div>
                 <p className="text-[11px] text-stone-400 line-clamp-2 leading-relaxed">
                   Nowy Różaniec Historii Zbawienia: pełne 10 dopowiedzeń po słowie Jezus w każdej tajemnicy od Stworzenia po Apokalipsę.

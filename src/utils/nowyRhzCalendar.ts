@@ -216,3 +216,165 @@ export function getDateFormattedForCycleDay(cycle: 1 | 2, dayInCycle: number): s
     return '16 XII (16 grudnia)';
   }
 }
+
+export interface NowyRhz365DayDetails {
+  day365: number;
+  cycle: 1 | 2;
+  isBreak: boolean;
+  dayInCycle: number;
+  dayInBreak?: number;
+  totalBreakDays?: number;
+  breakTitle?: string;
+  dateFormatted: string;
+  month: number;
+  dayOfMonth: number;
+  mystery: NowyRhzMystery;
+  displayShort: string;
+  cycleLabel: string;
+}
+
+/**
+ * Zwraca sformatowaną datę dla danego dnia w roku (1..365),
+ * gdzie Dzień 1 = 25 XII, Dzień 175 = 17 VI, Dni 176..182 = 18–24 VI,
+ * Dzień 183 = 25 VI, Dzień 357 = 16 XII, Dni 358..365 = 17–24 XII.
+ */
+export function getDateFormattedFor365Day(day365: number): string {
+  if (day365 <= 0) return 'Modlitwy Wstępne';
+  const safeDay = Math.max(1, Math.min(365, day365));
+  const monthNames = [
+    '', 'stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
+    'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'
+  ];
+
+  // 1..7 -> 25 - 31 grudnia
+  if (safeDay <= 7) {
+    const d = 24 + safeDay;
+    return `${d} XII (${d} ${monthNames[12]})`;
+  }
+
+  // Dni 8..365 zaczynając od 1 stycznia
+  let rem = safeDay - 7;
+  const months = [
+    { m: 1, name: 'I', days: 31 },
+    { m: 2, name: 'II', days: 28 }, // 29 II pomijany
+    { m: 3, name: 'III', days: 31 },
+    { m: 4, name: 'IV', days: 30 },
+    { m: 5, name: 'V', days: 31 },
+    { m: 6, name: 'VI', days: 30 },
+    { m: 7, name: 'VII', days: 31 },
+    { m: 8, name: 'VIII', days: 31 },
+    { m: 9, name: 'IX', days: 30 },
+    { m: 10, name: 'X', days: 31 },
+    { m: 11, name: 'XI', days: 30 },
+    { m: 12, name: 'XII', days: 24 } // do 24 grudnia (Wigilia)
+  ];
+
+  for (const mon of months) {
+    if (rem <= mon.days) {
+      return `${rem} ${mon.name} (${rem} ${monthNames[mon.m]})`;
+    }
+    rem -= mon.days;
+  }
+  return '24 XII (24 grudnia)';
+}
+
+/**
+ * Zwraca pełne szczegóły dla dowolnego z 365 dni nowegoRHZ365:
+ * Dni 1..175 -> Cykl 1 (25 XII – 17 VI)
+ * Dni 176..182 -> Letnia Przerwa (18–24 VI, 7 dni)
+ * Dni 183..357 -> Cykl 2 (25 VI – 16 XII, 175 tajemnic)
+ * Dni 358..365 -> Adwentowa Przerwa (17–24 XII, 8 dni)
+ */
+export function getDayDetails365(day365: number): NowyRhz365DayDetails {
+  if (day365 <= 0) {
+    return {
+      day365: 0,
+      cycle: 1,
+      isBreak: false,
+      dayInCycle: 0,
+      dateFormatted: 'Wprowadzenie',
+      month: 0,
+      dayOfMonth: 0,
+      mystery: TAJEMNICA_ZERO,
+      displayShort: 'Tajemnica 0 (Wstęp)',
+      cycleLabel: 'Modlitwy Wstępne Różańca Świętego'
+    };
+  }
+
+  const safeDay = Math.max(1, Math.min(365, day365));
+  const dateFormatted = getDateFormattedFor365Day(safeDay);
+
+  // 1. Cykl 1: dni 1..175 (25 XII – 17 VI)
+  if (safeDay <= 175) {
+    const dayInCycle = safeDay;
+    const mystery = NOWY_RHZ_MYSTERIES.find(m => m.day === dayInCycle) || NOWY_RHZ_MYSTERIES[dayInCycle] || NOWY_RHZ_MYSTERIES[0];
+    return {
+      day365: safeDay,
+      cycle: 1,
+      isBreak: false,
+      dayInCycle,
+      dateFormatted,
+      month: 0,
+      dayOfMonth: 0,
+      mystery,
+      displayShort: `Cykl 1 • Dzień ${dayInCycle} ze 175`,
+      cycleLabel: 'Cykl 1 (25 XII – 17 VI)'
+    };
+  }
+
+  // 2. Letnia Przerwa: dni 176..182 (18 VI – 24 VI, 7 dni)
+  if (safeDay <= 182) {
+    const dayInBreak = safeDay - 175;
+    return {
+      day365: safeDay,
+      cycle: 1,
+      isBreak: true,
+      dayInCycle: 175,
+      dayInBreak,
+      totalBreakDays: 7,
+      breakTitle: 'Letnia Przerwa Modlitewna',
+      dateFormatted,
+      month: 6,
+      dayOfMonth: 17 + dayInBreak,
+      mystery: TAJEMNICA_ZERO,
+      displayShort: `Letnia Przerwa • Dzień ${dayInBreak} z 7`,
+      cycleLabel: 'Letnia Przerwa (18–24 VI)'
+    };
+  }
+
+  // 3. Cykl 2: dni 183..357 (25 VI – 16 XII, 175 dni)
+  if (safeDay <= 357) {
+    const dayInCycle = safeDay - 182;
+    const mystery = NOWY_RHZ_CYCLE_2_MYSTERIES.find(m => m.day === dayInCycle) || NOWY_RHZ_CYCLE_2_MYSTERIES[dayInCycle - 1] || NOWY_RHZ_CYCLE_2_MYSTERIES[0];
+    return {
+      day365: safeDay,
+      cycle: 2,
+      isBreak: false,
+      dayInCycle,
+      dateFormatted,
+      month: 0,
+      dayOfMonth: 0,
+      mystery,
+      displayShort: `Cykl 2 • Dzień ${dayInCycle} ze 175`,
+      cycleLabel: 'Cykl 2 (25 VI – 16 XII)'
+    };
+  }
+
+  // 4. Adwentowa Przerwa: dni 358..365 (17 XII – 24 XII, 8 dni)
+  const dayInBreak = safeDay - 357;
+  return {
+    day365: safeDay,
+    cycle: 2,
+    isBreak: true,
+    dayInCycle: 175,
+    dayInBreak,
+    totalBreakDays: 8,
+    breakTitle: 'Adwentowa Przerwa Przedświąteczna',
+    dateFormatted,
+    month: 12,
+    dayOfMonth: 16 + dayInBreak,
+    mystery: TAJEMNICA_ZERO,
+    displayShort: `Adwentowa Przerwa • Dzień ${dayInBreak} z 8`,
+    cycleLabel: 'Adwentowa Przerwa (17–24 XII)'
+  };
+}

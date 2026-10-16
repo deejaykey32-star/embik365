@@ -39,7 +39,7 @@ Po pierwsze: WnR365, czyli Widoki na Raj. To blog duchowy i codzienne rozważani
 
 Po drugie: RHZ365, czyli Różaniec Historii Zbawienia. Modlitwa różańcowa prowadząca przez całe dzieje zbawienia, z medytacjami i dopowiedzeniami.
 
-Po trzecie: Nowy RHZ – interaktywna aplikacja modlitewna na 175 dni, podzielona na 7 etapów, 5 części i 5 tajemnic, ze zliczaniem dziesiątek i automatycznym głosem online.
+Po trzecie: nowyRHZ365 – interaktywna aplikacja modlitewna na 365 dni (2 cykle po 175 tajemnic z przerwą letnią i adwentową), ze zliczaniem dziesiątek i automatycznym głosem online.
 
 Po czwarte: Biblia365 i Apokryfy. Roczny plan czytania Słowa Bożego wraz z cennymi tekstami wczesnochrześcijańskimi.
 
@@ -110,13 +110,13 @@ Skorzystaj z przycisku Lektora AI, aby odsłuchać rozważanie i modlitwę na da
 
   nowyRHZ: {
     id: 'nowyRHZ',
-    sectionName: 'Nowy RHZ • 175 Dni Modlitwy',
-    title: 'Przewodnik po Aplikacji Nowy RHZ',
-    subtitle: '7 etapów × 5 części × 5 tajemnic z interaktywnym zliczaniem dziesiątek i lektorem online',
-    badge: 'Nowy RHZ 175',
-    script: `Witaj w sekcji Nowy RHZ – Nowy Różaniec Historii Zbawienia.
+    sectionName: 'nowyRHZ365 • 365 Dni Modlitwy',
+    title: 'Przewodnik po Aplikacji nowyRHZ365',
+    subtitle: 'Całoroczny modlitewnik 365 dni (2 cykle po 175 tajemnic + 2 okresy przerw) ze zliczaniem dziesiątek i lektorem online',
+    badge: 'nowyRHZ365 • 365 Dni',
+    script: `Witaj w sekcji nowyRHZ365 – Nowy Różaniec Historii Zbawienia na 365 dni w roku.
 
-Jest to interaktywna aplikacja różańcowa rozpisana na 175 dni modlitwy. Dzieło podzielone jest na 7 wielkich etapów duchowych. Każdy etap liczy 5 części, a każda część zawiera 5 tajemnic, co daje dokładnie 175 dni kontemplacji Bożych dzieł.
+Dzieło rozpisane jest na 365 dni: dwa wielkie cykle po 175 tajemnic oraz dwa okresy przerw (Letnia Przerwa 18–24 VI oraz Adwentowa Przerwa 17–24 XII). Każdy cykl podzielony jest na 7 etapów duchowych po 5 części i 5 tajemnic.
 
 Aplikacja oferuje:
 Interaktywny podgląd koralików różańcowych i zliczanie odmawianych dziesiątek.
@@ -229,7 +229,7 @@ Dzieło jest dostępne w formie interaktywnej księgi z przewracaniem kartek ora
 
 Nasze radio nadaje nieprzerwanie w pętli 24 godziny na dobę, 7 dni w tygodniu, emitując cztery niezależne stacje radiowe z automatycznym lektorem AI:
 
-Stacja pierwsza: Nowy RHZ – 175 dni modlitwy różańcowej z dopowiedzeniami.
+Stacja pierwsza: nowyRHZ365 – 365 dni modlitwy różańcowej (2 cykle po 175 tajemnic + przerwy) z dopowiedzeniami.
 Stacja druga: Widoki na Raj – codzienne wpisy bloga duchowego WnR365.
 Stacja trzecia: Biblia i Apokryfy – codzienna lektura Słowa Bożego i pism wczesnochrześcijańskich.
 Oraz stacja czwarta: Pierwotny Różaniec Historii Zbawienia – 365 dni modlitwy różańcowej.

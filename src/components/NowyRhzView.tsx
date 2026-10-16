@@ -110,9 +110,10 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
     return getNowyRhzMystery(selectedCycle, safeDay);
   }, [selectedCycle, safeDay]);
 
-  // Radio broadcast item dla generatora wideo MP4
+  // Radio broadcast item dla generatora wideo MP4 (365 dni)
   const broadcastItem = useMemo(() => {
-    return getRadioBroadcastItem('nowyrhz', safeDay, selectedCycle);
+    const effectiveDay = selectedCycle === 2 ? (182 + safeDay) : safeDay;
+    return getRadioBroadcastItem('nowyrhz', effectiveDay, 1, selectedCycle);
   }, [safeDay, selectedCycle]);
 
   // Zakres modlitwy: 'single' (1 tajemnica), 'part' (5 tajemnic w części), 'stage' (25 tajemnic w etapie)
@@ -2144,8 +2145,8 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           isOpen={isVideoModalOpen}
           onClose={() => setIsVideoModalOpen(false)}
           broadcastItem={broadcastItem}
-          currentDayNumber={safeDay}
-          totalDays={175}
+          currentDayNumber={selectedCycle === 2 ? (182 + safeDay) : safeDay}
+          totalDays={365}
           cycle={selectedCycle}
         />
       )}
