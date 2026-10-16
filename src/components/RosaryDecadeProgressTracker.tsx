@@ -104,11 +104,11 @@ export const RosaryDecadeProgressTracker: React.FC<RosaryDecadeProgressTrackerPr
             </span>
           </div>
 
-          <h3 className="font-heading-cinzel text-base sm:text-lg font-bold text-[#2a2016] dark:text-[#f8fafc] truncate">
+          <h3 className="font-heading-cinzel text-base sm:text-lg font-bold text-[#2a2016] dark:text-[#f8fafc] leading-snug break-words">
             {mysteryTitle || 'Dziesiątek Różańca Historii Zbawienia'}
           </h3>
           {stageTitle && (
-            <p className="text-xs text-[#6e5d4e] dark:text-[#94a3b8] font-serif-book truncate">
+            <p className="text-xs text-[#6e5d4e] dark:text-[#94a3b8] font-serif-book mt-0.5 break-words">
               {stageTitle}
             </p>
           )}

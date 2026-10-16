@@ -1,5 +1,4 @@
-/* Droga365 – Service Worker (PWA offline) */
-const VERSION = 'v2-2026-10-12';
+const VERSION = 'v3-2026-10-16-clean-headers';
 const SHELL_CACHE = `droga365-shell-${VERSION}`;
 const ASSET_CACHE = `droga365-assets-${VERSION}`;
 const RUNTIME_CACHE = `droga365-runtime-${VERSION}`;

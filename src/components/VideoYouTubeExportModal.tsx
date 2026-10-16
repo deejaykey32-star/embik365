@@ -626,51 +626,94 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillRect(0, 0, width, height);
 
     // 2. RAMKA GÓRNA & NAGŁÓWEK WIDEO (YouTube Header)
-    const topBarY = Math.round(height * 0.065);
+    const topBarY = Math.round(height * 0.048);
     const topLabelY = topBarY - Math.round(height * 0.010);
-    const titleY = Math.round(height * 0.125);
-    const subY = Math.round(height * 0.165);
-    const sepY = Math.round(height * 0.190);
 
     // Złota linia dekoracyjna na górze
     ctx.fillStyle = activeStation.themeColor || '#d97706';
     ctx.fillRect(80, topBarY, width - 160, Math.max(2, Math.round(height * 0.003)));
 
     // Etykieta stacji radiowej / sekcji
-    ctx.font = `bold ${Math.round(height * 0.024)}px "Cinzel", "Times New Roman", serif`;
+    ctx.font = `bold ${Math.round(height * 0.021)}px "Cinzel", "Times New Roman", serif`;
     ctx.fillStyle = '#f59e0b'; // Złoty bursztyn
     ctx.textAlign = 'left';
     ctx.fillText(`🔴 RADIO INTERNETOWE • ${activeBroadcastItem.stationName.toUpperCase()}`, 80, topLabelY);
 
     // Znak wodny / Czas
-    ctx.font = `600 ${Math.round(height * 0.02)}px "Plus Jakarta Sans", sans-serif`;
+    ctx.font = `600 ${Math.round(height * 0.018)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
     ctx.fillText(`widokinaraj.pl`, width - 80, topLabelY);
-
-    // Tytuł Dnia & Informacja nagłówkowa z bezpiecznym skalowaniem
-    ctx.save();
-    const maxHeaderW = width - 160;
-    let titleFontSize = Math.round(height * 0.040);
-    ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
-    const fullTitleText = `${activeBroadcastItem.displayDate} • ${activeBroadcastItem.headlineTitle}`;
-    const titleWidth = ctx.measureText(fullTitleText).width;
-    if (titleWidth > maxHeaderW) {
-      titleFontSize = Math.max(Math.round(height * 0.022), Math.floor(titleFontSize * (maxHeaderW / titleWidth)));
-      ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
-    }
-    ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
-    ctx.fillText(fullTitleText, 80, titleY);
+
+    // 2.2. Linia z datą i informacją o cyklu / dniu
+    const dateY = Math.round(height * 0.082);
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `bold ${Math.round(height * 0.018)}px "Plus Jakarta Sans", sans-serif`;
+    ctx.fillStyle = '#fbbf24'; // Ciepłe bursztynowe złoto
+    ctx.fillText(activeBroadcastItem.displayDate, 80, dateY);
     ctx.restore();
 
-    // Podtytuł / Ścieżka / Źródło z bezpiecznym dopasowaniem
+    // 2.3. Tytuł / Nazwa Tajemnicy – zawiń nazwę by była w dwóch wierszach, gdy nie mieści się na ekranie
+    const maxHeaderW = width - 160;
+    const rawHeadline = (activeBroadcastItem.headlineTitle || '').trim();
+
     ctx.save();
-    let subFontSize = Math.round(height * 0.021);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    let titleFontSize = Math.round(height * 0.033);
+    ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
+
+    let titleLines: string[] = [];
+    const headlineW = ctx.measureText(rawHeadline).width;
+    const dashMatch = rawHeadline.match(/^(.*?)\s+[–—-]\s+(.*)$/);
+
+    if (headlineW <= maxHeaderW && rawHeadline.length < 52) {
+      titleLines = [rawHeadline];
+    } else if (dashMatch && dashMatch[1] && dashMatch[2]) {
+      titleLines = [dashMatch[1].trim(), `– ${dashMatch[2].trim()}`];
+    } else {
+      const words = rawHeadline.split(' ');
+      const half = Math.ceil(words.length / 2);
+      titleLines = [words.slice(0, half).join(' '), words.slice(half).join(' ')];
+    }
+
+    // Bezpieczne skalowanie rozmiaru czcionki, aby żaden wiersz nie wystawał poza ekran
+    for (const line of titleLines) {
+      const lineW = ctx.measureText(line).width;
+      if (lineW > maxHeaderW) {
+        titleFontSize = Math.min(titleFontSize, Math.floor(titleFontSize * (maxHeaderW / lineW)));
+      }
+    }
+    ctx.font = `bold ${titleFontSize}px "Cinzel", Georgia, serif`;
+    ctx.fillStyle = '#ffffff';
+
+    const isMultiLineTitle = titleLines.length > 1;
+    const titleY1 = Math.round(height * (isMultiLineTitle ? 0.118 : 0.126));
+    const titleY2 = Math.round(height * 0.154);
+
+    ctx.fillText(titleLines[0], 80, titleY1);
+    if (isMultiLineTitle && titleLines[1]) {
+      ctx.fillStyle = '#f1f5f9';
+      ctx.fillText(titleLines[1], 80, titleY2);
+    }
+    ctx.restore();
+
+    // 2.4. Podtytuł / Ścieżka / Źródło z bezpiecznym dopasowaniem
+    const subY = Math.round(height * (isMultiLineTitle ? 0.185 : 0.165));
+    const sepY = Math.round(height * (isMultiLineTitle ? 0.208 : 0.188));
+
+    ctx.save();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    let subFontSize = Math.round(height * 0.019);
     ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
     const subWidth = ctx.measureText(activeBroadcastItem.subtitle).width;
     if (subWidth > maxHeaderW) {
-      subFontSize = Math.max(Math.round(height * 0.015), Math.floor(subFontSize * (maxHeaderW / subWidth)));
+      subFontSize = Math.max(Math.round(height * 0.014), Math.floor(subFontSize * (maxHeaderW / subWidth)));
       ctx.font = `500 ${subFontSize}px "Plus Jakarta Sans", sans-serif`;
     }
     ctx.fillStyle = '#cbd5e1';
@@ -682,22 +725,20 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillRect(80, sepY, width - 160, 2);
 
     // 2.5. WIZUALIZACJA POSTĘPU DZIESIĄTKA RÓŻAŃCA (dla RHZ365 i Nowy RHZ):
-    // Duży okrąg (Rozważanie i Ojcze nasz) + 10 małych paciorków (Zdrowaś Maryjo ze wstawką) + Duży okrąg (Chwała Ojcu i O mój Jezu)
     const rosarySegments = activeBroadcastItem.rosarySegments;
     const hasRosary = Boolean(rosarySegments && rosarySegments.length > 0);
-    let headerBottom = 200; // domyślna dolna krawędź nagłówka bez różańca
+    let headerBottom = 200;
 
     if (hasRosary && rosarySegments) {
       const isDayZero = selectedStationId === 'nowyrhz' && activeBroadcastItem.dayNumber === 0;
-      // Znajdź aktywny segment na podstawie czytanego słowa
       const activeSeg = rosarySegments.find(
         s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx
       ) || rosarySegments[0];
-      const activeBeadNum = activeSeg.beadIndex; // 0..5 dla Tajemnicy 0, lub 0..11 dla dziesiątka
+      const activeBeadNum = activeSeg.beadIndex;
 
-      const beadCenterY = Math.round(height * 0.255); // ~275px na 1080p, ~184px na 720p
-      const largeRadius = Math.round(height * 0.023); // ~25px na 1080p, ~16px na 720p
-      const smallRadius = Math.round(height * 0.013); // ~14px na 1080p, ~9px na 720p
+      const beadCenterY = Math.round(height * (isMultiLineTitle ? 0.275 : 0.255));
+      const largeRadius = Math.round(height * 0.023);
+      const smallRadius = Math.round(height * 0.013);
 
       const leftX = Math.round(width * 0.12);
       const rightX = Math.round(width * 0.88);
@@ -937,7 +978,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       }
 
       // E. BELKA INFORMACYJNA O AKTUALNYM PACIORKU
-      const pillY = beadCenterY + largeRadius + 44;
+      const pillY = beadCenterY + largeRadius + Math.round(height * 0.038);
       ctx.save();
       ctx.fillStyle = 'rgba(245, 158, 11, 0.12)';
       ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
@@ -1023,10 +1064,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.fillText(pillText, width / 2, pillY + pillH / 2);
       ctx.restore();
 
-      headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca (~384px na 1080p)
+      headerBottom = pillY + pillH; // Dolna krawędź nagłówka różańca
     } else {
       // Belka informacyjna dla czytań biblijnych (Biblia365) i wpisów (Widoki na Raj)
-      const pillY = Math.round(height * 0.210);
+      const pillY = Math.round(height * (isMultiLineTitle ? 0.235 : 0.210));
       const pillW = width - 180;
       const pillH = Math.round(height * 0.046);
 
@@ -1060,10 +1101,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       headerBottom = pillY + pillH;
     }
 
-    // 3. NOWA TECHNIKA: PŁYNNY TELEPROMPTER KARAOKE (CONTINUOUS SMOOTH TELEPROMPTER)
-    // 100% SŁÓW ZAWSZE DOSTĘPNYCH BEZ ZNIKANIA, BEZ STRONICOWANIA I BEZ UCINANIA TEKSTU
+    // 3. PŁYNNY TELEPROMPTER KARAOKE (CONTINUOUS SMOOTH TELEPROMPTER)
+    // Zwiększony margines, aby nagłówek nigdy nie przysłaniał podstawowego tekstu modlitwy
     if (wordsTotal > 0) {
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.024 : 0.030));
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.055 : 0.065));
       const footerH = Math.round(height * 0.078);
       const footerTop = height - footerH; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
