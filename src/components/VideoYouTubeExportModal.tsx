@@ -425,17 +425,19 @@ interface Props {
   currentDayNumber?: number;
   totalDays?: number;
   cycle?: 1 | 2;
+  bibliaYear?: 1 | 2 | 3 | 4;
 }
 
 export const VideoYouTubeExportModal: React.FC<Props> = ({
   isOpen,
   onClose,
   broadcastItem,
-  cycle = 1
+  cycle = 1,
+  bibliaYear
 }) => {
   const [selectedStationId, setSelectedStationId] = useState<RadioStationId>(broadcastItem.stationId || 'nowyrhz');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(broadcastItem.dayNumber || 1);
-  const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
+  const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(bibliaYear || 1);
   const [selectedNowyRhzCycle, setSelectedNowyRhzCycle] = useState<1 | 2>(cycle || 1);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState('');
@@ -498,8 +500,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       if (cycle) {
         setSelectedNowyRhzCycle(cycle);
       }
+      if (bibliaYear) {
+        setSelectedBibliaYear(bibliaYear);
+      }
     }
-  }, [broadcastItem, cycle]);
+  }, [broadcastItem, cycle, bibliaYear]);
 
   // Resetowanie indeksu słowa i zatrzymanie odsłuchu przy każdej zmianie stacji, dnia, cyklu lub otwarciu modalnego okna
   useEffect(() => {
@@ -610,9 +615,35 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     const activeSec = rawSections.find(s => activeWordIdx >= s.startWordIdx && activeWordIdx <= s.endWordIdx)
       || (activeWordIdx >= wordsTotal - 1 ? rawSections[rawSections.length - 1] : rawSections[0]);
 
+    // Biblia365: sam tekst na czarnym tle (bez paciorków, belek i stopki)
+    const isPlainBiblia = selectedStationId === 'biblia365';
+
     // 1. GŁĘBOKIE CZARNE TŁO (standard YouTube)
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, width, height);
+
+    const rosarySegments = activeBroadcastItem.rosarySegments;
+    const hasRosary = !isPlainBiblia && Boolean(rosarySegments && rosarySegments.length > 0);
+    let headerBottom = 200;
+
+    if (isPlainBiblia) {
+      // Jedyny element poza tekstem: nazwa księgi i rozdział
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      let plainTitleSize = Math.round(height * 0.034);
+      ctx.font = `bold ${plainTitleSize}px "Cinzel", Georgia, serif`;
+      const plainTitle = activeBroadcastItem.headlineTitle || '';
+      const plainTitleW = ctx.measureText(plainTitle).width;
+      if (plainTitleW > width - 160) {
+        plainTitleSize = Math.floor(plainTitleSize * ((width - 160) / plainTitleW));
+        ctx.font = `bold ${plainTitleSize}px "Cinzel", Georgia, serif`;
+      }
+      ctx.fillStyle = '#e5e7eb';
+      ctx.fillText(plainTitle, width / 2, Math.round(height * 0.085));
+      ctx.restore();
+      headerBottom = Math.round(height * 0.100);
+    } else {
 
     // Subtelna poświata w tle (elegancka, sacralna winieta)
     const gradient = ctx.createRadialGradient(
@@ -725,10 +756,6 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.fillRect(80, sepY, width - 160, 2);
 
     // 2.5. WIZUALIZACJA POSTĘPU DZIESIĄTKA RÓŻAŃCA (dla RHZ365 i Nowy RHZ):
-    const rosarySegments = activeBroadcastItem.rosarySegments;
-    const hasRosary = Boolean(rosarySegments && rosarySegments.length > 0);
-    let headerBottom = 200;
-
     if (hasRosary && rosarySegments) {
       const isDayZero = selectedStationId === 'nowyrhz' && activeBroadcastItem.dayNumber === 0;
       const activeSeg = rosarySegments.find(
@@ -1100,12 +1127,13 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
 
       headerBottom = pillY + pillH;
     }
+    } // koniec nagłówka dla stacji innych niż Biblia365
 
     // 3. PŁYNNY TELEPROMPTER KARAOKE (CONTINUOUS SMOOTH TELEPROMPTER)
     // Bezpieczny margines, aby nagłówek nigdy nie przysłaniał podstawowego tekstu modlitwy
     if (wordsTotal > 0) {
-      const minHeaderGap = Math.round(height * (hasRosary ? 0.045 : 0.050));
-      const footerH = Math.round(height * 0.078);
+      const minHeaderGap = Math.round(height * (hasRosary ? 0.045 : isPlainBiblia ? 0.030 : 0.050));
+      const footerH = isPlainBiblia ? 0 : Math.round(height * 0.078);
       const footerTop = height - footerH; // Krawędź górna stopki YouTube
       const bottomPadding = Math.round(height * 0.020);
 
@@ -1355,7 +1383,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.restore();
     }
 
-    // 4. STOPKA WIDEO & PASEK STATUSU YOUTUBE
+    // 4. STOPKA WIDEO & PASEK STATUSU YOUTUBE (pomijana w Biblia365 – sam tekst na czarnym tle)
+    if (isPlainBiblia) return;
     const footerH = Math.round(height * 0.078);
     ctx.fillStyle = '#0d131f';
     ctx.fillRect(0, height - footerH, width, footerH);

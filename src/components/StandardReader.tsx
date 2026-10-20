@@ -17,7 +17,8 @@ import {
   Download,
   Globe,
   ExternalLink,
-  QrCode
+  QrCode,
+  Video
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
@@ -31,6 +32,9 @@ import { QrImageDisplay } from './QrImageDisplay';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
 import { formatContentForReaderHtml } from '../utils/textFormatter';
+import { buildBibliaSpeechText } from '../utils/bibliaSpeech';
+import { getRadioBroadcastItem } from '../utils/radioContentService';
+import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -81,6 +85,7 @@ export const StandardReader: React.FC<Props> = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
   const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
+  const [isBibliaVideoOpen, setIsBibliaVideoOpen] = useState(false);
 
   React.useEffect(() => {
     const handleStateChange = (e: any) => {
@@ -162,7 +167,10 @@ export const StandardReader: React.FC<Props> = ({
       return;
     }
 
-    const textToSpeak = `${displayedTitle || entry.title}. ${displayedContent || entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
+    // Biblia365: lektor czyta tylko nazwę księgi i rozdział, tekst bez numerów wersetów oraz komentarz
+    const textToSpeak = activeBibliaEntry
+      ? buildBibliaSpeechText(activeBibliaEntry)
+      : `${displayedTitle || entry.title}. ${displayedContent || entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
     const lectorCfg = getLectorConfig();
 
     await playLectorSpeech({
@@ -551,7 +559,29 @@ export const StandardReader: React.FC<Props> = ({
               <p className="text-sm font-semibold text-emerald-950 dark:text-emerald-100 font-serif-book">
                 {currentYearEntry.title}
               </p>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBibliaVideoOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer"
+                  title="Generuj wideo MP4 z tekstem rozdziału czytanym przez lektora (sam tekst na czarnym tle)"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Wideo MP4 (YouTube)</span>
+                </button>
+              </div>
             </div>
+
+            {isBibliaVideoOpen && (
+              <VideoYouTubeExportModal
+                isOpen={isBibliaVideoOpen}
+                onClose={() => setIsBibliaVideoOpen(false)}
+                broadcastItem={getRadioBroadcastItem('biblia365', currentDate.dayNumber, selectedBibliaYear)}
+                currentDayNumber={currentDate.dayNumber}
+                totalDays={365}
+                bibliaYear={selectedBibliaYear}
+              />
+            )}
           </div>
         );
       })()}

@@ -1,6 +1,7 @@
 import { WNR365_FULL_DATA } from '../data/wnr365Data';
 import { RHZ365_FULL_DATA } from '../data/rhz365Data';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
+import { getBibliaSpeechParts } from './bibliaSpeech';
 import { NOWY_RHZ_MYSTERIES, NowyRhzMystery } from '../data/nowyRhzData';
 import { getNowyRhzMystery, getDateFormattedForCycleDay, getDayDetails365, getDateFormattedFor365Day } from './nowyRhzCalendar';
 import {
@@ -763,17 +764,12 @@ export function getRadioBroadcastItem(
 
   if (stationId === 'biblia365') {
     const bibliaEntry = getBibliaEntryForDayAndYear(safeDay, bibliaYear);
-    const cleanContent = stripHtml(bibliaEntry.content || '').trim();
-    const headlineTitle = `${bibliaEntry.bookTitle} (Rozdział ${bibliaEntry.chapter}) – ${bibliaEntry.title || bibliaEntry.passage}`;
+    const chapterLabel = /Psalm/i.test(bibliaEntry.bookTitle) && !/Salomona/i.test(bibliaEntry.bookTitle) ? 'Psalm' : 'Rozdział';
+    const headlineTitle = `${bibliaEntry.bookTitle} – ${chapterLabel} ${bibliaEntry.chapter}`;
 
-    const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
-    const yearOrdSpoken = numberToPolishOrdinal(bibliaYear, 'm');
-    const chapterOrdSpoken = numberToPolishOrdinal(bibliaEntry.chapter, 'm');
-    const bibRefSpoken = expandBiblicalReference(bibliaEntry.passage);
-
-    const introInfoText = `Biblia trzysta sześćdziesiąt pięć i Apokryfy. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. Rok ${yearOrdSpoken}. Czytany tekst z Biblii: ${bibliaEntry.bookTitle}, rozdział ${chapterOrdSpoken}. Fragment: ${bibRefSpoken}.`;
-    const titleText = bibliaEntry.title ? `Temat: ${bibliaEntry.title}.` : '';
-    const contentParagraphs = cleanContent.split(/\n+/).map(p => p.trim()).filter(Boolean);
+    // Lektor odczytuje wyłącznie nazwę księgi i rozdział, potem sam tekst (bez numerów wersetów) i komentarz
+    const speechParts = getBibliaSpeechParts(bibliaEntry);
+    const cleanContent = [speechParts.scripture, speechParts.commentary].filter(Boolean).join('\n\n');
 
     interface SectionDef {
       id: string;
@@ -782,11 +778,14 @@ export function getRadioBroadcastItem(
       rawText: string;
     }
 
-    const fullBibliaRaw = titleText ? `${titleText}\n\n${cleanContent}` : cleanContent;
-
     const sectionDefs: SectionDef[] = [
-      { id: 'intro', title: 'Informacje wstępne', type: 'intro', rawText: introInfoText },
-      { id: 'content', title: headlineTitle, type: 'general', rawText: fullBibliaRaw }
+      { id: 'intro', title: headlineTitle, type: 'intro', rawText: speechParts.intro },
+      { id: 'scripture', title: headlineTitle, type: 'general', rawText: speechParts.scripture },
+      ...speechParts.commentary
+        .split(/\n{2,}/)
+        .map(p => p.trim())
+        .filter(Boolean)
+        .map((p, i) => ({ id: `commentary_${i + 1}`, title: 'Komentarz', type: 'general' as const, rawText: p }))
     ];
 
     const cleanWords: string[] = [];
@@ -822,11 +821,7 @@ export function getRadioBroadcastItem(
     }
 
     const speechText = normalizedSectionTexts.join('\n\n');
-    const displayHeader = `Biblia365 i Apokryfy • Dzień ${safeDay} • Rok ${bibliaYear}\nCzytany tekst z Biblii: ${bibliaEntry.bookTitle}, Rozdział ${bibliaEntry.chapter} (${bibliaEntry.passage})`;
-    const displayContent = [
-      displayHeader,
-      cleanContent
-    ].join('\n\n');
+    const displayContent = [headlineTitle, cleanContent].join('\n\n');
 
     return {
       stationId: 'biblia365',
