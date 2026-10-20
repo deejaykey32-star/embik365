@@ -83,6 +83,9 @@ export function cleanCommentaryForSpeech(commentary: string): string {
     })
     .join('\n')
     .replace(/^\s*-{3,}\s*$/gm, '')
+    // Odnośniki w nawiasach (w. 1–17), (Oz 11, 1), (KKK 528) – widoczne w czytniku, pomijane przez lektora
+    .replace(/\s*\((?:ww?\.|KKK|[1-4]?\s*\p{Lu}\p{Ll}{0,4})\s*\d[^()]*\)/gu, '')
+    .replace(/\s*[–-]\s*(?:[1-4]\s*)?\p{Lu}\p{Ll}{0,4}\s+\d+(?:\s*,\s*\d+(?:\s*[–-]\s*\d+)?)?(?=\))/gu, '')
     .replace(/[Ͱ-Ͽἀ-῿֐-׿]+/g, ' ')
     .replace(/\(\s*[,;\s]*\)/g, ' ')
     .replace(/[*_]/g, '')
