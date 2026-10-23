@@ -15,8 +15,7 @@ import {
   Volume2,
   RotateCcw,
   Upload,
-  Key,
-  FileAudio
+  Key
 } from 'lucide-react';
 import {
   RADIO_STATIONS,
@@ -148,23 +147,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     };
     image.src = src;
   });
-}
-
-/** Zawija tekst do szerokości canvasu; zwraca kolejne linie. */
-function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const lines: string[] = [];
-  let current = '';
-  for (const word of text.split(' ')) {
-    const candidate = current ? `${current} ${word}` : word;
-    if (ctx.measureText(candidate).width > maxWidth && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = candidate;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
 }
 
 interface FrameState {
@@ -1184,25 +1166,43 @@ export const SongVideoExportModal: React.FC<Props> = ({
 
               {/* Rozwijany panel klucza API */}
               {showApiSettings && (
-                <div className="p-3.5 rounded-2xl bg-black/40 border border-amber-500/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-amber-300 flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5" /> Klucz API Google Gemini / Lyria (dla śpiewu AI):
-                    </span>
-                    <span className="text-[10px] text-slate-400">Zapisywany w przeglądarce</span>
+                <div className="p-3.5 rounded-2xl bg-black/40 border border-amber-500/30 space-y-3 text-xs">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                        <Key className="w-3.5 h-3.5" /> Klucz API Google Gemini / Lyria (dla śpiewu AI):
+                      </span>
+                      <span className="text-[10px] text-slate-400">Zapisywany w przeglądarce</span>
+                    </div>
+                    <input
+                      type="password"
+                      value={geminiApiKey}
+                      onChange={e => {
+                        setGeminiApiKey(e.target.value);
+                        storeGeminiKey(e.target.value);
+                      }}
+                      placeholder="Wklej klucz GEMINI_API_KEY (AI Studio)..."
+                      className="w-full rounded-xl border border-white/20 bg-black/60 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                    <div className="text-[11px] text-slate-400">
+                      Gdy klucz jest podany, aplikacja generuje wokal AI (Google Lyria 3.5 / Gemini 2.0 Audio – wokal Aoede). Bez klucza możesz wgrać gotowy plik z Suno/Udio powyżej.
+                    </div>
                   </div>
-                  <input
-                    type="password"
-                    value={geminiApiKey}
-                    onChange={e => {
-                      setGeminiApiKey(e.target.value);
-                      storeGeminiKey(e.target.value);
-                    }}
-                    placeholder="Wklej klucz GEMINI_API_KEY (AI Studio)..."
-                    className="w-full rounded-xl border border-white/20 bg-black/60 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                  />
-                  <div className="text-[11px] text-slate-400">
-                    Gdy klucz jest podany, aplikacja generuje wokal AI (Google Lyria 3.5 / Gemini 2.0 Audio – wokal Aoede). Bez klucza możesz wgrać gotowy plik z Suno/Udio powyżej.
+
+                  <div className="space-y-1.5 pt-1 border-t border-white/10">
+                    <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                      Opcjonalny token serwera Lyria (Bearer):
+                    </span>
+                    <input
+                      type="password"
+                      value={apiToken}
+                      onChange={e => {
+                        setApiToken(e.target.value);
+                        storeToken(e.target.value);
+                      }}
+                      placeholder="Token serwera (jeśli wymagany)..."
+                      className="w-full rounded-xl border border-white/20 bg-black/60 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
                   </div>
                 </div>
               )}
