@@ -10,6 +10,8 @@ import {
   buildLyriaPrompt,
   computeLyricLineTimings,
   findActiveLineIndex,
+  computeLyricWordTimings,
+  findActiveWordIndex,
   buildYouTubeMetadata,
   pickRecordingMimeType,
   buildSongVideoFileName,
@@ -71,12 +73,32 @@ describe('splitIntoLyricLines', () => {
 });
 
 describe('buildSongLyrics', () => {
-  it('builds verse–chorus–verse–chorus with the ending as chorus', () => {
-    const lyrics = buildSongLyrics('Dzień pierwszy', SAMPLE_TEXT);
+  it('builds verse–chorus–verse–chorus with the ending as chorus for 2-verse texts', () => {
+    const text2Verses =
+      'Na początku Bóg stworzył niebo i ziemię.\n' +
+      'Ziemia zaś była bezładem i pustkowiem.\n' +
+      'Wtedy Bóg rzekł: Niech stanie się światłość!\n' +
+      'I stała się światłość.\n' +
+      'Bóg widząc, że światłość jest dobra.\n' +
+      'Oddzielił ją od ciemności.\n' +
+      'Chwała Tobie, Panie, za dar niebios.\n' +
+      'Amen.';
+    const lyrics = buildSongLyrics('Dzień pierwszy', text2Verses);
     expect(lyrics.sections.map(section => section.kind)).toEqual(['verse', 'chorus', 'verse', 'chorus']);
     expect(lyrics.sections[0].lines[0]).toContain('Na początku');
     expect(lyrics.sections[1].lines.join(' ')).toContain('Amen.');
     expect(lyrics.sections[1]).toEqual(lyrics.sections[3]);
+  });
+
+  it('preserves the entire text without discarding lines for longer texts', () => {
+    const lyrics = buildSongLyrics('Stworzenie świata', SAMPLE_TEXT);
+    const flattened = flattenLyricLines(lyrics);
+    const sourceLines = splitIntoLyricLines(SAMPLE_TEXT);
+    // Każda linia tekstu źródłowego musi znaleźć się w utworze (nie jest obcinany do 42 sekund)
+    sourceLines.forEach(line => {
+      expect(flattened).toContain(line);
+    });
+    expect(lyrics.sections.length).toBeGreaterThanOrEqual(4);
   });
 
   it('falls back to the title as chorus for short texts', () => {
@@ -147,6 +169,36 @@ describe('computeLyricLineTimings / findActiveLineIndex', () => {
     expect(findActiveLineIndex(timings, 20)).toBe(0);
     expect(findActiveLineIndex(timings, 60)).toBe(1);
     expect(findActiveLineIndex(timings, 95)).toBe(-1);
+  });
+});
+
+describe('computeLyricWordTimings / findActiveWordIndex', () => {
+  it('calculates word-by-word timings for karaoke synchronization', () => {
+    const lines = ['Święty Boże', 'Święty Mocny'];
+    const lineTimings = [
+      { lineIndex: 0, start: 10, end: 20 },
+      { lineIndex: 1, start: 20, end: 30 },
+    ];
+    const wordTimings = computeLyricWordTimings(lines, lineTimings);
+    expect(wordTimings.length).toBe(4);
+    expect(wordTimings[0].word).toBe('Święty');
+    expect(wordTimings[0].start).toBe(10);
+    expect(wordTimings[1].word).toBe('Boże');
+    expect(wordTimings[1].end).toBeCloseTo(20);
+    expect(wordTimings[2].word).toBe('Święty');
+    expect(wordTimings[2].start).toBeCloseTo(20);
+    expect(wordTimings[3].word).toBe('Mocny');
+    expect(wordTimings[3].end).toBeCloseTo(30);
+  });
+
+  it('correctly tracks active word index matching current audio playback', () => {
+    const lines = ['Jezu ufam Tobie'];
+    const lineTimings = [{ lineIndex: 0, start: 5, end: 15 }];
+    const wordTimings = computeLyricWordTimings(lines, lineTimings);
+
+    expect(findActiveWordIndex(wordTimings, 2)).toBe(-1); // przed utworem
+    expect(findActiveWordIndex(wordTimings, 6)).toBe(0);  // "Jezu"
+    expect(findActiveWordIndex(wordTimings, 14)).toBe(2); // "Tobie"
   });
 });
 

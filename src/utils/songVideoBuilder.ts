@@ -3,6 +3,7 @@
  * prompt dla Lyrii, synchronizacja linii z muzyką, metadane YouTube i wybór formatu MP4.
  */
 import type { SongStationId } from './lyriaSongService';
+import { calculateWordAcousticWeight } from './polishSpeechNormalizer';
 
 export interface SongStyle {
   /** Opis muzyczny dla Lyrii (po angielsku – model najlepiej go rozumie). */
@@ -53,6 +54,15 @@ export interface LyricLineTiming {
   end: number;
 }
 
+export interface LyricWordTiming {
+  wordIdx: number;
+  lineIndex: number;
+  wordInLineIdx: number;
+  word: string;
+  start: number;
+  end: number;
+}
+
 export interface YouTubeMetadata {
   title: string;
   description: string;
@@ -82,10 +92,12 @@ export function selectSongSourceText(
   sections: ReadonlyArray<{ type: string; text: string }> | undefined,
   fallbackText: string
 ): string {
-  const contentSection = sections?.find(
+  const contentSections = sections?.filter(
     section => SONG_SOURCE_SECTION_TYPES.includes(section.type) && section.text.trim()
   );
-  const sourceText = contentSection ? contentSection.text : fallbackText;
+  const sourceText = (contentSections && contentSections.length > 0)
+    ? contentSections.map(s => s.text.trim()).join('\n\n')
+    : fallbackText;
   return sourceText.replace(/^\s*-?\s*\[[^\]]*\]\s*/, '');
 }
 
@@ -117,29 +129,54 @@ export function splitIntoLyricLines(text: string, maxChars: number = MAX_LYRIC_L
 }
 
 /**
- * Buduje strukturę piosenki: Zwrotka 1 – Refren – Zwrotka 2 – Refren.
- * Zwrotki to początek tekstu dnia, refren to jego zakończenie (zwykle puenta lub modlitwa).
+ * Buduje strukturę pieśni obejmującą CAŁY tekst wpisu (bez sztucznego obcinania):
+ * - Kolejne zwrotki po 4 wersy (LINES_PER_VERSE) dla całego tekstu
+ * - Refren (puenta / modlitwa z końca lub tytuł) powtarzany w trakcie i na zakończenie
  */
 export function buildSongLyrics(title: string, sourceText: string): SongLyrics {
   const allLines = splitIntoLyricLines(sourceText);
-  const verseLineCount = LINES_PER_VERSE * 2;
+  if (!allLines.length) {
+    return { title: title.trim(), sections: [] };
+  }
 
-  const verseLines = allLines.slice(0, verseLineCount);
-  const remainingLines = allLines.slice(verseLineCount);
-  const chorusLines = remainingLines.length >= 2
-    ? remainingLines.slice(-LINES_PER_VERSE)
+  // W przypadku bardzo krótkich tekstów (do 4 linii)
+  if (allLines.length <= LINES_PER_VERSE) {
+    const sections: LyricSection[] = [{ kind: 'verse', lines: allLines }];
+    if (title.trim()) sections.push({ kind: 'chorus', lines: [title.trim()] });
+    return { title: title.trim(), sections };
+  }
+
+  // Refren: puenta / modlitwa z końca tekstu (jeśli tekst ma min. 6 linii) lub tytuł
+  const hasDistinctEnding = allLines.length >= 6;
+  const chorusLines = hasDistinctEnding
+    ? allLines.slice(-Math.min(LINES_PER_VERSE, Math.max(2, Math.floor(allLines.length / 4))))
     : [title.trim()].filter(Boolean);
 
-  const firstVerse = verseLines.slice(0, LINES_PER_VERSE);
-  const secondVerse = verseLines.slice(LINES_PER_VERSE);
+  // Zwrotki to cała reszta tekstu – ŻADNA linia tekstu nie zostaje pominięta ani utracona!
+  const mainLines = hasDistinctEnding
+    ? allLines.slice(0, allLines.length - chorusLines.length)
+    : allLines;
 
+  // Dzielimy wszystkie linie tekstu na kolejne zwrotki po LINES_PER_VERSE
   const sections: LyricSection[] = [];
-  if (firstVerse.length) sections.push({ kind: 'verse', lines: firstVerse });
-  if (chorusLines.length) sections.push({ kind: 'chorus', lines: chorusLines });
-  if (secondVerse.length) {
-    sections.push({ kind: 'verse', lines: secondVerse });
-    if (chorusLines.length) sections.push({ kind: 'chorus', lines: chorusLines });
+  const verseChunks: string[][] = [];
+  for (let i = 0; i < mainLines.length; i += LINES_PER_VERSE) {
+    verseChunks.push(mainLines.slice(i, i + LINES_PER_VERSE));
   }
+
+  verseChunks.forEach((chunk, index) => {
+    sections.push({ kind: 'verse', lines: chunk });
+    if (chorusLines.length > 0) {
+      const isLastChunk = index === verseChunks.length - 1;
+      const shouldAddChorus = verseChunks.length <= 3 
+        ? true 
+        : (index % 2 === 1 || isLastChunk);
+      if (shouldAddChorus) {
+        sections.push({ kind: 'chorus', lines: chorusLines });
+      }
+    }
+  });
+
   return { title: title.trim(), sections };
 }
 
@@ -223,6 +260,59 @@ export function computeLyricLineTimings(
 export function findActiveLineIndex(timings: LyricLineTiming[], currentTime: number): number {
   const active = timings.find(timing => currentTime >= timing.start && currentTime < timing.end);
   return active ? active.lineIndex : -1;
+}
+
+/**
+ * Oblicza precyzyjne znaczniki czasowe słowo po słowie na podstawie czasu linii tekstu
+ * oraz wag fonetyczno-akustycznych języka polskiego.
+ */
+export function computeLyricWordTimings(
+  lines: string[],
+  lineTimings: LyricLineTiming[]
+): LyricWordTiming[] {
+  const wordTimings: LyricWordTiming[] = [];
+  let globalWordIdx = 0;
+
+  lineTimings.forEach(lineTiming => {
+    const line = lines[lineTiming.lineIndex] || '';
+    const words = line.split(/\s+/).filter(Boolean);
+    if (!words.length) return;
+
+    const lineDur = Math.max(0.1, lineTiming.end - lineTiming.start);
+    const weights = words.map((w, idx) => calculateWordAcousticWeight(w, idx === words.length - 1));
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0) || 1;
+
+    let accWeight = 0;
+    words.forEach((word, wIdx) => {
+      const wStart = lineTiming.start + (accWeight / totalWeight) * lineDur;
+      accWeight += weights[wIdx];
+      const wEnd = lineTiming.start + (accWeight / totalWeight) * lineDur;
+
+      wordTimings.push({
+        wordIdx: globalWordIdx++,
+        lineIndex: lineTiming.lineIndex,
+        wordInLineIdx: wIdx,
+        word,
+        start: wStart,
+        end: Math.min(lineTiming.end, wEnd),
+      });
+    });
+  });
+
+  return wordTimings;
+}
+
+/** Zwraca indeks słowa odśpiewywanego w danej chwili lub -1 (intro/outro). */
+export function findActiveWordIndex(wordTimings: LyricWordTiming[], currentTime: number): number {
+  if (!wordTimings.length) return -1;
+  const active = wordTimings.find(w => currentTime >= w.start && currentTime < w.end);
+  if (active) return active.wordIdx;
+
+  if (currentTime < wordTimings[0].start) return -1;
+  for (let i = wordTimings.length - 1; i >= 0; i--) {
+    if (currentTime >= wordTimings[i].end) return wordTimings[i].wordIdx;
+  }
+  return -1;
 }
 
 export function buildYouTubeMetadata(
@@ -536,5 +626,136 @@ export async function mixVocalAndMusicBuffers(
   audioCtx.close().catch(() => undefined);
   return mixed;
 }
+
+/**
+ * Przekształca surowy wokal lektora TTS w ciepły, śpiewny, melodyjny głos pieśni:
+ * - Korekcja barwy (ciepły rezonans klatki ~260Hz, melodyjna obecność wokalu ~2.8kHz, obcięcie syków >7.5kHz)
+ * - Sakralny pogłos kapliczny / kościelny (Convolver reverb tail ~1.5s)
+ * - Chóralne podwojenie wokalu (unison chorus delay 18ms / 26ms)
+ * - Kompresor dynamiki dla płynnego i równego śpiewu
+ */
+export async function applyMelodicVocalEffects(
+  vocalBuffer: AudioBuffer,
+  sampleRate: number = 44100
+): Promise<AudioBuffer> {
+  const OfflineCtxClass =
+    typeof OfflineAudioContext !== 'undefined'
+      ? OfflineAudioContext
+      : typeof window !== 'undefined'
+      ? (window as any).OfflineAudioContext || (window as any).webkitOfflineAudioContext
+      : null;
+
+  if (!OfflineCtxClass) return vocalBuffer;
+
+  const numChannels = 2; // Stereo dla głębi przestrzennej
+  const tailDuration = 1.6; // Dodatkowe wybrzmienie pogłosu
+  const totalFrames = Math.round((vocalBuffer.duration + tailDuration) * sampleRate);
+
+  try {
+    const offlineCtx = new OfflineCtxClass(numChannels, totalFrames, sampleRate);
+
+    const source = offlineCtx.createBufferSource();
+    source.buffer = vocalBuffer;
+
+    // 1. Filtr dolnozaporowy (usuwa dudnienia subsoniczne poniżej 85Hz)
+    const highpass = offlineCtx.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.setValueAtTime(85, 0);
+    highpass.Q.setValueAtTime(0.7, 0);
+
+    // 2. Ciepło klatki piersiowej i wokalu pieśniowego (260 Hz)
+    const warmthFilter = offlineCtx.createBiquadFilter();
+    warmthFilter.type = 'peaking';
+    warmthFilter.frequency.setValueAtTime(260, 0);
+    warmthFilter.Q.setValueAtTime(1.0, 0);
+    warmthFilter.gain.setValueAtTime(2.8, 0);
+
+    // 3. Obecność melodyjna / formant śpiewu (2.8 kHz)
+    const presenceFilter = offlineCtx.createBiquadFilter();
+    presenceFilter.type = 'peaking';
+    presenceFilter.frequency.setValueAtTime(2800, 0);
+    presenceFilter.Q.setValueAtTime(1.1, 0);
+    presenceFilter.gain.setValueAtTime(3.2, 0);
+
+    // 4. Filtr górnozaporowy łagodzący ostre syki TTS (7.5 kHz)
+    const smoothFilter = offlineCtx.createBiquadFilter();
+    smoothFilter.type = 'lowpass';
+    smoothFilter.frequency.setValueAtTime(7500, 0);
+    smoothFilter.Q.setValueAtTime(0.7, 0);
+
+    // Łańcuch EQ: source -> highpass -> warmth -> presence -> smooth
+    source.connect(highpass);
+    highpass.connect(warmthFilter);
+    warmthFilter.connect(presenceFilter);
+    presenceFilter.connect(smoothFilter);
+
+    // 5. Chóralne podwojenie wokalu (Chorus / Unison Doubling)
+    const delayL = offlineCtx.createDelay(0.1);
+    delayL.delayTime.setValueAtTime(0.018, 0);
+    const delayR = offlineCtx.createDelay(0.1);
+    delayR.delayTime.setValueAtTime(0.026, 0);
+
+    const chorusGain = offlineCtx.createGain();
+    chorusGain.gain.setValueAtTime(0.16, 0);
+
+    const merger = offlineCtx.createChannelMerger(2);
+    delayL.connect(merger, 0, 0);
+    delayR.connect(merger, 0, 1);
+    merger.connect(chorusGain);
+
+    smoothFilter.connect(delayL);
+    smoothFilter.connect(delayR);
+
+    // 6. Sakralny pogłos kapliczny / kościelny (Convolver Reverb)
+    const reverbDuration = 1.4;
+    const decayRate = 3.2;
+    const irFrames = Math.round(sampleRate * reverbDuration);
+    const irBuffer = offlineCtx.createBuffer(2, irFrames, sampleRate);
+
+    for (let ch = 0; ch < 2; ch++) {
+      const data = irBuffer.getChannelData(ch);
+      for (let i = 0; i < irFrames; i++) {
+        const t = i / sampleRate;
+        const noise = Math.random() * 2 - 1;
+        // Wygładzony spadek wykładniczy pogłosu sakralnego
+        data[i] = noise * Math.exp(-decayRate * t);
+      }
+    }
+
+    const convolver = offlineCtx.createConvolver();
+    convolver.buffer = irBuffer;
+
+    const reverbGain = offlineCtx.createGain();
+    reverbGain.gain.setValueAtTime(0.24, 0);
+    smoothFilter.connect(convolver);
+    convolver.connect(reverbGain);
+
+    // 7. Ścieżka sucha (Direct dry vocal)
+    const dryGain = offlineCtx.createGain();
+    dryGain.gain.setValueAtTime(0.92, 0);
+    smoothFilter.connect(dryGain);
+
+    // 8. Kompresor dynamiki dla gładkiego, melodyjnego śpiewu
+    const compressor = offlineCtx.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-18, 0);
+    compressor.knee.setValueAtTime(8, 0);
+    compressor.ratio.setValueAtTime(3.0, 0);
+    compressor.attack.setValueAtTime(0.015, 0);
+    compressor.release.setValueAtTime(0.22, 0);
+
+    dryGain.connect(compressor);
+    chorusGain.connect(compressor);
+    reverbGain.connect(compressor);
+
+    compressor.connect(offlineCtx.destination);
+
+    source.start(0);
+    return await offlineCtx.startRendering();
+  } catch (err) {
+    console.warn('[SongBuilder] Błąd efektów melodyjnych wokalu:', err);
+    return vocalBuffer;
+  }
+}
+
 
 

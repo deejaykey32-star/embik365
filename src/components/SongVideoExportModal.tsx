@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   X,
   Music,
@@ -12,9 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Radio,
-  Sliders,
   Volume2,
-  Play,
   RotateCcw
 } from 'lucide-react';
 import {
@@ -33,15 +31,20 @@ import {
   buildLyriaPrompt,
   computeLyricLineTimings,
   findActiveLineIndex,
+  computeLyricWordTimings,
+  findActiveWordIndex,
   buildYouTubeMetadata,
   pickRecordingMimeType,
   buildSongVideoFileName,
   LyricLineTiming,
+  LyricWordTiming,
   audioBufferToWavBlob,
   blobToBase64,
   synthesizeStationAccompaniment,
   mixVocalAndMusicBuffers,
+  applyMelodicVocalEffects,
 } from '../utils/songVideoBuilder';
+import { calculateWordAcousticWeight } from '../utils/polishSpeechNormalizer';
 import { fetchAudioForText } from './VideoYouTubeExportModal';
 import { concatenateAudioBuffers } from '../utils/audioLectorService';
 
@@ -147,6 +150,8 @@ interface FrameState {
   sectionName: string;
   lyricLines: string[];
   activeLineIndex: number;
+  activeWordIdx: number;
+  wordTimings: LyricWordTiming[];
   progress: number;
 }
 
@@ -162,10 +167,10 @@ function drawSongFrame(ctx: CanvasRenderingContext2D, illustration: HTMLImageEle
 
   // Delikatny gradient i winieta filmowa (czarne tło OLED przy krawędziach)
   const shade = ctx.createLinearGradient(0, 0, 0, height);
-  shade.addColorStop(0, 'rgba(0,0,0,0.65)');
-  shade.addColorStop(0.2, 'rgba(0,0,0,0.35)');
-  shade.addColorStop(0.55, 'rgba(0,0,0,0.4)');
-  shade.addColorStop(1, 'rgba(0,0,0,0.85)');
+  shade.addColorStop(0, 'rgba(0,0,0,0.72)');
+  shade.addColorStop(0.2, 'rgba(0,0,0,0.40)');
+  shade.addColorStop(0.55, 'rgba(0,0,0,0.45)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.88)');
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, width, height);
 
@@ -183,21 +188,143 @@ function drawSongFrame(ctx: CanvasRenderingContext2D, illustration: HTMLImageEle
   ctx.font = `700 ${44 * scale}px Georgia, serif`;
   ctx.fillText(frame.title, width / 2, 130 * scale, width - 140 * scale);
 
-  // Aktualna śpiewana linia (duży, ciepły, złoty font z poświatą)
-  const currentLine = frame.activeLineIndex >= 0 ? frame.lyricLines[frame.activeLineIndex] : '';
-  const nextLine = frame.lyricLines[frame.activeLineIndex + 1] ?? '';
-  const lyricFontSize = 62 * scale;
-  ctx.font = `700 ${lyricFontSize}px Georgia, serif`;
-  ctx.fillStyle = '#fff7e0';
-  const wrapped = wrapCanvasText(ctx, currentLine || '♪ ♪ ♪', width - 260 * scale);
-  const lyricTop = height * 0.70 - ((wrapped.length - 1) * lyricFontSize * 1.25) / 2;
-  wrapped.forEach((line, index) => ctx.fillText(line, width / 2, lyricTop + index * lyricFontSize * 1.25));
+  const activeLineIdx = frame.activeLineIndex;
+  const currentLine = activeLineIdx >= 0 ? frame.lyricLines[activeLineIdx] : '';
+  const nextLine = activeLineIdx >= 0 && activeLineIdx + 1 < frame.lyricLines.length ? frame.lyricLines[activeLineIdx + 1] : '';
 
-  // Następna linia tekstu w tle
-  if (nextLine && frame.activeLineIndex >= 0) {
-    ctx.font = `500 ${36 * scale}px Georgia, serif`;
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText(nextLine, width / 2, lyricTop + wrapped.length * lyricFontSize * 1.25 + 24 * scale, width - 260 * scale);
+  if (activeLineIdx < 0 || !currentLine) {
+    // Intro lub Outro: animowane/delikatne nuty muzyczne
+    ctx.font = `700 ${56 * scale}px Georgia, serif`;
+    ctx.fillStyle = '#fef08a';
+    ctx.shadowColor = 'rgba(251, 191, 36, 0.6)';
+    ctx.shadowBlur = 20 * scale;
+    ctx.fillText('♪   ♪   ♪', width / 2, height * 0.70);
+  } else {
+    // RYSOWANIE KARAOKE SŁOWO PO SŁOWIE
+    const lyricFontSize = 54 * scale;
+    ctx.font = `700 ${lyricFontSize}px Georgia, "Newsreader", serif`;
+    const spaceWidth = ctx.measureText(' ').width;
+    const maxWidth = width - 240 * scale;
+
+    // Pobierz słowa bieżącej linii
+    let lineTokens: { text: string; width: number; wordIdx: number }[] = [];
+    const matchedTimings = frame.wordTimings.filter(w => w.lineIndex === activeLineIdx);
+
+    if (matchedTimings.length > 0) {
+      lineTokens = matchedTimings.map(t => ({
+        text: t.word,
+        width: ctx.measureText(t.word).width,
+        wordIdx: t.wordIdx,
+      }));
+    } else {
+      // Fallback: jeśli brak timingów słów
+      const rawWords = currentLine.split(/\s+/).filter(Boolean);
+      lineTokens = rawWords.map((w, idx) => ({
+        text: w,
+        width: ctx.measureText(w).width,
+        wordIdx: idx,
+      }));
+    }
+
+    // Podział słów na wiersze tak, by zmieściły się w maxWidth
+    const rows: { text: string; width: number; wordIdx: number }[][] = [];
+    let currentRow: { text: string; width: number; wordIdx: number }[] = [];
+    let currentRowWidth = 0;
+
+    for (const token of lineTokens) {
+      const addedWidth = currentRow.length > 0 ? spaceWidth + token.width : token.width;
+      if (currentRowWidth + addedWidth > maxWidth && currentRow.length > 0) {
+        rows.push(currentRow);
+        currentRow = [token];
+        currentRowWidth = token.width;
+      } else {
+        currentRow.push(token);
+        currentRowWidth += addedWidth;
+      }
+    }
+    if (currentRow.length > 0) {
+      rows.push(currentRow);
+    }
+
+    const rowLineHeight = lyricFontSize * 1.35;
+    const totalBlockHeight = rows.length * rowLineHeight;
+    const blockCenterY = height * 0.68;
+    const blockStartY = blockCenterY - totalBlockHeight / 2;
+
+    rows.forEach((row, rIdx) => {
+      const rowTokensW = row.reduce((sum, t) => sum + t.width, 0);
+      const rowTotalW = rowTokensW + (row.length - 1) * spaceWidth;
+      let curX = (width - rowTotalW) / 2;
+      const rowY = blockStartY + rIdx * rowLineHeight + rowLineHeight / 2;
+
+      for (let tIdx = 0; tIdx < row.length; tIdx++) {
+        const token = row[tIdx];
+        const isCurrent = token.wordIdx === frame.activeWordIdx;
+        const isSpoken = frame.activeWordIdx >= 0 && token.wordIdx < frame.activeWordIdx;
+
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.font = `700 ${lyricFontSize}px Georgia, "Newsreader", serif`;
+
+        if (isCurrent) {
+          // EFEKT KARAOKE: Złoty podświetlony badge z obrysem i blaskiem
+          const padX = Math.round(10 * scale);
+          const bgH = Math.round(lyricFontSize * 1.30);
+          const bgX = Math.round(curX - padX);
+          const bgY = Math.round(rowY - bgH / 2);
+          const bgW = Math.round(token.width + padX * 2);
+
+          // Tło badge'a
+          ctx.fillStyle = 'rgba(217, 119, 6, 0.75)';
+          ctx.beginPath();
+          if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(bgX, bgY, bgW, bgH, 10 * scale);
+          } else {
+            ctx.rect(bgX, bgY, bgW, bgH);
+          }
+          ctx.fill();
+
+          // Obrys
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
+          ctx.lineWidth = 2.5 * scale;
+          ctx.stroke();
+
+          // Poświata i lśniący tekst
+          ctx.shadowColor = 'rgba(251, 191, 36, 0.90)';
+          ctx.shadowBlur = 16 * scale;
+          ctx.fillStyle = '#fffbeb';
+          ctx.fillText(token.text, curX, rowY);
+        } else if (isSpoken) {
+          // SŁOWO JUŻ ODŚPIEWANE: Czysta jasna biel
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+          ctx.shadowBlur = 8 * scale;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(token.text, curX, rowY);
+        } else {
+          // SŁOWO DO ODŚPIEWANIA: Półprzezroczysty, czytelny krem/ivory
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+          ctx.shadowBlur = 6 * scale;
+          ctx.fillStyle = 'rgba(255, 247, 224, 0.55)';
+          ctx.fillText(token.text, curX, rowY);
+        }
+
+        ctx.restore();
+        curX += token.width + spaceWidth;
+      }
+    });
+
+    // Następna linia tekstu w tle poniżej
+    if (nextLine) {
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.font = `500 ${32 * scale}px Georgia, serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+      ctx.shadowBlur = 6 * scale;
+      ctx.fillText(nextLine, width / 2, blockStartY + totalBlockHeight + 28 * scale, width - 260 * scale);
+      ctx.restore();
+    }
   }
 
   // Pasek postępu utworu
@@ -252,24 +379,6 @@ export const SongVideoExportModal: React.FC<Props> = ({
     ))
   );
 
-  // Synchronizacja przy zmianie stacji lub dnia
-  useEffect(() => {
-    const newTitle = broadcastItem.headlineTitle || style.displayName;
-    setSongTitle(newTitle);
-    setLyricsDraft(formatLyricsForLyria(buildSongLyrics(
-      newTitle,
-      selectSongSourceText(broadcastItem.sections, broadcastItem.speechText || broadcastItem.displayContent)
-    )));
-    setSong(null);
-    setSongAudioUrl(null);
-    setVideoBlob(null);
-    setVideoUrl(null);
-    setErrorMessage(null);
-    setGenProgress(0);
-    setGenStage('');
-    setStatusMessage('Sprawdź tekst piosenki sekcji i kliknij generowanie.');
-  }, [selectedStationId, selectedDayNumber, broadcastItem, style.displayName]);
-
   const [apiToken, setApiToken] = useState<string>(readStoredToken);
   const [resolution, setResolution] = useState<Resolution>('1080p');
   const [song, setSong] = useState<GeneratedSong | null>(null);
@@ -286,6 +395,8 @@ export const SongVideoExportModal: React.FC<Props> = ({
   const [statusMessage, setStatusMessage] = useState('Sprawdź tekst piosenki sekcji i kliknij generowanie.');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [lineTimings, setLineTimings] = useState<LyricLineTiming[]>([]);
+  const [wordTimings, setWordTimings] = useState<LyricWordTiming[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -298,18 +409,44 @@ export const SongVideoExportModal: React.FC<Props> = ({
     [selectedStationId, lyrics, broadcastItem.displayDate, broadcastItem.reference]
   );
 
-  useEffect(() => () => {
-    if (songAudioUrl) URL.revokeObjectURL(songAudioUrl);
+  // Synchronizacja przy zmianie stacji lub dnia
+  useEffect(() => {
+    const newTitle = broadcastItem.headlineTitle || style.displayName;
+    setSongTitle(newTitle);
+    setLyricsDraft(formatLyricsForLyria(buildSongLyrics(
+      newTitle,
+      selectSongSourceText(broadcastItem.sections, broadcastItem.speechText || broadcastItem.displayContent)
+    )));
+    setSong(null);
+    setSongAudioUrl(null);
+    setVideoBlob(null);
+    setVideoUrl(null);
+    setLineTimings([]);
+    setWordTimings([]);
+    setErrorMessage(null);
+    setGenProgress(0);
+    setGenStage('');
+    setStatusMessage('Sprawdź tekst piosenki sekcji i kliknij generowanie.');
+  }, [selectedStationId, selectedDayNumber, broadcastItem, style.displayName]);
+
+  useEffect(() => {
+    return () => {
+      if (songAudioUrl) URL.revokeObjectURL(songAudioUrl);
+    };
   }, [songAudioUrl]);
 
-  useEffect(() => () => {
-    if (videoUrl) URL.revokeObjectURL(videoUrl);
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
   }, [videoUrl]);
 
-  useEffect(() => () => {
-    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
-    audioContextRef.current?.close().catch(() => undefined);
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+      audioContextRef.current?.close().catch(() => undefined);
+    };
   }, []);
 
   if (!isOpen) return null;
@@ -385,8 +522,10 @@ export const SongVideoExportModal: React.FC<Props> = ({
   };
 
   /**
-   * Wbudowana studyjna synteza: Lektor TTS (śpiewny wokal) zmiksowany z
-   * polifonicznym sakralnym podkładem muzycznym stacji (fortepian, smyczki, gitara, chór)
+   * Wbudowana studyjna synteza: Lektor TTS przekształcony w ciepły, melodyjny wokal
+   * (sakralny pogłos kapliczny, korekcja barwy i chóralne unisono) zmiksowany z
+   * polifonicznym sakralnym podkładem muzycznym stacji (fortepian, smyczki, gitara, chór).
+   * Obejmuje CAŁY tekst wpisu i generuje dokładne znaczniki słowo po słowie dla karaoke.
    */
   const handleGenerateStudioSong = async () => {
     if (!lyrics.sections.length) {
@@ -395,7 +534,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
     }
     setIsGeneratingSong(true);
     setGenProgress(5);
-    setGenStage('Krok 1/4: Przygotowanie tekstu pieśni i struktury...');
+    setGenStage('Krok 1/5: Przygotowanie tekstu pieśni i struktury...');
     setErrorMessage(null);
     setStatusMessage('Generowanie studyjnej ścieżki wokalnej i aranżacji muzycznej sekcji…');
 
@@ -404,7 +543,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
         typeof AudioContext !== 'undefined'
           ? AudioContext
           : typeof window !== 'undefined'
-          ? (window as any).AudioContext || (window as any).webkitAudioContext
+          ? (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)
           : null;
 
       if (!AudioCtxClass) throw new Error('Przeglądarka nie obsługuje Web Audio API.');
@@ -412,51 +551,95 @@ export const SongVideoExportModal: React.FC<Props> = ({
       const tempCtx = new AudioCtxClass();
       const lines = flattenLyricLines(lyrics);
 
-      // 1. Pobranie wokalu wers po wersie z dynamicznym paskiem postępu
+      // 1. Pobranie wokalu wers po wersie z dynamicznym paskiem postępu i rejestracją czasów
       const lineBuffers: AudioBuffer[] = [];
       const totalLines = lines.length || 1;
+      let currentTimeline = 0;
+      const newLineTimings: LyricLineTiming[] = [];
+      const newWordTimings: LyricWordTiming[] = [];
+      let globalWordIdx = 0;
 
       for (let i = 0; i < lines.length; i++) {
-        const linePct = Math.round(10 + ((i + 1) / totalLines) * 55);
+        const linePct = Math.round(8 + ((i + 1) / totalLines) * 56);
         setGenProgress(linePct);
-        setGenStage(`Krok 2/4: Nagrywanie wokalu Lektora AI (${i + 1} z ${totalLines})...`);
+        setGenStage(`Krok 2/5: Nagrywanie wokalu Lektora AI (${i + 1} z ${totalLines})...`);
         setStatusMessage(`Nagrywanie wokalu: „${lines[i]}” (${Math.round(((i + 1) / totalLines) * 100)}%)`);
 
-        let lineBuf = await fetchAudioForText(lines[i], tempCtx, 0.94, 1.0);
+        // Wolniejsze tempo 0.91 dla melodyjnego, śpiewnego frazowania
+        let lineBuf = await fetchAudioForText(lines[i], tempCtx, 0.91, 1.0);
         if (!lineBuf) {
           const wordsCount = lines[i].split(/\s+/).filter(Boolean).length || 4;
           const dur = Math.max(1.3, wordsCount * 0.44);
           lineBuf = tempCtx.createBuffer(1, Math.round(tempCtx.sampleRate * dur), tempCtx.sampleRate);
         }
+
+        const lineStart = currentTimeline;
+        const lineDur = lineBuf.duration;
+        const lineEnd = lineStart + lineDur;
+
+        newLineTimings.push({ lineIndex: i, start: lineStart, end: lineEnd });
+
+        // Precyzyjna synchronizacja słowo po słowie z wagami fonetycznymi
+        const words = lines[i].split(/\s+/).filter(Boolean);
+        if (words.length > 0) {
+          const weights = words.map((w, idx) => calculateWordAcousticWeight(w, idx === words.length - 1));
+          const totalWeight = weights.reduce((sum, w) => sum + w, 0) || 1;
+          let accWeight = 0;
+
+          words.forEach((w, wIdx) => {
+            const wStart = lineStart + (accWeight / totalWeight) * lineDur;
+            accWeight += weights[wIdx];
+            const wEnd = lineStart + (accWeight / totalWeight) * lineDur;
+            newWordTimings.push({
+              wordIdx: globalWordIdx++,
+              lineIndex: i,
+              wordInLineIdx: wIdx,
+              word: w,
+              start: wStart,
+              end: Math.min(lineEnd, wEnd),
+            });
+          });
+        }
+
         lineBuffers.push(lineBuf);
 
-        // Krótka pauza (oddech) między wersami pieśni
-        const breathDur = 0.28;
+        // Krótka pauza (śpiewny oddech) między wersami pieśni
+        const breathDur = 0.32;
         const breathBuf = tempCtx.createBuffer(1, Math.round(tempCtx.sampleRate * breathDur), tempCtx.sampleRate);
         lineBuffers.push(breathBuf);
+        currentTimeline = lineEnd + breathDur;
       }
+
+      setLineTimings(newLineTimings);
+      setWordTimings(newWordTimings);
 
       setGenProgress(68);
       setGenStage('Łączenie ścieżek wokalnych…');
-      const vocalBuffer = concatenateAudioBuffers(tempCtx, lineBuffers);
+      const rawVocalBuffer = concatenateAudioBuffers(tempCtx, lineBuffers);
 
-      // 2. Syntetyzowanie aranżacji muzycznej sekcji
-      const totalSongDur = Math.max(14, vocalBuffer.duration + 4.0);
-      setGenProgress(76);
-      setGenStage(`Krok 3/4: Komponowanie sakralnej aranżacji muzycznej dla sekcji ${style.displayName}…`);
+      // 2. Nadanie wokalowi głębi sakralnej i melodyjnego brzmienia (EQ, pogłos, chorus)
+      setGenProgress(74);
+      setGenStage('Krok 3/5: Nadawanie wokalowi sakralnej głębi i melodyjnego brzmienia...');
+      setStatusMessage('Przetwarzanie wokalne (sakralny pogłos, chóralny unison chorus, barwa)...');
+      const melodicVocalBuffer = await applyMelodicVocalEffects(rawVocalBuffer, tempCtx.sampleRate);
+
+      // 3. Syntetyzowanie aranżacji muzycznej sekcji dla całej długości
+      const totalSongDur = Math.max(14, melodicVocalBuffer.duration + 3.5);
+      setGenProgress(82);
+      setGenStage(`Krok 4/5: Komponowanie sakralnej aranżacji muzycznej dla sekcji ${style.displayName}…`);
       setStatusMessage(`Synteza podkładu polifonicznego (fortepian, smyczki, chór) dla ${totalSongDur.toFixed(1)}s…`);
       
       const musicBuffer = await synthesizeStationAccompaniment(selectedStationId, totalSongDur, tempCtx.sampleRate);
 
-      // 3. Zmiksowanie wokalu i muzyki
-      setGenProgress(88);
-      setGenStage('Krok 4/4: Miksowanie wielościeżkowe (wokal + muzyka) i mastering…');
+      // 4. Zmiksowanie melodyjnego wokalu i muzyki
+      setGenProgress(90);
+      setGenStage('Krok 5/5: Miksowanie wielościeżkowe (melodyjny wokal + muzyka) i mastering…');
       setStatusMessage('Wyrównanie dynamiki i mastering bezstratny Float32…');
       
-      const mixedBuffer = await mixVocalAndMusicBuffers(vocalBuffer, musicBuffer || vocalBuffer, 0.95, 0.38);
+      const mixedBuffer = await mixVocalAndMusicBuffers(melodicVocalBuffer, musicBuffer || melodicVocalBuffer, 0.95, 0.40);
 
-      // 4. Konwersja do WAV
-      setGenProgress(95);
+      // 5. Konwersja do WAV
+      setGenProgress(96);
       setGenStage('Zapisywanie gotowej ścieżki dźwiękowej WAV…');
       const wavBlob = audioBufferToWavBlob(mixedBuffer);
       const base64Audio = await blobToBase64(wavBlob);
@@ -474,7 +657,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
       setVideoUrl(null);
       setGenProgress(100);
       setGenStage('Piosenka studyjna gotowa!');
-      setStatusMessage('🎵 Piosenka studyjna gotowa! Odsłuchaj wokal z muzyką i nagraj teledysk MP4.');
+      setStatusMessage('🎵 Melodyjna pieśń z wokalem i muzyką gotowa! Odsłuchaj ją i nagraj teledysk MP4.');
       tempCtx.close().catch(() => undefined);
     } catch (err) {
       console.error('[SongVideo] Błąd syntezy studyjnej:', err);
@@ -486,7 +669,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
   };
 
   /**
-   * Nagrywanie teledysku MP4 (lub WebM) z ilustracją w tle, napisami i dźwiękiem
+   * Nagrywanie teledysku MP4 (lub WebM) z ilustracją w tle, napisami karaoke słowo po słowie i dźwiękiem
    */
   const handleRecordVideo = async () => {
     const canvas = canvasRef.current;
@@ -519,7 +702,13 @@ export const SongVideoExportModal: React.FC<Props> = ({
       setTotalDuration(audioBuffer.duration);
 
       const lyricLines = flattenLyricLines(lyrics);
-      const timings: LyricLineTiming[] = computeLyricLineTimings(lyricLines, audioBuffer.duration);
+      const activeLineTimings = (lineTimings.length === lyricLines.length && lineTimings.length > 0)
+        ? lineTimings
+        : computeLyricLineTimings(lyricLines, audioBuffer.duration, 4, 3);
+      const activeWordTimings = (wordTimings.length > 0 && lineTimings.length === lyricLines.length)
+        ? wordTimings
+        : computeLyricWordTimings(lyricLines, activeLineTimings);
+
       const frameBase = { title: songTitle, sectionName: style.displayName, lyricLines };
 
       const audioDestination = audioContext.createMediaStreamDestination();
@@ -565,7 +754,13 @@ export const SongVideoExportModal: React.FC<Props> = ({
         if (recorder.state === 'recording') recorder.stop();
       };
 
-      drawSongFrame(ctx, illustration, { ...frameBase, activeLineIndex: -1, progress: 0 });
+      drawSongFrame(ctx, illustration, {
+        ...frameBase,
+        activeLineIndex: -1,
+        activeWordIdx: -1,
+        wordTimings: activeWordTimings,
+        progress: 0,
+      });
       recorder.start(250);
       sourceNode.start();
       const startTime = audioContext.currentTime;
@@ -576,10 +771,14 @@ export const SongVideoExportModal: React.FC<Props> = ({
         const elapsed = audioContext.currentTime - startTime;
         const progress = Math.min(elapsed / audioBuffer.duration, 1);
         setRecordedElapsed(elapsed);
+        const activeLineIndex = findActiveLineIndex(activeLineTimings, elapsed);
+        const activeWordIdx = findActiveWordIndex(activeWordTimings, elapsed);
         drawSongFrame(ctx, illustration, {
           ...frameBase,
-          activeLineIndex: findActiveLineIndex(timings, elapsed),
-          progress
+          activeLineIndex,
+          activeWordIdx,
+          wordTimings: activeWordTimings,
+          progress,
         });
         setRecordProgress(Math.round(progress * 100));
         animationFrameRef.current = requestAnimationFrame(renderLoop);
