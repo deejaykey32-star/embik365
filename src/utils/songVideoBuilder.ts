@@ -394,10 +394,13 @@ export async function synthesizeStationAccompaniment(
   const chords = STATION_CHORDS[stationId] || STATION_CHORDS.wnr365;
   const chordDuration = 3.6; // sekundy na akord
 
+  const fadeInEnd = Math.min(2.0, durationSeconds * 0.1);
+  const fadeOutStart = Math.max(fadeInEnd, durationSeconds - 2.5);
+
   const masterGain = offlineCtx.createGain();
-  masterGain.gain.setValueAtTime(0, 0);
-  masterGain.gain.linearRampToValueAtTime(0.42, Math.min(2.0, durationSeconds * 0.1));
-  masterGain.gain.setValueAtTime(0.42, Math.max(0, durationSeconds - 2.5));
+  masterGain.gain.setValueAtTime(0.0001, 0);
+  masterGain.gain.linearRampToValueAtTime(0.42, fadeInEnd);
+  masterGain.gain.setValueAtTime(0.42, fadeOutStart);
   masterGain.gain.linearRampToValueAtTime(0.0001, durationSeconds);
   masterGain.connect(offlineCtx.destination);
 
@@ -423,10 +426,13 @@ export async function synthesizeStationAccompaniment(
 
       const padGain = offlineCtx.createGain();
       const baseGain = 0.08 / (chord.length || 1);
-      padGain.gain.setValueAtTime(0.001, currentTime);
-      padGain.gain.linearRampToValueAtTime(baseGain, currentTime + 0.4);
-      padGain.gain.setValueAtTime(baseGain, currentTime + dur - 0.5);
-      padGain.gain.linearRampToValueAtTime(0.001, currentTime + dur);
+      const attackEnd = Math.min(currentTime + 0.4, currentTime + dur * 0.5);
+      const releaseStart = Math.max(attackEnd, currentTime + dur - 0.5);
+
+      padGain.gain.setValueAtTime(0.0001, currentTime);
+      padGain.gain.linearRampToValueAtTime(baseGain, attackEnd);
+      padGain.gain.setValueAtTime(baseGain, releaseStart);
+      padGain.gain.linearRampToValueAtTime(0.0001, currentTime + dur);
 
       padOsc.connect(padGain);
       padGain.connect(filter);
@@ -435,20 +441,24 @@ export async function synthesizeStationAccompaniment(
 
       // 2. Arpeggio / dźwięki fortepianowe / szarpnięcia strun
       const noteDelay = noteIdx * 0.45;
-      if (currentTime + noteDelay < durationSeconds) {
+      const noteStartTime = currentTime + noteDelay;
+      if (noteStartTime < durationSeconds) {
         const arpOsc = offlineCtx.createOscillator();
         arpOsc.type = stationId === 'nowyrhz' ? 'triangle' : 'sine';
-        arpOsc.frequency.setValueAtTime(freq * (noteIdx === 0 ? 1 : 2), currentTime + noteDelay);
+        arpOsc.frequency.setValueAtTime(freq * (noteIdx === 0 ? 1 : 2), noteStartTime);
 
         const arpGain = offlineCtx.createGain();
-        arpGain.gain.setValueAtTime(0.001, currentTime + noteDelay);
-        arpGain.gain.linearRampToValueAtTime(0.12, currentTime + noteDelay + 0.03);
-        arpGain.exponentialRampToValueAtTime(0.001, Math.min(durationSeconds, currentTime + noteDelay + 1.8));
+        const noteAttackEnd = Math.min(noteStartTime + 0.03, durationSeconds);
+        const noteDecayEnd = Math.min(noteStartTime + 1.8, durationSeconds);
+
+        arpGain.gain.setValueAtTime(0.0001, noteStartTime);
+        arpGain.gain.linearRampToValueAtTime(0.12, noteAttackEnd);
+        arpGain.gain.linearRampToValueAtTime(0.0001, Math.max(noteAttackEnd + 0.05, noteDecayEnd));
 
         arpOsc.connect(arpGain);
         arpGain.connect(filter);
-        arpOsc.start(currentTime + noteDelay);
-        arpOsc.stop(Math.min(durationSeconds, currentTime + noteDelay + 1.85));
+        arpOsc.start(noteStartTime);
+        arpOsc.stop(Math.min(durationSeconds, noteDecayEnd + 0.05));
       }
     });
 
@@ -466,6 +476,7 @@ export async function synthesizeStationAccompaniment(
 
 /**
  * Łączy ścieżkę wokalną (TTS) z podkładem muzycznym w jeden zbalansowany bufor dźwiękowy.
+ * Wykorzystuje bezpośrednie mieszanie Float32Array z interpolacją liniową próbkowania.
  */
 export async function mixVocalAndMusicBuffers(
   vocalBuffer: AudioBuffer,
@@ -473,44 +484,57 @@ export async function mixVocalAndMusicBuffers(
   vocalGainValue: number = 0.95,
   musicGainValue: number = 0.38
 ): Promise<AudioBuffer> {
-  const OfflineCtxClass =
-    typeof OfflineAudioContext !== 'undefined'
-      ? OfflineAudioContext
+  const AudioCtxClass =
+    typeof AudioContext !== 'undefined'
+      ? AudioContext
       : typeof window !== 'undefined'
-      ? (window as any).OfflineAudioContext || (window as any).webkitOfflineAudioContext
+      ? (window as any).AudioContext || (window as any).webkitAudioContext
       : null;
 
+  if (!AudioCtxClass) return vocalBuffer;
+
+  const audioCtx = new AudioCtxClass();
   const sampleRate = vocalBuffer.sampleRate || 44100;
-  const duration = Math.max(vocalBuffer.duration, musicBuffer.duration);
-  const totalFrames = Math.round(duration * sampleRate);
+  const numChannels = Math.max(vocalBuffer.numberOfChannels, musicBuffer.numberOfChannels, 2);
+  const totalLength = Math.max(
+    vocalBuffer.length,
+    Math.round(musicBuffer.length * (sampleRate / (musicBuffer.sampleRate || sampleRate)))
+  );
 
-  if (!OfflineCtxClass) return vocalBuffer;
+  const mixed = audioCtx.createBuffer(numChannels, totalLength, sampleRate);
+  const rateRatio = (musicBuffer.sampleRate || sampleRate) / sampleRate;
 
-  const offlineCtx = new OfflineCtxClass(2, totalFrames, sampleRate);
+  for (let c = 0; c < numChannels; c++) {
+    const mixedData = mixed.getChannelData(c);
+    const vChan = vocalBuffer.getChannelData(Math.min(c, vocalBuffer.numberOfChannels - 1));
+    const mChan = musicBuffer.getChannelData(Math.min(c, musicBuffer.numberOfChannels - 1));
 
-  // Wokal
-  const vocalSource = offlineCtx.createBufferSource();
-  vocalSource.buffer = vocalBuffer;
-  const vocalGain = offlineCtx.createGain();
-  vocalGain.gain.setValueAtTime(vocalGainValue, 0);
-  vocalSource.connect(vocalGain);
-  vocalGain.connect(offlineCtx.destination);
-  vocalSource.start(0);
+    // Dodanie wokalu
+    for (let i = 0; i < vChan.length; i++) {
+      mixedData[i] += vChan[i] * vocalGainValue;
+    }
 
-  // Muzyka
-  const musicSource = offlineCtx.createBufferSource();
-  musicSource.buffer = musicBuffer;
-  const musicGain = offlineCtx.createGain();
-  musicGain.gain.setValueAtTime(musicGainValue, 0);
-  musicSource.connect(musicGain);
-  musicGain.connect(offlineCtx.destination);
-  musicSource.start(0);
+    // Dodanie muzyki z interpolacją
+    for (let i = 0; i < totalLength; i++) {
+      const srcIdx = i * rateRatio;
+      const idxFloor = Math.floor(srcIdx);
+      if (idxFloor < mChan.length) {
+        const frac = srcIdx - idxFloor;
+        const s1 = mChan[idxFloor];
+        const s2 = idxFloor + 1 < mChan.length ? mChan[idxFloor + 1] : s1;
+        const interp = s1 + frac * (s2 - s1);
+        mixedData[i] += interp * musicGainValue;
+      }
+    }
 
-  try {
-    return await offlineCtx.startRendering();
-  } catch (err) {
-    console.warn('[SongBuilder] Błąd miksowania wokal + muzyka:', err);
-    return vocalBuffer;
+    // Zabezpieczenie przed przesterowaniem (soft clipping)
+    for (let i = 0; i < totalLength; i++) {
+      mixedData[i] = Math.max(-1, Math.min(1, mixedData[i]));
+    }
   }
+
+  audioCtx.close().catch(() => undefined);
+  return mixed;
 }
+
 
