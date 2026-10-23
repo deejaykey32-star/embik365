@@ -13,7 +13,10 @@ import {
   ChevronRight,
   Radio,
   Volume2,
-  RotateCcw
+  RotateCcw,
+  Upload,
+  Key,
+  FileAudio
 } from 'lucide-react';
 import {
   RADIO_STATIONS,
@@ -29,6 +32,7 @@ import {
   parseLyriaLyrics,
   flattenLyricLines,
   buildLyriaPrompt,
+  buildSunoPrompt,
   computeLyricLineTimings,
   findActiveLineIndex,
   computeLyricWordTimings,
@@ -92,6 +96,24 @@ function storeToken(token: string): void {
     localStorage.setItem(SONG_TOKEN_STORAGE_KEY, token);
   } catch {
     /* localStorage niedostępny (tryb prywatny) – token działa tylko w tej sesji */
+  }
+}
+
+const GEMINI_USER_KEY_STORAGE = 'gemini_user_api_key';
+
+function readStoredGeminiKey(): string {
+  try {
+    return localStorage.getItem(GEMINI_USER_KEY_STORAGE) || '';
+  } catch {
+    return '';
+  }
+}
+
+function storeGeminiKey(key: string): void {
+  try {
+    localStorage.setItem(GEMINI_USER_KEY_STORAGE, key);
+  } catch {
+    /* localStorage niedostępny */
   }
 }
 
@@ -380,6 +402,8 @@ export const SongVideoExportModal: React.FC<Props> = ({
   );
 
   const [apiToken, setApiToken] = useState<string>(readStoredToken);
+  const [geminiApiKey, setGeminiApiKey] = useState<string>(readStoredGeminiKey);
+  const [showApiSettings, setShowApiSettings] = useState(false);
   const [resolution, setResolution] = useState<Resolution>('1080p');
   const [song, setSong] = useState<GeneratedSong | null>(null);
   const [songAudioUrl, setSongAudioUrl] = useState<string | null>(null);
@@ -402,6 +426,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const audioFileInputRef = useRef<HTMLInputElement>(null);
 
   const lyrics = useMemo(() => parseLyriaLyrics(songTitle, lyricsDraft), [songTitle, lyricsDraft]);
   const youtubeMetadata = useMemo(
@@ -452,37 +477,40 @@ export const SongVideoExportModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   /**
-   * Generowanie piosenki przez Google Lyria AI z automatycznym przejściem
-   * do syntezy studyjnej w razie braku klucza lub błędu płatnego API
+   * Generowanie piosenki przez Google Lyria / Gemini 2.0 Audio AI
+   * z obsługą klucza z poziomu okna i dokładnym raportowaniem
    */
-  const handleGenerateSongWithLyria = async () => {
+  const handleGenerateAiVocalSong = async () => {
     if (!lyrics.sections.length) {
       setErrorMessage('Tekst piosenki jest pusty.');
       return;
     }
     setIsGeneratingSong(true);
     setGenProgress(10);
-    setGenStage('Wysyłanie zlecenia do Google Lyria 3.5 AI...');
+    setGenStage('Wysyłanie zlecenia do modelu wokalnego AI (Google Lyria / Gemini 2.0)...');
     setErrorMessage(null);
-    setStatusMessage('Google Lyria AI komponuje muzykę i nagrywa wokal… (to może potrwać chwilę)');
+    setStatusMessage('Model AI komponuje muzykę i nagrywa czysty wokal śpiewany… (to może potrwać chwilę)');
     storeToken(apiToken);
+    if (geminiApiKey) storeGeminiKey(geminiApiKey);
 
-    // Symulacja postępu oczekiwania na model Lyria
+    // Symulacja postępu oczekiwania na model AI
     const progressInterval = setInterval(() => {
-      setGenProgress(prev => (prev < 80 ? prev + 5 : prev));
-    }, 1800);
+      setGenProgress(prev => (prev < 85 ? prev + 4 : prev));
+    }, 1500);
 
     try {
       const response = await fetch('/api/song', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(geminiApiKey ? { 'x-gemini-api-key': geminiApiKey } : {}),
           ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}),
         },
         body: JSON.stringify({
           stationId: selectedStationId,
           title: songTitle,
-          prompt: buildLyriaPrompt(selectedStationId, lyrics)
+          prompt: buildLyriaPrompt(selectedStationId, lyrics),
+          apiKey: geminiApiKey || undefined,
         }),
       });
 
@@ -494,7 +522,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
       }
 
       setGenProgress(90);
-      setGenStage('Odbieranie i dekodowanie wygenerowanego utworu...');
+      setGenStage('Odbieranie i dekodowanie wygenerowanego wokalu...');
 
       const generatedSong = payload as GeneratedSong;
       if (typeof generatedSong.audioBase64 !== 'string' || !generatedSong.audioBase64) {
@@ -507,17 +535,110 @@ export const SongVideoExportModal: React.FC<Props> = ({
       setVideoBlob(null);
       setVideoUrl(null);
       setGenProgress(100);
-      setGenStage('Piosenka Lyria gotowa!');
-      setStatusMessage('✨ Piosenka Lyria AI gotowa! Odsłuchaj ją i kliknij „Nagraj teledysk MP4”.');
+      setGenStage('Wokal AI gotowy!');
+      setStatusMessage('✨ Wokal AI z muzyką gotowy! Odsłuchaj go i kliknij „Nagraj teledysk MP4”.');
     } catch (error) {
       clearInterval(progressInterval);
-      const msg = error instanceof Error ? error.message : 'Nie udało się wygenerować piosenki przez Lyria AI.';
-      console.warn('[SongVideo] Lyria API błąd, uruchamiam generator studyjny:', msg);
-      setStatusMessage('API Lyria niedostępne – przełączam na wbudowany generator wokal + muzyka studyjna…');
-      // Automatyczny fallback do syntezy studyjnej z pełnym paskiem postępu
-      await handleGenerateStudioSong();
+      const msg = error instanceof Error ? error.message : 'Nie udało się wygenerować śpiewu przez AI.';
+      console.warn('[SongVideo] Błąd generowania wokalu AI:', msg);
+      setErrorMessage(`Błąd generowania wokalu AI: ${msg}`);
+      setStatusMessage('Możesz wpisać własny klucz Gemini, wgrać gotowy utwór ze śpiewem AI (np. z Suno/Udio) lub użyć syntezy wbudowanej.');
     } finally {
       setIsGeneratingSong(false);
+    }
+  };
+
+  /**
+   * Wczytanie gotowego utworu ze śpiewem AI (MP3 / WAV / M4A z Suno, Udio, ElevenLabs lub nagrania)
+   * z automatyczną synchronizacją tekstu pieśni i karaoke słowo po słowie
+   */
+  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsGeneratingSong(true);
+    setGenProgress(20);
+    setGenStage('Wczytywanie i analiza pliku audio AI...');
+    setErrorMessage(null);
+    setStatusMessage(`Wczytywanie: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)…`);
+
+    try {
+      const AudioCtxClass =
+        typeof AudioContext !== 'undefined'
+          ? AudioContext
+          : typeof window !== 'undefined'
+          ? (window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)
+          : null;
+
+      if (!AudioCtxClass) throw new Error('Przeglądarka nie obsługuje Web Audio API.');
+
+      const tempCtx = new AudioCtxClass();
+      const arrayBuffer = await file.arrayBuffer();
+      setGenProgress(50);
+      setGenStage('Dekodowanie ścieżki wokalnej...');
+      const decodedBuffer = await tempCtx.decodeAudioData(arrayBuffer);
+
+      setGenProgress(80);
+      setGenStage('Precyzyjne dopasowanie tekstu pieśni i karaoke...');
+
+      const dur = decodedBuffer.duration;
+      const lines = flattenLyricLines(lyrics);
+      const totalLines = lines.length || 1;
+      const timePerLine = dur / totalLines;
+
+      const newLineTimings: LyricLineTiming[] = [];
+      const newWordTimings: LyricWordTiming[] = [];
+      let globalWordIdx = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        const lineStart = i * timePerLine;
+        const lineEnd = Math.min(dur, (i + 1) * timePerLine);
+        const lineDur = lineEnd - lineStart;
+        newLineTimings.push({ lineIndex: i, start: lineStart, end: lineEnd });
+
+        const words = lines[i].split(/\s+/).filter(Boolean);
+        if (words.length > 0) {
+          const weights = words.map((w, idx) => calculateWordAcousticWeight(w, idx === words.length - 1));
+          const totalWeight = weights.reduce((sum, w) => sum + w, 0) || 1;
+          let accWeight = 0;
+
+          words.forEach((w, wIdx) => {
+            const wStart = lineStart + (accWeight / totalWeight) * lineDur;
+            accWeight += weights[wIdx];
+            const wEnd = lineStart + (accWeight / totalWeight) * lineDur;
+            newWordTimings.push({
+              wordIdx: globalWordIdx++,
+              lineIndex: i,
+              wordInLineIdx: wIdx,
+              word: w,
+              start: wStart,
+              end: Math.min(lineEnd, wEnd),
+            });
+          });
+        }
+      }
+
+      setLineTimings(newLineTimings);
+      setWordTimings(newWordTimings);
+
+      const audioUrl = URL.createObjectURL(file);
+      setSongAudioUrl(audioUrl);
+      setSong({
+        audioBase64: '',
+        mimeType: file.type || 'audio/mpeg',
+        generatedText: lyricsDraft,
+      });
+      setVideoBlob(null);
+      setVideoUrl(null);
+      setGenProgress(100);
+      setGenStage('Załadowano utwór AI!');
+      setStatusMessage(`✨ Pomyślnie załadowano „${file.name}” (${dur.toFixed(1)}s). Odsłuchaj i kliknij „Nagraj teledysk MP4”!`);
+    } catch (err) {
+      console.error('[SongVideo] Błąd wczytywania pliku audio:', err);
+      setErrorMessage(err instanceof Error ? err.message : 'Nie udało się zdekodować pliku audio.');
+    } finally {
+      setIsGeneratingSong(false);
+      if (audioFileInputRef.current) audioFileInputRef.current.value = '';
     }
   };
 
@@ -562,8 +683,8 @@ export const SongVideoExportModal: React.FC<Props> = ({
       for (let i = 0; i < lines.length; i++) {
         const linePct = Math.round(8 + ((i + 1) / totalLines) * 56);
         setGenProgress(linePct);
-        setGenStage(`Krok 2/5: Nagrywanie wokalu Lektora AI (${i + 1} z ${totalLines})...`);
-        setStatusMessage(`Nagrywanie wokalu: „${lines[i]}” (${Math.round(((i + 1) / totalLines) * 100)}%)`);
+        setGenStage(`Krok 2/5: Generowanie melodyjnego wokalu pieśni AI (${i + 1} z ${totalLines})...`);
+        setStatusMessage(`Wokal śpiewany AI: „${lines[i]}” (${Math.round(((i + 1) / totalLines) * 100)}%)`);
 
         // Wolniejsze tempo 0.91 dla melodyjnego, śpiewnego frazowania
         let lineBuf = await fetchAudioForText(lines[i], tempCtx, 0.91, 1.0);
@@ -695,10 +816,18 @@ export const SongVideoExportModal: React.FC<Props> = ({
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
 
-      // Bezpieczne skopiowanie bufora przed dekodowaniem, aby zapobiec odłączeniu (detachment)
-      const bytes = base64ToUint8Array(song.audioBase64);
-      const arrayBufferCopy = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-      const audioBuffer = await audioContext.decodeAudioData(arrayBufferCopy);
+      let audioBuffer: AudioBuffer;
+      if (song.audioBase64) {
+        const bytes = base64ToUint8Array(song.audioBase64);
+        const arrayBufferCopy = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+        audioBuffer = await audioContext.decodeAudioData(arrayBufferCopy);
+      } else if (songAudioUrl) {
+        const res = await fetch(songAudioUrl);
+        const ab = await res.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(ab);
+      } else {
+        throw new Error('Brak ścieżki audio do nagrania.');
+      }
       setTotalDuration(audioBuffer.duration);
 
       const lyricLines = flattenLyricLines(lyrics);
@@ -994,36 +1123,103 @@ export const SongVideoExportModal: React.FC<Props> = ({
               placeholder="[Verse]&#10;Tekst zwrotki...&#10;&#10;[Chorus]&#10;Tekst refrenu..."
             />
 
-            {/* Przyciski generowania piosenki (Wokal + Muzyka) */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <button
-                type="button"
-                onClick={handleGenerateStudioSong}
-                disabled={isGeneratingSong || isRecording}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-amber-950/40 transition-all cursor-pointer disabled:opacity-50 hover:scale-[1.02] active:scale-95"
-              >
-                {isGeneratingSong ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music className="w-4 h-4" />}
-                <span>Generuj piosenkę studyjną (Wokal + Muzyka sekcji)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleGenerateSongWithLyria}
-                disabled={isGeneratingSong || isRecording}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-bold transition-all cursor-pointer disabled:opacity-50"
-                title="Generuj wokal i muzykę przez Google Lyria 3.5 AI"
-              >
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>Generuj przez Google Lyria AI</span>
-              </button>
-
+            {/* Opcje wyboru wokalu AI: 1. Generuj przez AI, 2. Wgraj własny wokal AI, 3. Kopiuj prompt do Suno/Udio, 4. Wbudowana synteza śpiewu */}
+            <div className="space-y-3 pt-1">
               <input
-                type="password"
-                value={apiToken}
-                onChange={e => setApiToken(e.target.value)}
-                placeholder="Token Lyria (opcjonalny)"
-                className="rounded-xl border border-white/20 bg-transparent px-3 py-2 text-xs text-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                type="file"
+                ref={audioFileInputRef}
+                onChange={handleAudioFileUpload}
+                accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg"
+                className="hidden"
               />
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* 1. Generuj Wokal AI (Google Lyria / Gemini 2.0 Audio) */}
+                <button
+                  type="button"
+                  onClick={handleGenerateAiVocalSong}
+                  disabled={isGeneratingSong || isRecording}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-amber-950/40 transition-all cursor-pointer disabled:opacity-50 hover:scale-[1.02] active:scale-95"
+                  title="Generuj profesjonalny śpiew AI przez Google Lyria 3.5 lub Gemini 2.0 Audio (wokal Aoede)"
+                >
+                  {isGeneratingSong ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-amber-200" />}
+                  <span>Generuj wokal AI (Lyria / Gemini 2.0)</span>
+                </button>
+
+                {/* 2. Wgraj własny wokal AI (MP3 / WAV / Suno / Udio / ElevenLabs) */}
+                <button
+                  type="button"
+                  onClick={() => audioFileInputRef.current?.click()}
+                  disabled={isGeneratingSong || isRecording}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-emerald-500/50 text-emerald-300 text-xs sm:text-sm font-bold transition-all cursor-pointer disabled:opacity-50 hover:scale-[1.02] active:scale-95"
+                  title="Wgraj gotowy plik piosenki lub wokal wygenerowany w Suno, Udio, ElevenLabs lub innym narzędziu AI"
+                >
+                  <Upload className="w-4 h-4 text-emerald-400" />
+                  <span>Wgraj utwór ze śpiewem AI (MP3 / WAV)</span>
+                </button>
+
+                {/* 3. Kopiuj prompt dla Suno / Udio */}
+                <button
+                  type="button"
+                  onClick={() => handleCopy('sunoPrompt', buildSunoPrompt(selectedStationId, lyrics))}
+                  disabled={isGeneratingSong || isRecording}
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/15 text-slate-300 text-xs font-semibold transition-all cursor-pointer"
+                  title="Kopiuj tekst i prompt muzyczny sformatowany dla generatorów Suno AI lub Udio"
+                >
+                  {copiedField === 'sunoPrompt' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+                  <span>{copiedField === 'sunoPrompt' ? 'Skopiowano prompt!' : 'Prompt dla Suno / Udio'}</span>
+                </button>
+
+                {/* 4. Przycisk ustawień klucza API */}
+                <button
+                  type="button"
+                  onClick={() => setShowApiSettings(prev => !prev)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white text-xs transition-all cursor-pointer sm:ml-auto"
+                  title="Ustawienia kluczy API dla wokalu AI"
+                >
+                  <Key className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Klucz API {geminiApiKey ? '✓' : ''}</span>
+                </button>
+              </div>
+
+              {/* Rozwijany panel klucza API */}
+              {showApiSettings && (
+                <div className="p-3.5 rounded-2xl bg-black/40 border border-amber-500/30 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5" /> Klucz API Google Gemini / Lyria (dla śpiewu AI):
+                    </span>
+                    <span className="text-[10px] text-slate-400">Zapisywany w przeglądarce</span>
+                  </div>
+                  <input
+                    type="password"
+                    value={geminiApiKey}
+                    onChange={e => {
+                      setGeminiApiKey(e.target.value);
+                      storeGeminiKey(e.target.value);
+                    }}
+                    placeholder="Wklej klucz GEMINI_API_KEY (AI Studio)..."
+                    className="w-full rounded-xl border border-white/20 bg-black/60 px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  />
+                  <div className="text-[11px] text-slate-400">
+                    Gdy klucz jest podany, aplikacja generuje wokal AI (Google Lyria 3.5 / Gemini 2.0 Audio – wokal Aoede). Bez klucza możesz wgrać gotowy plik z Suno/Udio powyżej.
+                  </div>
+                </div>
+              )}
+
+              {/* Opcja rezerwowa: wbudowana synteza śpiewu */}
+              <div className="pt-1 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleGenerateStudioSong}
+                  disabled={isGeneratingSong || isRecording}
+                  className="text-xs text-slate-400 hover:text-amber-300 underline inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  title="Uruchom wbudowaną syntezę śpiewu i akompaniamentu bezpośrednio w przeglądarce"
+                >
+                  <Music className="w-3 h-3 text-amber-400" />
+                  <span>Lub użyj wbudowanej syntezy śpiewu (melodia sakralna + podkład instrumentalny)</span>
+                </button>
+              </div>
             </div>
 
             {/* WIZUALNY PASEK POSTĘPU GENEROWANIA AUDIO PIOSENKI */}

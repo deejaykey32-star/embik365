@@ -1,4 +1,4 @@
-import { validateSongRequest, isSongRequestAuthorized, requestLyriaSong, LyriaApiError } from '../../src/utils/lyriaSongService';
+import { validateSongRequest, isSongRequestAuthorized, requestAiSingingSong, LyriaApiError } from '../../src/utils/lyriaSongService';
 
 interface Env {
   GEMINI_API_KEY?: string;
@@ -281,7 +281,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
   }
 
-  // Song generation endpoint (music + vocal) using Google Lyria via Gemini API
+  // Song generation endpoint (music + vocal) using Google Lyria & Gemini 2.0 Audio
   if (pathname === '/api/song' && request.method === 'POST') {
     if (!isSongRequestAuthorized(env.SONG_API_TOKEN, request.headers.get('Authorization'))) {
       return new Response(
@@ -294,15 +294,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     if ('error' in validation) {
       return new Response(JSON.stringify({ error: validation.error }), { status: 400, headers: corsHeaders });
     }
-    if (!env.GEMINI_API_KEY) {
+    const clientKey = request.headers.get('x-gemini-api-key') || ((body && typeof body === 'object' && 'apiKey' in body) ? String((body as Record<string, unknown>).apiKey) : '');
+    const effectiveApiKey = clientKey || env.GEMINI_API_KEY;
+    if (!effectiveApiKey) {
       return new Response(
-        JSON.stringify({ error: 'Brak klucza GEMINI_API_KEY na serwerze.' }),
+        JSON.stringify({ error: 'Brak klucza GEMINI_API_KEY. Wprowadź klucz w oknie lub wgraj własny plik audio.' }),
         { status: 503, headers: corsHeaders }
       );
     }
     try {
-      console.log(`[Song] Generowanie: sekcja=${validation.value.stationId}, tytuł="${validation.value.title}"`);
-      const song = await requestLyriaSong(env.GEMINI_API_KEY, validation.value.prompt);
+      console.log(`[Song] Generowanie wokalu AI: sekcja=${validation.value.stationId}, tytuł="${validation.value.title}"`);
+      const song = await requestAiSingingSong(effectiveApiKey, validation.value.prompt);
       return new Response(JSON.stringify(song), { headers: corsHeaders });
     } catch (error) {
       const status = error instanceof LyriaApiError ? error.httpStatus : 500;

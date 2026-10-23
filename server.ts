@@ -28,7 +28,7 @@ const publicDataDir = path.join(process.cwd(), 'public', 'data');
 
 import { GoogleGenAI } from '@google/genai';
 import { splitTextForTts } from './src/utils/polishSpeechNormalizer';
-import { validateSongRequest, isSongRequestAuthorized, requestLyriaSong, LyriaApiError } from './src/utils/lyriaSongService';
+import { validateSongRequest, isSongRequestAuthorized, requestAiSingingSong, LyriaApiError } from './src/utils/lyriaSongService';
 
 // Initialize Gemini client lazily
 let aiClient: GoogleGenAI | null = null;
@@ -860,7 +860,7 @@ app.post('/api/upload-base64', async (req, res) => {
 });
 
 
-// Song generation endpoint (music + vocal) using Google Lyria via Gemini API
+// Song generation endpoint (music + vocal) using Google Lyria & Gemini 2.0 Audio
 app.post('/api/song', async (req, res) => {
   if (!isSongRequestAuthorized(process.env.SONG_API_TOKEN, req.headers.authorization)) {
     return res.status(401).json({ error: 'Nieprawidłowy token dostępu do generatora piosenek.' });
@@ -869,13 +869,15 @@ app.post('/api/song', async (req, res) => {
   if ('error' in validation) {
     return res.status(400).json({ error: validation.error });
   }
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(503).json({ error: 'Brak klucza GEMINI_API_KEY na serwerze.' });
+  const clientKey = (req.headers['x-gemini-api-key'] as string) || req.body?.apiKey;
+  const effectiveApiKey = clientKey || process.env.GEMINI_API_KEY;
+  if (!effectiveApiKey) {
+    return res.status(503).json({ error: 'Brak klucza GEMINI_API_KEY. Wprowadź klucz w oknie lub wgraj własny plik audio.' });
   }
 
   try {
-    console.log(`[Song] Generowanie: sekcja=${validation.value.stationId}, tytuł="${validation.value.title}"`);
-    const song = await requestLyriaSong(process.env.GEMINI_API_KEY, validation.value.prompt);
+    console.log(`[Song] Generowanie wokalu AI: sekcja=${validation.value.stationId}, tytuł="${validation.value.title}"`);
+    const song = await requestAiSingingSong(effectiveApiKey, validation.value.prompt);
     res.json(song);
   } catch (error) {
     const status = error instanceof LyriaApiError ? error.httpStatus : 500;

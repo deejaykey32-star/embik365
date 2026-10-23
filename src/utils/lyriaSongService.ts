@@ -153,3 +153,107 @@ export async function requestLyriaSong(
   }
   return song;
 }
+
+export const GEMINI_AUDIO_MODEL_ID = 'gemini-2.0-flash';
+export const GEMINI_AUDIO_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_AUDIO_MODEL_ID}:generateContent`;
+
+/** Wyciąga audio (WAV/MP3) z odpowiedzi Gemini 2.0 Flash Audio */
+export function extractGeminiAudioSong(payload: unknown): GeneratedSong | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const p = payload as {
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{
+          text?: string;
+          inlineData?: { mimeType?: string; data?: string };
+        }>;
+      };
+    }>;
+  };
+  const parts = p.candidates?.[0]?.content?.parts || [];
+  const audioPart = parts.find(part => part.inlineData?.data);
+  if (!audioPart?.inlineData?.data) return null;
+
+  const generatedText = parts
+    .filter(part => typeof part.text === 'string' && part.text)
+    .map(part => part.text)
+    .join('\n');
+
+  return {
+    audioBase64: audioPart.inlineData.data,
+    mimeType: audioPart.inlineData.mimeType || 'audio/wav',
+    generatedText,
+  };
+}
+
+/**
+ * Wywołuje Gemini 2.0 Flash z modalnością AUDIO i głosem śpiewnym Aoede.
+ */
+export async function requestGeminiAudioSong(
+  apiKey: string,
+  prompt: string,
+  voiceName: string = 'Aoede',
+  fetchImpl: typeof fetch = fetch
+): Promise<GeneratedSong> {
+  const url = `${GEMINI_AUDIO_URL}?key=${encodeURIComponent(apiKey)}`;
+  const singingPrompt = `Jesteś profesjonalnym wokalistą sakralnym. Zaśpiewaj melodyjnie, czysto i uroczyście w stylu pieśni religijnej poniższy pełny tekst. Prowadź wyrazisty, melodyjny śpiew z podziałem na zwrotki i refren:\n\n${prompt}`;
+
+  const response = await fetchImpl(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [{ text: singingPrompt }],
+        },
+      ],
+      generationConfig: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: voiceName || 'Aoede',
+            },
+          },
+        },
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    console.error(`[GeminiAudio] HTTP ${response.status}: ${errorBody.slice(0, 500)}`);
+    throw new LyriaApiError(
+      `Gemini Audio API zwróciło błąd HTTP ${response.status}.`,
+      response.status >= 500 ? 502 : response.status
+    );
+  }
+
+  const payload: unknown = await response.json();
+  const song = extractGeminiAudioSong(payload);
+  if (!song) {
+    console.error('[GeminiAudio] Odpowiedź bez audio:', JSON.stringify(payload).slice(0, 500));
+    throw new LyriaApiError('Gemini Audio nie zwróciło ścieżki audio.', 502);
+  }
+  return song;
+}
+
+/**
+ * Próbuje wygenerować wokal pieśni najpierw przez Google Lyria,
+ * a jeśli Lyria jest niedostępna (np. brak wczesnego dostępu lub HTTP 404/502),
+ * natychmiast używa Gemini 2.0 Flash Audio (wokal Aoede / Kore).
+ */
+export async function requestAiSingingSong(
+  apiKey: string,
+  prompt: string,
+  fetchImpl: typeof fetch = fetch
+): Promise<GeneratedSong> {
+  try {
+    return await requestLyriaSong(apiKey, prompt, fetchImpl);
+  } catch (lyriaErr) {
+    console.warn('[Song] Lyria 3.5 niedostępna, przełączam na Gemini 2.0 Flash Audio (wokal AI):', lyriaErr);
+    return await requestGeminiAudioSong(apiKey, prompt, 'Aoede', fetchImpl);
+  }
+}

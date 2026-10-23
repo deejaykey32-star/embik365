@@ -8,6 +8,7 @@ import {
   parseLyriaLyrics,
   flattenLyricLines,
   buildLyriaPrompt,
+  buildSunoPrompt,
   computeLyricLineTimings,
   findActiveLineIndex,
   computeLyricWordTimings,
@@ -139,6 +140,16 @@ describe('buildLyriaPrompt', () => {
     const prompt = buildLyriaPrompt('biblia365', lyrics);
     expect(prompt).toContain('"Dzień pierwszy"');
     expect(prompt).toContain(SONG_STYLE_BY_STATION.biblia365.musicStyle);
+    expect(prompt).toContain(formatLyricsForLyria(lyrics));
+  });
+});
+
+describe('buildSunoPrompt', () => {
+  it('formats prompt with style, sacred genre and tagged lyrics', () => {
+    const lyrics = buildSongLyrics('Tytuł Pieśni', SAMPLE_TEXT);
+    const prompt = buildSunoPrompt('nowyrhz', lyrics);
+    expect(prompt).toContain('[Genre: Catholic Sacred Hymn');
+    expect(prompt).toContain('[Title: Tytuł Pieśni]');
     expect(prompt).toContain(formatLyricsForLyria(lyrics));
   });
 });

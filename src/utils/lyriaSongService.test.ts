@@ -4,6 +4,9 @@ import {
   isSongRequestAuthorized,
   extractLyriaSong,
   requestLyriaSong,
+  extractGeminiAudioSong,
+  requestGeminiAudioSong,
+  requestAiSingingSong,
   LyriaApiError,
   LYRIA_INTERACTIONS_URL,
   LYRIA_MODEL_ID,
@@ -102,5 +105,95 @@ describe('requestLyriaSong', () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ steps: [] }), { status: 200 }));
     await expect(requestLyriaSong('key', 'p', fetchMock)).rejects.toThrow('nie zwróciła ścieżki audio');
+  });
+});
+
+describe('extractGeminiAudioSong', () => {
+  it('extracts base64 inline audio and lyrics from candidate parts', () => {
+    const payload = {
+      candidates: [
+        {
+          content: {
+            parts: [
+              { text: 'Śpiew sakralny' },
+              { inlineData: { mimeType: 'audio/wav', data: 'V0FW' } },
+            ],
+          },
+        },
+      ],
+    };
+    const song = extractGeminiAudioSong(payload);
+    expect(song).toEqual({
+      audioBase64: 'V0FW',
+      mimeType: 'audio/wav',
+      generatedText: 'Śpiew sakralny',
+    });
+  });
+
+  it('returns null if no audio inlineData', () => {
+    expect(extractGeminiAudioSong({ candidates: [{ content: { parts: [{ text: 'only text' }] } }] })).toBeNull();
+    expect(extractGeminiAudioSong(null)).toBeNull();
+  });
+});
+
+describe('requestGeminiAudioSong', () => {
+  it('requests audio modality and returns generated song', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [{ inlineData: { mimeType: 'audio/mp3', data: 'QUVESU8=' } }],
+              },
+            },
+          ],
+        }),
+        { status: 200 }
+      )
+    );
+
+    const song = await requestGeminiAudioSong('test-key', 'Pieśń chwały', 'Aoede', fetchMock);
+    expect(song.audioBase64).toBe('QUVESU8=');
+    expect(song.mimeType).toBe('audio/mp3');
+  });
+});
+
+describe('requestAiSingingSong', () => {
+  it('uses Lyria when Lyria succeeds', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ output_audio: { type: 'audio', data: 'TFlSSUE=' } }), { status: 200 })
+    );
+    const song = await requestAiSingingSong('k', 'tekst', fetchMock);
+    expect(song.audioBase64).toBe('TFlSSUE=');
+  });
+
+  it('falls back to Gemini Audio when Lyria fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    let callCount = 0;
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response('Lyria unavailable', { status: 502 });
+      }
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [{ inlineData: { mimeType: 'audio/wav', data: 'R0VNSU5J' } }],
+              },
+            },
+          ],
+        }),
+        { status: 200 }
+      );
+    });
+
+    const song = await requestAiSingingSong('k', 'tekst', fetchMock);
+    expect(song.audioBase64).toBe('R0VNSU5J');
+    expect(callCount).toBe(2);
   });
 });

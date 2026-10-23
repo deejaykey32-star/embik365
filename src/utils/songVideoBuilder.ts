@@ -230,6 +230,18 @@ export function buildLyriaPrompt(stationId: SongStationId, lyrics: SongLyrics): 
   ].join('\n');
 }
 
+/** Formatuje gotowy prompt dla generatorów muzyki AI (Suno AI, Udio, ElevenLabs Music) */
+export function buildSunoPrompt(stationId: SongStationId, lyrics: SongLyrics): string {
+  const style = SONG_STYLE_BY_STATION[stationId];
+  return [
+    `[Genre: Catholic Sacred Hymn, Reverent Expressive Singing Vocals]`,
+    `[Style: ${style.musicStyle}, church cathedral reverb, acoustic piano, strings, warm melodic vocal, 72 bpm]`,
+    `[Title: ${lyrics.title}]`,
+    '',
+    formatLyricsForLyria(lyrics),
+  ].join('\n');
+}
+
 /**
  * Rozkłada linie tekstu na czas utworu proporcjonalnie do ich długości,
  * pomijając instrumentalne intro i outro.
