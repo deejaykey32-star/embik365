@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import {
   RADIO_STATIONS,
-  RadioBroadcastItem,
+  type RadioBroadcastItem,
   getRadioBroadcastItem
 } from '../utils/radioContentService';
 import type { GeneratedSong, SongStationId } from '../utils/lyriaSongService';
@@ -39,8 +39,8 @@ import {
   buildYouTubeMetadata,
   pickRecordingMimeType,
   buildSongVideoFileName,
-  LyricLineTiming,
-  LyricWordTiming,
+  type LyricLineTiming,
+  type LyricWordTiming,
   audioBufferToWavBlob,
   blobToBase64,
   synthesizeStationAccompaniment,
