@@ -22,6 +22,7 @@ import {
   Copy,
   Check,
   Video,
+  Music,
   Flame,
   CheckCircle2,
   RotateCcw,
@@ -37,6 +38,8 @@ import { NOWY_RHZ_CYCLE_2_MYSTERIES } from '../data/nowyRhzCycle2Data';
 import { getNowyRhzCalendarStatus, getNowyRhzMystery, NowyRhzCalendarStatus } from '../utils/nowyRhzCalendar';
 import { RosaryDecadeProgressTracker } from './RosaryDecadeProgressTracker';
 import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
+import { SongVideoExportModal } from './SongVideoExportModal';
+import nowyRhzIllustrationImg from '../pliki/RHZ-ilustracja.jpg';
 import { 
   getRadioBroadcastItem, 
   buildFullHailMary, 
@@ -90,6 +93,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
 
   // Modal wideo MP4 na YouTube
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isSongVideoOpen, setIsSongVideoOpen] = useState(false);
 
   // Stany iframe PWA
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -1239,6 +1243,15 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
               </button>
 
               <button
+                onClick={() => setIsSongVideoOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-700 to-amber-600 hover:from-rose-800 hover:to-amber-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer"
+                title="Generuj teledysk MP4: muzyka i wokal AI (Lyria) z tekstem dnia na tle ilustracji"
+              >
+                <Music className="w-3.5 h-3.5" />
+                <span>Teledysk – piosenka dnia</span>
+              </button>
+
+              <button
                 onClick={handleShare}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#121a28] hover:bg-[#f0e8dc] dark:hover:bg-[#1a2538] border border-[#d8c8b4] dark:border-[#24334a] text-xs font-semibold text-[#4e3d2d] dark:text-slate-200 transition cursor-pointer shadow-xs"
                 title="Udostępnij link"
@@ -2148,6 +2161,16 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
           currentDayNumber={selectedCycle === 2 ? (182 + safeDay) : safeDay}
           totalDays={365}
           cycle={selectedCycle}
+        />
+      )}
+
+      {isSongVideoOpen && (
+        <SongVideoExportModal
+          isOpen={isSongVideoOpen}
+          onClose={() => setIsSongVideoOpen(false)}
+          stationId="nowyrhz"
+          illustrationSrc={nowyRhzIllustrationImg}
+          broadcastItem={broadcastItem}
         />
       )}
 

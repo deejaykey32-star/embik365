@@ -1,5 +1,8 @@
+import { validateSongRequest, isSongRequestAuthorized, requestLyriaSong, LyriaApiError } from '../../src/utils/lyriaSongService';
+
 interface Env {
   GEMINI_API_KEY?: string;
+  SONG_API_TOKEN?: string;
   GITHUB_TOKEN?: string;
   GITHUB_OWNER?: string;
   GITHUB_REPO?: string;
@@ -274,6 +277,39 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return new Response(
         JSON.stringify({ error: 'Nieprawidłowe zapytanie auth.' }),
         { status: 400, headers: corsHeaders }
+      );
+    }
+  }
+
+  // Song generation endpoint (music + vocal) using Google Lyria via Gemini API
+  if (pathname === '/api/song' && request.method === 'POST') {
+    if (!isSongRequestAuthorized(env.SONG_API_TOKEN, request.headers.get('Authorization'))) {
+      return new Response(
+        JSON.stringify({ error: 'Nieprawidłowy token dostępu do generatora piosenek.' }),
+        { status: 401, headers: corsHeaders }
+      );
+    }
+    const body: unknown = await request.json().catch(() => null);
+    const validation = validateSongRequest(body);
+    if ('error' in validation) {
+      return new Response(JSON.stringify({ error: validation.error }), { status: 400, headers: corsHeaders });
+    }
+    if (!env.GEMINI_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'Brak klucza GEMINI_API_KEY na serwerze.' }),
+        { status: 503, headers: corsHeaders }
+      );
+    }
+    try {
+      console.log(`[Song] Generowanie: sekcja=${validation.value.stationId}, tytuł="${validation.value.title}"`);
+      const song = await requestLyriaSong(env.GEMINI_API_KEY, validation.value.prompt);
+      return new Response(JSON.stringify(song), { headers: corsHeaders });
+    } catch (error) {
+      const status = error instanceof LyriaApiError ? error.httpStatus : 500;
+      console.error('[Song] Błąd generowania piosenki:', error);
+      return new Response(
+        JSON.stringify({ error: error instanceof Error ? error.message : 'Błąd generowania piosenki.' }),
+        { status, headers: corsHeaders }
       );
     }
   }

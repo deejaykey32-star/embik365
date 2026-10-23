@@ -18,7 +18,8 @@ import {
   Globe,
   ExternalLink,
   QrCode,
-  Video
+  Video,
+  Music
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
@@ -35,6 +36,8 @@ import { formatContentForReaderHtml } from '../utils/textFormatter';
 import { buildBibliaSpeechText } from '../utils/bibliaSpeech';
 import { getRadioBroadcastItem } from '../utils/radioContentService';
 import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
+import { SongVideoExportModal } from './SongVideoExportModal';
+import type { SongStationId } from '../utils/lyriaSongService';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -86,6 +89,11 @@ export const StandardReader: React.FC<Props> = ({
   const [rosaryDecadeCount, setRosaryDecadeCount] = useState(0);
   const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
   const [isBibliaVideoOpen, setIsBibliaVideoOpen] = useState(false);
+  const [isSongVideoOpen, setIsSongVideoOpen] = useState(false);
+
+  const songStationId: SongStationId | null =
+    section.id === 'wnr365' || section.id === 'rhz365' || section.id === 'biblia365' ? section.id : null;
+  const songIllustrationSrc = songStationId === 'rhz365' ? rhzMainImg : songStationId === 'biblia365' ? bibliaMainImg : wnrMainImg;
 
   React.useEffect(() => {
     const handleStateChange = (e: any) => {
@@ -424,6 +432,34 @@ export const StandardReader: React.FC<Props> = ({
                 </span>
               </div>
             </div>
+          )}
+
+          {songStationId && (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => setIsSongVideoOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer"
+                title="Generuj teledysk MP4: muzyka i wokal AI (Lyria) z tekstem dnia na tle ilustracji sekcji"
+              >
+                <Music className="w-3.5 h-3.5" />
+                <span>Teledysk – piosenka dnia (MP4)</span>
+              </button>
+            </div>
+          )}
+
+          {songStationId && isSongVideoOpen && (
+            <SongVideoExportModal
+              isOpen={isSongVideoOpen}
+              onClose={() => setIsSongVideoOpen(false)}
+              stationId={songStationId}
+              illustrationSrc={songIllustrationSrc}
+              broadcastItem={getRadioBroadcastItem(
+                songStationId,
+                songStationId === 'rhz365' ? getRhzEntryForDay(currentDate.dayNumber).dayNumber : currentDate.dayNumber,
+                selectedBibliaYear
+              )}
+            />
           )}
         </div>
 
