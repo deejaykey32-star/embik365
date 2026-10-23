@@ -47,3 +47,12 @@ declare module 'fix-webm-duration' {
     callback: (fixedBlob: Blob) => void
   ): void;
 }
+
+interface HTMLCanvasElement {
+  captureStream(fps?: number): MediaStream;
+}
+
+interface CanvasRenderingContext2D {
+  roundRect(x: number, y: number, w: number, h: number, radii?: number | number[]): void;
+}
+

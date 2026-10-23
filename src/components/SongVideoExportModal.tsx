@@ -282,8 +282,8 @@ function drawSongFrame(ctx: CanvasRenderingContext2D, illustration: HTMLImageEle
           // Tło badge'a
           ctx.fillStyle = 'rgba(217, 119, 6, 0.75)';
           ctx.beginPath();
-          if (typeof ctx.roundRect === 'function') {
-            ctx.roundRect(bgX, bgY, bgW, bgH, 10 * scale);
+          if (typeof (ctx as any).roundRect === 'function') {
+            (ctx as any).roundRect(bgX, bgY, bgW, bgH, 10 * scale);
           } else {
             ctx.rect(bgX, bgY, bgW, bgH);
           }
@@ -795,17 +795,21 @@ export const SongVideoExportModal: React.FC<Props> = ({
       setStatusMessage('Wczytywanie ilustracji i przygotowanie renderera…');
       const illustration = await loadImage(activeIllustrationSrc);
 
-      const audioContext = new AudioContext();
+      const AudioCtxClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtxClass) throw new Error('Przeglądarka nie obsługuje Web Audio API.');
+      const audioContext = new AudioCtxClass();
       audioContextRef.current = audioContext;
 
       let audioBuffer: AudioBuffer;
       if (song.audioBase64) {
         const bytes = base64ToUint8Array(song.audioBase64);
-        const arrayBufferCopy = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+        const arrayBufferCopy = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
         audioBuffer = await audioContext.decodeAudioData(arrayBufferCopy);
       } else if (songAudioUrl) {
         const res = await fetch(songAudioUrl);
-        const ab = await res.arrayBuffer();
+        const ab = (await res.arrayBuffer()) as ArrayBuffer;
         audioBuffer = await audioContext.decodeAudioData(ab);
       } else {
         throw new Error('Brak ścieżki audio do nagrania.');
@@ -828,11 +832,15 @@ export const SongVideoExportModal: React.FC<Props> = ({
       sourceNode.connect(audioDestination);
       sourceNode.connect(audioContext.destination);
 
-      const mimeType = pickRecordingMimeType(mime => MediaRecorder.isTypeSupported(mime));
+      const mimeType = pickRecordingMimeType(mime => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mime));
       console.log(`[SongVideo] Nagrywanie ${width}x${height}, format=${mimeType}, czas=${audioBuffer.duration.toFixed(1)}s`);
 
+      const canvasStream: MediaStream = typeof (canvas as any).captureStream === 'function'
+        ? (canvas as any).captureStream(30)
+        : ((canvas as any).mozCaptureStream ? (canvas as any).mozCaptureStream(30) : new MediaStream());
+
       const stream = new MediaStream([
-        ...canvas.captureStream(30).getVideoTracks(),
+        ...canvasStream.getVideoTracks(),
         ...audioDestination.stream.getAudioTracks(),
       ]);
 
@@ -844,8 +852,8 @@ export const SongVideoExportModal: React.FC<Props> = ({
       recorderRef.current = recorder;
       const chunks: Blob[] = [];
 
-      recorder.ondataavailable = event => {
-        if (event.data.size > 0) chunks.push(event.data);
+      recorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data && event.data.size > 0) chunks.push(event.data);
       };
 
       recorder.onstop = () => {
@@ -1284,7 +1292,7 @@ export const SongVideoExportModal: React.FC<Props> = ({
                 <div className="flex items-center gap-2">
                   <select
                     value={resolution}
-                    onChange={e => setResolution(e.target.value as Resolution)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setResolution(e.target.value as Resolution)}
                     disabled={isRecording}
                     className="rounded-xl border border-white/20 bg-[#111827] px-3 py-1.5 text-xs text-white"
                   >
