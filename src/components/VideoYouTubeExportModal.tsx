@@ -426,6 +426,7 @@ interface Props {
   totalDays?: number;
   cycle?: 1 | 2;
   bibliaYear?: 1 | 2 | 3 | 4;
+  onSwitchToSongModal?: () => void;
 }
 
 export const VideoYouTubeExportModal: React.FC<Props> = ({
@@ -433,7 +434,8 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
   onClose,
   broadcastItem,
   cycle = 1,
-  bibliaYear
+  bibliaYear,
+  onSwitchToSongModal
 }) => {
   const [selectedStationId, setSelectedStationId] = useState<RadioStationId>(broadcastItem.stationId || 'nowyrhz');
   const [selectedDayNumber, setSelectedDayNumber] = useState<number>(broadcastItem.dayNumber || 1);
@@ -1824,16 +1826,34 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              stopGeneration();
-              onClose();
-            }}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition cursor-pointer"
-            title="Zamknij"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onSwitchToSongModal && (
+              <button
+                type="button"
+                onClick={() => {
+                  stopGeneration();
+                  onSwitchToSongModal();
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                title="Przełącz na generowanie piosenki (wokal + muzyka, tekst i ilustracja)"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">Piosenka (Wokal + Muzyka)</span>
+                <span className="sm:hidden">Piosenka</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                stopGeneration();
+                onClose();
+              }}
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition cursor-pointer"
+              title="Zamknij"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Ciało Modala */}

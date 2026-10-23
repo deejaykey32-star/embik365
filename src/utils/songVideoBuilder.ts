@@ -268,3 +268,249 @@ export function pickRecordingMimeType(isTypeSupported: (mime: string) => boolean
 export function buildSongVideoFileName(stationId: SongStationId, dayNumber: number, extension: string): string {
   return `${stationId}-dzien-${String(dayNumber).padStart(3, '0')}-piosenka.${extension}`;
 }
+
+/**
+ * Koduje AudioBuffer do standardowego 16-bitowego PCM WAV (odtwarzalnego natywnie we wszystkich przeglądarkach).
+ */
+export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1; // PCM
+  const bitDepth = 16;
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+  const numFrames = buffer.length;
+  const dataByteCount = numFrames * blockAlign;
+  const headerByteCount = 44;
+  const totalByteCount = headerByteCount + dataByteCount;
+
+  const arrayBuffer = new ArrayBuffer(totalByteCount);
+  const view = new DataView(arrayBuffer);
+
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  // RIFF header
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataByteCount, true);
+  writeString(8, 'WAVE');
+
+  // fmt chunk
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitDepth, true);
+
+  // data chunk
+  writeString(36, 'data');
+  view.setUint32(40, dataByteCount, true);
+
+  const channels: Float32Array[] = [];
+  for (let c = 0; c < numChannels; c++) {
+    channels.push(buffer.getChannelData(c));
+  }
+
+  let offset = 44;
+  for (let i = 0; i < numFrames; i++) {
+    for (let c = 0; c < numChannels; c++) {
+      const sample = Math.max(-1, Math.min(1, channels[c][i]));
+      const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+      view.setInt16(offset, intSample, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+/** Konwertuje Blob na Base64 string */
+export function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(',')[1] || '';
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+const STATION_CHORDS: Record<SongStationId, number[][]> = {
+  wnr365: [
+    [146.83, 220.00, 293.66, 369.99], // Dmaj
+    [196.00, 246.94, 293.66, 392.00], // Gmaj
+    [123.47, 185.00, 220.00, 293.66], // Bmin
+    [110.00, 164.81, 220.00, 277.18], // Amaj
+  ],
+  nowyrhz: [
+    [110.00, 164.81, 220.00, 261.63], // Amin
+    [174.61, 220.00, 261.63, 349.23], // Fmaj
+    [130.81, 196.00, 261.63, 329.63], // Cmaj
+    [196.00, 246.94, 293.66, 392.00], // Gmaj
+  ],
+  biblia365: [
+    [98.00, 146.83, 196.00, 246.94],  // Gmaj
+    [82.41, 123.47, 164.81, 196.00],  // Emin
+    [130.81, 196.00, 261.63, 329.63], // Cmaj
+    [146.83, 220.00, 293.66, 369.99], // Dmaj
+  ],
+  rhz365: [
+    [87.31, 130.81, 174.61, 220.00],  // Fmaj
+    [116.54, 174.61, 233.08, 293.66], // Bbmaj
+    [130.81, 196.00, 261.63, 329.63], // Cmaj
+    [146.83, 220.00, 293.66, 349.23], // Dmin
+  ],
+};
+
+/**
+ * Syntetyzuje bogaty, harmonijny podkład instrumentalny dopasowany do stylu stacji
+ * za pomocą Web Audio OfflineAudioContext (zajmuje ułamek sekundy).
+ */
+export async function synthesizeStationAccompaniment(
+  stationId: SongStationId,
+  durationSeconds: number,
+  sampleRate: number = 44100
+): Promise<AudioBuffer | null> {
+  const OfflineCtxClass =
+    typeof OfflineAudioContext !== 'undefined'
+      ? OfflineAudioContext
+      : typeof window !== 'undefined'
+      ? (window as any).OfflineAudioContext || (window as any).webkitOfflineAudioContext
+      : null;
+
+  if (!OfflineCtxClass) return null;
+
+  const totalFrames = Math.max(1, Math.round(durationSeconds * sampleRate));
+  const offlineCtx = new OfflineCtxClass(2, totalFrames, sampleRate);
+  const chords = STATION_CHORDS[stationId] || STATION_CHORDS.wnr365;
+  const chordDuration = 3.6; // sekundy na akord
+
+  const masterGain = offlineCtx.createGain();
+  masterGain.gain.setValueAtTime(0, 0);
+  masterGain.gain.linearRampToValueAtTime(0.42, Math.min(2.0, durationSeconds * 0.1));
+  masterGain.gain.setValueAtTime(0.42, Math.max(0, durationSeconds - 2.5));
+  masterGain.gain.linearRampToValueAtTime(0.0001, durationSeconds);
+  masterGain.connect(offlineCtx.destination);
+
+  // Filtr dolnoprzepustowy nadający ciepłe, sakralne brzmienie
+  const filter = offlineCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(stationId === 'rhz365' ? 950 : 1400, 0);
+  filter.Q.setValueAtTime(1.0, 0);
+  filter.connect(masterGain);
+
+  let currentTime = 0;
+  let chordIndex = 0;
+
+  while (currentTime < durationSeconds) {
+    const chord = chords[chordIndex % chords.length];
+    const dur = Math.min(chordDuration, durationSeconds - currentTime);
+
+    // 1. Pad / ciągły akord tła
+    chord.forEach((freq, noteIdx) => {
+      const padOsc = offlineCtx.createOscillator();
+      padOsc.type = stationId === 'rhz365' ? 'triangle' : 'sine';
+      padOsc.frequency.setValueAtTime(freq, currentTime);
+
+      const padGain = offlineCtx.createGain();
+      const baseGain = 0.08 / (chord.length || 1);
+      padGain.gain.setValueAtTime(0.001, currentTime);
+      padGain.gain.linearRampToValueAtTime(baseGain, currentTime + 0.4);
+      padGain.gain.setValueAtTime(baseGain, currentTime + dur - 0.5);
+      padGain.gain.linearRampToValueAtTime(0.001, currentTime + dur);
+
+      padOsc.connect(padGain);
+      padGain.connect(filter);
+      padOsc.start(currentTime);
+      padOsc.stop(currentTime + dur);
+
+      // 2. Arpeggio / dźwięki fortepianowe / szarpnięcia strun
+      const noteDelay = noteIdx * 0.45;
+      if (currentTime + noteDelay < durationSeconds) {
+        const arpOsc = offlineCtx.createOscillator();
+        arpOsc.type = stationId === 'nowyrhz' ? 'triangle' : 'sine';
+        arpOsc.frequency.setValueAtTime(freq * (noteIdx === 0 ? 1 : 2), currentTime + noteDelay);
+
+        const arpGain = offlineCtx.createGain();
+        arpGain.gain.setValueAtTime(0.001, currentTime + noteDelay);
+        arpGain.gain.linearRampToValueAtTime(0.12, currentTime + noteDelay + 0.03);
+        arpGain.exponentialRampToValueAtTime(0.001, Math.min(durationSeconds, currentTime + noteDelay + 1.8));
+
+        arpOsc.connect(arpGain);
+        arpGain.connect(filter);
+        arpOsc.start(currentTime + noteDelay);
+        arpOsc.stop(Math.min(durationSeconds, currentTime + noteDelay + 1.85));
+      }
+    });
+
+    currentTime += chordDuration;
+    chordIndex++;
+  }
+
+  try {
+    return await offlineCtx.startRendering();
+  } catch (err) {
+    console.warn('[SongBuilder] Błąd renderowania podkładu muzycznego:', err);
+    return null;
+  }
+}
+
+/**
+ * Łączy ścieżkę wokalną (TTS) z podkładem muzycznym w jeden zbalansowany bufor dźwiękowy.
+ */
+export async function mixVocalAndMusicBuffers(
+  vocalBuffer: AudioBuffer,
+  musicBuffer: AudioBuffer,
+  vocalGainValue: number = 0.95,
+  musicGainValue: number = 0.38
+): Promise<AudioBuffer> {
+  const OfflineCtxClass =
+    typeof OfflineAudioContext !== 'undefined'
+      ? OfflineAudioContext
+      : typeof window !== 'undefined'
+      ? (window as any).OfflineAudioContext || (window as any).webkitOfflineAudioContext
+      : null;
+
+  const sampleRate = vocalBuffer.sampleRate || 44100;
+  const duration = Math.max(vocalBuffer.duration, musicBuffer.duration);
+  const totalFrames = Math.round(duration * sampleRate);
+
+  if (!OfflineCtxClass) return vocalBuffer;
+
+  const offlineCtx = new OfflineCtxClass(2, totalFrames, sampleRate);
+
+  // Wokal
+  const vocalSource = offlineCtx.createBufferSource();
+  vocalSource.buffer = vocalBuffer;
+  const vocalGain = offlineCtx.createGain();
+  vocalGain.gain.setValueAtTime(vocalGainValue, 0);
+  vocalSource.connect(vocalGain);
+  vocalGain.connect(offlineCtx.destination);
+  vocalSource.start(0);
+
+  // Muzyka
+  const musicSource = offlineCtx.createBufferSource();
+  musicSource.buffer = musicBuffer;
+  const musicGain = offlineCtx.createGain();
+  musicGain.gain.setValueAtTime(musicGainValue, 0);
+  musicSource.connect(musicGain);
+  musicGain.connect(offlineCtx.destination);
+  musicSource.start(0);
+
+  try {
+    return await offlineCtx.startRendering();
+  } catch (err) {
+    console.warn('[SongBuilder] Błąd miksowania wokal + muzyka:', err);
+    return vocalBuffer;
+  }
+}
+

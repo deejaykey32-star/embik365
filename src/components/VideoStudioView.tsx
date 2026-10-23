@@ -20,7 +20,8 @@ import {
   Volume2,
   ExternalLink,
   Flame,
-  MonitorPlay
+  MonitorPlay,
+  Music
 } from 'lucide-react';
 import {
   RADIO_STATIONS,
@@ -31,6 +32,7 @@ import {
 } from '../utils/radioContentService';
 import { generateAndDownloadQrBadgePng, getQrCodeForSection } from '../utils/qrCodeService';
 import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
+import { SongVideoExportModal, SECTION_ILLUSTRATIONS } from './SongVideoExportModal';
 import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 
 interface Props {
@@ -49,6 +51,7 @@ export const VideoStudioView: React.FC<Props> = ({
   const [selectedBibliaYear, setSelectedBibliaYear] = useState<1 | 2 | 3 | 4>(1);
   const [searchFilter, setSearchFilter] = useState('');
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isSongModalOpen, setIsSongModalOpen] = useState(false);
   const [downloadingQr, setDownloadingQr] = useState(false);
 
   const activeStation = useMemo(() => {
@@ -165,8 +168,16 @@ export const VideoStudioView: React.FC<Props> = ({
                   onClick={() => setIsVideoModalOpen(true)}
                   className="px-6 py-3 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-bold text-sm sm:text-base flex items-center gap-2.5 shadow-xl shadow-red-950/50 hover:shadow-2xl transition-all cursor-pointer hover:scale-105 active:scale-95"
                 >
-                  <Play className="w-5 h-5 fill-current" />
-                  <span>Uruchom Generator Wideo MP4</span>
+                  <Video className="w-5 h-5 fill-current" />
+                  <span>Film z Lektorem AI (MP4)</span>
+                </button>
+
+                <button
+                  onClick={() => setIsSongModalOpen(true)}
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-bold text-sm sm:text-base flex items-center gap-2.5 shadow-xl shadow-amber-950/50 hover:shadow-2xl transition-all cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  <Music className="w-5 h-5" />
+                  <span>Piosenka z Wokalem i Muzyką (MP4)</span>
                 </button>
               </div>
 
@@ -237,6 +248,7 @@ export const VideoStudioView: React.FC<Props> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {RADIO_STATIONS.map((station) => {
             const isSelected = station.id === selectedStationId;
+            const illustration = SECTION_ILLUSTRATIONS[station.id as keyof typeof SECTION_ILLUSTRATIONS];
             return (
               <div
                 key={station.id}
@@ -246,33 +258,76 @@ export const VideoStudioView: React.FC<Props> = ({
                     setSelectedDayNumber(1);
                   }
                 }}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer relative ${
+                className={`p-4 rounded-3xl border transition-all cursor-pointer relative flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-gradient-to-b from-red-950/30 to-amber-950/20 border-red-500 shadow-md ring-1 ring-red-500/50'
+                    ? 'bg-gradient-to-b from-red-950/40 via-[#191420] to-[#0c1220] border-red-500 shadow-xl ring-2 ring-red-500/50'
                     : 'bg-white dark:bg-[#0f172a] border-stone-200 dark:border-stone-800 hover:border-red-500/40'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                    isSelected ? 'bg-red-600 text-white' : 'bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300'
-                  }`}>
-                    {station.badge}
-                  </span>
-                  {isSelected && (
-                    <CheckCircle2 className="w-4 h-4 text-red-500" />
-                  )}
+                <div>
+                  <div className="relative mb-3 rounded-2xl overflow-hidden aspect-[16/9] border border-black/20 dark:border-white/10 shadow-inner group">
+                    <img
+                      src={illustration}
+                      alt={station.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <span className="absolute bottom-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/70 text-amber-300 backdrop-blur-xs border border-white/10">
+                      {station.badge}
+                    </span>
+                    {isSelected && (
+                      <span className="absolute top-2 right-2 p-1 rounded-full bg-red-600 text-white shadow-md">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 mb-1 leading-snug">
+                    {station.name}
+                  </h3>
+                  <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed">
+                    {station.description}
+                  </p>
                 </div>
 
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 mb-1">
-                  {station.name}
-                </h3>
-                <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed">
-                  {station.description}
-                </p>
+                <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-800/80 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
+                    <span>Liczba pozycji:</span>
+                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{station.totalDays}</span>
+                  </div>
 
-                <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800/60 flex items-center justify-between text-[11px] text-stone-500">
-                  <span>Łącznie pozycji:</span>
-                  <span className="font-mono font-bold text-amber-600 dark:text-amber-400">{station.totalDays}</span>
+                  {/* Bezpośrednie przyciski tworzenia filmów dla tej sekcji */}
+                  <div className="grid grid-cols-2 gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedStationId(station.id);
+                        if (selectedDayNumber > station.totalDays) setSelectedDayNumber(1);
+                        setIsVideoModalOpen(true);
+                      }}
+                      className="inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-red-600/90 hover:bg-red-500 text-white text-[11px] font-bold shadow-xs cursor-pointer transition-all hover:scale-[1.02]"
+                      title="Utwórz film MP4 z lektorem dla tej sekcji"
+                    >
+                      <Video className="w-3 h-3" />
+                      <span>Film Lektor</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedStationId(station.id);
+                        if (selectedDayNumber > station.totalDays) setSelectedDayNumber(1);
+                        setIsSongModalOpen(true);
+                      }}
+                      className="inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-xl bg-amber-600/90 hover:bg-amber-500 text-white text-[11px] font-bold shadow-xs cursor-pointer transition-all hover:scale-[1.02]"
+                      title="Utwórz piosenkę z wokalem i muzyką dla tej sekcji"
+                    >
+                      <Music className="w-3 h-3" />
+                      <span>Piosenka</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -445,14 +500,22 @@ export const VideoStudioView: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Wielki przycisk akcji: Uruchom generator wideo */}
-              <div className="pt-2">
+              {/* Dwa główne przyciski akcji: Film z lektorem oraz Piosenka z wokalem i muzyką */}
+              <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <button
                   onClick={() => setIsVideoModalOpen(true)}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 shadow-xl shadow-red-950/40 hover:shadow-2xl transition-all cursor-pointer hover:scale-[1.01] active:scale-95"
+                  className="py-4 px-5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-red-950/40 hover:shadow-2xl transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center"
                 >
-                  <Video className="w-6 h-6 animate-pulse" />
-                  <span>Otwórz Generator i Nagraj Wideo MP4</span>
+                  <Video className="w-5 h-5 animate-pulse shrink-0" />
+                  <span>Nagraj Film MP4 z Lektorem AI</span>
+                </button>
+
+                <button
+                  onClick={() => setIsSongModalOpen(true)}
+                  className="py-4 px-5 rounded-2xl bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-amber-950/40 hover:shadow-2xl transition-all cursor-pointer hover:scale-[1.01] active:scale-95 text-center"
+                >
+                  <Music className="w-5 h-5 animate-bounce shrink-0" />
+                  <span>Generuj Piosenkę MP4 (Wokal + Muzyka)</span>
                 </button>
               </div>
 
@@ -464,7 +527,103 @@ export const VideoStudioView: React.FC<Props> = ({
 
       </section>
 
-      {/* 4. Poradnik i Checklist Publikacji na YouTube */}
+      {/* 4. Centrum Produkcji Filmów YouTube dla 4 Sekcji */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#141d2d] via-[#0d1422] to-[#080d1a] border border-amber-500/30 shadow-2xl text-white space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+                <h3 className="text-xl font-bold font-serif-book">
+                  Centrum 4 Sekcji — Błyskawiczny Eksport Filmów YouTube (Lektor lub Piosenka)
+                </h3>
+              </div>
+              <p className="text-xs text-stone-300 mt-1">
+                Dla każdej z 4 sekcji utwórz gotowy film MP4: tradycyjne czytanie lektora z czarnym tłem lub śpiewaną piosenkę dnia z aranżacją muzyczną i ilustracją.
+              </p>
+            </div>
+            <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              Format: YouTube Full HD 16:9
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {RADIO_STATIONS.map((station) => {
+              const illustration = SECTION_ILLUSTRATIONS[station.id as keyof typeof SECTION_ILLUSTRATIONS];
+              const stItem = getRadioBroadcastItem(station.id, selectedDayNumber, selectedBibliaYear);
+              const isCurrent = station.id === selectedStationId;
+
+              return (
+                <div
+                  key={`hub-${station.id}`}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                    isCurrent
+                      ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/40'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="space-y-3">
+                    <div className="relative rounded-xl overflow-hidden aspect-video border border-white/10">
+                      <img
+                        src={illustration}
+                        alt={station.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute bottom-1.5 left-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-black/75 text-amber-300">
+                        {station.badge}
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="text-[10px] font-mono text-amber-400 uppercase font-bold">
+                        {station.shortName} • Dzień {selectedDayNumber}
+                      </div>
+                      <div className="font-bold text-xs line-clamp-1 text-white">
+                        {stItem.headlineTitle}
+                      </div>
+                      {stItem.subtitle && (
+                        <div className="text-[10px] text-stone-400 line-clamp-1 mt-0.5">
+                          {stItem.subtitle}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-white/10 mt-3 grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedStationId(station.id);
+                        setIsVideoModalOpen(true);
+                      }}
+                      className="inline-flex items-center justify-center gap-1 py-2 px-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[11px] font-bold shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
+                      title="Utwórz film MP4 z lektorem"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Film Lektor</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedStationId(station.id);
+                        setIsSongModalOpen(true);
+                      }}
+                      className="inline-flex items-center justify-center gap-1 py-2 px-2 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white text-[11px] font-bold shadow-sm cursor-pointer transition-all hover:scale-[1.02]"
+                      title="Utwórz piosenkę z wokalem i muzyką"
+                    >
+                      <Music className="w-3.5 h-3.5" />
+                      <span>Piosenka MP4</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Poradnik i Checklist Publikacji na YouTube */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
         
         <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-stone-900 via-[#101827] to-[#0a0f1d] text-white border border-red-500/30 shadow-xl space-y-6">
@@ -487,7 +646,7 @@ export const VideoStudioView: React.FC<Props> = ({
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">1</div>
               <div className="font-bold text-sm text-stone-100">Kliknij Generuj</div>
               <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                Wybierz stację i dzień, kliknij nagraj, a przeglądarka wyrenderuje obraz z dźwiękiem w czasie rzeczywistym.
+                Wybierz sekcję, lektora lub piosenkę z muzyką, kliknij nagraj, a przeglądarka wyrenderuje obraz z dźwiękiem w czasie rzeczywistym.
               </p>
             </div>
 
@@ -495,7 +654,7 @@ export const VideoStudioView: React.FC<Props> = ({
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">2</div>
               <div className="font-bold text-sm text-stone-100">Pobierz plik MP4</div>
               <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                Po zakończeniu nagrania kliknij „Pobierz wideo MP4”. Plik zostanie zapisany w Twoim folderze Pobrane.
+                Po zakończeniu nagrania kliknij „Pobierz plik MP4”. Wideo zostanie zapisane w Twoim folderze Pobrane.
               </p>
             </div>
 
@@ -509,9 +668,9 @@ export const VideoStudioView: React.FC<Props> = ({
 
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
               <div className="w-7 h-7 rounded-xl bg-red-600/30 text-red-400 font-bold flex items-center justify-center">4</div>
-              <div className="font-bold text-sm text-stone-100">Czarne tło i OLED</div>
+              <div className="font-bold text-sm text-stone-100">Ilustracje i OLED</div>
               <p className="text-stone-400 leading-relaxed text-justify" style={{ textAlign: 'justify', textJustify: 'inter-word' }}>
-                Wideo posiada czyste tło #000000, dzięki czemu idealnie prezentuje się na ekranach TV, smartfonach oraz w trybie ciemnym.
+                Wideo posiada idealnie zoptymalizowane czarne tło OLED lub pełnoekranową ilustrację sekcji 16:9, gotową do oglądania na TV i smartfonach.
               </p>
             </div>
 
@@ -521,7 +680,7 @@ export const VideoStudioView: React.FC<Props> = ({
 
       </section>
 
-      {/* 5. Modal Generatora Wideo MP4 */}
+      {/* 6. Modal Generatora Wideo MP4 z Lektorem */}
       {isVideoModalOpen && (
         <VideoYouTubeExportModal
           isOpen={isVideoModalOpen}
@@ -530,6 +689,26 @@ export const VideoStudioView: React.FC<Props> = ({
           stationMeta={activeStation}
           currentDayNumber={safeDayNumber}
           totalDays={activeStation.totalDays}
+          onSwitchToSongModal={() => {
+            setIsVideoModalOpen(false);
+            setIsSongModalOpen(true);
+          }}
+        />
+      )}
+
+      {/* 7. Modal Generatora Piosenki z Wokalem, Muzyką i Ilustracją */}
+      {isSongModalOpen && (
+        <SongVideoExportModal
+          isOpen={isSongModalOpen}
+          onClose={() => setIsSongModalOpen(false)}
+          broadcastItem={activeBroadcastItem}
+          stationId={selectedStationId as any}
+          illustrationSrc={SECTION_ILLUSTRATIONS[selectedStationId as keyof typeof SECTION_ILLUSTRATIONS]}
+          currentDayNumber={safeDayNumber}
+          onSwitchToLectorModal={() => {
+            setIsSongModalOpen(false);
+            setIsVideoModalOpen(true);
+          }}
         />
       )}
 
