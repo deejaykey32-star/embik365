@@ -524,217 +524,135 @@ export async function generatePodPdf(
     : [entry];
 
   const totalEntries = entriesToProcess.length;
+  let currentY = topMargin + 10;
 
   // Process entries
   for (let idx = 0; idx < totalEntries; idx++) {
     const currentEntry = entriesToProcess[idx];
+    const epoka = currentEntry.stageTitle || '';
+    const czesc = currentEntry.partTitle || '';
+    const dayNum = currentEntry.dayNumber || (idx + 1);
+    const tajemnica = currentEntry.mystery || currentEntry.title || `Dzień ${dayNum}`;
+    const nazwa = currentEntry.sub || '';
+    const dayHeading = nazwa ? `DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica} — ${nazwa}` : `DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica}`;
+    const sanitizedTitle = processText(dayHeading);
 
-    // Yield control periodically so browser UI remains smooth and progress is visible
-    if (idx % 2 === 0 || idx === totalEntries - 1) {
+    // Progress reporting
+    if (idx % 5 === 0 || idx === totalEntries - 1) {
       if (options.onProgress) {
         const pct = Math.round(((idx + 1) / totalEntries) * 100);
-        options.onProgress(idx + 1, totalEntries, `Generowanie stron POD: ${idx + 1} z ${totalEntries} (${pct}%)...`);
+        options.onProgress(idx + 1, totalEntries, `Skład stron A5 (12 pt Times New Roman): ${idx + 1} z ${totalEntries} (${pct}%)...`);
       }
       await new Promise(resolve => setTimeout(resolve, 0));
     }
 
-    doc.addPage();
-    pageNumber++;
+    // Continuous layout: remove forced empty page breaks between days
+    if (idx === 0) {
+      doc.addPage();
+      pageNumber++;
+      currentY = topMargin + 10;
+    } else {
+      const neededSpace = 55; // mm for header + intro
+      if (currentY + neededSpace > pageHeight - bottomMargin) {
+        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
+        doc.addPage();
+        pageNumber++;
+        currentY = topMargin + 10;
+      } else {
+        currentY += 6;
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.2);
+        const sepLeft = getLeftMargin(pageNumber);
+        doc.line(sepLeft, currentY, sepLeft + getContentWidth(), currentY);
+        currentY += 6;
+      }
+    }
 
     let curLeft = getLeftMargin(pageNumber);
-    const chapterTitleRaw = currentEntry.title || `Dzień ${currentEntry.dayNumber || idx + 1}`;
-    const sanitizedTitle = processText(chapterTitleRaw);
+    const lineHeight12 = 12 * 0.352778 * 1.15; // 4.868 mm
 
+    // 1. Header: Epoka & Część
+    if (epoka || czesc) {
+      doc.setFont(fontFamily, 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(60, 60, 60);
+      const epokaText = processText([
+        epoka ? `EPOKA: ${epoka.toUpperCase()}` : '',
+        czesc ? `CZĘŚĆ: ${czesc.toUpperCase()}` : ''
+      ].filter(Boolean).join(' • '));
+      const epokaLines = doc.splitTextToSize(epokaText, getContentWidth());
+      for (const el of epokaLines) {
+        doc.text(el, curLeft, currentY);
+        currentY += 4.6;
+      }
+    }
+
+    // 2. Header: Dzień, Tajemnica & Nazwa
     doc.setFont(fontFamily, 'bold');
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.setTextColor(0, 0, 0);
-
-    // Split Chapter Title so it NEVER overflows right margin
-    const titleLines = doc.splitTextToSize(sanitizedTitle, getContentWidth());
-    let currentY = 30;
-    for (const tLine of titleLines) {
-      doc.text(tLine, curLeft, currentY);
-      currentY += 5.8;
+    const dayTajLines = doc.splitTextToSize(sanitizedTitle, getContentWidth());
+    for (const dtLine of dayTajLines) {
+      doc.text(dtLine, curLeft, currentY);
+      currentY += 5.5;
     }
 
     doc.setLineWidth(0.3);
     doc.setDrawColor(0, 0, 0);
     doc.line(curLeft, currentY + 1, curLeft + getContentWidth(), currentY + 1);
-    currentY += 8;
+    currentY += 6;
 
-    // Passage
+    // 3. Passage (Pismo Święte) - 12 pt Times New Roman, italic, fully justified
     if (currentEntry.passage || currentEntry.apocryphaPassage) {
       doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(10);
+      doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
-      const passText = processText(`Fragment: ${currentEntry.passage || ''} ${currentEntry.apocryphaPassage ? `| Apokryf: ${currentEntry.apocryphaPassage}` : ''}`);
+      const passText = processText(currentEntry.passage || '');
       const passLines = doc.splitTextToSize(passText, getContentWidth());
-      for (const pLine of passLines) {
-        if (currentY + 5.2 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-          doc.addPage();
-          pageNumber++;
-          curLeft = getLeftMargin(pageNumber);
-          currentY = topMargin + 10;
+      for (let pIdx = 0; pIdx < passLines.length; pIdx++) {
+        if (currentY + lineHeight12 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
+          doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
         }
-        doc.text(pLine, curLeft, currentY);
-        currentY += 5.2;
+        const isLastLine = pIdx === passLines.length - 1;
+        doc.text(passLines[pIdx], curLeft, currentY, isLastLine ? undefined : { maxWidth: getContentWidth(), align: 'justify' });
+        currentY += lineHeight12;
       }
-      currentY += 4;
+      currentY += 3;
     }
 
-    // Mystery
-    if (currentEntry.mystery) {
-      doc.setFont(fontFamily, 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      const mystText = processText(`Tajemnica: ${currentEntry.mystery}`);
-      const mystLines = doc.splitTextToSize(mystText, getContentWidth());
-      for (const mLine of mystLines) {
-        if (currentY + 5.2 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-          doc.addPage();
-          pageNumber++;
-          curLeft = getLeftMargin(pageNumber);
-          currentY = topMargin + 10;
-        }
-        doc.text(mLine, curLeft, currentY);
-        currentY += 5.2;
-      }
-      currentY += 2;
-    }
-
-    // Intention
-    if (currentEntry.intention) {
-      doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      const intText = processText(`Intencja: ${currentEntry.intention}`);
-      const intLines = doc.splitTextToSize(intText, getContentWidth());
-      for (const iLine of intLines) {
-        if (currentY + 5.2 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-          doc.addPage();
-          pageNumber++;
-          curLeft = getLeftMargin(pageNumber);
-          currentY = topMargin + 10;
-        }
-        doc.text(iLine, curLeft, currentY);
-        currentY += 5.2;
-      }
-      currentY += 4;
-    }
-
-    // Body Content: Parse markdown blocks for structured rendering
-    // 12 pt Times New Roman, Pure Black (#000000), Pełne wyjustowanie, interlinia 1.15
+    // 4. Main Body Content - 12 pt Times New Roman, regular, fully justified
     const contentBlocks = parseMarkdownToBlocks(stripHtml(currentEntry.content || ''));
-    const lineHeight12 = 12 * 0.352778 * 1.15; // 4.868 mm
-
     for (const block of contentBlocks) {
       const plainText = processText(stripMarkdownInline(block.text || ''));
 
-      if (block.type === 'h1') {
+      if (block.type === 'h1' || block.type === 'h2' || block.type === 'h3' || block.type === 'h4') {
         doc.setFont(fontFamily, 'bold');
-        doc.setFontSize(16);
-        doc.setTextColor(0, 0, 0);
-        const hLines = doc.splitTextToSize(plainText, getContentWidth());
-        const hLineH = 16 * 0.352778 * 1.15;
-        currentY += 4;
-        for (const hLine of hLines) {
-          if (currentY + hLineH > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-          }
-          doc.text(hLine, curLeft + getContentWidth() / 2, currentY, { align: 'center' });
-          currentY += hLineH;
-        }
-        currentY += 4;
-      } else if (block.type === 'h2') {
-        doc.setFont(fontFamily, 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(0, 0, 0);
-        const hLines = doc.splitTextToSize(plainText, getContentWidth());
-        const hLineH = 13 * 0.352778 * 1.15;
-        currentY += 3;
-        for (const hLine of hLines) {
-          if (currentY + hLineH > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-          }
-          doc.text(hLine, curLeft, currentY);
-          currentY += hLineH;
-        }
-        currentY += 3;
-      } else if (block.type === 'h3' || block.type === 'h4') {
-        const sz = block.type === 'h3' ? 11.5 : 11;
-        doc.setFont(fontFamily, 'bold');
-        doc.setFontSize(sz);
-        doc.setTextColor(0, 0, 0);
-        const hLines = doc.splitTextToSize(plainText, getContentWidth());
-        const hLineH = sz * 0.352778 * 1.15;
-        currentY += 2;
-        for (const hLine of hLines) {
-          if (currentY + hLineH > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-          }
-          doc.text(hLine, curLeft, currentY);
-          currentY += hLineH;
-        }
-        currentY += 2;
-      } else if (block.type === 'hr') {
-        if (currentY + 6 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-          doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-        }
-        currentY += 3;
-        doc.setDrawColor(180, 160, 140);
-        doc.setLineWidth(0.2);
-        doc.line(curLeft + 15, currentY, curLeft + getContentWidth() - 15, currentY);
-        currentY += 5;
-      } else if (block.type === 'blockquote') {
-        doc.setFont(fontFamily, 'italic');
-        doc.setFontSize(11);
-        doc.setTextColor(60, 60, 60);
-        const qLines = doc.splitTextToSize(plainText, getContentWidth() - 12);
-        const qLineH = 11 * 0.352778 * 1.15;
-        for (const qLine of qLines) {
-          if (currentY + qLineH > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-          }
-          doc.text(qLine, curLeft + 6, currentY);
-          currentY += qLineH;
-        }
-        doc.setTextColor(0, 0, 0);
-        currentY += 2;
-      } else if (block.type === 'bullet') {
-        doc.setFont(fontFamily, 'normal');
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
-        const bLines = doc.splitTextToSize('\u2022 ' + plainText, getContentWidth() - 6);
-        for (const bLine of bLines) {
+        const hLines = doc.splitTextToSize(plainText, getContentWidth());
+        currentY += 2;
+        for (const hLine of hLines) {
           if (currentY + lineHeight12 > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
             doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
           }
-          doc.text(bLine, curLeft + 4, currentY);
+          doc.text(hLine, curLeft, currentY);
           currentY += lineHeight12;
         }
-        currentY += 1.5;
+        currentY += 2;
       } else {
-        // Regular paragraph: 12 pt, justified, Times New Roman, interlinia 1.15
         doc.setFont(fontFamily, 'normal');
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
         doc.setLineHeightFactor(1.15);
 
-        const paraLines: string[] = doc.splitTextToSize(plainText, getContentWidth());
+        const paraLines = doc.splitTextToSize(plainText, getContentWidth());
         let remainingLines = [...paraLines];
 
         while (remainingLines.length > 0) {
           if (currentY + lineHeight12 > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
             doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
           }
           const availableHeight = (pageHeight - bottomMargin) - currentY;
@@ -750,7 +668,7 @@ export async function generatePodPdf(
             doc.text([...chunk, ''], curLeft, currentY, { maxWidth: getContentWidth(), align: 'justify' });
             currentY += chunk.length * lineHeight12;
             remainingLines = remainingLines.slice(linesThatFit);
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
             doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
           }
         }
@@ -758,148 +676,28 @@ export async function generatePodPdf(
       }
     }
 
-    // Bez modlitwy w ramce na koniec każdego dnia (opcjonalnie tylko przy jawnym options.includePrayer === true)
-    if (currentEntry.prayer && options.includePrayer === true) {
-      doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(12);
-      const prayerLineHeight = 12 * 0.352778 * 1.15; // 4.868 mm
-      const sanitizedPrayer = processText(stripHtml(currentEntry.prayer));
-      const prayerLines: string[] = doc.splitTextToSize(sanitizedPrayer, getContentWidth() - 10);
-      const prayerBoxHeight = prayerLines.length * prayerLineHeight + 16;
-
-      if (currentY + prayerBoxHeight > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-        doc.addPage();
-        pageNumber++;
-        curLeft = getLeftMargin(pageNumber);
-        currentY = topMargin + 10;
-      }
-
-      curLeft = getLeftMargin(pageNumber);
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.4);
-      doc.setFillColor(252, 250, 245);
-      doc.roundedRect(curLeft, currentY, getContentWidth(), prayerBoxHeight, 2, 2, 'FD');
-
-      doc.setFont(fontFamily, 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.text('MODLITWA SERCA', curLeft + getContentWidth() / 2, currentY + 6, { align: 'center' });
-
+    // 5. Prayer (Modlitwa) - 12 pt Times New Roman Italic, fully justified
+    if (currentEntry.prayer) {
       doc.setFont(fontFamily, 'italic');
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
-      let pY = currentY + 12;
+      const prayerText = processText(`Modlitwa: ${stripHtml(currentEntry.prayer)}`);
+      const prayerLines = doc.splitTextToSize(prayerText, getContentWidth());
       for (let pIdx = 0; pIdx < prayerLines.length; pIdx++) {
-        const pLine = prayerLines[pIdx];
-        const isLastPLine = pIdx === prayerLines.length - 1;
-        if (!isLastPLine && pLine.trim().indexOf(' ') !== -1) {
-          doc.text(pLine, curLeft + 5, pY, { align: 'justify', maxWidth: getContentWidth() - 10 });
-        } else {
-          doc.text(pLine, curLeft + 5, pY);
+        if (currentY + lineHeight12 > pageHeight - bottomMargin) {
+          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
+          doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
         }
-        pY += prayerLineHeight;
+        const isLastLine = pIdx === prayerLines.length - 1;
+        doc.text(prayerLines[pIdx], curLeft, currentY, isLastLine ? undefined : { maxWidth: getContentWidth(), align: 'justify' });
+        currentY += lineHeight12;
       }
-
-      currentY += prayerBoxHeight + 6;
+      currentY += 4;
     }
 
-    // 1. Embed special video/audio/resource QR cards (Materiały Dodatkowe 1..27)
-    const wnrEntry = (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || currentEntry.sectionId === 'wnr365' || currentEntry.sectionId === 'ebook_wnr')
-      ? getWnrEntryForDay(currentEntry.dayNumber)
-      : null;
-    const badgesToEmbed = (currentEntry.qrBadges && currentEntry.qrBadges.length > 0)
-      ? currentEntry.qrBadges
-      : (wnrEntry?.qrBadges || []);
-
-    if (badgesToEmbed && badgesToEmbed.length > 0) {
-      for (const badge of badgesToEmbed) {
-        let badgeDataUrl: string | null = null;
-        const imgPath = (badge as any).imagePath || (badge as any).image;
-        if (imgPath) {
-          badgeDataUrl = await fetchQrImageBase64(imgPath);
-        }
-        const targetUrl = (badge as any).targetUrl || (badge as any).url || (badge as any).link || (badge as any).shortUrl || 'https://embik.pl';
-        if (!badgeDataUrl) {
-          try {
-            badgeDataUrl = await QRCode.toDataURL(targetUrl, { width: 200, margin: 1 });
-          } catch (e) {}
-        }
-
-        if (badgeDataUrl) {
-          const cardW = 72; // mm
-          const cardH = 99; // mm (800x1100 ratio)
-          if (currentY + cardH + 10 > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-            doc.addPage();
-            pageNumber++;
-            curLeft = getLeftMargin(pageNumber);
-            currentY = topMargin + 10;
-          }
-
-          const cardX = curLeft + (getContentWidth() - cardW) / 2;
-          const imgFmt = badgeDataUrl.includes('image/jpeg') ? 'JPEG' : 'PNG';
-          doc.addImage(badgeDataUrl, imgFmt, cardX, currentY, cardW, cardH, undefined, 'FAST');
-          if (targetUrl) {
-            doc.link(cardX, currentY, cardW, cardH, { url: targetUrl });
-          }
-          currentY += cardH + 6;
-        }
-      }
-    }
-
-    // 2. Official Day Online Reading QR Code Box for all entries
-    const dayUrl = (meta.id === 'nowyRHZ' || currentEntry.sectionId === 'nowyRHZ' || meta.id === 'ebook_nowyrhz' || currentEntry.sectionId === 'ebook_nowyrhz')
-      ? 'https://widokinaraj.pl/#ebook_nowyrhz'
-      : (meta.id === 'rhz365' || currentEntry.sectionId === 'rhz365' || meta.id === 'ebook_rhz' || currentEntry.sectionId === 'ebook_rhz')
-      ? `https://wnr365.pages.dev/r/${currentEntry.dayNumber}`
-      : (meta.id === 'biblia365' || currentEntry.sectionId === 'biblia365')
-      ? `https://wnr365.pages.dev/b/${currentEntry.dayNumber}`
-      : `https://wnr365.pages.dev/w/${currentEntry.dayNumber}`;
-
-    const dayQrDataUrl = await getDayQrCodeDataUrl(dayUrl);
-
-    if (dayQrDataUrl) {
-      const boxH = 26;
-      if (currentY + boxH + 6 > pageHeight - bottomMargin) {
-        addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
-        doc.addPage();
-        pageNumber++;
-        curLeft = getLeftMargin(pageNumber);
-        currentY = topMargin + 10;
-      }
-
-      curLeft = getLeftMargin(pageNumber);
-      doc.setDrawColor(180, 160, 140);
-      doc.setLineWidth(0.3);
-      doc.setFillColor(252, 250, 245);
-      doc.roundedRect(curLeft, currentY, getContentWidth(), boxH, 2, 2, 'FD');
-
-      doc.addImage(dayQrDataUrl, 'PNG', curLeft + 3, currentY + 3, 20, 20, undefined, 'FAST');
-      doc.link(curLeft + 3, currentY + 3, 20, 20, { url: dayUrl });
-
-      doc.setFont(fontFamily, 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0);
-      doc.text('KOD QR DO ROZWAŻANIA ONLINE', curLeft + 26, currentY + 7);
-
-      doc.setFont(fontFamily, 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(60, 60, 60);
-      doc.text('Zeskanuj smartfonem lub kliknij, aby otworzyć wersję cyfrową:', curLeft + 26, currentY + 13);
-
-      doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(8);
-      doc.setTextColor(180, 83, 9); // Amber-700
-      doc.text(dayUrl, curLeft + 26, currentY + 19);
-      doc.link(curLeft + 26, currentY + 15, getContentWidth() - 30, 6, { url: dayUrl });
-
-      currentY += boxH + 6;
-    }
-
-    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin);
+    // QR codes are completely removed everywhere per user request!
+    addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
   }
-
   return doc.output('blob');
 }
 
@@ -915,7 +713,11 @@ function addHeaderFooter(
   bottomMargin: number,
   fontFamily: string = 'TimesNewRoman',
   gutterM: number = 18,
-  outerM: number = 12
+  outerM: number = 12,
+  epoka: string = '',
+  czesc: string = '',
+  dayNum: number = 0,
+  tajemnica: string = ''
 ) {
   doc.setFont(fontFamily, 'normal');
   doc.setFontSize(9);
@@ -931,14 +733,24 @@ function addHeaderFooter(
 
   // Running header: page 5 and above
   if (pageNum >= 5) {
-    let headerText = isOdd ? chapterTitle : bookTitle;
-    if (headerText.length > 40) {
-      headerText = headerText.substring(0, 37) + '...';
+    let headerText = '';
+    if (isOdd) {
+      // Odd pages: Dzień & Tajemnica
+      headerText = (dayNum && tajemnica)
+        ? `DZIEŃ ${dayNum} • ${tajemnica}`
+        : chapterTitle;
+    } else {
+      // Even pages: Epoka & Część
+      headerText = (epoka || czesc)
+        ? [epoka, czesc].filter(Boolean).join(' • ')
+        : bookTitle;
+    }
+    if (headerText.length > 55) {
+      headerText = headerText.substring(0, 52) + '...';
     }
     doc.text(headerText.toUpperCase(), curCenter, topM - 6, { align: 'center' });
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    // Line strictly spans the content column
     doc.line(curLeft, topM - 3, curLeft + contentW, topM - 3);
   }
 }
@@ -1038,7 +850,11 @@ export async function generatePodDocx(
 
   for (let idx = 0; idx < entriesToProcess.length; idx++) {
     const curEntry = entriesToProcess[idx];
-    const chapterTitle = escapeXml(curEntry.title || `Dzień ${curEntry.dayNumber || idx + 1}`);
+    const epoka = curEntry.stageTitle || '';
+    const czesc = curEntry.partTitle || '';
+    const dayNum = curEntry.dayNumber || (idx + 1);
+    const tajemnica = curEntry.mystery || curEntry.title || `Dzień ${dayNum}`;
+    const nazwa = curEntry.sub || '';
     const paragraphs = cleanParagraphsFromEnters(stripHtml(curEntry.content || ''));
 
     const paragraphsXml = paragraphs.map(p => `
@@ -1054,75 +870,43 @@ export async function generatePodDocx(
         </w:r>
       </w:p>`).join('');
 
-    // Bez modlitwy na koniec dnia w pliku Word DOCX
-    const prayerXml = (curEntry.prayer && options.includePrayer === true) ? `
+    const prayerXml = curEntry.prayer ? `
       <w:p>
-        <w:pPr><w:spacing w:before="360" w:after="100"/><w:jc w:val="center"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>--- MODLITWA SERCA ---</w:t></w:r>
-      </w:p>
-      <w:p>
-        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="240"/><w:jc w:val="both"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
+        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:before="120" w:after="180"/><w:jc w:val="both"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>Modlitwa: ${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
       </w:p>` : '';
 
-    const wnrDocx = (meta.id === 'wnr365' || meta.id === 'ebook_wnr' || curEntry.sectionId === 'wnr365' || curEntry.sectionId === 'ebook_wnr')
-      ? getWnrEntryForDay(curEntry.dayNumber)
-      : null;
-    const docxBadges = (curEntry.qrBadges && curEntry.qrBadges.length > 0)
-      ? curEntry.qrBadges
-      : (wnrDocx?.qrBadges || []);
-
-    let qrXml = '';
-    if (docxBadges && docxBadges.length > 0) {
-      for (const badge of docxBadges) {
-        qrXml += `
-          <w:p>
-            <w:pPr><w:spacing w:before="240" w:after="80"/><w:jc w:val="left"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="22"/><w:color w:val="B45309"/></w:rPr><w:t>[MATERIAŁ DODATKOWY - KOD QR: ${escapeXml(badge.title)}]</w:t></w:r>
-          </w:p>
-          <w:p>
-            <w:pPr><w:spacing w:after="160"/><w:jc w:val="left"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="20"/><w:color w:val="1D4ED8"/></w:rPr><w:t>Odnośnik: ${escapeXml((badge as any).targetUrl || (badge as any).link || (badge as any).url || (badge as any).shortUrl || '')}</w:t></w:r>
-          </w:p>
-        `;
-      }
-    }
-
-    const docxDayUrl = (meta.id === 'nowyRHZ' || curEntry.sectionId === 'nowyRHZ' || meta.id === 'ebook_nowyrhz' || curEntry.sectionId === 'ebook_nowyrhz')
-      ? 'https://widokinaraj.pl/#ebook_nowyrhz'
-      : (meta.id === 'rhz365' || curEntry.sectionId === 'rhz365' || meta.id === 'ebook_rhz' || curEntry.sectionId === 'ebook_rhz')
-      ? `https://wnr365.pages.dev/r/${curEntry.dayNumber}`
-      : (meta.id === 'biblia365' || curEntry.sectionId === 'biblia365')
-      ? `https://wnr365.pages.dev/b/${curEntry.dayNumber}`
-      : `https://wnr365.pages.dev/w/${curEntry.dayNumber}`;
-
-    qrXml += `
+    const passageXml = curEntry.passage ? `
       <w:p>
-        <w:pPr><w:spacing w:before="200" w:after="140"/><w:jc w:val="left"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="18"/><w:color w:val="4B5563"/></w:rPr><w:t>[KOD QR DO ROZWAŻANIA ONLINE: ${escapeXml(docxDayUrl)}]</w:t></w:r>
+        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="120"/><w:jc w:val="both"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(curEntry.passage)}</w:t></w:r>
+      </w:p>` : '';
+
+    const headerXml = `
+      ${epoka || czesc ? `
+      <w:p>
+        <w:pPr><w:spacing w:before="360" w:after="60"/><w:jc w:val="both"/></w:pPr>
+        <w:r>
+          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/><w:color w:val="374151"/></w:rPr>
+          <w:t>${escapeXml([epoka ? `EPOKA: ${epoka.toUpperCase()}` : '', czesc ? `CZĘŚĆ: ${czesc.toUpperCase()}` : ''].filter(Boolean).join(' • '))}</w:t>
+        </w:r>
+      </w:p>` : ''}
+      <w:p>
+        <w:pPr><w:spacing w:before="60" w:after="160"/><w:jc w:val="both"/></w:pPr>
+        <w:r>
+          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="26"/><w:szCs w:val="26"/><w:color w:val="000000"/></w:rPr>
+          <w:t>${escapeXml(`DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica}${nazwa ? ` — ${nazwa}` : ''}`)}</w:t>
+        </w:r>
       </w:p>
     `;
 
     chaptersXml += `
-      ${idx > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : ''}
-      <w:p>
-        <w:pPr><w:spacing w:before="360" w:after="240"/><w:jc w:val="left"/></w:pPr>
-        <w:r>
-          <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="28"/><w:color w:val="000000"/></w:rPr>
-          <w:t>${chapterTitle}</w:t>
-        </w:r>
-      </w:p>
-      ${curEntry.passage ? `
-      <w:p>
-        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="160"/><w:jc w:val="left"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>Fragment: ${escapeXml(curEntry.passage)}</w:t></w:r>
-      </w:p>` : ''}
+      ${headerXml}
+      ${passageXml}
       ${paragraphsXml}
       ${prayerXml}
-      ${qrXml}
     `;
   }
-
   // 5. word/document.xml (A5 dimensions: w=8390 dxa = 148 mm, h=11906 dxa = 210 mm)
   const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -1361,7 +1145,13 @@ p.first {
     const curEntry = entriesToProcess[idx];
     const chapId = `chap_${idx + 1}`;
     const chapFileName = `chapter_${idx + 1}.xhtml`;
-    const chapTitle = escapeXml(curEntry.title || `Dzień ${curEntry.dayNumber || idx + 1}`);
+    const epoka = curEntry.stageTitle || '';
+    const czesc = curEntry.partTitle || '';
+    const dayNum = curEntry.dayNumber || (idx + 1);
+    const tajemnica = curEntry.mystery || curEntry.title || `Dzień ${dayNum}`;
+    const nazwa = curEntry.sub || '';
+    const fullHeading = nazwa ? `DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica} — ${nazwa}` : `DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica}`;
+    const chapTitle = escapeXml(fullHeading);
 
     manifestItems.push(`<item id="${chapId}" href="${chapFileName}" media-type="application/xhtml+xml"/>`);
     spineItems.push(`<itemref idref="${chapId}"/>`);
@@ -1378,37 +1168,11 @@ p.first {
       .map((p, pIdx) => `<p class="${pIdx === 0 ? 'first' : ''}">${escapeXml(p)}</p>`)
       .join('\n');
 
-    // Bez modlitwy na koniec dnia w pliku ePUB
-    const prayerHtml = (curEntry.prayer && options.includePrayer === true) ? `
+    const prayerHtml = curEntry.prayer ? `
     <div class="prayer-box">
-      <div class="prayer-title">Modlitwa Serca</div>
+      <div class="prayer-title">Modlitwa</div>
       <p style="text-indent: 0;">${escapeXml(stripHtml(curEntry.prayer))}</p>
     </div>` : '';
-
-    const dayNum = curEntry.dayNumber || (idx + 1);
-    const wnrEntry = getWnrEntryForDay(dayNum);
-    const badgesToEmbed = curEntry.qrBadges || wnrEntry?.qrBadges || [];
-    const dayUrl = `https://wnr365.pages.dev/wnr365?day=${dayNum}`;
-
-    const qrMaterialsHtml = badgesToEmbed.length > 0 ? `
-    <div style="margin-top: 2em; padding: 1em; border: 1px solid #d97706; background-color: #fffbeb; border-radius: 6px;">
-      <h3 style="color: #92400e; font-size: 1.1em; margin-bottom: 0.8em; text-align: center;">Materiały Dodatkowe i Kody QR (Wersja 1:1)</h3>
-      ${badgesToEmbed.map((b: any) => {
-        const bTarget = b.targetUrl || b.link || b.url || b.shortUrl || '';
-        return `
-        <div style="margin-bottom: 1em; padding-bottom: 0.8em; border-bottom: 1px dashed #fcd34d; text-align: center;">
-          <p style="font-weight: bold; margin-bottom: 0.2em;">${escapeXml(b.title)}</p>
-          ${b.subtitle ? `<p style="font-size: 0.85em; color: #4b5563; margin-bottom: 0.4em;">${escapeXml(b.subtitle)}</p>` : ''}
-          <p style="text-indent: 0;"><a href="${bTarget}" style="color: #b45309; font-weight: bold; text-decoration: underline;">Otwórz materiał: ${escapeXml(bTarget)}</a></p>
-        </div>`;
-      }).join('')}
-    </div>` : '';
-
-    const onlineQrHtml = `
-    <div style="margin-top: 2em; border-top: 1px solid #e5e7eb; padding-top: 1em; text-align: center; font-size: 0.85em; color: #6b7280;">
-      <p style="text-indent: 0;">Pełne rozważanie i nagrania w serwisie:</p>
-      <p style="text-indent: 0;"><a href="${dayUrl}" style="color: #b45309; font-weight: bold;">${dayUrl}</a></p>
-    </div>`;
 
     const chapterXhtml = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -1418,22 +1182,20 @@ p.first {
   <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
+  ${epoka || czesc ? `<div class="epoka-header" style="font-weight: bold; color: #4b5563; text-transform: uppercase; margin-top: 1em; font-size: 0.9em; text-align: justify;">${escapeXml([epoka ? `EPOKA: ${epoka}` : '', czesc ? `CZĘŚĆ: ${czesc}` : ''].filter(Boolean).join(' • '))}</div>` : ''}
   <h1>${chapTitle}</h1>
-  ${curEntry.passage ? `<h2>Fragment: ${escapeXml(curEntry.passage)}</h2>` : ''}
+  ${curEntry.passage ? `<h2>${escapeXml(curEntry.passage)}</h2>` : ''}
   
   <div class="chapter-content">
     ${paragraphsHtml}
   </div>
 
   ${prayerHtml}
-  ${qrMaterialsHtml}
-  ${onlineQrHtml}
 </body>
 </html>`;
 
     zip.file(`OEBPS/${chapFileName}`, chapterXhtml);
   }
-
   manifestItems.push('<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>');
   manifestItems.push('<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>');
 

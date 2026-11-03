@@ -135,7 +135,11 @@ export interface SectionEntry {
   subtitle?: string;
   passage?: string; // For Biblia365
   apocryphaPassage?: string; // For Biblia365
-  mystery?: string; // For RHZ365
+  mystery?: string; // For RHZ365 / Nowy RHZ
+  stageTitle?: string; // Epoka / Etap for RHZ365 / Nowy RHZ
+  partTitle?: string; // Część for RHZ365 / Nowy RHZ
+  sub?: string; // Nazwa tajemnicy
+  cycle?: number; // Numer cyklu (1 lub 2)
   intention?: string; // For RHZ365
   decade?: string; // For RHZ365
   content: string; // Main text / reflection / chapter

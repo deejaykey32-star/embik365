@@ -9,7 +9,7 @@ import { translateEntry } from '../utils/translationService';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
 import { getRhzEntryForDay } from '../data/rhz365Data';
-import { getDayDetails365 } from '../utils/nowyRhzCalendar';
+import { getDayDetails365, getNowyRhzMystery } from '../utils/nowyRhzCalendar';
 
 interface Props {
   isOpen: boolean;
@@ -45,7 +45,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
   const [exportScope, setExportScope] = useState<'single' | 'season' | 'year'>(() => (meta?.id === 'nowyRHZ' || meta?.id === 'ebook_nowyrhz') ? 'year' : 'season');
   const [selectedSeason, setSelectedSeason] = useState<'zima' | 'wiosna' | 'lato' | 'jesien'>('zima');
   const [selectedYear, setSelectedYear] = useState<1 | 2 | 3 | 4>(1);
-  const [pageSize, setPageSize] = useState<'6x9' | 'a5'>('6x9'); // 6x9 default standard for Amazon KDP
+  const [pageSize, setPageSize] = useState<'6x9' | 'a5'>('a5'); // 6x9 default standard for Amazon KDP
   const [exportLang, setExportLang] = useState<string>(currentLang || 'pl');
   const [isTranslating, setIsTranslating] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -132,31 +132,87 @@ export const DownloadPublishModal: React.FC<Props> = ({
       let endDay = 365;
 
       if (isNowyRhz) {
-        startDay = 1;
-        endDay = 365;
-      } else if (exportScope === 'year') {
-        startDay = 1;
-        endDay = 365;
-      } else if (exportScope === 'season') {
-        if (selectedSeason === 'zima') {
-          startDay = 1;
-          endDay = 91; // 91 days
-        } else if (selectedSeason === 'wiosna') {
-          startDay = 92;
-          endDay = 182; // 91 days
-        } else if (selectedSeason === 'lato') {
-          startDay = 183;
-          endDay = 273; // 91 days
-        } else if (selectedSeason === 'jesien') {
-          startDay = 274;
-          endDay = 365; // 92 days
-        }
-      }
+        // Nowy RHZ: complete 2 cycles (Cykl 1: 175 tajemnic + Cykl 2: 175 tajemnic = 350 tajemnic)
+        // Strictly WITHOUT any break days ("przerwy między dniami")!
+        let globalDay = 1;
 
-      if (isNowyRhz || exportScope === 'year' || exportScope === 'season') {
+        // Cykl 1: 175 tajemnic
+        for (let dayInCycle = 1; dayInCycle <= 175; dayInCycle++) {
+          const m = getNowyRhzMystery(1, dayInCycle);
+          const clausulaeText = (m.cl && m.cl.length > 0)
+            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n')
+            : '';
+          const cleanContent = `Rozważanie:\n${m.med}${clausulaeText}`;
+
+          allYearEntries.push({
+            id: `nowyrhz-c1-d-${dayInCycle}`,
+            sectionId: metaId,
+            dayNumber: globalDay,
+            cycle: 1,
+            stageTitle: m.stageTitle,
+            partTitle: m.partTitle,
+            mystery: m.t,
+            sub: m.sub,
+            dateKey: `Dzień ${globalDay}`,
+            title: `Dzień ${globalDay} • ${m.t} — ${m.sub}`,
+            subtitle: `Cykl 1 • ${m.stageTitle} • ${m.partTitle} • Sigla: ${m.ref}`,
+            passage: m.passage ? `Pismo Święte (${m.ref}):\n${m.passage}` : (m.ref ? `Sigla biblijne: ${m.ref}` : undefined),
+            content: cleanContent,
+            prayer: m.prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'
+          });
+          globalDay++;
+        }
+
+        // Cykl 2: 175 tajemnic (dni 176..350)
+        for (let dayInCycle = 1; dayInCycle <= 175; dayInCycle++) {
+          const m = getNowyRhzMystery(2, dayInCycle);
+          const clausulaeText = (m.cl && m.cl.length > 0)
+            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n')
+            : '';
+          const cleanContent = `Rozważanie:\n${m.med}${clausulaeText}`;
+
+          allYearEntries.push({
+            id: `nowyrhz-c2-d-${dayInCycle}`,
+            sectionId: metaId,
+            dayNumber: globalDay,
+            cycle: 2,
+            stageTitle: m.stageTitle,
+            partTitle: m.partTitle,
+            mystery: m.t,
+            sub: m.sub,
+            dateKey: `Dzień ${globalDay}`,
+            title: `Dzień ${globalDay} • ${m.t} — ${m.sub}`,
+            subtitle: `Cykl 2 • ${m.stageTitle} • ${m.partTitle} • Sigla: ${m.ref}`,
+            passage: m.passage ? `Pismo Święte (${m.ref}):\n${m.passage}` : (m.ref ? `Sigla biblijne: ${m.ref}` : undefined),
+            content: cleanContent,
+            prayer: m.prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'
+          });
+          globalDay++;
+        }
+      } else if (exportScope === 'year' || exportScope === 'season') {
+        let startDay = 1;
+        let endDay = 365;
+        if (exportScope === 'year') {
+          startDay = 1;
+          endDay = 365;
+        } else if (exportScope === 'season') {
+          if (selectedSeason === 'zima') {
+            startDay = 1;
+            endDay = 91;
+          } else if (selectedSeason === 'wiosna') {
+            startDay = 92;
+            endDay = 182;
+          } else if (selectedSeason === 'lato') {
+            startDay = 183;
+            endDay = 273;
+          } else if (selectedSeason === 'jesien') {
+            startDay = 274;
+            endDay = 365;
+          }
+        }
+
         for (let day = startDay; day <= endDay; day++) {
           let dayEntry: SectionEntry;
-
           if (metaId === 'wnr365' || metaId === 'ebook_wnr' || metaId === 'wnr366') {
             const wEntry = getWnrEntryForDay(day);
             const cleanContent = stripHtml(wEntry.content || (wEntry.page1 ? `${wEntry.page1}\n\n${wEntry.page2}` : ''));
@@ -179,52 +235,15 @@ export const DownloadPublishModal: React.FC<Props> = ({
               sectionId: metaId,
               dayNumber: day,
               dateKey: `Dzień ${day}`,
+              stageTitle: rEntry.stageTitle,
+              partTitle: `Część ${(day % 5) || 5}`,
+              mystery: rEntry.stageTitle,
               title: rEntry.stageTitle || `RHZ365 – Dzień ${day}`,
               passage: rEntry.passage,
               content: cleanContent,
               prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Różaniec Historii Zbawienia. Amen.`
             };
-          } else if (metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz') {
-            const details = getDayDetails365(day);
-            const m = details.mystery;
-
-            let title = '';
-            let subtitle = '';
-            let prayer = m.prayer || '';
-            let passage = m.passage || '';
-            let cleanContent = '';
-
-            if (details.isBreak) {
-              title = `${details.breakTitle || 'Przerwa Modlitewna'} – Dzień ${day}`;
-              subtitle = `${details.dateFormatted} • ${details.displayShort}`;
-              cleanContent = `${details.breakTitle === 'Adwentowa Przerwa Przedświąteczna' ? 'Czas Adwentu przypomina nam o tęsknocie za przyjściem Zbawiciela. Niech te dni będą czasem wewnętrznej ciszy, otwarcia serca na dar Bożego Narodzenia i radosnego oczekiwania.' : 'Dni letniego odpoczynku to okazja, by wpatrywać się w dzieła Bożej Opatrzności. Z wdzięcznością wspominamy 175 tajemnic Cyklu Pierwszego i umacniamy wiarę na drugą część roku.'}\n\n10 Pozdrowień Anielskich (Zdrowaś Maryjo) z intencją wytchnienia i odnowy duchowej w Bogu.`;
-              prayer = 'Boże Wszechmogący, dziękujemy Ci za ten czas wytchnienia i modlitwy. Umacniaj naszą wierność w codziennym rozważaniu tajemnic Historii Zbawienia i uczyń nasze serca świątynią Twojego Ducha. Amen.';
-            } else {
-              title = `${m.t} (${m.sub}) – Dzień ${day}`;
-              subtitle = `${details.dateFormatted} • ${details.cycleLabel} • Sigla: ${m.ref}`;
-              passage = m.passage ? `Sigla biblijne: ${m.ref}\n„${m.passage}”` : `Sigla biblijne: ${m.ref}`;
-
-              const clausulaeText = (m.cl && m.cl.length > 0)
-                ? `\n\n10 Dopowiedzeń po imieniu „Jezus”:\n` + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n')
-                : '';
-
-              const passageSection = m.passage ? `Pismo Święte (${m.ref}):\n„${m.passage}”\n\n` : '';
-              cleanContent = `${details.dateFormatted} • ${details.cycleLabel}\n\n${passageSection}${m.stageTitle} • ${m.partTitle}\n\nRozważanie:\n${m.med}${clausulaeText}`;
-            }
-
-            dayEntry = {
-              id: `nowyrhz-day-${day}`,
-              sectionId: metaId,
-              dayNumber: day,
-              dateKey: `Dzień ${day}`,
-              title,
-              subtitle,
-              passage,
-              content: cleanContent,
-              prayer: prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'
-            };
           } else {
-            // Biblia365 & ebook_biblia (4-year cycle)
             const bEntry = getBibliaEntryForDayAndYear(day, selectedYear);
             dayEntry = {
               id: `biblia-yr${selectedYear}-day-${day}`,
@@ -237,7 +256,6 @@ export const DownloadPublishModal: React.FC<Props> = ({
               prayer: `Panie Boże, dziękuję Ci za dar Twojego Słowa z księgi ${bEntry.bookTitle}. Niech Twoja łaska oświeca moje myśli i prowadzi moje kroki drogą Twoich przykazań. Amen.`
             };
           }
-
           allYearEntries.push(dayEntry);
         }
       }
@@ -260,7 +278,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
       const safeSection = metaId.replace(/[^a-zA-Z0-9]/g, '_');
       let safeScope = '';
       if (isNowyRhz) {
-        safeScope = 'Kompletne_Dwa_Cykle_365_Dni';
+        safeScope = 'Kompletne_Dwa_Cykle_350_Tajemnic';
       } else if (exportScope === 'year') {
         safeScope = isBiblia ? `Rok_${selectedYear}_Caly_Tom_365_Dni` : 'Caly_Tom_365_Dni';
       } else if (exportScope === 'season') {
@@ -302,7 +320,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
       };
 
       const scopeLabel = isNowyRhz
-        ? 'Kompletne Dwa Cykle (365 dni)'
+        ? 'Kompletne Dwa Cykle (350 tajemnic • Format A5)'
         : exportScope === 'season'
         ? (isBiblia ? `Rok ${selectedYear} (${selectedSeason.toUpperCase()}: ${allYearEntries.length} dni)` : `${selectedSeason.toUpperCase()}: ${allYearEntries.length} dni`)
         : exportScope === 'year'
@@ -470,10 +488,10 @@ export const DownloadPublishModal: React.FC<Props> = ({
                   <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-stone-800 dark:text-stone-200">
                     <div className="font-bold text-sm text-orange-950 dark:text-orange-300 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                      Kompletne Wydanie: Dwa Cykle Nowego RHZ (365 Dni • Tom A5)
+                      Kompletne Wydanie: Dwa Cykle Nowego RHZ (350 Tajemnic • Format A5)
                     </div>
                     <p className="text-xs text-stone-600 dark:text-stone-400 mt-1.5 leading-relaxed">
-                      Plik zawiera kompletne dwa cykle w jednym tomie (365 dni) bez podziału na lata i bez podziału na cykle: Cykl 1 (175 dni) + Przerwa Letnia (7 dni) + Cykl 2 (175 dni) + Przerwa Adwentowa (8 dni).
+                      Plik zawiera kompletne dwa cykle w jednym tomie A5 (350 tajemnic) bez podziału na lata i bez przerw między dniami: Cykl 1 (175 dni) + Cykl 2 (175 dni) w czcionce Times New Roman 12 pt, wyjustowany obustronnie.
                     </p>
                   </div>
                 ) : (
@@ -756,7 +774,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     <>
                       <Download className="w-5 h-5" />
                       <span>
-                        Pobierz {selectedFormat.toUpperCase()} ({metaName} – {isNowyRhz ? 'Kompletne Dwa Cykle (365 Dni)' : (isRhz ? 'Pełny Tom 365 Dni' : (exportScope === 'season' ? (isBiblia ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : `Tom ${selectedSeason.toUpperCase()}`) : exportScope === 'year' ? (isBiblia ? `Tom Rok ${selectedYear}` : 'Tom 365 Dni') : 'Rozdział Dnia'))})
+                        Pobierz {selectedFormat.toUpperCase()} ({metaName} – {isNowyRhz ? 'Kompletne Dwa Cykle (350 Tajemnic • Format A5)' : (isRhz ? 'Pełny Tom 365 Dni' : (exportScope === 'season' ? (isBiblia ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : `Tom ${selectedSeason.toUpperCase()}`) : exportScope === 'year' ? (isBiblia ? `Tom Rok ${selectedYear}` : 'Tom 365 Dni') : 'Rozdział Dnia'))})
                       </span>
                     </>
                   )}
