@@ -518,7 +518,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </button>
 
             <button
-              onClick={handleToggleLector}
+              onClick={() => handleToggleLector()}
               id="btn-map-lector-online"
               title="Włącz lub wyłącz lektora AI online (Przewodnik po pielgrzymce i szlaku)"
               className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer shrink-0 ${
@@ -1052,7 +1052,7 @@ export const PilgrimageMapView: React.FC<Props> = ({ currentLang = 'pl', theme =
                   <span>Otwórz pełne okno Info</span>
                 </button>
                 <button
-                  onClick={handleToggleLector}
+                  onClick={() => handleToggleLector()}
                   className={`px-4 py-2 rounded-xl font-bold text-xs shadow-xs flex items-center gap-1.5 transition cursor-pointer ${
                     isLectorPlaying 
                       ? 'bg-rose-600 hover:bg-rose-700 text-white' 

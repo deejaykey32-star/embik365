@@ -97,6 +97,13 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'ebook-rhz365': 'ebook_rhz',
   'modlitewnik-rhz': 'ebook_rhz',
 
+  'ebook_nowyrhz': 'ebook_nowyrhz',
+  'ebook-nowyrhz': 'ebook_nowyrhz',
+  'ebook-nowyrhz365': 'ebook_nowyrhz',
+  'ebook-nowy-rhz': 'ebook_nowyrhz',
+  'ebook-nowy-rhz365': 'ebook_nowyrhz',
+  'modlitewnik-nowyrhz': 'ebook_nowyrhz',
+
   'ebook_biblia': 'ebook_biblia',
   'ebook-biblia': 'ebook_biblia',
   'ebook-biblia365': 'ebook_biblia',

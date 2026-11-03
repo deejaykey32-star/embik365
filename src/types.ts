@@ -8,7 +8,8 @@ export type SectionId =
   | 'mapa'          // Trójjedyna Pielgrzymka Gwiaździsta i Szlak Orlich Gniazd
   | 'histada'       // Gra Histada - Trylogia dla poszukujących
   | 'ebook_wnr'     // ebook WnR365 w formie przewracanych kartek
-  | 'ebook_rhz'     // ebook RHZ365 w formie przewracanych kartek
+  | 'ebook_rhz'
+  | 'ebook_nowyrhz'     // ebook RHZ365 w formie przewracanych kartek
   | 'ebook_biblia'  // Biblia365 w formie przewracanych kartek
   | 'bio365'        // biografia mnie i żony w formie przewracanych kartek
   | 'radio'         // Radio Internetowe 24/7 (4 stacje w pętli)
@@ -41,6 +42,7 @@ export interface SectionMeta {
   icon: string;
   accentColor: string;
   bgGradient: string;
+  imageUrl?: string;
 }
 
 export interface SectionShowcaseConfig {

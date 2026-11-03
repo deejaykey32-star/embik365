@@ -61,6 +61,11 @@ export function getEntryForSectionAndDate(
                  customEntries[`wnr366-${cycleDate.dateKey}`];
       if (fb) return { ...fb, sectionId };
     }
+    if (sectionId === 'ebook_nowyrhz' || sectionId === 'nowyRHZ') {
+      const fb = customEntries[`nowyRHZ-${cycleDate.dateKey}`] ||
+                 customEntries[`ebook_nowyrhz-${cycleDate.dateKey}`];
+      if (fb) return { ...fb, sectionId };
+    }
     if (sectionId === 'ebook_rhz' || sectionId === 'rhz365') {
       const fb = customEntries[`rhz365-${cycleDate.dateKey}`] ||
                  customEntries[`ebook_rhz-${cycleDate.dateKey}`];
@@ -189,7 +194,8 @@ ${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim();
       };
     }
 
-    case 'nowyRHZ': {
+    case 'nowyRHZ':
+    case 'ebook_nowyrhz': {
       const status = getNowyRhzCalendarStatus(cycleDate.month, cycleDate.day);
       if (status.isBreak) {
         const breakInfo = status.breakInfo!;

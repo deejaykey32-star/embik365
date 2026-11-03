@@ -26,6 +26,7 @@ import { CYCLE_DAYS, getCycleDateByDayNumber } from '../utils/dateCycle';
 import { getEntryForSectionAndDate } from '../data/sampleEntries';
 import { DigitalRosary } from './DigitalRosary';
 import { getRhzEntryForDay } from '../data/rhz365Data';
+import { getDayDetails365 } from '../utils/nowyRhzCalendar';
 import { getWnrEntryForDay, getWnrStartPdfPageForDay, getWnrDayForPdfPage, getWnrPagePosition } from '../data/wnr365Data';
 import { getWnrPdfPage } from '../data/wnrPdfPagesData';
 import { getBibliaEntryForDayAndYear, getBibliaFourYearsForDay } from '../data/biblia365Data';
@@ -217,6 +218,63 @@ function getPdfPageData(
     };
   }
 
+  
+  // 1b. Direct handling for Nowy RHZ365 / ebook_nowyrhz (365 days, 4 A5 pages/day = 1460 pages):
+  if (sectionId === 'ebook_nowyrhz') {
+    const details = getDayDetails365(dayNum);
+    const m = details.mystery;
+    let chunk = '';
+    let prayer = m.prayer || '';
+
+    if (details.isBreak) {
+      if (subPage === 1) {
+        chunk = `### ${details.breakTitle || 'Przerwa Modlitewna'}\n**${details.displayShort} • ${details.dateFormatted}**\n\nCzas modlitewnego wytchnienia, kontemplacji i wdzięczności za miniony etap drogi wiary w Nowym Różańcu Historii Zbawienia.\n\n*„Odpocznijcie nieco na miejscu pustynnym...” (Mk 6,31)*\n\nZatrzymaj się w obecności Pana, podziękuj za otrzymane łaski i przygotuj serce na kolejne dni wspólnej modlitwy.`;
+      } else if (subPage === 2) {
+        chunk = `### Rozważanie na czas przerwy\n\n${details.breakTitle === 'Adwentowa Przerwa Przedświąteczna' ? 'Czas Adwentu przypomina nam o tęsknocie za przyjściem Zbawiciela. Niech te dni będą czasem wewnętrznej ciszy, otwarcia serca na dar Bożego Narodzenia i radosnego oczekiwania.' : 'Dni letniego odpoczynku to okazja, by wpatrywać się w dzieła Bożej Opatrzności. Z wdzięcznością wspominamy 175 tajemnic Cyklu Pierwszego i umacniamy wiarę na drugą część roku.'}\n\n**Modlitwa Pańska (przed dziesiątkiem różańca):**\n\nOjcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja jako w niebie tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.`;
+      } else if (subPage === 3) {
+        chunk = `### Pozdrowienia Anielskie (Zdrowaś Maryjo)\n\nOdmawiając dziesiątek różańca w czasie przerwy, prosimy Matkę Najświętszą o dar stałości, głębokiej wiary i pokoju serca:\n\n1. ...Jezus, *który uczy nas odpoczynku w Bogu*. Święta Maryjo...\n2. ...Jezus, *który odnawia nasze siły duchowe*. Święta Maryjo...\n3. ...Jezus, *który obdarza nas pokojem serca*. Święta Maryjo...\n4. ...Jezus, *który prowadzi nas drogami łaski*. Święta Maryjo...\n5. ...Jezus, *który uczy nas wdzięczności za wszelkie dobro*. Święta Maryjo...\n6. ...Jezus, *który czuwa nad naszymi rodzinami*. Święta Maryjo...\n7. ...Jezus, *który uzdrawia nasze zranienia*. Święta Maryjo...\n8. ...Jezus, *który rozświetla mroki codzienności*. Święta Maryjo...\n9. ...Jezus, *który jest naszą jedyną nadzieją*. Święta Maryjo...\n10. ...Jezus, *który króluje w naszych sercach na wieki*. Święta Maryjo...`;
+      } else {
+        chunk = `### Modlitwa Końcowa i Uwielbienie\n\n**Chwała Ojcu:**\nChwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen.\n\n**Modlitwa Fatimska:**\nO mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.\n\n**Modlitwa Dziękczynna:**\nBoże Wszechmogący, dziękujemy Ci za ten czas wytchnienia i modlitwy. Umacniaj naszą wierność w codziennym rozważaniu tajemnic Historii Zbawienia i uczyń nasze serca świątynią Twojego Ducha. Przez Chrystusa, Pana naszego. Amen.`;
+      }
+    } else {
+      // Dzień tajemnicy
+      if (subPage === 1) {
+        chunk = `### ${m.stageTitle}\n#### ${m.partTitle}\n\n**${m.t}** — *${m.sub}*\n\n**Sigla biblijne:** ${m.ref}\n\n${m.passage ? `> „${m.passage}”\n\n` : ''}Wycisz swoje serce, aby wejść w tę tajemnicę z wiarą i miłością. Wsłuchaj się w Słowo Boże, które przemawia do Ciebie dzisiaj.`;
+      } else if (subPage === 2) {
+        chunk = `### Rozważanie Tajemnicy\n\n${m.med}\n\n---\n\n**Modlitwa Pańska (przed dziesiątkiem różańca):**\n\nOjcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja jako w niebie tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen.`;
+      } else if (subPage === 3) {
+        const clausulaeList = m.cl && m.cl.length > 0
+          ? m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, **${c.trim()}** Święta Maryjo...`).join('\n\n')
+          : '1-10. Zdrowaś Maryjo, łaski pełna...';
+        chunk = `### 10 Dopowiedzeń po imieniu „Jezus”\n\n*Po słowie „Jezus” w każdym Pozdrowieniu Anielskim dodajemy odpowiednie dopowiedzenie:*
+
+${clausulaeList}`;
+      } else {
+        chunk = `### Zakończenie Dziesiątka\n\n**Chwała Ojcu:**\nChwała Ojcu i Synowi, i Duchowi Świętemu, jak była na początku, teraz i zawsze, i na wieki wieków. Amen.\n\n**Modlitwa Fatimska:**\nO mój Jezu, przebacz nam nasze grzechy, zachowaj nas od ognia piekielnego, zaprowadź wszystkie dusze do nieba i dopomóż szczególnie tym, którzy najbardziej potrzebują Twojego miłosierdzia.\n\n---\n\n**Modlitwa Owocu Tajemnicy:**\n\n${m.prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'}`;
+      }
+    }
+
+    const fullContent = `${m.stageTitle} • ${m.partTitle}\n\n${m.t} — ${m.sub}\nSigla: ${m.ref}\n\n${m.passage || ''}\n\n${m.med}\n\n${(m.cl || []).map((c, i) => `${i + 1}. Jezus, ${c}`).join('\n')}\n\n${prayer}`;
+
+    return {
+      pdfPageNumber: safeP,
+      dayNumber: dayNum,
+      subPage,
+      totalPagesForDay: 4,
+      dateKey: dateObj.dateKey,
+      displayDate: details.dateFormatted || dateObj.displayDate,
+      season: dateObj.season,
+      title: `${m.t} • ${details.displayShort}`,
+      subtitle: `${details.dateFormatted} • ${details.cycleLabel} • ${m.ref}`,
+      chunk,
+      prayer,
+      mystery: m.t,
+      intention: `${m.stageTitle} — ${m.sub}`,
+      fullContent,
+      qrBadges: [] as any[]
+    };
+  }
+
   // 2. Direct handling for WnR365 / ebook_wnr (1:1 with 1084 PDF pages):
   if (isWnr && wnrPos) {
     const pageData = getWnrPdfPage(safeP);
@@ -395,6 +453,7 @@ export const FlipbookReader: React.FC<Props> = ({
     p => p.sectionId === section.id ||
          (section.id === 'ebook_wnr' && (p.sectionId === 'wnr365' || p.sectionId === 'ebook_wnr')) ||
          (section.id === 'ebook_rhz' && (p.sectionId === 'rhz365' || p.sectionId === 'ebook_rhz')) ||
+         (section.id === 'ebook_nowyrhz' && (p.sectionId === 'nowyRHZ' || p.sectionId === 'ebook_nowyrhz')) ||
          (section.id === 'ebook_biblia' && (p.sectionId === 'biblia365' || p.sectionId === 'ebook_biblia')) ||
          (section.id === 'bio365' && (p.sectionId === 'bio365' || p.sectionId === 'ebook_bio'))
   );
@@ -915,6 +974,142 @@ export const FlipbookReader: React.FC<Props> = ({
             </div>
           </div>
         );
+      } else if (section.id === 'ebook_nowyrhz') {
+        const details = getDayDetails365(1);
+        const m1 = details.mystery;
+        return (
+          <div className="flex flex-col h-full justify-between p-3 sm:p-4 bg-gradient-to-b from-amber-50/60 via-white to-amber-50/40 dark:from-[#161f2e] dark:via-[#111722] dark:to-[#161f2e] rounded-2xl border border-amber-600/30 shadow-inner overflow-y-auto text-left space-y-3.5 flex-1">
+            {/* Nagłówek Wstępu */}
+            <div className="border-b border-amber-600/20 pb-2 text-center shrink-0">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-800 dark:text-amber-400 font-sans-ui">
+                Nowy Różaniec Historii Zbawienia (Nowy RHZ365) • Strona 1
+              </span>
+              <h2 className="font-heading-cinzel text-sm sm:text-base font-bold text-[#2d1f14] dark:text-[#f8fafc] mt-0.5">
+                Tajemnica 0 — Modlitwy Początkowe Różańca Świętego
+              </h2>
+            </div>
+
+            {/* 1. Znak Krzyża */}
+            <div className="p-2.5 rounded-xl bg-amber-100/50 dark:bg-amber-950/40 border border-amber-500/30 space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
+                <span>✦ Znak Krzyża Świętego</span>
+              </div>
+              <p className="font-serif-book text-xs sm:text-sm font-semibold text-[#2d2217] dark:text-[#f1f5f9]">
+                W imię Ojca i Syna, i Ducha Świętego. Amen.
+              </p>
+            </div>
+
+            {/* 2. Antyfona Witaj Królowo */}
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#141b29] border border-[#e5d9cc] dark:border-[#24334c] space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                👑 Antyfona Maryjna — Witaj Królowo (Salve Regina)
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                Witaj, Królowo, Matko miłosierdzia, życie, słodyczy i nadziejo nasza, witaj! Do Ciebie wołamy, wygnańcy, synowie Ewy; do Ciebie wzdychamy, jęcząc i płacząc w tym łez padole. Przeto, Orędowniczko nasza, one miłosierne oczy Twoje na nas zwróć, a Jezusa, błogosławiony owoc żywota Twojego, po tym wygnaniu nam okaż. O łaskawa, o litościwa, o słodka Panno Maryjo!
+              </p>
+            </div>
+
+            {/* 3. Skład Apostolski */}
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#141b29] border border-[#e5d9cc] dark:border-[#24334c] space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                🛡 Krzyżyk — Skład Apostolski (Wierzę w Boga)
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                {COMMON_PRAYERS.cross.text}
+              </p>
+            </div>
+
+            {/* 4. Ojcze Nasz */}
+            <div className="p-2.5 rounded-xl bg-[#fbf8f3] dark:bg-[#161e2d] border border-[#e8ded3] dark:border-[#223048] space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                Duży Paciorek — Modlitwa Pańska (Ojcze Nasz)
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                {COMMON_PRAYERS.ourFather.text}
+              </p>
+            </div>
+
+            {/* 5. Trzy Zdrowaś Maryjo z dopowiedzeniami */}
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                Trzy Małe Paciorki — Modlitwy o Cnoty Boskie z Dopowiedzeniami:
+              </div>
+
+              {/* Paciorek Czerwony - Wiara */}
+              <div className="p-2.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-900 dark:text-rose-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" />
+                  <span>Paciorek 1 (Czerwony) — Wezwanie o pomnożenie wiary</span>
+                </div>
+                <p className="font-serif-book text-xs text-[#3d1e22] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                  Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus,{' '}
+                  <strong className="underline decoration-rose-500 text-rose-950 dark:text-rose-200">
+                    który przymnaża nam wiary
+                  </strong>
+                  . Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.
+                </p>
+              </div>
+
+              {/* Paciorek Zielony - Nadzieja */}
+              <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-900 dark:text-emerald-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                  <span>Paciorek 2 (Zielony) — Wezwanie o umocnienie nadziei</span>
+                </div>
+                <p className="font-serif-book text-xs text-[#1b382b] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                  Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus,{' '}
+                  <strong className="underline decoration-emerald-500 text-emerald-950 dark:text-emerald-200">
+                    który przymnaża nam nadziei
+                  </strong>
+                  . Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.
+                </p>
+              </div>
+
+              {/* Paciorek Niebieski - Miłość */}
+              <div className="p-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-900 dark:text-blue-300">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+                  <span>Paciorek 3 (Niebieski) — Wezwanie o rozpalenie miłości</span>
+                </div>
+                <p className="font-serif-book text-xs text-[#263238] dark:text-[#cbd5e1] leading-relaxed text-justify">
+                  Zdrowaś Maryjo, łaski pełna, Pan z Tobą, błogosławionaś Ty między niewiastami i błogosławiony owoc żywota Twojego, Jezus,{' '}
+                  <strong className="underline decoration-blue-500 text-blue-950 dark:text-blue-200">
+                    który przymnaża nam miłości
+                  </strong>
+                  . Święta Maryjo, Matko Boża, módl się za nami grzesznymi, teraz i w godzinę śmierci naszej. Amen.
+                </p>
+              </div>
+            </div>
+
+            {/* 6. Chwała Ojcu */}
+            <div className="p-2.5 rounded-xl bg-amber-100/50 dark:bg-amber-950/40 border border-amber-500/30 space-y-1">
+              <div className="text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
+                Uwielbienie — Chwała Ojcu
+              </div>
+              <p className="font-serif-book text-xs text-[#3a2e22] dark:text-[#cbd5e1] leading-relaxed">
+                {COMMON_PRAYERS.gloryBe.text}
+              </p>
+            </div>
+
+            {/* 7. Wprowadzenie do Tajemnicy 1 */}
+            <div className="border-t-2 border-amber-600/30 pt-3 space-y-2">
+              <div className="px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs font-bold font-sans-ui text-center shadow-xs">
+                {m1.stageTitle} • {m1.partTitle}
+              </div>
+              <div className="p-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-400/40 space-y-1">
+                <div className="text-xs font-bold text-amber-950 dark:text-amber-200 font-heading-cinzel">
+                  Tajemnica 1: {m1.t} — {m1.sub}
+                </div>
+                <div className="text-[11px] text-amber-800 dark:text-amber-400 font-sans-ui font-medium">
+                  Sigla biblijne: {m1.ref}
+                </div>
+                <p className="text-xs font-serif-book text-[#30261e] dark:text-[#f1f5f9] leading-relaxed text-justify mt-1">
+                  {m1.med}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
       }
 
       if (section.id !== 'ebook_biblia' && section.id !== 'biblia365' && !isWnrSection) {
@@ -1059,7 +1254,7 @@ export const FlipbookReader: React.FC<Props> = ({
           </div>
         )}
 
-        {data.subPage === 4 && section.id === 'ebook_rhz' && (
+        {data.subPage === 4 && (section.id === 'ebook_rhz' || section.id === 'ebook_nowyrhz') && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -1067,7 +1262,7 @@ export const FlipbookReader: React.FC<Props> = ({
             }}
             className="w-full py-1.5 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs mt-1 shrink-0"
           >
-            <Sparkles className="w-3.5 h-3.5" /> Cyfrowy Różaniec RHZ
+            <Sparkles className="w-3.5 h-3.5" /> {section.id === 'ebook_nowyrhz' ? 'Cyfrowy Różaniec Nowy RHZ' : 'Cyfrowy Różaniec RHZ'}
           </button>
         )}
       </div>

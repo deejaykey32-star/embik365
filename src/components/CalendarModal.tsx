@@ -226,7 +226,7 @@ export const CalendarModal: React.FC<Props> = ({
                         {dateItem.day}
                       </span>
                       {hasPdf && (
-                        <FileText className={`w-3.5 h-3.5 ${isCurrentSelected ? 'text-amber-300 dark:text-white' : 'text-red-600 dark:text-red-400'}`} title="Wgrany plik PDF" />
+                        <span title="Wgrany plik PDF"><FileText className={`w-3.5 h-3.5 ${isCurrentSelected ? 'text-amber-300 dark:text-white' : 'text-red-600 dark:text-red-400'}`} /></span>
                       )}
                     </div>
 

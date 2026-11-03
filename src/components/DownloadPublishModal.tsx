@@ -250,7 +250,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         ? `Rok ${selectedYear} (365 dni)`
         : 'pojedynczy rozdział';
 
-      const exportMeta: SectionMeta = meta || { id: metaId, name: metaName, subtitle: metaSubtitle };
+      const exportMeta: SectionMeta = (meta || { id: metaId, name: metaName, subtitle: metaSubtitle }) as SectionMeta;
 
       if (selectedFormat === 'pdf') {
         setProgressMsg('Składanie stron, marginesów KDP i czcionek TTF...');

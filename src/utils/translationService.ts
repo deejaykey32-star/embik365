@@ -417,6 +417,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Holy Scripture & Apocrypha' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Book Views of Paradise' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Book Salvation Rosary' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Book Salvation Rosary' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Book Holy Scripture' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiography' }
   },
@@ -427,6 +428,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Sagrada Escritura y Apócrifos' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Libro Vistas al Paraíso' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Libro Rosario de Salvación' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Libro Rosario de Salvación' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Libro Sagrada Escritura' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografía' }
   },
@@ -437,6 +439,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Sacra Scrittura e Apocrifi' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Libro Viste sul Paradiso' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Libro Rosario della Salvezza' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Libro Rosario della Salvezza' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Libro Sacra Scrittura' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografia' }
   },
@@ -447,6 +450,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Heilige Schrift & Apokryphen' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Buch Blicke auf das Paradies' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Buch Rosenkranz der Heilsgeschichte' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Buch Rosenkranz der Heilsgeschichte' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Buch Heilige Schrift' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiographie' }
   },
@@ -457,6 +461,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Sainte Écriture et Apocryphes' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Livre Vues sur le Paradis' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Livre Chapelet du Salut' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Livre Chapelet du Salut' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Livre Sainte Écriture' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiographie' }
   },
@@ -467,6 +472,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Sacra Scriptura et Apocrypha' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Liber Prospectus in Paradisum' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Liber Rosarium Salutis' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Liber Rosarium Salutis' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Liber Sacra Scriptura' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiographia' }
   },
@@ -477,6 +483,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Sagrada Escritura e Apócrifos' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Livro Vistas do Paraíso' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Livro Terço da Salvação' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Livro Terço da Salvação' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Livro Sagrada Escritura' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografia' }
   },
@@ -487,6 +494,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Святе Письмо та Апокрифи' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Книга Види на Рай' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Книга Вервиця Спасіння' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Книга Вервиця Спасіння' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Книга Святе Письмо' },
     bio365: { name: 'Bio365', shortTitle: 'Автобіографія' }
   },
@@ -497,6 +505,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Písmo Svaté a Apokryfy' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Kniha Pohledy na Ráj' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Kniha Růženec Spásy' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Kniha Růženec Spásy' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Kniha Písmo Svaté' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografie' }
   },
@@ -507,6 +516,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Písmo Sväté a Apokryfy' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Kniha Pohľady na Raj' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Kniha Ruženec Spásy' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Kniha Ruženec Spásy' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Kniha Písmo Sväté' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografia' }
   },
@@ -517,6 +527,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Szentírás és Apokrifek' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Könyv Kilátás a Paradicsomra' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Könyv Üdvösség Rózsafüzére' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Könyv Üdvösség Rózsafüzére' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Könyv Szentírás' },
     bio365: { name: 'Bio365', shortTitle: 'Önéletrajz' }
   },
@@ -527,6 +538,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Sfânta Scriptură și Apocrife' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Carte Priviri spre Rai' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Carte Rozariul Mântuirii' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Carte Rozariul Mântuirii' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Carte Sfânta Scriptură' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografie' }
   },
@@ -537,6 +549,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Šventasis Raštas ir Apokrifai' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Knyga Rojaus Vaizdai' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Knyga Išganymo Rožynas' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Knyga Išganymo Rožynas' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Knyga Šventasis Raštas' },
     bio365: { name: 'Bio365', shortTitle: 'Autobiografija' }
   },
@@ -547,6 +560,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Αγία Γραφή & Απόκρυφα' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Βιβλίο Θέα στον Παράδεισο' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Βιβλίο Ροδάριο Σωτηρίας' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Βιβλίο Ροδάριο Σωτηρίας' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Βιβλίο Αγία Γραφή' },
     bio365: { name: 'Bio365', shortTitle: 'Αυτοβιογραφία' }
   },
@@ -557,6 +571,7 @@ export const SECTION_TRANSLATIONS: Record<string, Record<string, { name: string;
     biblia365: { name: 'Biblia365', shortTitle: 'Священное Писание и Апокрифы' },
     ebook_wnr: { name: 'ebook WnR365', shortTitle: 'Книга Виды на Рай' },
     ebook_rhz: { name: 'ebook RHZ365', shortTitle: 'Книга Розарий Спасения' },
+    ebook_nowyrhz: { name: 'ebook NowyRHZ365', shortTitle: 'Книга Розарий Спасения' },
     ebook_biblia: { name: 'ebook Biblia365', shortTitle: 'Книга Священное Писание' },
     bio365: { name: 'Bio365', shortTitle: 'Автобиография' }
   }

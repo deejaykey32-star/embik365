@@ -15,6 +15,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   histada: Gamepad2,
   ebook_wnr: Book,
   ebook_rhz: Compass,
+  ebook_nowyrhz: Sparkles,
   ebook_biblia: Library,
   bio365: HeartHandshake,
   info365: Compass,
@@ -127,6 +128,18 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#1e40af',
       bgGradient: 'from-blue-950/20 via-blue-900/10 to-transparent',
       qrId: 'qr_ebook_rhz'
+    },
+    {
+      id: 'ebook_nowyrhz',
+      name: 'ebook NowyRHZ365',
+      badge: 'Nowy Modlitewnik Flipbook',
+      shortDesc: 'Nowy Różaniec Historii Zbawienia (365 dni, 2 cykle i przerwy) w interfejsie książkowym.',
+      fullDesc: 'Monumentalne wydanie Nowego Różańca Historii Zbawienia z 365 dniami kontemplacji (Cykl 1 i 2, Letnia i Adwentowa Przerwa). Zawiera 10 dopowiedzeń po słowie Jezus, czytania biblijne i modlitwy w formacie A5.',
+      imageUrl: rhzMainImg,
+      imageAlt: 'Nowy Modlitewnik różańcowy Nowy RHZ365',
+      color: '#7c2d12',
+      bgGradient: 'from-amber-950/20 via-orange-950/10 to-transparent',
+      qrId: 'qr_ebook_nowyrhz'
     },
     {
       id: 'ebook_biblia',
@@ -294,7 +307,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
+        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
         const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);

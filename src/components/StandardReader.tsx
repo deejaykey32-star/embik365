@@ -539,7 +539,7 @@ export const StandardReader: React.FC<Props> = ({
           />
           <RhzPrayerGuide
             rhzEntry={getRhzEntryForDay(currentDate.dayNumber)}
-            fontSize={fontSize}
+            fontSize={fontSize === 'compact' ? 'normal' : fontSize}
             theme={theme}
             currentLang={currentLang}
           />

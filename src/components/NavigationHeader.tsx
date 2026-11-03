@@ -23,6 +23,7 @@ import { CycleDate, AdminUser, AppTheme, SUPPORTED_LANGUAGES } from '../types';
 import { copyCurrentPageUrl } from '../utils/slugRouter';
 
 interface Props {
+  onLanguageChange?: (lang: string) => void;
   currentDate: CycleDate;
   onPrevDay: () => void;
   onNextDay: () => void;

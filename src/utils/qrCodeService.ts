@@ -58,6 +58,7 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
   biblia365: 'https://clck.ru/3Vnjrd',
   ebook_wnr: 'https://clck.ru/3Vnjrh',
   ebook_rhz: 'https://clck.ru/3Vnjrf',
+  ebook_nowyrhz: 'https://widokinaraj.pl/#ebook_nowyrhz',
   ebook_biblia: 'https://clck.ru/3Vnjrg',
   bio365: 'https://clck.ru/3Vnjre',
   grafika: 'https://clck.ru/3Vr8B8',

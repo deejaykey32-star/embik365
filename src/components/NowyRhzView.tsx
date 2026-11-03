@@ -1346,7 +1346,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
             <div className="flex items-center gap-2 self-start sm:self-auto text-xs px-3 py-1.5 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-200">
               <Calendar className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>
-                <strong>Dziś:</strong> {todayCalendarStatus.dateFormatted} – {todayCalendarStatus.cycleName}
+                <strong>Dziś:</strong> {todayCalendarStatus.displayLabel} – {todayCalendarStatus.cycleName}
                 {todayCalendarStatus.dayInCycle ? ` (Dzień ${todayCalendarStatus.dayInCycle}/175)` : ''}
               </span>
             </div>
@@ -1357,7 +1357,7 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
             <div className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 text-xs flex items-center gap-2.5">
               <Info className="w-4 h-4 text-sky-600 shrink-0" />
               <span>
-                <strong>Czas przerwy modlitewnej ({todayCalendarStatus.breakName}):</strong> W kalendarzu przewidziano czas na wyciszenie i podsumowanie. Możesz jednak w dowolnym momencie wybrać dowolny dzień z Cyklu 1 lub 2 poniżej.
+                <strong>Czas przerwy modlitewnej ({todayCalendarStatus.breakInfo?.title || 'Przerwa'}):</strong> W kalendarzu przewidziano czas na wyciszenie i podsumowanie. Możesz jednak w dowolnym momencie wybrać dowolny dzień z Cyklu 1 lub 2 poniżej.
               </span>
             </div>
           )}

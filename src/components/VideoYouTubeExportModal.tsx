@@ -1101,8 +1101,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       const pillH = Math.round(height * 0.038);
 
       ctx.save();
-      ctx.fillStyle = selectedStationId === 'biblia365' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(2, 132, 199, 0.15)';
-      ctx.strokeStyle = selectedStationId === 'biblia365' ? 'rgba(16, 185, 129, 0.45)' : 'rgba(2, 132, 199, 0.45)';
+      const isBiblia = (selectedStationId as string) === 'biblia365';
+      ctx.fillStyle = isBiblia ? 'rgba(16, 185, 129, 0.15)' : 'rgba(2, 132, 199, 0.15)';
+      ctx.strokeStyle = isBiblia ? 'rgba(16, 185, 129, 0.45)' : 'rgba(2, 132, 199, 0.45)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.roundRect(90, pillY, pillW, pillH, 12);
@@ -1113,9 +1114,9 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ctx.textBaseline = 'middle';
       let pillFont = Math.round(height * 0.019);
       ctx.font = `bold ${pillFont}px "Cinzel", Georgia, serif`;
-      ctx.fillStyle = selectedStationId === 'biblia365' ? '#34d399' : '#38bdf8';
+      ctx.fillStyle = isBiblia ? '#34d399' : '#38bdf8';
 
-      const pillText = selectedStationId === 'biblia365'
+      const pillText = isBiblia
         ? `📖 Pismo Święte & Apokryfy • ${activeBroadcastItem.headlineTitle}`
         : `🕊️ Widoki na Raj 365 • Refleksja duchowa • ${activeBroadcastItem.headlineTitle}`;
 

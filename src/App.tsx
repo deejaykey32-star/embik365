@@ -363,7 +363,7 @@ export default function App() {
   const activeSection = getSectionById(activeSectionId);
 
   // Compute current entry (combining default/generated text with any custom server edits)
-  const baseEntry = getEntryForSectionAndDate(activeSectionId, currentDate, customEntries);
+  const baseEntry = getEntryForSectionAndDate(activeSectionId, currentDate, customEntries as Record<string, SectionEntry>);
   const customOverride = customEntries[`${activeSectionId}-${currentDate.dateKey}`] ||
     (activeSectionId === 'ebook_wnr' ? customEntries[`wnr365-${currentDate.dateKey}`] : undefined) ||
     (activeSectionId === 'wnr365' ? customEntries[`ebook_wnr-${currentDate.dateKey}`] : undefined);
@@ -375,8 +375,9 @@ export default function App() {
         p.sectionId === activeSectionId ||
         ((activeSectionId === 'wnr365' || activeSectionId === 'ebook_wnr' || activeSectionId === 'wnr366') && (p.sectionId === 'wnr365' || p.sectionId === 'ebook_wnr')) ||
         ((activeSectionId === 'rhz365' || activeSectionId === 'ebook_rhz') && (p.sectionId === 'rhz365' || p.sectionId === 'ebook_rhz')) ||
+        ((activeSectionId === 'nowyRHZ' || activeSectionId === 'ebook_nowyrhz') && (p.sectionId === 'nowyRHZ' || p.sectionId === 'ebook_nowyrhz')) ||
         ((activeSectionId === 'biblia365' || activeSectionId === 'ebook_biblia') && (p.sectionId === 'biblia365' || p.sectionId === 'ebook_biblia')) ||
-        ((activeSectionId === 'bio365' || activeSectionId === 'ebook_bio') && (p.sectionId === 'bio365' || p.sectionId === 'ebook_bio'))
+        ((activeSectionId === 'bio365') && (p.sectionId === 'bio365' || (p.sectionId as string) === 'ebook_bio'))
       ) && (!p.dateKey || p.dateKey === currentDate.dateKey)
     )
   };
@@ -620,7 +621,7 @@ export default function App() {
             onOpenAdmin={() => setIsAdminOpen(true)}
             onOpenQrModal={() => setIsAdminOpen(true)}
             currentLang={currentLang}
-            customEntries={customEntries}
+            customEntries={customEntries as Record<string, SectionEntry>}
             onSaveEntryText={handleSaveEntryText}
           />
         ) : activeSection.type === 'flipbook' ? (
@@ -637,7 +638,7 @@ export default function App() {
             onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
             onOpenLectorModal={() => setIsLectorModalOpen(true)}
             currentLang={currentLang}
-            customEntries={customEntries}
+            customEntries={customEntries as Record<string, SectionEntry>}
           />
         ) : (
           <StandardReader
@@ -774,7 +775,7 @@ export default function App() {
           setActiveSectionId(secId);
           setCurrentDate(date);
         }}
-        customEntries={customEntries}
+        customEntries={customEntries as Record<string, SectionEntry>}
         adminUser={adminUser}
         hiddenSectionIds={hiddenSectionIds}
       />

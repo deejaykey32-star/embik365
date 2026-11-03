@@ -415,7 +415,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleToggleSectionVisibility(section.id);
+                      handleToggleSectionVisibility(section.id as SectionId);
                     }}
                     className={`px-2.5 py-1.5 rounded-xl text-xs font-bold shadow-lg flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 active:scale-95 ${
                       isHidden
