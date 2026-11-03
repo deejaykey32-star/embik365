@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Download, FileText, BookOpen, Layers, CheckCircle2, Sparkles, 
   Globe, Loader2, Printer, Calendar
@@ -63,6 +63,13 @@ export const DownloadPublishModal: React.FC<Props> = ({
   const isRhz = metaId === 'rhz365' || metaId === 'ebook_rhz';
   const isNowyRhz = metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz';
 
+  // Always enforce complete 365-day single volume for Nowy RHZ (both cycles in one book without splits)
+  useEffect(() => {
+    if (isOpen && (metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz')) {
+      setExportScope('year');
+    }
+  }, [isOpen, metaId]);
+
   // Filter uploaded files for this section, properly matching WnR/RHZ/Biblia alias IDs
   const sectionUploads = uploadedFiles.filter(
     f => f.sectionId === metaId ||
@@ -123,7 +130,10 @@ export const DownloadPublishModal: React.FC<Props> = ({
       let startDay = 1;
       let endDay = 365;
 
-      if (exportScope === 'year') {
+      if (isNowyRhz) {
+        startDay = 1;
+        endDay = 365;
+      } else if (exportScope === 'year') {
         startDay = 1;
         endDay = 365;
       } else if (exportScope === 'season') {
@@ -142,7 +152,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
         }
       }
 
-      if (exportScope === 'year' || exportScope === 'season') {
+      if (isNowyRhz || exportScope === 'year' || exportScope === 'season') {
         for (let day = startDay; day <= endDay; day++) {
           let dayEntry: SectionEntry;
 
@@ -172,6 +182,45 @@ export const DownloadPublishModal: React.FC<Props> = ({
               passage: rEntry.passage,
               content: cleanContent,
               prayer: `Panie Boże, dziękuję Ci za dar rozważań z cyklu Różaniec Historii Zbawienia. Amen.`
+            };
+          } else if (metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz') {
+            const details = getDayDetails365(day);
+            const m = details.mystery;
+
+            let title = '';
+            let subtitle = '';
+            let prayer = m.prayer || '';
+            let passage = m.passage || '';
+            let cleanContent = '';
+
+            if (details.isBreak) {
+              title = `${details.breakTitle || 'Przerwa Modlitewna'} – Dzień ${day}`;
+              subtitle = `${details.dateFormatted} • ${details.displayShort}`;
+              cleanContent = `${details.breakTitle === 'Adwentowa Przerwa Przedświąteczna' ? 'Czas Adwentu przypomina nam o tęsknocie za przyjściem Zbawiciela. Niech te dni będą czasem wewnętrznej ciszy, otwarcia serca na dar Bożego Narodzenia i radosnego oczekiwania.' : 'Dni letniego odpoczynku to okazja, by wpatrywać się w dzieła Bożej Opatrzności. Z wdzięcznością wspominamy 175 tajemnic Cyklu Pierwszego i umacniamy wiarę na drugą część roku.'}\n\n10 Pozdrowień Anielskich (Zdrowaś Maryjo) z intencją wytchnienia i odnowy duchowej w Bogu.`;
+              prayer = 'Boże Wszechmogący, dziękujemy Ci za ten czas wytchnienia i modlitwy. Umacniaj naszą wierność w codziennym rozważaniu tajemnic Historii Zbawienia i uczyń nasze serca świątynią Twojego Ducha. Amen.';
+            } else {
+              title = `${m.t} (${m.sub}) – Dzień ${day}`;
+              subtitle = `${details.dateFormatted} • ${details.cycleLabel} • Sigla: ${m.ref}`;
+              passage = m.passage ? `Sigla biblijne: ${m.ref}\n„${m.passage}”` : `Sigla biblijne: ${m.ref}`;
+
+              const clausulaeText = (m.cl && m.cl.length > 0)
+                ? `\n\n10 Dopowiedzeń po imieniu „Jezus”:\n` + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n')
+                : '';
+
+              const passageSection = m.passage ? `Pismo Święte (${m.ref}):\n„${m.passage}”\n\n` : '';
+              cleanContent = `${details.dateFormatted} • ${details.cycleLabel}\n\n${passageSection}${m.stageTitle} • ${m.partTitle}\n\nRozważanie:\n${m.med}${clausulaeText}`;
+            }
+
+            dayEntry = {
+              id: `nowyrhz-day-${day}`,
+              sectionId: metaId,
+              dayNumber: day,
+              dateKey: `Dzień ${day}`,
+              title,
+              subtitle,
+              passage,
+              content: cleanContent,
+              prayer: prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'
             };
           } else {
             // Biblia365 & ebook_biblia (4-year cycle)
@@ -209,8 +258,10 @@ export const DownloadPublishModal: React.FC<Props> = ({
 
       const safeSection = metaId.replace(/[^a-zA-Z0-9]/g, '_');
       let safeScope = '';
-      if (exportScope === 'year') {
-        safeScope = `Rok_${selectedYear}_Caly_Tom_365_Dni`;
+      if (isNowyRhz) {
+        safeScope = 'Kompletne_Dwa_Cykle_365_Dni';
+      } else if (exportScope === 'year') {
+        safeScope = isBiblia ? `Rok_${selectedYear}_Caly_Tom_365_Dni` : 'Caly_Tom_365_Dni';
       } else if (exportScope === 'season') {
         const seasonNames: Record<string, string> = {
           zima: 'Tom_1_Zima_91_Dni',
@@ -218,7 +269,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
           lato: 'Tom_3_Lato_91_Dni',
           jesien: 'Tom_4_Jesien_92_Dni'
         };
-        safeScope = `Rok_${selectedYear}_${seasonNames[selectedSeason] || 'Sezon'}`;
+        safeScope = isBiblia ? `Rok_${selectedYear}_${seasonNames[selectedSeason] || 'Sezon'}` : `${seasonNames[selectedSeason] || 'Sezon'}`;
       } else {
         const key = fallbackEntry.dateKey || (fallbackEntry.dayNumber ? `Dzien_${fallbackEntry.dayNumber}` : '1');
         safeScope = String(key).replace(/[^a-zA-Z0-9]/g, '_');
@@ -238,23 +289,24 @@ export const DownloadPublishModal: React.FC<Props> = ({
         size: pageSize,
         language: exportLang,
         languageName: selectedLangObj.name,
-        exportScope,
+        exportScope: isNowyRhz ? ('year' as const) : exportScope,
         selectedSeason,
         selectedYear,
         includePrayer: false,
-        allYearEntries: (exportScope === 'year' || exportScope === 'season') ? allYearEntries : undefined,
+        allYearEntries: (isNowyRhz || exportScope === 'year' || exportScope === 'season') ? allYearEntries : undefined,
         onProgress: (_current: number, _total: number, message: string) => {
           setProgressMsg(message);
           setProgressPercent(Math.round((_current / _total) * 100));
         }
       };
 
-      const scopeLabel = exportScope === 'season'
-        ? `Rok ${selectedYear} (${selectedSeason.toUpperCase()}: ${allYearEntries.length} dni)`
+      const scopeLabel = isNowyRhz
+        ? 'Kompletne Dwa Cykle (365 dni)'
+        : exportScope === 'season'
+        ? (isBiblia ? `Rok ${selectedYear} (${selectedSeason.toUpperCase()}: ${allYearEntries.length} dni)` : `${selectedSeason.toUpperCase()}: ${allYearEntries.length} dni`)
         : exportScope === 'year'
-        ? `Rok ${selectedYear} (365 dni)`
+        ? (isBiblia ? `Rok ${selectedYear} (365 dni)` : 'Cały Tom (365 dni)')
         : 'pojedynczy rozdział';
-
       const exportMeta: SectionMeta = (meta || { id: metaId, name: metaName, subtitle: metaSubtitle }) as SectionMeta;
 
       if (selectedFormat === 'pdf') {
@@ -413,102 +465,116 @@ export const DownloadPublishModal: React.FC<Props> = ({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  {/* Seasonal Option */}
-                  <button
-                    type="button"
-                    onClick={() => setExportScope('season')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      exportScope === 'season'
-                        ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
-                        : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
-                    }`}
-                  >
-                    <div className="text-xs text-stone-900 dark:text-white font-bold">Tom Sezonowy (91/92 Dni)</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Zima (91d), Wiosna (91d), Lato (91d), Jesień (92d).</div>
-                  </button>
-
-                  {/* Full Year Volume Option */}
-                  <button
-                    type="button"
-                    onClick={() => setExportScope('year')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      exportScope === 'year'
-                        ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
-                        : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
-                    }`}
-                  >
-                    <div className="text-xs text-stone-900 dark:text-white font-bold">Pełny Tom Roczny (365 Dni)</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Cały rok czytań w jednym e-booku/pliku POD.</div>
-                  </button>
-
-                  {/* Single Chapter Option */}
-                  <button
-                    type="button"
-                    onClick={() => setExportScope('single')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      exportScope === 'single'
-                        ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
-                        : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
-                    }`}
-                  >
-                    <div className="text-xs text-stone-900 dark:text-white font-bold">Pojedynczy Rozdział Dnia</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Wyłącznie dzisiejszy otwarty rozdział.</div>
-                  </button>
-                </div>
-
-                {/* Season Selector */}
-                {!isNowyRhz && exportScope === 'season' && (
-                  <div className="pt-2 space-y-2">
-                    <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Porę Roku (Tom Sezonowy):</span>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { key: 'zima', label: 'Zima', sub: '91 dni (Dni 1–91)' },
-                        { key: 'wiosna', label: 'Wiosna', sub: '91 dni (Dni 92–182)' },
-                        { key: 'lato', label: 'Lato', sub: '91 dni (Dni 183–273)' },
-                        { key: 'jesien', label: 'Jesień', sub: '92 dni (Dni 274–365)' }
-                      ].map(s => (
-                        <button
-                          key={s.key}
-                          type="button"
-                          onClick={() => setSelectedSeason(s.key as any)}
-                          className={`py-2 px-3 rounded-xl text-left border transition-all ${
-                            selectedSeason === s.key
-                              ? 'bg-amber-600 text-white border-amber-600 shadow-xs font-bold'
-                              : 'bg-white dark:bg-[#282119] border-stone-300 dark:border-[#423425] text-stone-700 dark:text-stone-300'
-                          }`}
-                        >
-                          <div className="text-xs font-bold">{s.label}</div>
-                          <div className={`text-[10px] ${selectedSeason === s.key ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
-                            {s.sub}
-                          </div>
-                        </button>
-                      ))}
+                {isNowyRhz ? (
+                  <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-stone-800 dark:text-stone-200">
+                    <div className="font-bold text-sm text-orange-950 dark:text-orange-300 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                      Kompletne Wydanie: Dwa Cykle Nowego RHZ (365 Dni • Tom A5)
                     </div>
+                    <p className="text-xs text-stone-600 dark:text-stone-400 mt-1.5 leading-relaxed">
+                      Plik zawiera kompletne dwa cykle w jednym tomie (365 dni) bez podziału na lata i bez podziału na cykle: Cykl 1 (175 dni) + Przerwa Letnia (7 dni) + Cykl 2 (175 dni) + Przerwa Adwentowa (8 dni).
+                    </p>
                   </div>
-                )}
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      {/* Seasonal Option */}
+                      <button
+                        type="button"
+                        onClick={() => setExportScope('season')}
+                        className={`p-3 rounded-xl border text-left transition-all ${
+                          exportScope === 'season'
+                            ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
+                            : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
+                        }`}
+                      >
+                        <div className="text-xs text-stone-900 dark:text-white font-bold">Tom Sezonowy (91/92 Dni)</div>
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Zima (91d), Wiosna (91d), Lato (91d), Jesień (92d).</div>
+                      </button>
 
-                {/* Year Selector (for season and year scopes) */}
-                {(exportScope === 'season' || exportScope === 'year') && (
-                  <div className="pt-2 flex items-center gap-2">
-                    <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Rok Cyklu:</span>
-                    <div className="grid grid-cols-4 gap-2 flex-1">
-                      {([1, 2, 3, 4] as const).map(yr => (
-                        <button
-                          key={yr}
-                          type="button"
-                          onClick={() => setSelectedYear(yr)}
-                          className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all border text-center ${
-                            selectedYear === yr
-                              ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
-                              : 'bg-white dark:bg-[#282119] border-stone-300 dark:border-[#423425] text-stone-700 dark:text-stone-300'
-                          }`}
-                        >
-                          Rok {yr}
-                        </button>
-                      ))}
+                      {/* Full Year Volume Option */}
+                      <button
+                        type="button"
+                        onClick={() => setExportScope('year')}
+                        className={`p-3 rounded-xl border text-left transition-all ${
+                          exportScope === 'year'
+                            ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
+                            : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
+                        }`}
+                      >
+                        <div className="text-xs text-stone-900 dark:text-white font-bold">Pełny Tom Roczny (365 Dni)</div>
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Cały rok czytań w jednym e-booku/pliku POD.</div>
+                      </button>
+
+                      {/* Single Chapter Option */}
+                      <button
+                        type="button"
+                        onClick={() => setExportScope('single')}
+                        className={`p-3 rounded-xl border text-left transition-all ${
+                          exportScope === 'single'
+                            ? 'border-amber-600 bg-amber-600/15 ring-2 ring-amber-600/30 font-bold'
+                            : 'border-stone-200 dark:border-[#423425] bg-white dark:bg-[#282119] opacity-80'
+                        }`}
+                      >
+                        <div className="text-xs text-stone-900 dark:text-white font-bold">Pojedynczy Rozdział Dnia</div>
+                        <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Wyłącznie dzisiejszy otwarty rozdział.</div>
+                      </button>
                     </div>
-                  </div>
+
+                    {/* Season Selector */}
+                    {exportScope === 'season' && (
+                      <div className="pt-2 space-y-2">
+                        <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Porę Roku (Tom Sezonowy):</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { key: 'zima', label: 'Zima', sub: '91 dni (Dni 1–91)' },
+                            { key: 'wiosna', label: 'Wiosna', sub: '91 dni (Dni 92–182)' },
+                            { key: 'lato', label: 'Lato', sub: '91 dni (Dni 183–273)' },
+                            { key: 'jesien', label: 'Jesień', sub: '92 dni (Dni 274–365)' }
+                          ].map(s => (
+                            <button
+                              key={s.key}
+                              type="button"
+                              onClick={() => setSelectedSeason(s.key as any)}
+                              className={`py-2 px-3 rounded-xl text-left border transition-all ${
+                                selectedSeason === s.key
+                                  ? 'bg-amber-600 text-white border-amber-600 shadow-xs font-bold'
+                                  : 'bg-white dark:bg-[#282119] border-stone-300 dark:border-[#423425] text-stone-700 dark:text-stone-300'
+                              }`}
+                            >
+                              <div className="text-xs font-bold">{s.label}</div>
+                              <div className={`text-[10px] ${selectedSeason === s.key ? 'text-amber-100' : 'text-stone-500 dark:text-stone-400'}`}>
+                                {s.sub}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Year Selector ONLY for Biblia365 (4-year cycle) */}
+                    {isBiblia && (exportScope === 'season' || exportScope === 'year') && (
+                      <div className="pt-2 flex items-center gap-2">
+                        <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Rok Cyklu:</span>
+                        <div className="grid grid-cols-4 gap-2 flex-1">
+                          {([1, 2, 3, 4] as const).map(yr => (
+                            <button
+                              key={yr}
+                              type="button"
+                              onClick={() => setSelectedYear(yr)}
+                              className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all border text-center ${
+                                selectedYear === yr
+                                  ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                                  : 'bg-white dark:bg-[#282119] border-stone-300 dark:border-[#423425] text-stone-700 dark:text-stone-300'
+                              }`}
+                            >
+                              Rok {yr}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 

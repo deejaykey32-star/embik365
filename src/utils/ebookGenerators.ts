@@ -431,7 +431,12 @@ export async function generatePodPdf(
   const frontTitleLines = doc.splitTextToSize(bookTitle.toUpperCase(), getContentWidth());
   doc.text(frontTitleLines, pageWidth / 2, 65, { align: 'center' });
   doc.setFontSize(10);
-  doc.text('BIBLIA365 • DROGA365', pageWidth / 2, 85, { align: 'center' });
+  const seriesHeader = isNowyRhz
+    ? 'NOWY RÓŻANIEC HISTORII ZBAWIENIA • DROGA365'
+    : isRhz
+    ? 'RÓŻANIEC HISTORII ZBAWIENIA • DROGA365'
+    : (isBiblia ? 'BIBLIA365 • DROGA365' : 'WIDOKI NA RAJ • DROGA365');
+  doc.text(seriesHeader, pageWidth / 2, 85, { align: 'center' });
 
   // PAGE 2: Verso (dedykacja)
   doc.addPage();
@@ -465,10 +470,14 @@ export async function generatePodPdf(
 
   doc.setFont(fontFamily, 'normal');
   doc.setFontSize(10);
-  const scopeDesc = options.exportScope === 'season'
-    ? `Wydanie Sezonowe: Rok ${yr} • ${SEASON_LABELS_PL[options.selectedSeason || 'zima'] || ''}`
+  const scopeDesc = isNowyRhz
+    ? 'Wydanie Kompletne: Dwa Cykle • 365 Dni (Tom A5)'
+    : isRhz
+    ? 'Wydanie Roczne: 365 Dni Modlitwy'
+    : options.exportScope === 'season'
+    ? (isBiblia ? `Wydanie Sezonowe: Rok ${yr} • ${SEASON_LABELS_PL[options.selectedSeason || 'zima'] || ''}` : `Wydanie Sezonowe: ${SEASON_LABELS_PL[options.selectedSeason || 'zima'] || ''}`)
     : options.exportScope === 'year'
-    ? `Wydanie Roczne: Rok ${yr} • 365 Czytań`
+    ? (isBiblia ? `Wydanie Roczne: Rok ${yr} • 365 Czytań` : 'Wydanie Roczne: 365 Dni')
     : `Wpis Dnia Cyklu`;
   doc.text(processText(scopeDesc), pageWidth / 2, 118, { align: 'center' });
 
@@ -490,7 +499,7 @@ export async function generatePodPdf(
     '',
     'Tytuł dzieła: ' + bookTitle,
     'Autor i opracowanie tekstu: ' + author,
-    'Projekt typograficzny i skład POD: System Biblia365 / Droga365',
+    'Projekt typograficzny i skład POD: ' + (isNowyRhz ? 'System NowyRHZ365 / Droga365' : isRhz ? 'System RHZ365 / Droga365' : isBiblia ? 'System Biblia365 / Droga365' : 'System WidokiNaRaj365 / Droga365'),
     '',
     'Wydanie I – Druk na Żądanie (Print-On-Demand)',
     'Dystrybucja i publikacja: Amazon KDP, Empik Selfpublishing, Legimi, Ridero.',
@@ -1436,7 +1445,7 @@ p.first {
     <dc:creator>${author}</dc:creator>
     <dc:identifier id="BookID">${bookId}</dc:identifier>
     <dc:language>${options.language || 'pl'}</dc:language>
-    <dc:publisher>Biblia365 – Dominik Kuta</dc:publisher>
+    <dc:publisher>${isNowyRhz ? 'Nowy RHZ365 – Dominik Kuta' : isRhz ? 'RHZ365 – Dominik Kuta' : (isBiblia ? 'Biblia365 – Dominik Kuta' : 'Widoki na Raj – Dominik Kuta')}</dc:publisher>
     <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta>
   </metadata>
   <manifest>

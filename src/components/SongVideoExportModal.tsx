@@ -511,7 +511,9 @@ export const SongVideoExportModal: React.FC<Props> = ({
         throw new Error('Serwer nie zwrócił ścieżki audio.');
       }
 
-      const audioBlob = new Blob([base64ToUint8Array(generatedSong.audioBase64)], { type: generatedSong.mimeType });
+      const audioBytes = base64ToUint8Array(generatedSong.audioBase64);
+      const audioBuffer = audioBytes.buffer.slice(audioBytes.byteOffset, audioBytes.byteOffset + audioBytes.byteLength) as ArrayBuffer;
+      const audioBlob = new Blob([audioBuffer], { type: generatedSong.mimeType });
       setSong(generatedSong);
       setSongAudioUrl(URL.createObjectURL(audioBlob));
       setVideoBlob(null);
