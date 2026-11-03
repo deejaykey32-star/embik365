@@ -10,6 +10,12 @@ import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
 import { getRhzEntryForDay } from '../data/rhz365Data';
 import { getDayDetails365, getNowyRhzMystery } from '../utils/nowyRhzCalendar';
+import { 
+  buildFullHailMary, 
+  OJCZE_NASZ_PELNY, 
+  CHWALA_OJCU_PELNE, 
+  MODLITWA_FATIMSKA_PELNA 
+} from '../utils/radioContentService';
 
 interface Props {
   isOpen: boolean;
@@ -139,10 +145,19 @@ export const DownloadPublishModal: React.FC<Props> = ({
         // Cykl 1: 175 tajemnic
         for (let dayInCycle = 1; dayInCycle <= 175; dayInCycle++) {
           const m = getNowyRhzMystery(1, dayInCycle);
-          const clausulaeText = (m.cl && m.cl.length > 0)
-            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n\n')
-            : '';
-          const cleanContent = `${m.med}${clausulaeText}`;
+          
+          const fullContentParts: string[] = [];
+          if (m.med) {
+            fullContentParts.push(`Rozważanie:\n${m.med}`);
+          }
+          fullContentParts.push(`Ojcze nasz:\n${OJCZE_NASZ_PELNY}`);
+          if (m.cl && m.cl.length > 0) {
+            const hailMarys = m.cl.map((c, idx) => `${idx + 1}. ${buildFullHailMary(c)}`).join('\n\n');
+            fullContentParts.push(`10 Zdrowaś Maryjo z dopowiedzeniami:\n\n${hailMarys}`);
+          }
+          fullContentParts.push(`Chwała Ojcu i Modlitwa Fatimska:\n${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}`);
+
+          const cleanContent = fullContentParts.join('\n\n');
 
           allYearEntries.push({
             id: `nowyrhz-c1-d-${dayInCycle}`,
@@ -166,10 +181,19 @@ export const DownloadPublishModal: React.FC<Props> = ({
         // Cykl 2: 175 tajemnic (dni 176..350)
         for (let dayInCycle = 1; dayInCycle <= 175; dayInCycle++) {
           const m = getNowyRhzMystery(2, dayInCycle);
-          const clausulaeText = (m.cl && m.cl.length > 0)
-            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n\n')
-            : '';
-          const cleanContent = `${m.med}${clausulaeText}`;
+          
+          const fullContentParts: string[] = [];
+          if (m.med) {
+            fullContentParts.push(`Rozważanie:\n${m.med}`);
+          }
+          fullContentParts.push(`Ojcze nasz:\n${OJCZE_NASZ_PELNY}`);
+          if (m.cl && m.cl.length > 0) {
+            const hailMarys = m.cl.map((c, idx) => `${idx + 1}. ${buildFullHailMary(c)}`).join('\n\n');
+            fullContentParts.push(`10 Zdrowaś Maryjo z dopowiedzeniami:\n\n${hailMarys}`);
+          }
+          fullContentParts.push(`Chwała Ojcu i Modlitwa Fatimska:\n${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}`);
+
+          const cleanContent = fullContentParts.join('\n\n');
 
           allYearEntries.push({
             id: `nowyrhz-c2-d-${dayInCycle}`,

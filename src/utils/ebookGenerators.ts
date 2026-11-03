@@ -617,6 +617,10 @@ export async function generatePodPdf(
             pageNumber++;
             curLeft = getLeftMargin(pageNumber);
             currentY = topMargin + 10;
+            doc.setFont(fontFamily, isBoldTitle ? 'bold' : 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setLineHeightFactor(1.15);
           }
           const availableHeight = (pageHeight - bottomMargin) - currentY;
           const linesThatFit = Math.max(1, Math.floor(availableHeight / lineHeight12));
@@ -636,6 +640,10 @@ export async function generatePodPdf(
             pageNumber++;
             curLeft = getLeftMargin(pageNumber);
             currentY = topMargin + 10;
+            doc.setFont(fontFamily, isBoldTitle ? 'bold' : 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setLineHeightFactor(1.15);
           }
         }
         currentY += 2.8;
@@ -831,7 +839,7 @@ export async function generatePodDocx(
         </w:pPr>
         <w:r>
           <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr>
-          <w:t>${escapeXml(p)}</w:t>
+          <w:t xml:space="preserve">${escapeXml(p)}</w:t>
         </w:r>
       </w:p>`).join('');
 
@@ -841,7 +849,7 @@ export async function generatePodDocx(
     const passageXml = passageParagraphs.map(p => `
       <w:p>
         <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="120"/><w:jc w:val="both"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(p)}</w:t></w:r>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">${escapeXml(p)}</w:t></w:r>
       </w:p>`).join('');
 
     const prayerParagraphs = curEntry.prayer
@@ -850,7 +858,7 @@ export async function generatePodDocx(
     const prayerXml = prayerParagraphs.map(p => `
       <w:p>
         <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:before="120" w:after="180"/><w:jc w:val="both"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(p)}</w:t></w:r>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">${escapeXml(p)}</w:t></w:r>
       </w:p>`).join('');
 
     const headerXml = `
@@ -859,14 +867,14 @@ export async function generatePodDocx(
         <w:pPr><w:spacing w:before="360" w:after="60"/><w:jc w:val="both"/></w:pPr>
         <w:r>
           <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/><w:color w:val="000000"/></w:rPr>
-          <w:t>${escapeXml([epoka ? `EPOKA: ${epoka.toUpperCase()}` : '', czesc ? `CZĘŚĆ: ${czesc.toUpperCase()}` : ''].filter(Boolean).join(' • '))}</w:t>
+          <w:t xml:space="preserve">${escapeXml([epoka ? `EPOKA: ${epoka.toUpperCase()}` : '', czesc ? `CZĘŚĆ: ${czesc.toUpperCase()}` : ''].filter(Boolean).join(' • '))}</w:t>
         </w:r>
       </w:p>` : ''}
       <w:p>
         <w:pPr><w:spacing w:before="60" w:after="160"/><w:jc w:val="both"/></w:pPr>
         <w:r>
           <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr>
-          <w:t>${escapeXml(`DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica}${nazwa ? ` — ${nazwa}` : ''}`)}</w:t>
+          <w:t xml:space="preserve">${escapeXml(`DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica}${nazwa ? ` — ${nazwa}` : ''}`)}</w:t>
         </w:r>
       </w:p>
     `;
@@ -887,21 +895,21 @@ export async function generatePodDocx(
       <w:pPr><w:spacing w:before="1800" w:after="300"/><w:jc w:val="center"/></w:pPr>
       <w:r>
         <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="26"/><w:color w:val="000000"/></w:rPr>
-        <w:t>${author.toUpperCase()}</w:t>
+        <w:t xml:space="preserve">${author.toUpperCase()}</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:before="400" w:after="400"/><w:jc w:val="center"/></w:pPr>
       <w:r>
         <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:b/><w:sz w:val="38"/><w:color w:val="000000"/></w:rPr>
-        <w:t>${bookTitle}</w:t>
+        <w:t xml:space="preserve">${bookTitle}</w:t>
       </w:r>
     </w:p>
     <w:p>
       <w:pPr><w:spacing w:after="2000"/><w:jc w:val="center"/></w:pPr>
       <w:r>
         <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="22"/><w:color w:val="000000"/></w:rPr>
-        <w:t>${bookSubtitle}</w:t>
+        <w:t xml:space="preserve">${bookSubtitle}</w:t>
       </w:r>
     </w:p>
     
@@ -920,7 +928,7 @@ export async function generatePodDocx(
       <w:pPr><w:spacing w:after="100"/><w:jc w:val="left"/></w:pPr>
       <w:r>
         <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="18"/><w:color w:val="000000"/></w:rPr>
-        <w:t>${bookTitle} – Wydanie Format A5 POD KDP & Empik.</w:t>
+        <w:t xml:space="preserve">${bookTitle} – Wydanie Format A5 POD KDP &amp; Empik.</w:t>
       </w:r>
     </w:p>
 
