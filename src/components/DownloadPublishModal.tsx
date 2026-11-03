@@ -54,8 +54,6 @@ export const DownloadPublishModal: React.FC<Props> = ({
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
   const metaId = meta?.id || 'general';
   const metaName = meta?.name || 'Droga365';
   const metaSubtitle = meta?.subtitle || '';
@@ -64,11 +62,14 @@ export const DownloadPublishModal: React.FC<Props> = ({
   const isNowyRhz = metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz';
 
   // Always enforce complete 365-day single volume for Nowy RHZ (both cycles in one book without splits)
+  // All React hooks MUST be called unconditionally at top of component before any early return!
   useEffect(() => {
     if (isOpen && (metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz')) {
       setExportScope('year');
     }
   }, [isOpen, metaId]);
+
+  if (!isOpen) return null;
 
   // Filter uploaded files for this section, properly matching WnR/RHZ/Biblia alias IDs
   const sectionUploads = uploadedFiles.filter(
