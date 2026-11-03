@@ -376,19 +376,37 @@ export async function generatePodPdf(
 
   const author = processText(options.authorName || 'Dominik Kuta');
   const yr = options.selectedYear || 1;
-  let rawTitle = meta.name || 'Biblia365';
+  const isBiblia = meta.id === 'biblia365' || meta.id === 'ebook_biblia';
+  const isNowyRhz = meta.id === 'nowyRHZ' || meta.id === 'ebook_nowyrhz';
+  const isRhz = meta.id === 'rhz365' || meta.id === 'ebook_rhz';
 
-  if (options.exportScope === 'season' && options.selectedSeason) {
-    const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
-    rawTitle += ` – Rok ${yr} – ${seasonStr}`;
-  } else if (options.exportScope === 'year') {
-    rawTitle += ` – Rok ${yr} (Tom Roczny 365 Dni)`;
+  let rawTitle = meta.name || 'Droga365';
+
+  if (isNowyRhz) {
+    rawTitle = `${meta.name || 'NowyRHZ365'} – Kompletne Dwa Cykle (365 Dni)`;
+  } else if (isRhz) {
+    rawTitle = `${meta.name || 'RHZ365'} – Modlitewnik (365 Dni)`;
+  } else if (isBiblia) {
+    if (options.exportScope === 'season' && options.selectedSeason) {
+      const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+      rawTitle += ` – Rok ${yr} – ${seasonStr}`;
+    } else if (options.exportScope === 'year') {
+      rawTitle += ` – Rok ${yr} (Tom Roczny 365 Dni)`;
+    } else {
+      rawTitle += ` – Rok ${yr}`;
+    }
   } else {
-    rawTitle += ` – Rok ${yr}`;
+    if (options.exportScope === 'season' && options.selectedSeason) {
+      const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+      rawTitle += ` – ${seasonStr}`;
+    } else if (options.exportScope === 'year') {
+      rawTitle += ' (Tom Roczny 365 Dni)';
+    }
   }
 
   const bookTitle = processText(rawTitle);
-  const bookSubtitle = processText(meta.subtitle || 'Kanoniczny Cykl Czytań Biblia365');
+  const defaultSub = isNowyRhz ? 'Nowy Różaniec Historii Zbawienia – 365 Dni' : (isRhz ? 'Różaniec Historii Zbawienia' : (isBiblia ? 'Kanoniczny Cykl Czytań Biblia365' : 'Droga365'));
+  const bookSubtitle = processText(meta.subtitle || defaultSub);
 
   // Margins for Print-On-Demand (POD KDP & Empik A5 Trade Paperback)
   const gutterMargin = 18; // 18 mm inside margin for book binding
@@ -822,7 +840,9 @@ export async function generatePodPdf(
     }
 
     // 2. Official Day Online Reading QR Code Box for all entries
-    const dayUrl = (meta.id === 'rhz365' || currentEntry.sectionId === 'rhz365')
+    const dayUrl = (meta.id === 'nowyRHZ' || currentEntry.sectionId === 'nowyRHZ' || meta.id === 'ebook_nowyrhz' || currentEntry.sectionId === 'ebook_nowyrhz')
+      ? 'https://widokinaraj.pl/#ebook_nowyrhz'
+      : (meta.id === 'rhz365' || currentEntry.sectionId === 'rhz365' || meta.id === 'ebook_rhz' || currentEntry.sectionId === 'ebook_rhz')
       ? `https://wnr365.pages.dev/r/${currentEntry.dayNumber}`
       : (meta.id === 'biblia365' || currentEntry.sectionId === 'biblia365')
       ? `https://wnr365.pages.dev/b/${currentEntry.dayNumber}`
@@ -925,19 +945,37 @@ export async function generatePodDocx(
   const zip = new JSZip();
   const author = escapeXml(options.authorName || 'Dominik Kuta');
   const yr = options.selectedYear || 1;
-  let rawTitle = meta.name || 'Biblia365';
+  const isBiblia = meta.id === 'biblia365' || meta.id === 'ebook_biblia';
+  const isNowyRhz = meta.id === 'nowyRHZ' || meta.id === 'ebook_nowyrhz';
+  const isRhz = meta.id === 'rhz365' || meta.id === 'ebook_rhz';
 
-  if (options.exportScope === 'season' && options.selectedSeason) {
-    const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
-    rawTitle += ` – Rok ${yr} – ${seasonStr}`;
-  } else if (options.exportScope === 'year') {
-    rawTitle += ` – Rok ${yr} (Tom Roczny 365 Czytań)`;
+  let rawTitle = meta.name || 'Droga365';
+
+  if (isNowyRhz) {
+    rawTitle = `${meta.name || 'NowyRHZ365'} – Kompletne Dwa Cykle (365 Dni)`;
+  } else if (isRhz) {
+    rawTitle = `${meta.name || 'RHZ365'} – Modlitewnik (365 Dni)`;
+  } else if (isBiblia) {
+    if (options.exportScope === 'season' && options.selectedSeason) {
+      const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+      rawTitle += ` – Rok ${yr} – ${seasonStr}`;
+    } else if (options.exportScope === 'year') {
+      rawTitle += ` – Rok ${yr} (Tom Roczny 365 Czytań)`;
+    } else {
+      rawTitle += ` – Rok ${yr}`;
+    }
   } else {
-    rawTitle += ` – Rok ${yr}`;
+    if (options.exportScope === 'season' && options.selectedSeason) {
+      const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+      rawTitle += ` – ${seasonStr}`;
+    } else if (options.exportScope === 'year') {
+      rawTitle += ' (Tom Roczny 365 Dni)';
+    }
   }
 
   const bookTitle = escapeXml(rawTitle);
-  const bookSubtitle = escapeXml(meta.subtitle || 'Kanoniczny Cykl Czytań Biblia365');
+  const defaultSub = isNowyRhz ? 'Nowy Różaniec Historii Zbawienia – 365 Dni' : (isRhz ? 'Różaniec Historii Zbawienia' : (isBiblia ? 'Kanoniczny Cykl Czytań Biblia365' : 'Droga365'));
+  const bookSubtitle = escapeXml(meta.subtitle || defaultSub);
 
   // 1. [Content_Types].xml
   zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1041,7 +1079,9 @@ export async function generatePodDocx(
       }
     }
 
-    const docxDayUrl = (meta.id === 'rhz365' || curEntry.sectionId === 'rhz365')
+    const docxDayUrl = (meta.id === 'nowyRHZ' || curEntry.sectionId === 'nowyRHZ' || meta.id === 'ebook_nowyrhz' || curEntry.sectionId === 'ebook_nowyrhz')
+      ? 'https://widokinaraj.pl/#ebook_nowyrhz'
+      : (meta.id === 'rhz365' || curEntry.sectionId === 'rhz365' || meta.id === 'ebook_rhz' || curEntry.sectionId === 'ebook_rhz')
       ? `https://wnr365.pages.dev/r/${curEntry.dayNumber}`
       : (meta.id === 'biblia365' || curEntry.sectionId === 'biblia365')
       ? `https://wnr365.pages.dev/b/${curEntry.dayNumber}`
@@ -1150,20 +1190,38 @@ export async function generateEpub(
   const zip = new JSZip();
   const author = escapeXml(options.authorName || 'Dominik Kuta');
   const yr = options.selectedYear || 1;
-  let rawTitle = meta.name || 'Biblia365';
+  const isBiblia = meta.id === 'biblia365' || meta.id === 'ebook_biblia';
+  const isNowyRhz = meta.id === 'nowyRHZ' || meta.id === 'ebook_nowyrhz';
+  const isRhz = meta.id === 'rhz365' || meta.id === 'ebook_rhz';
 
-  if (options.exportScope === 'season' && options.selectedSeason) {
-    const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
-    rawTitle += ` – Rok ${yr} – ${seasonStr}`;
-  } else if (options.exportScope === 'year') {
-    rawTitle += ` – Rok ${yr} (Tom Roczny 365 Czytań)`;
+  let rawTitle = meta.name || 'Droga365';
+
+  if (isNowyRhz) {
+    rawTitle = `${meta.name || 'NowyRHZ365'} – Kompletne Dwa Cykle (365 Dni)`;
+  } else if (isRhz) {
+    rawTitle = `${meta.name || 'RHZ365'} – Modlitewnik (365 Dni)`;
+  } else if (isBiblia) {
+    if (options.exportScope === 'season' && options.selectedSeason) {
+      const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+      rawTitle += ` – Rok ${yr} – ${seasonStr}`;
+    } else if (options.exportScope === 'year') {
+      rawTitle += ` – Rok ${yr} (Tom Roczny 365 Czytań)`;
+    } else {
+      rawTitle += ` – Rok ${yr}`;
+    }
   } else {
-    rawTitle += ` – Rok ${yr}`;
+    if (options.exportScope === 'season' && options.selectedSeason) {
+      const seasonStr = SEASON_LABELS_PL[options.selectedSeason] || 'Tom Sezonowy';
+      rawTitle += ` – ${seasonStr}`;
+    } else if (options.exportScope === 'year') {
+      rawTitle += ' (Tom Roczny 365 Dni)';
+    }
   }
 
   const bookTitle = escapeXml(rawTitle);
-  const bookSubtitle = escapeXml(meta.subtitle || 'Kanoniczny Cykl Czytań Biblia365');
-  const bookId = `urn:uuid:biblia365-yr-${yr}-${options.selectedSeason || 'all'}-${Date.now()}`;
+  const defaultSub = isNowyRhz ? 'Nowy Różaniec Historii Zbawienia – 365 Dni' : (isRhz ? 'Różaniec Historii Zbawienia' : (isBiblia ? 'Kanoniczny Cykl Czytań Biblia365' : 'Droga365'));
+  const bookSubtitle = escapeXml(meta.subtitle || defaultSub);
+  const bookId = `urn:uuid:${(meta.id || 'book').replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
 
   const entriesToProcess: SectionEntry[] = (options.allYearEntries && options.allYearEntries.length > 0)
     ? options.allYearEntries

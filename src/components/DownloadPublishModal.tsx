@@ -9,6 +9,7 @@ import { translateEntry } from '../utils/translationService';
 import { getBibliaEntryForDayAndYear } from '../data/biblia365Data';
 import { getWnrEntryForDay } from '../data/wnr365Data';
 import { getRhzEntryForDay } from '../data/rhz365Data';
+import { getDayDetails365 } from '../utils/nowyRhzCalendar';
 
 interface Props {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'download' | 'platforms' | 'uploaded'>('download');
   const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'docx' | 'epub'>('pdf');
-  const [exportScope, setExportScope] = useState<'single' | 'season' | 'year'>('season');
+  const [exportScope, setExportScope] = useState<'single' | 'season' | 'year'>(() => (meta?.id === 'nowyRHZ' || meta?.id === 'ebook_nowyrhz') ? 'year' : 'season');
   const [selectedSeason, setSelectedSeason] = useState<'zima' | 'wiosna' | 'lato' | 'jesien'>('zima');
   const [selectedYear, setSelectedYear] = useState<1 | 2 | 3 | 4>(1);
   const [pageSize, setPageSize] = useState<'6x9' | 'a5'>('6x9'); // 6x9 default standard for Amazon KDP
@@ -58,6 +59,9 @@ export const DownloadPublishModal: React.FC<Props> = ({
   const metaId = meta?.id || 'general';
   const metaName = meta?.name || 'Droga365';
   const metaSubtitle = meta?.subtitle || '';
+  const isBiblia = metaId === 'biblia365' || metaId === 'ebook_biblia';
+  const isRhz = metaId === 'rhz365' || metaId === 'ebook_rhz';
+  const isNowyRhz = metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz';
 
   // Filter uploaded files for this section, properly matching WnR/RHZ/Biblia alias IDs
   const sectionUploads = uploadedFiles.filter(
@@ -454,7 +458,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                 </div>
 
                 {/* Season Selector */}
-                {exportScope === 'season' && (
+                {!isNowyRhz && exportScope === 'season' && (
                   <div className="pt-2 space-y-2">
                     <span className="text-xs font-semibold text-stone-700 dark:text-[#f0e3d5]">Wybierz Porę Roku (Tom Sezonowy):</span>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -685,7 +689,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
                     <>
                       <Download className="w-5 h-5" />
                       <span>
-                        Pobierz {selectedFormat.toUpperCase()} ({metaName} – {exportScope === 'season' ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : exportScope === 'year' ? `Tom Rok ${selectedYear}` : `Rozdział Dnia`})
+                        Pobierz {selectedFormat.toUpperCase()} ({metaName} – {isNowyRhz ? 'Kompletne Dwa Cykle (365 Dni)' : (isRhz ? 'Pełny Tom 365 Dni' : (exportScope === 'season' ? (isBiblia ? `Rok ${selectedYear} - Tom ${selectedSeason.toUpperCase()}` : `Tom ${selectedSeason.toUpperCase()}`) : exportScope === 'year' ? (isBiblia ? `Tom Rok ${selectedYear}` : 'Tom 365 Dni') : 'Rozdział Dnia'))})
                       </span>
                     </>
                   )}
