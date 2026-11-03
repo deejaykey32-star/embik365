@@ -65,6 +65,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
          f.sectionId === 'general' ||
          ((metaId === 'wnr365' || metaId === 'ebook_wnr' || metaId === 'wnr366') && (f.sectionId === 'wnr365' || f.sectionId === 'ebook_wnr')) ||
          ((metaId === 'rhz365' || metaId === 'ebook_rhz') && (f.sectionId === 'rhz365' || f.sectionId === 'ebook_rhz')) ||
+         ((metaId === 'nowyRHZ' || metaId === 'ebook_nowyrhz') && (f.sectionId === 'nowyRHZ' || f.sectionId === 'ebook_nowyrhz')) ||
          ((metaId === 'biblia365' || metaId === 'ebook_biblia') && (f.sectionId === 'biblia365' || f.sectionId === 'ebook_biblia'))
   );
 

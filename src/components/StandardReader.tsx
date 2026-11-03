@@ -407,11 +407,11 @@ export const StandardReader: React.FC<Props> = ({
           )}
 
           {/* Main Section Graphic Banner for WnR365 / RHZ365 / Biblia365 */}
-          {(section.id === 'rhz365' || section.id === 'ebook_rhz' || section.id === 'wnr365' || section.id === 'ebook_wnr' || section.id === 'wnr366' || section.id === 'biblia365' || section.id === 'ebook_biblia') && (
+          {(section.id === 'rhz365' || section.id === 'ebook_rhz' || section.id === 'nowyRHZ' || section.id === 'ebook_nowyrhz' || section.id === 'wnr365' || section.id === 'ebook_wnr' || section.id === 'wnr366' || section.id === 'biblia365' || section.id === 'ebook_biblia') && (
             <div className="mt-4 overflow-hidden rounded-2xl border border-[#e4ccb5] dark:border-[#273448] shadow-md max-h-72 sm:max-h-80 w-full group relative">
               <img
                 src={
-                  (section.id === 'rhz365' || section.id === 'ebook_rhz')
+                  (section.id === 'rhz365' || section.id === 'ebook_rhz' || section.id === 'nowyRHZ' || section.id === 'ebook_nowyrhz')
                     ? rhzMainImg
                     : (section.id === 'biblia365' || section.id === 'ebook_biblia')
                       ? bibliaMainImg
