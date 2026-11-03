@@ -110,6 +110,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-blue-950/20 via-blue-900/10 to-transparent'
   },
   {
+    id: 'ebook_nowyrhz',
+    name: 'ebook NowyRHZ365',
+    shortTitle: 'Nowy Modlitewnik RHZ',
+    subtitle: 'Nowy Różaniec w formie przewracanych kartek (365 dni)',
+    type: 'flipbook',
+    description: 'Monumentalne wydanie Nowego Różańca Historii Zbawienia (365 dni, 2 cykle i przerwy) w interfejsie książkowym A5. Zawiera czytania biblijne, rozważania, 10 dopowiedzeń po słowie Jezus oraz modlitwy końcowe.',
+    badge: 'Flipbook E-book',
+    icon: 'Sparkles',
+    accentColor: '#c2410c', // orange-700
+    bgGradient: 'from-amber-950/20 via-orange-950/10 to-transparent'
+  },
+  {
     id: 'ebook_biblia',
     name: 'ebook Biblia365',
     shortTitle: 'Księga Słowa i Apokryfów',

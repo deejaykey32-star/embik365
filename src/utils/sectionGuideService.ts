@@ -191,6 +191,15 @@ Księga łączy w sobie pełne teksty medytacji różańcowych, kolorowe ilustra
 Przewracaj strony w wygodnym dla siebie tempie, włącz pełny ekran lub posłuchaj lektora online. Możesz w każdej chwili pobrać modlitewnik w formacie PDF i zabrać go ze sobą do kościoła lub w podróż.`
   },
 
+  ebook_nowyrhz: {
+    id: 'ebook_nowyrhz',
+    sectionName: 'Nowy Modlitewnik RHZ (Flipbook)',
+    title: 'Przewodnik po Nowym Modlitewniku Nowy RHZ365',
+    subtitle: 'Nowy Różaniec Historii Zbawienia w oprawie pięknej księgi z 365 dniami kontemplacji',
+    badge: 'Flipbook Nowy RHZ',
+    script: `Witaj w wirtualnym modlitewniku Nowy RHZ365 w formie przewracanych kartek A5.\n\nKsięga obejmuje cały 365-dniowy rok modlitwy: Cykl 1, Letnią Przerwę, Cykl 2 oraz Adwentową Przerwę Przedświąteczną. Na każdy dzień przygotowano 4 strony z czytaniami biblijnymi, rozważaniami, 10 dopowiedzeniami do Pozdrowienia Anielskiego oraz modlitwami końcowymi.\n\nMożesz przewracać strony w wygodnym dla siebie tempie, włączyć tryb pełnoekranowy, odsłuchać lektora lub uruchomić Cyfrowy Różaniec.`
+  },
+
   ebook_biblia: {
     id: 'ebook_biblia',
     sectionName: 'Księga Biblii & Apokryfów (Flipbook)',
