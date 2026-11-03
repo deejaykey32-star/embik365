@@ -559,23 +559,18 @@ export async function generatePodPdf(
         pageNumber++;
         currentY = topMargin + 10;
       } else {
-        currentY += 6;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.2);
-        const sepLeft = getLeftMargin(pageNumber);
-        doc.line(sepLeft, currentY, sepLeft + getContentWidth(), currentY);
-        currentY += 6;
+        currentY += 8; // Odstęp typograficzny między dniami bez linii i ozdobników
       }
     }
 
     let curLeft = getLeftMargin(pageNumber);
     const lineHeight12 = 12 * 0.352778 * 1.15; // 4.868 mm
 
-    // 1. Header: Epoka & Część
+    // 1. Nagłówek: Epoka & Część - jednolity Times New Roman, bold, 11pt, czarny, bez ozdobników
     if (epoka || czesc) {
       doc.setFont(fontFamily, 'bold');
       doc.setFontSize(11);
-      doc.setTextColor(60, 60, 60);
+      doc.setTextColor(0, 0, 0);
       const epokaText = processText([
         epoka ? `EPOKA: ${epoka.toUpperCase()}` : '',
         czesc ? `CZĘŚĆ: ${czesc.toUpperCase()}` : ''
@@ -587,62 +582,27 @@ export async function generatePodPdf(
       }
     }
 
-    // 2. Header: Dzień, Tajemnica & Nazwa
+    // 2. Nagłówek: Dzień, Tajemnica & Nazwa - jednolity Times New Roman, bold, 12pt, czarny
     doc.setFont(fontFamily, 'bold');
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
     const dayTajLines = doc.splitTextToSize(sanitizedTitle, getContentWidth());
     for (const dtLine of dayTajLines) {
       doc.text(dtLine, curLeft, currentY);
-      currentY += 5.5;
+      currentY += 5.2;
     }
+    currentY += 3;
 
-    doc.setLineWidth(0.3);
-    doc.setDrawColor(0, 0, 0);
-    doc.line(curLeft, currentY + 1, curLeft + getContentWidth(), currentY + 1);
-    currentY += 6;
+    // Funkcja pomocnicza: renderowanie wyjustowanych akapitów (12pt Times New Roman, normal, czarny, bez kursywy)
+    // Usuwa nadmiarowe przejścia do nowej linii (Enter) wewnątrz zdań i zapewnia równomierne justowanie do prawej i lewej
+    const renderJustifiedParagraphs = (rawText: string, isBoldTitle = false) => {
+      if (!rawText) return;
+      const paragraphs = cleanParagraphsFromEnters(stripHtml(rawText));
+      for (const para of paragraphs) {
+        const plainText = processText(stripMarkdownInline(para));
+        if (!plainText) continue;
 
-    // 3. Passage (Pismo Święte) - 12 pt Times New Roman, italic, fully justified
-    if (currentEntry.passage || currentEntry.apocryphaPassage) {
-      doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      const passText = processText(currentEntry.passage || '');
-      const passLines = doc.splitTextToSize(passText, getContentWidth());
-      for (let pIdx = 0; pIdx < passLines.length; pIdx++) {
-        if (currentY + lineHeight12 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
-          doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-        }
-        const isLastLine = pIdx === passLines.length - 1;
-        doc.text(passLines[pIdx], curLeft, currentY, isLastLine ? undefined : { maxWidth: getContentWidth(), align: 'justify' });
-        currentY += lineHeight12;
-      }
-      currentY += 3;
-    }
-
-    // 4. Main Body Content - 12 pt Times New Roman, regular, fully justified
-    const contentBlocks = parseMarkdownToBlocks(stripHtml(currentEntry.content || ''));
-    for (const block of contentBlocks) {
-      const plainText = processText(stripMarkdownInline(block.text || ''));
-
-      if (block.type === 'h1' || block.type === 'h2' || block.type === 'h3' || block.type === 'h4') {
-        doc.setFont(fontFamily, 'bold');
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        const hLines = doc.splitTextToSize(plainText, getContentWidth());
-        currentY += 2;
-        for (const hLine of hLines) {
-          if (currentY + lineHeight12 > pageHeight - bottomMargin) {
-            addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-          }
-          doc.text(hLine, curLeft, currentY);
-          currentY += lineHeight12;
-        }
-        currentY += 2;
-      } else {
-        doc.setFont(fontFamily, 'normal');
+        doc.setFont(fontFamily, isBoldTitle ? 'bold' : 'normal');
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
         doc.setLineHeightFactor(1.15);
@@ -653,7 +613,10 @@ export async function generatePodPdf(
         while (remainingLines.length > 0) {
           if (currentY + lineHeight12 > pageHeight - bottomMargin) {
             addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+            doc.addPage();
+            pageNumber++;
+            curLeft = getLeftMargin(pageNumber);
+            currentY = topMargin + 10;
           }
           const availableHeight = (pageHeight - bottomMargin) - currentY;
           const linesThatFit = Math.max(1, Math.floor(availableHeight / lineHeight12));
@@ -669,30 +632,32 @@ export async function generatePodPdf(
             currentY += chunk.length * lineHeight12;
             remainingLines = remainingLines.slice(linesThatFit);
             addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
-            doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
+            doc.addPage();
+            pageNumber++;
+            curLeft = getLeftMargin(pageNumber);
+            currentY = topMargin + 10;
           }
         }
         currentY += 2.8;
       }
+    };
+
+    // 3. Pismo Święte (Cytaty) - jednolite 12pt Times New Roman, normal (bez kursywy!), wyjustowane obustronnie
+    if (currentEntry.passage || currentEntry.apocryphaPassage) {
+      renderJustifiedParagraphs(currentEntry.passage || currentEntry.apocryphaPassage || '');
+      currentY += 1.5;
     }
 
-    // 5. Prayer (Modlitwa) - 12 pt Times New Roman Italic, fully justified
+    // 4. Treść główna / Rozważanie - jednolite 12pt Times New Roman, normal, wyjustowane obustronnie
+    if (currentEntry.content) {
+      renderJustifiedParagraphs(currentEntry.content);
+      currentY += 1.5;
+    }
+
+    // 5. Modlitwa - jednolite 12pt Times New Roman, normal (bez kursywy!), wyjustowane obustronnie
     if (currentEntry.prayer) {
-      doc.setFont(fontFamily, 'italic');
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      const prayerText = processText(`Modlitwa: ${stripHtml(currentEntry.prayer)}`);
-      const prayerLines = doc.splitTextToSize(prayerText, getContentWidth());
-      for (let pIdx = 0; pIdx < prayerLines.length; pIdx++) {
-        if (currentY + lineHeight12 > pageHeight - bottomMargin) {
-          addHeaderFooter(doc, pageNumber, bookTitle, sanitizedTitle, pageWidth, pageHeight, topMargin, bottomMargin, fontFamily, gutterMargin, outerMargin, epoka, czesc, dayNum, tajemnica);
-          doc.addPage(); pageNumber++; curLeft = getLeftMargin(pageNumber); currentY = topMargin + 10;
-        }
-        const isLastLine = pIdx === prayerLines.length - 1;
-        doc.text(prayerLines[pIdx], curLeft, currentY, isLastLine ? undefined : { maxWidth: getContentWidth(), align: 'justify' });
-        currentY += lineHeight12;
-      }
-      currentY += 4;
+      renderJustifiedParagraphs(`Modlitwa: ${stripHtml(currentEntry.prayer)}`);
+      currentY += 2.0;
     }
 
     // QR codes are completely removed everywhere per user request!
@@ -870,31 +835,37 @@ export async function generatePodDocx(
         </w:r>
       </w:p>`).join('');
 
-    const prayerXml = curEntry.prayer ? `
-      <w:p>
-        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:before="120" w:after="180"/><w:jc w:val="both"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>Modlitwa: ${escapeXml(stripHtml(curEntry.prayer))}</w:t></w:r>
-      </w:p>` : '';
-
-    const passageXml = curEntry.passage ? `
+    const passageParagraphs = curEntry.passage
+      ? cleanParagraphsFromEnters(stripHtml(curEntry.passage))
+      : [];
+    const passageXml = passageParagraphs.map(p => `
       <w:p>
         <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:after="120"/><w:jc w:val="both"/></w:pPr>
-        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:i/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(curEntry.passage)}</w:t></w:r>
-      </w:p>` : '';
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(p)}</w:t></w:r>
+      </w:p>`).join('');
+
+    const prayerParagraphs = curEntry.prayer
+      ? cleanParagraphsFromEnters(`Modlitwa: ${stripHtml(curEntry.prayer)}`)
+      : [];
+    const prayerXml = prayerParagraphs.map(p => `
+      <w:p>
+        <w:pPr><w:spacing w:line="276" w:lineRule="auto" w:before="120" w:after="180"/><w:jc w:val="both"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr><w:t>${escapeXml(p)}</w:t></w:r>
+      </w:p>`).join('');
 
     const headerXml = `
       ${epoka || czesc ? `
       <w:p>
         <w:pPr><w:spacing w:before="360" w:after="60"/><w:jc w:val="both"/></w:pPr>
         <w:r>
-          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/><w:color w:val="374151"/></w:rPr>
+          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/><w:color w:val="000000"/></w:rPr>
           <w:t>${escapeXml([epoka ? `EPOKA: ${epoka.toUpperCase()}` : '', czesc ? `CZĘŚĆ: ${czesc.toUpperCase()}` : ''].filter(Boolean).join(' • '))}</w:t>
         </w:r>
       </w:p>` : ''}
       <w:p>
         <w:pPr><w:spacing w:before="60" w:after="160"/><w:jc w:val="both"/></w:pPr>
         <w:r>
-          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="26"/><w:szCs w:val="26"/><w:color w:val="000000"/></w:rPr>
+          <w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="000000"/></w:rPr>
           <w:t>${escapeXml(`DZIEŃ ${dayNum} • TAJEMNICA: ${tajemnica}${nazwa ? ` — ${nazwa}` : ''}`)}</w:t>
         </w:r>
       </w:p>
@@ -929,7 +900,7 @@ export async function generatePodDocx(
     <w:p>
       <w:pPr><w:spacing w:after="2000"/><w:jc w:val="center"/></w:pPr>
       <w:r>
-        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:i/><w:sz w:val="22"/><w:color w:val="000000"/></w:rPr>
+        <w:rPr><w:rFonts w:ascii="Times New Roman"/><w:sz w:val="22"/><w:color w:val="000000"/></w:rPr>
         <w:t>${bookSubtitle}</w:t>
       </w:r>
     </w:p>
@@ -1061,7 +1032,7 @@ h2 {
   color: #000000;
   text-align: center;
   font-weight: normal;
-  font-style: italic;
+  font-style: normal;
   margin-bottom: 1.2em;
   line-height: 1.15;
   word-wrap: break-word;
@@ -1072,7 +1043,6 @@ p {
   font-size: 12pt;
   line-height: 1.15;
   color: #000000;
-  text-indent: 1.5em;
   margin-top: 0;
   margin-bottom: 0.35em;
   text-align: justify;
@@ -1091,13 +1061,8 @@ p.first {
   max-width: 100%;
 }
 .prayer-box {
-  border: 1px solid #000000;
-  background-color: #fdfbf7;
-  padding: 1.2em;
-  margin: 2em 0;
-  border-radius: 4px;
+  margin: 1.2em 0;
   text-align: justify;
-  font-style: italic;
   font-family: 'Times New Roman', Times, Georgia, serif;
   font-size: 12pt;
   line-height: 1.15;
@@ -1164,14 +1129,20 @@ p.first {
 
     htmlNavItems.push(`<li><a href="${chapFileName}">${chapTitle}</a></li>`);
 
+    const passageHtml = curEntry.passage
+      ? cleanParagraphsFromEnters(stripHtml(curEntry.passage))
+          .map((p, pIdx) => `<p class="${pIdx === 0 ? 'first' : ''}">${escapeXml(p)}</p>`)
+          .join('\n')
+      : '';
+
     const paragraphsHtml = cleanParagraphsFromEnters(stripHtml(curEntry.content || ''))
-      .map((p, pIdx) => `<p class="${pIdx === 0 ? 'first' : ''}">${escapeXml(p)}</p>`)
+      .map((p, pIdx) => `<p class="${pIdx === 0 && !passageHtml ? 'first' : ''}">${escapeXml(p)}</p>`)
       .join('\n');
 
     const prayerHtml = curEntry.prayer ? `
     <div class="prayer-box">
-      <div class="prayer-title">Modlitwa</div>
-      <p style="text-indent: 0;">${escapeXml(stripHtml(curEntry.prayer))}</p>
+      <p class="first" style="font-weight: bold; margin-bottom: 0.3em;">Modlitwa:</p>
+      ${cleanParagraphsFromEnters(stripHtml(curEntry.prayer)).map(p => `<p>${escapeXml(p)}</p>`).join('\n')}
     </div>` : '';
 
     const chapterXhtml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -1182,9 +1153,9 @@ p.first {
   <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
-  ${epoka || czesc ? `<div class="epoka-header" style="font-weight: bold; color: #4b5563; text-transform: uppercase; margin-top: 1em; font-size: 0.9em; text-align: justify;">${escapeXml([epoka ? `EPOKA: ${epoka}` : '', czesc ? `CZĘŚĆ: ${czesc}` : ''].filter(Boolean).join(' • '))}</div>` : ''}
-  <h1>${chapTitle}</h1>
-  ${curEntry.passage ? `<h2>${escapeXml(curEntry.passage)}</h2>` : ''}
+  ${epoka || czesc ? `<div class="epoka-header" style="font-weight: bold; color: #000000; text-transform: uppercase; margin-top: 1em; font-size: 11pt; text-align: left;">${escapeXml([epoka ? `EPOKA: ${epoka}` : '', czesc ? `CZĘŚĆ: ${czesc}` : ''].filter(Boolean).join(' • '))}</div>` : ''}
+  <h1 style="font-size: 12pt; text-align: left; font-weight: bold; margin-top: 0.3em; margin-bottom: 0.8em;">${chapTitle}</h1>
+  ${passageHtml}
   
   <div class="chapter-content">
     ${paragraphsHtml}

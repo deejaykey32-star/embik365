@@ -140,9 +140,9 @@ export const DownloadPublishModal: React.FC<Props> = ({
         for (let dayInCycle = 1; dayInCycle <= 175; dayInCycle++) {
           const m = getNowyRhzMystery(1, dayInCycle);
           const clausulaeText = (m.cl && m.cl.length > 0)
-            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n')
+            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n\n')
             : '';
-          const cleanContent = `Rozważanie:\n${m.med}${clausulaeText}`;
+          const cleanContent = `${m.med}${clausulaeText}`;
 
           allYearEntries.push({
             id: `nowyrhz-c1-d-${dayInCycle}`,
@@ -156,7 +156,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
             dateKey: `Dzień ${globalDay}`,
             title: `Dzień ${globalDay} • ${m.t} — ${m.sub}`,
             subtitle: `Cykl 1 • ${m.stageTitle} • ${m.partTitle} • Sigla: ${m.ref}`,
-            passage: m.passage ? `Pismo Święte (${m.ref}):\n${m.passage}` : (m.ref ? `Sigla biblijne: ${m.ref}` : undefined),
+            passage: m.passage || (m.ref ? `Sigla biblijne: ${m.ref}` : undefined),
             content: cleanContent,
             prayer: m.prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'
           });
@@ -167,9 +167,9 @@ export const DownloadPublishModal: React.FC<Props> = ({
         for (let dayInCycle = 1; dayInCycle <= 175; dayInCycle++) {
           const m = getNowyRhzMystery(2, dayInCycle);
           const clausulaeText = (m.cl && m.cl.length > 0)
-            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n')
+            ? '\n\n10 Dopowiedzeń po imieniu „Jezus”:\n\n' + m.cl.map((c, idx) => `${idx + 1}. Zdrowaś Maryjo... Jezus, ${c.trim()} Święta Maryjo...`).join('\n\n')
             : '';
-          const cleanContent = `Rozważanie:\n${m.med}${clausulaeText}`;
+          const cleanContent = `${m.med}${clausulaeText}`;
 
           allYearEntries.push({
             id: `nowyrhz-c2-d-${dayInCycle}`,
@@ -183,7 +183,7 @@ export const DownloadPublishModal: React.FC<Props> = ({
             dateKey: `Dzień ${globalDay}`,
             title: `Dzień ${globalDay} • ${m.t} — ${m.sub}`,
             subtitle: `Cykl 2 • ${m.stageTitle} • ${m.partTitle} • Sigla: ${m.ref}`,
-            passage: m.passage ? `Pismo Święte (${m.ref}):\n${m.passage}` : (m.ref ? `Sigla biblijne: ${m.ref}` : undefined),
+            passage: m.passage || (m.ref ? `Sigla biblijne: ${m.ref}` : undefined),
             content: cleanContent,
             prayer: m.prayer || 'Panie Jezu Chryste, prosimy Cię, aby owoce tej tajemnicy przenikały całe nasze życie i prowadziły nas do świętości. Amen.'
           });
