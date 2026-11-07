@@ -174,7 +174,7 @@ function getPdfPageData(
 ) {
   const isBiblia = sectionId === 'ebook_biblia' || sectionId === 'biblia365';
   const isWnr = sectionId === 'ebook_wnr' || sectionId === 'wnr365' || sectionId === 'wnr366';
-  const maxP = isBiblia ? 365 : (isWnr ? 1084 : 1460);
+  const maxP = isBiblia ? 365 : (isWnr ? 1172 : 1460);
   const safeP = Math.max(1, Math.min(maxP, P));
   const wnrPos = isWnr ? getWnrPagePosition(safeP) : null;
   const dayNum = isBiblia ? safeP : (isWnr ? wnrPos!.dayNumber : (Math.floor((safeP - 1) / 4) + 1)); // 1 to 365
@@ -275,7 +275,7 @@ ${clausulaeList}`;
     };
   }
 
-  // 2. Direct handling for WnR365 / ebook_wnr (1:1 with 1084 PDF pages):
+  // 2. Direct handling for WnR365 / ebook_wnr (1:1 with 1172 PDF pages):
   if (isWnr && wnrPos) {
     const pageData = getWnrPdfPage(safeP);
     const wnr = getWnrEntryForDay(wnrPos.dayNumber);
@@ -289,13 +289,13 @@ ${clausulaeList}`;
       displayDate: pageData.displayDate,
       season: dateObj.season,
       title: pageData.title || wnr.title || `Widoki na Raj • Dzień ${wnrPos.dayNumber}`,
-      subtitle: `${pageData.displayDate} • Dzień ${wnrPos.dayNumber} z 365 (Strona PDF ${safeP} z 1084)`,
+      subtitle: `${pageData.displayDate} • Dzień ${wnrPos.dayNumber} z 365 (Strona PDF ${safeP} z 1172)`,
       chunk: pageData.text || '',
       prayer: '',
       mystery: '',
       intention: '',
       fullContent: wnr.content || pageData.fullContent,
-      qrBadges: (pageData.qrBadges as any[]) || []
+      qrBadges: (pageData.qrBadges && (pageData.qrBadges as any[]).length > 0 ? pageData.qrBadges : (wnr.qrBadges as any[]) || [])
     };
   }
 
@@ -424,15 +424,15 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const defaultWnrPdf: UploadedPdf = {
     id: 'pdf-wnr365-full',
-    filename: '!WnR365 - całość poprawiana 17.09.2026.pdf',
-    originalName: '!WnR365 - całość poprawiana 17.09.2026.pdf',
+    filename: '!WnR365 - całość poprawiana 7.11.2026.pdf',
+    originalName: '!WnR365 - całość poprawiana 7.11.2026.pdf',
     format: 'pdf',
-    url: '/pdf/!WnR365 - całość poprawiana 17.09.2026.pdf',
-    size: 5655100,
+    url: '/pdf/!WnR365 - całość poprawiana 7.11.2026.pdf',
+    size: 7101937,
     sectionId: 'ebook_wnr',
     title: 'Widoki na Raj (WnR365) – Druk KDP Amazon & E-book (PDF 1:1)',
-    description: 'Oficjalny plik PDF książki WnR365 (1084 strony, format A5/6x9, marginesy KDP, kody QR /z/1-/z/61). Gotowy do publikacji w Amazon KDP i do czytnika.',
-    uploadedAt: '2026-10-03T12:00:00.000Z'
+    description: 'Oficjalny plik PDF książki WnR365 (1172 strony, format A5/6x9, marginesy KDP, kody QR /z/1-/z/62). Gotowy do publikacji w Amazon KDP i do czytnika.',
+    uploadedAt: '2026-11-07T10:34:00.000Z'
   };
 
   const defaultRhzPdf: UploadedPdf = {
@@ -503,7 +503,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const isBibliaSection = section.id === 'ebook_biblia' || section.id === 'biblia365';
   const isWnrSection = section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366';
-  const maxBookPages = isBibliaSection ? 365 : (isWnrSection ? 1084 : 1460);
+  const maxBookPages = isBibliaSection ? 365 : (isWnrSection ? 1172 : 1460);
 
   // Sync reading position when currentDate changes from outside (calendar, navigation)
   useEffect(() => {

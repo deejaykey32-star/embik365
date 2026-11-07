@@ -14,7 +14,7 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
   const rawPath = url.pathname.replace(/^\/+/, ''); // e.g. "w/1/tekst"
   const parts = rawPath.split('/').filter(Boolean); // ["w", "1", "tekst"]
 
-  const domain = 'https://widokinaraj.pl';
+  const domain = 'https://wnr365.pages.dev';
 
   if (parts.length >= 2) {
     const dayNum = parseInt(parts[1], 10);

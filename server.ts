@@ -54,9 +54,19 @@ const serveFileHeaders = (res: express.Response, filePath: string) => {
 app.use('/uploads', express.static(publicUploadsDir, { setHeaders: serveFileHeaders }));
 app.use('/uploads', express.static(uploadsDir, { setHeaders: serveFileHeaders }));
 app.use('/data', express.static(publicDataDir));
-app.use('/pliki', express.static(path.join(process.cwd(), 'public', 'pliki')));
+app.use('/pliki', (req, res, next) => {
+  if (req.url && (req.url.includes('import') || req.url.includes('url') || req.url.includes('t='))) {
+    return next();
+  }
+  express.static(path.join(process.cwd(), 'public', 'pliki'))(req, res, next);
+});
 app.use('/downloads', express.static(path.join(process.cwd(), 'public', 'downloads')));
-app.use('/src/pliki', (req, res) => res.redirect(301, `/pliki${req.url}`));
+app.use('/src/pliki', (req, res, next) => {
+  if (req.url && (req.url.includes('import') || req.url.includes('url') || req.url.includes('t='))) {
+    return next();
+  }
+  res.redirect(301, `/pliki${req.url}`);
+});
 
 // Serwowanie aplikacji Nowy RHZ
 app.get(['/nowyRHZ', '/nowyRHZ/', '/nowyrhz', '/nowyrhz/', '/nowyRHZ.html', '/nowyrhz.html'], (req, res) => {
@@ -402,6 +412,27 @@ app.get('/r/:slug?', (req, res) => {
   };
 
   let target = staticMap[slug] || (req.query.to ? req.query.to.toString() : '');
+
+  // Sprawdź plik _redirects dla /r/:slug
+  if (!target && slug) {
+    try {
+      const redirectsPath = path.join(process.cwd(), 'public', '_redirects');
+      if (fs.existsSync(redirectsPath)) {
+        const lines = fs.readFileSync(redirectsPath, 'utf-8').split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          const parts = trimmed.split(/\s+/);
+          if (parts.length >= 2 && parts[0].toLowerCase() === `/r/${slug}`) {
+            const statusCode = parseInt(parts[2] || '302', 10);
+            return res.redirect(statusCode, parts[1]);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading _redirects in /r/:slug:', e);
+    }
+  }
 
   if (!target && slug) {
     if (slug === 'wstep' || slug === 'intro') {

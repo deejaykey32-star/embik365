@@ -167,11 +167,11 @@ Możesz uruchomić grę bezpośrednio w oknie poniżej, otworzyć ją na pełnym
     id: 'ebook_wnr',
     sectionName: 'Księga Widoki na Raj (Flipbook)',
     title: 'Przewodnik po Interaktywnej Księdze WnR365',
-    subtitle: 'Wydanie w formie realistycznego flipbooka z przewracaniem stron (1084 strony, format Amazon KDP)',
+    subtitle: 'Wydanie w formie realistycznego flipbooka z przewracaniem stron (1172 strony, format Amazon KDP)',
     badge: 'Flipbook WnR',
     script: `Witaj w interaktywnym wydaniu Księgi Widoki na Raj – WnR365.
 
-Ta sekcja prezentuje całe 1084-stronicowe dzieło bloga duchowego w formie bibliofilskiej księgi z realistycznym efektem przewracania kartek. Plik odpowiada dokładnie wydaniu przygotowanemu do druku na żądanie w Amazon KDP.
+Ta sekcja prezentuje całe 1172-stronicowe dzieło bloga duchowego w formie bibliofilskiej księgi z realistycznym efektem przewracania kartek. Plik odpowiada dokładnie wydaniu przygotowanemu do druku na żądanie w Amazon KDP.
 
 Możesz przewracać strony klikając w rogi kartek, przeciągając je myszką lub palcem na ekranie dotykowym, a także używając strzałek nawigacji.
 

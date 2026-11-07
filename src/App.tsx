@@ -155,15 +155,15 @@ export default function App() {
   const DEFAULT_SYSTEM_UPLOADS: UploadedPdf[] = [
     {
       id: 'pdf-wnr365-full',
-      filename: '!WnR365 - całość poprawiana 17.09.2026.pdf',
-      originalName: '!WnR365 - całość poprawiana 17.09.2026.pdf',
+      filename: '!WnR365 - całość poprawiana 7.11.2026.pdf',
+      originalName: '!WnR365 - całość poprawiana 7.11.2026.pdf',
       format: 'pdf',
-      url: '/pdf/!WnR365 - całość poprawiana 17.09.2026.pdf',
-      size: 5655100,
+      url: '/pdf/!WnR365 - całość poprawiana 7.11.2026.pdf',
+      size: 7101937,
       sectionId: 'ebook_wnr',
       title: 'Widoki na Raj (WnR365) – Druk KDP Amazon & E-book (PDF 1:1)',
-      description: 'Oficjalny plik PDF książki WnR365 (1084 strony, format A5/6x9, marginesy KDP, kody QR /z/1-/z/61). Gotowy do publikacji w Amazon KDP i do pobrania.',
-      uploadedAt: '2026-10-03T12:00:00.000Z'
+      description: 'Oficjalny plik PDF książki WnR365 (1172 strony, format A5/6x9, marginesy KDP, kody QR /z/1-/z/62). Gotowy do publikacji w Amazon KDP i do pobrania.',
+      uploadedAt: '2026-11-07T10:34:00.000Z'
     },
     {
       id: 'pdf-rhz365-full',

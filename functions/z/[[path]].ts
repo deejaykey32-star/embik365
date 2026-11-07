@@ -13,6 +13,7 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
 
   // 1. Static redirect map matching public/_redirects
   const redirectMap: Record<string, string> = {
+    '/z/100': 'https://youtube.com/shorts/iuyFCULGBzc?is=mLguO2_OpUAfjR8I',
     '/z/1': 'https://youtu.be/kFdLgWrUt10?si=MtS86vPE4ddts2Am',
     '/z/2': 'https://youtu.be/u3HeJFrO1T0?si=O17L_9HqsYDcnMhM',
     '/z/3': 'https://youtu.be/Tfk4P7T8fBI?si=cHR7r5WHtJNZeBxA',
@@ -85,13 +86,13 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/model-8': '/model-8',
     '/z/model8': '/model-8',
     '/z/siec': '/siec',
-    '/z/radio': 'https://widokinaraj.pl/radio',
-    '/z/radio-nowyrhz': 'https://widokinaraj.pl/radio?stacja=nowyrhz',
-    '/z/radio-wnr365': 'https://widokinaraj.pl/radio?stacja=wnr365',
-    '/z/radio-biblia365': 'https://widokinaraj.pl/radio?stacja=biblia365',
-    '/z/radio-rhz365': 'https://widokinaraj.pl/radio?stacja=rhz365',
-    '/z/nowyrhz': 'https://widokinaraj.pl/nowyrhz/',
-    '/z/nowy-rhz': 'https://widokinaraj.pl/nowy-rhz'
+    '/z/radio': '/radio',
+    '/z/radio-nowyrhz': '/radio?stacja=nowyrhz',
+    '/z/radio-wnr365': '/radio?stacja=wnr365',
+    '/z/radio-biblia365': '/radio?stacja=biblia365',
+    '/z/radio-rhz365': '/radio?stacja=rhz365',
+    '/z/nowyrhz': '/nowyrhz/',
+    '/z/nowy-rhz': '/nowyrhz/'
   };
 
   const target = redirectMap[pathKey];

@@ -16,69 +16,69 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
   const slug = decodeURIComponent(rawPath.replace(/^r\/?/i, '').trim()).toLowerCase();
 
   const staticMap: Record<string, string> = {
-    'info': 'https://widokinaraj.pl/#info365',
-    'info365': 'https://widokinaraj.pl/#info365',
-    'wnr': 'https://widokinaraj.pl/#wnr365',
-    'wnr365': 'https://widokinaraj.pl/#wnr365',
-    'rhz': 'https://widokinaraj.pl/#rhz365',
-    'rhz365': 'https://widokinaraj.pl/#rhz365',
-    'biblia': 'https://widokinaraj.pl/#biblia365',
-    'biblia365': 'https://widokinaraj.pl/#biblia365',
-    'ebook-wnr': 'https://widokinaraj.pl/#ebook_wnr',
-    'ebook_wnr': 'https://widokinaraj.pl/#ebook_wnr',
-    'ebook-rhz': 'https://widokinaraj.pl/#ebook_rhz',
-    'ebook_rhz': 'https://widokinaraj.pl/#ebook_rhz',
-    'ebook-nowyrhz': 'https://widokinaraj.pl/#ebook_nowyrhz',
-    'ebook_nowyrhz': 'https://widokinaraj.pl/#ebook_nowyrhz',
-    'ebook-nowy-rhz': 'https://widokinaraj.pl/#ebook_nowyrhz',
-    'ebook-biblia': 'https://widokinaraj.pl/#ebook_biblia',
-    'ebook_biblia': 'https://widokinaraj.pl/#ebook_biblia',
-    'bio': 'https://widokinaraj.pl/#bio365',
-    'bio365': 'https://widokinaraj.pl/#bio365',
-    'grafika': 'https://widokinaraj.pl/#grafika',
-    'media': 'https://widokinaraj.pl/#grafika',
-    'zasoby': 'https://widokinaraj.pl/#grafika',
-    'uploads': 'https://widokinaraj.pl/#grafika',
-    'galeria': 'https://widokinaraj.pl/#grafika',
-    'materialy': 'https://widokinaraj.pl/#grafika',
+    'info': 'https://wnr365.pages.dev/#info365',
+    'info365': 'https://wnr365.pages.dev/#info365',
+    'wnr': 'https://wnr365.pages.dev/#wnr365',
+    'wnr365': 'https://wnr365.pages.dev/#wnr365',
+    'rhz': 'https://wnr365.pages.dev/#rhz365',
+    'rhz365': 'https://wnr365.pages.dev/#rhz365',
+    'biblia': 'https://wnr365.pages.dev/#biblia365',
+    'biblia365': 'https://wnr365.pages.dev/#biblia365',
+    'ebook-wnr': 'https://wnr365.pages.dev/#ebook_wnr',
+    'ebook_wnr': 'https://wnr365.pages.dev/#ebook_wnr',
+    'ebook-rhz': 'https://wnr365.pages.dev/#ebook_rhz',
+    'ebook_rhz': 'https://wnr365.pages.dev/#ebook_rhz',
+    'ebook-nowyrhz': 'https://wnr365.pages.dev/#ebook_nowyrhz',
+    'ebook_nowyrhz': 'https://wnr365.pages.dev/#ebook_nowyrhz',
+    'ebook-nowy-rhz': 'https://wnr365.pages.dev/#ebook_nowyrhz',
+    'ebook-biblia': 'https://wnr365.pages.dev/#ebook_biblia',
+    'ebook_biblia': 'https://wnr365.pages.dev/#ebook_biblia',
+    'bio': 'https://wnr365.pages.dev/#bio365',
+    'bio365': 'https://wnr365.pages.dev/#bio365',
+    'grafika': 'https://wnr365.pages.dev/#grafika',
+    'media': 'https://wnr365.pages.dev/#grafika',
+    'zasoby': 'https://wnr365.pages.dev/#grafika',
+    'uploads': 'https://wnr365.pages.dev/#grafika',
+    'galeria': 'https://wnr365.pages.dev/#grafika',
+    'materialy': 'https://wnr365.pages.dev/#grafika',
     'farby': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
     'farby-swiatlo': 'https://raw.githubusercontent.com/deejaykey32-star/embik365/main/src/pliki/farby%2B%C5%9Bwiat%C5%82o.png',
-    'aistudio': 'https://widokinaraj.pl/grafika/aistudio',
-    'ai-studio': 'https://widokinaraj.pl/grafika/aistudio',
-    'pkg_gemini_solar_system': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_gemini_solar_system',
-    'pkg_ai_1789593893001': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789593893001',
-    'pkg_ai_1789597375413': 'https://widokinaraj.pl/grafika/aistudio#paczka/pkg_ai_1789597375413',
-    'klepsydra': 'https://widokinaraj.pl/klepsydra',
-    'symulacja': 'https://widokinaraj.pl/klepsydra',
-    'klepsydra3d': 'https://wnr365.pages.dev/klepsydra3D',
-    'klepsydra3D': 'https://wnr365.pages.dev/klepsydra3D',
-    'piramidy3d': 'https://wnr365.pages.dev/piramidy3D',
-    'piramidy3D': 'https://wnr365.pages.dev/piramidy3D',
-    'piramidy': 'https://wnr365.pages.dev/piramidy3D',
-    'model-8': 'https://wnr365.pages.dev/model-8',
-    'model8': 'https://wnr365.pages.dev/model-8',
-    'model-3d-8': 'https://wnr365.pages.dev/model-8',
-    'siec': 'https://wnr365.pages.dev/siec',
-    'radio': 'https://widokinaraj.pl/radio',
-    'radio-nowyrhz': 'https://widokinaraj.pl/radio?stacja=nowyrhz',
-    'radio-wnr365': 'https://widokinaraj.pl/radio?stacja=wnr365',
-    'radio-biblia365': 'https://widokinaraj.pl/radio?stacja=biblia365',
-    'radio-rhz365': 'https://widokinaraj.pl/radio?stacja=rhz365',
-    'nowyrhz': 'https://widokinaraj.pl/nowyrhz/',
-    'nowy-rhz': 'https://widokinaraj.pl/nowy-rhz'
+    'aistudio': 'https://wnr365.pages.dev/grafika/aistudio',
+    'ai-studio': 'https://wnr365.pages.dev/grafika/aistudio',
+    'pkg_gemini_solar_system': 'https://wnr365.pages.dev/grafika/aistudio#paczka/pkg_gemini_solar_system',
+    'pkg_ai_1789593893001': 'https://wnr365.pages.dev/grafika/aistudio#paczka/pkg_ai_1789593893001',
+    'pkg_ai_1789597375413': 'https://wnr365.pages.dev/grafika/aistudio#paczka/pkg_ai_1789597375413',
+    'klepsydra': '/klepsydra',
+    'symulacja': '/klepsydra',
+    'klepsydra3d': '/klepsydra3D',
+    'klepsydra3D': '/klepsydra3D',
+    'piramidy3d': '/piramidy3D',
+    'piramidy3D': '/piramidy3D',
+    'piramidy': '/piramidy3D',
+    'model-8': '/model-8',
+    'model8': '/model-8',
+    'model-3d-8': '/model-8',
+    'siec': '/siec',
+    'radio': '/radio',
+    'radio-nowyrhz': '/radio?stacja=nowyrhz',
+    'radio-wnr365': '/radio?stacja=wnr365',
+    'radio-biblia365': '/radio?stacja=biblia365',
+    'radio-rhz365': '/radio?stacja=rhz365',
+    'nowyrhz': '/nowyrhz/',
+    'nowy-rhz': '/nowyrhz/'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');
 
   if (!target && slug) {
     if (slug === 'wstep' || slug === 'intro') {
-      target = 'https://widokinaraj.pl/#rhz365/wstep';
+      target = 'https://wnr365.pages.dev/#rhz365/wstep';
     } else if (slug === 'koronka') {
-      target = 'https://widokinaraj.pl/#rhz365/koronka';
+      target = 'https://wnr365.pages.dev/#rhz365/koronka';
     } else {
       const dayNum = parseInt(slug, 10);
       if (!isNaN(dayNum) && dayNum >= 1 && dayNum <= 366) {
-        target = `https://widokinaraj.pl/#rhz365/dzien-${dayNum}`;
+        target = `https://wnr365.pages.dev/#rhz365/dzien-${dayNum}`;
       }
     }
   }
