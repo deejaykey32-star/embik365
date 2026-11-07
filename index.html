@@ -21,6 +21,14 @@
     <meta name="msapplication-TileColor" content="#7c4517" />
     <script>
       (function () {
+        var h = location.hostname.toLowerCase();
+        if (h === 'widokinaraj.pl' || h === 'www.widokinaraj.pl' || h === 'viewsofparadise.pl' || h === 'www.viewsofparadise.pl') {
+          location.replace('https://wnr365.pages.dev' + location.pathname + location.search + location.hash);
+        }
+      })();
+    </script>
+    <script>
+      (function () {
         try {
           var m = localStorage.getItem('drogowskazy_theme');
           var dark = m === 'dark' || ((!m || m === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
