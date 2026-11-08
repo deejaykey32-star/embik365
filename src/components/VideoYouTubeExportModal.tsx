@@ -1479,19 +1479,28 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
       ];
       const combinedStream = new MediaStream(combinedTracks);
 
-      // 5. Konfiguracja MediaRecorder dla YouTube (VP9/Opus w WebM z łatką EBML Duration)
-      let mimeType = 'video/webm;codecs=vp9,opus';
-      if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-        mimeType = 'video/webm;codecs=vp9,opus';
-      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-        mimeType = 'video/webm;codecs=vp8,opus';
-      } else if (MediaRecorder.isTypeSupported('video/webm')) {
-        mimeType = 'video/webm';
-      } else if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
-        mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
-      } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-        mimeType = 'video/mp4';
+      // 5. Konfiguracja MediaRecorder:
+      // Priorytet dla prawdziwego formatu MP4 (H.264 / AAC), w pełni zgodnego z odtwarzaczem Windows Media Player, macOS, iOS, Android i YouTube.
+      // Jeśli przeglądarka (np. starszy Firefox) nie wspiera nagrywania do MP4, następuje płynny fallback do WebM (VP9/Opus).
+      const candidateMimeTypes = [
+        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+        'video/mp4;codecs=avc1,mp4a.40.2',
+        'video/mp4;codecs=avc1',
+        'video/mp4;codecs=h264,aac',
+        'video/mp4',
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm'
+      ];
+
+      let mimeType = '';
+      for (const candidate of candidateMimeTypes) {
+        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(candidate)) {
+          mimeType = candidate;
+          break;
+        }
       }
+      if (!mimeType) mimeType = 'video/webm';
 
       const recorder = new MediaRecorder(combinedStream, {
         mimeType,
@@ -1536,7 +1545,11 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
         setRenderedVideoUrl(url);
         setIsRecording(false);
         setRecordProgress(100);
-        setRecordingStatus('✅ Wideo z lektorem i pełnym czasem trwania gotowe do pobrania!');
+        setRecordingStatus(
+          mimeType.includes('mp4')
+            ? '✅ Wideo MP4 (H.264/AAC) gotowe do odtworzenia w Windows Media Player i na YouTube!'
+            : '✅ Wideo WebM (VP9/Opus) gotowe do pobrania dla YouTube / VLC!'
+        );
       };
 
       // 7. Uruchomienie odtwarzania ścieżki lektora i rejestracji
@@ -1581,11 +1594,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           if (elapsed < totalDuration) {
             animationFrameRef.current = requestAnimationFrame(renderLoop);
           } else {
-            setTimeout(() => {
-              if (recorder.state === 'recording') {
-                recorder.stop();
-              }
-            }, 1000);
+            drawVideoFrame(wordsTotal - 1, totalDuration);
+            if (recorder.state === 'recording') {
+              recorder.stop();
+            }
           }
         };
 
@@ -1622,11 +1634,10 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
           if (elapsed < wordsDurationSec) {
             animationFrameRef.current = requestAnimationFrame(renderLoopFallback);
           } else {
-            setTimeout(() => {
-              if (recorder.state === 'recording') {
-                recorder.stop();
-              }
-            }, 1000);
+            drawVideoFrame(wordsTotal - 1, wordsDurationSec);
+            if (recorder.state === 'recording') {
+              recorder.stop();
+            }
           }
         };
 
@@ -2397,13 +2408,26 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
             )}
 
             {renderedBlob && (
-              <button
-                onClick={handleDownloadVideo}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95 animate-pulse"
-              >
-                <Download className="w-4 h-4" />
-                <span>Pobierz plik MP4 (YouTube)</span>
-              </button>
+              <div className="flex flex-col items-end gap-1.5">
+                <button
+                  onClick={handleDownloadVideo}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>
+                    {renderedBlob.type.includes('mp4') ? 'Pobierz wideo MP4 (Windows / YouTube)' : 'Pobierz wideo WebM (YouTube / VLC)'}
+                  </span>
+                </button>
+                {renderedBlob.type.includes('mp4') ? (
+                  <span className="text-[11px] text-emerald-400 font-medium">
+                    ✓ Format MP4 (H.264/AAC) – w pełni zgodny z odtwarzaczem Windows Media Player.
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-amber-300 font-medium max-w-md text-right">
+                    ℹ️ Plik WebM (VP9). W systemie Windows otwórz przez VLC, Edge lub zainstaluj "Rozszerzenia wideo Web" z Microsoft Store.
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>
