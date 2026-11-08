@@ -319,6 +319,14 @@ export default function App() {
       subview,
       pdfId: viewingPdf?.id
     });
+
+    if (typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', 'page_view', {
+        page_path: window.location.pathname + window.location.search + window.location.hash,
+        page_location: window.location.href,
+        page_title: document.title,
+      });
+    }
   }, [activeSectionId, currentDate, isCalendarOpen, isPublicMediaViewerOpen, publicMediaTab, isAdminOpen, isDownloadModalOpen, isLectorModalOpen, viewingPdf, adminTab]);
 
   // B) Listen to browser URL hashchange and popstate events (direct link pasting / back / forward navigation)
