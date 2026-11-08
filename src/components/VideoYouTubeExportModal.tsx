@@ -676,7 +676,7 @@ export const VideoYouTubeExportModal: React.FC<Props> = ({
     ctx.font = `600 ${Math.round(height * 0.017)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#94a3b8';
     ctx.textAlign = 'right';
-    ctx.fillText(`widokinaraj.pl`, width - 80, topLabelY);
+    ctx.fillText(`wnr365.pages.dev`, width - 80, topLabelY);
     ctx.textAlign = 'left';
 
     // 2.2. Linia z datą i informacją o cyklu / dniu

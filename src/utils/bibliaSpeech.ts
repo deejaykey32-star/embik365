@@ -67,15 +67,14 @@ export function cleanScriptureForSpeech(scripture: string): string {
     .trim();
 }
 
-/** Komentarz: nagłówki jako krótkie tytuły zdań, bez numeracji, markdown i obcych alfabetów */
+/** Komentarz: sam czysty tekst retoryczny bez żadnych nagłówków, tytułów, numeracji i obcych alfabetów */
 export function cleanCommentaryForSpeech(commentary: string): string {
   return (commentary || '')
     .split('\n')
     .map(line => {
-      const h = line.match(/^\s*#{1,6}\s*(?:\d+\.\s*)?(.*)$/);
-      if (h) {
-        const title = h[1].replace(/[*_]/g, '').trim();
-        return title ? `\n${title.replace(/[.:]$/, '')}.\n` : '';
+      // Pomiń wszelkie nagłówki markdown (np. ## 2. Kluczowe Wątki, ### Odniesienie itp.)
+      if (/^\s*#{1,6}\s*/.test(line)) {
+        return '';
       }
       return line
         .replace(/^\s*(?:\d+\.|[-•*])\s+/, '')

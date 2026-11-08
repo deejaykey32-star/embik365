@@ -549,8 +549,15 @@ export function getRadioBroadcastItem(
     const headlineTitle = `${mystery.t} – ${mystery.sub}`;
     const subtitle = `Cykl ${effCycle} • Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`;
     
+    // Tylko numer etapu z tytułem, numer części z tytułem, numer tajemnicy z tytułem i numer cyklu:
+    const cycleSpoken = effCycle === 1 ? 'Cykl pierwszy' : 'Cykl drugi';
+    const introHeaderRaw = `Etap ${mystery.stage}: ${mystery.stageTitle}. Część ${mystery.part}: ${mystery.partTitle}. Tajemnica ${mystery.inPart || effDayInCycle}: ${mystery.t}${mystery.sub ? ` – ${mystery.sub}` : ''}. ${cycleSpoken}.`;
+    
+    // Zaraz potem retoryczna treść modlitwy (bez powtarzania nagłówków i bez etykiet Pisma Świętego)
+    const rhetoricalMeditation = (mystery.med || '').trim();
+    const introBlockRaw = `${introHeaderRaw}\n\n${rhetoricalMeditation}`;
+
     const scriptureRaw = mystery.passage || (mystery.ref ? `Pismo Święte: ${mystery.ref}` : '');
-    const meditationRawText = `Rozważanie tajemnicy: ${mystery.t} – ${mystery.sub}. ${mystery.med}`;
     const ojczeNaszText = OJCZE_NASZ_PELNY;
     const chwalaOjcuText = CHWALA_OJCU_PELNE;
     const oMojJezuText = MODLITWA_FATIMSKA_PELNA;
@@ -564,9 +571,6 @@ export function getRadioBroadcastItem(
     }));
     const dopowiedzeniaList = smallBeadsData.map(b => b.text);
 
-    // KROK 1: Informacja z nagłówka, Pismo Święte, Rozważanie tajemnicy oraz komplet pełnych modlitw
-    const introHeaderRaw = `Etap ${mystery.stage}: ${mystery.stageTitle}. Część ${mystery.part}: ${mystery.partTitle}. Tajemnica ${mystery.inPart || effDayInCycle}: ${mystery.t} – ${mystery.sub}.`;
-
     interface SectionDef {
       id: string;
       title: string;
@@ -574,8 +578,6 @@ export function getRadioBroadcastItem(
       beadIndex?: number;
       rawText: string;
     }
-
-    const introBlockRaw = `${introHeaderRaw}\n\n${scriptureRaw ? `${scriptureRaw}\n\n` : ''}${meditationRawText}`;
 
     const sectionDefs: SectionDef[] = [
       {
@@ -671,12 +673,39 @@ export function getRadioBroadcastItem(
 
   if (stationId === 'wnr365') {
     const entry = WNR365_FULL_DATA[safeDay] || WNR365_FULL_DATA[1];
-    const cleanContent = stripHtml(entry.content || entry.page1 || '')
+    
+    // Oczyszczenie samej treści wpisu dla WnR365:
+    // Usuwamy kontenery QR, nagłówki PDF, numery dnia i linki, pozostawiając wyłącznie czysty retoryczny tekst wpisu.
+    let rawContent = entry.content || entry.page1 || '';
+    rawContent = rawContent.replace(/<div class=['"]wnr-qr-container[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, '');
+    rawContent = rawContent.replace(/<div class=['"][^'"]*qr-[^'"]*['"][\s\S]*?<\/div>/gi, '');
+    rawContent = rawContent.replace(/<div[\s\S]*?<\/div>/gi, '');
+
+    let cleanContent = stripHtml(rawContent)
       .replace(/https?:\/\/[^\s]+/g, '')
-      .replace(/\[\s*(\d{1,2}\.\d{1,2})\.2026\s*\]/g, '[$1]')
+      .replace(/Materiał dodatkowy\s*\d*:\s*Zasób do wpisu/gi, '')
+      .replace(/Otwórz\s*→?\s*Pobierz PNG/gi, '')
+      .replace(/Pobierz PNG/gi, '')
+      .replace(/Widoki na Raj\s*—\s*WnR365(?:\s*eMBiK365\s*—\s*)?(?:widokinaraj\.pl)?/gi, '')
+      .replace(/Widoki na Raj\s*—\s*WnR365\s*\([^)]*\)/gi, '')
+      .replace(/Widoki na Raj\s*—\s*WnR365/gi, '')
+      .replace(/widokinaraj\.pl/gi, '')
+      .replace(/eMBiK365/gi, '')
+      .replace(/DZIEŃ\s+\d+\s*—[^\n]*/gi, '')
+      .replace(/Dzień\s+\d+\s*z\s*365/gi, '')
+      .replace(/\(Dzień\s*\d+\)/gi, '')
+      .replace(/\[\s*(\d{1,2}\.\d{1,2})\.2026\s*\]/g, '')
       .replace(/\.2026\b/g, '')
       .replace(/\b2026\b/g, '')
       .trim();
+
+    cleanContent = cleanContent
+      .split(/\n+/)
+      .map(p => p.trim())
+      .filter(p => p.length > 0)
+      .join('\n\n')
+      .trim();
+
     const rawTitle = entry.title || `Dzień ${safeDay}`;
     const cleanTitle = rawTitle
       .replace(/^Widoki na Raj\s*—\s*WnR365\s*\([^)]*\)\s*—\s*WnR365\s*—\s*Widoki na Raj\s*-\s*\([^)]*\)\s*-\s*—\s*/i, '')
@@ -685,12 +714,7 @@ export function getRadioBroadcastItem(
       .replace(/\b2026\b/g, '')
       .trim();
 
-    const dayOrdSpoken = numberToPolishOrdinal(safeDay, 'm');
-    const spokenDate = normalizePolishTextForSpeech(entry.displayDate || '');
-
-    const introInfoText = `Widoki na Raj. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. Data: ${spokenDate}. Rozdział: ${cleanTitle}.`;
-    const titleText = cleanTitle;
-    const contentParagraphs = cleanContent.split(/\n+/).map(p => p.trim()).filter(Boolean);
+    const contentParagraphs = cleanContent.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
 
     interface SectionDef {
       id: string;
@@ -699,12 +723,15 @@ export function getRadioBroadcastItem(
       rawText: string;
     }
 
-    const fullWnrRaw = `${cleanTitle}\n\n${cleanContent}`;
-
-    const sectionDefs: SectionDef[] = [
-      { id: 'intro', title: 'Informacje wstępne', type: 'intro', rawText: introInfoText },
-      { id: 'content', title: cleanTitle, type: 'general', rawText: fullWnrRaw }
-    ];
+    // Bez zapowiedzi wstępnej i bez czytania tytułu – lektor czyta od razu samą treść retoryczną
+    const sectionDefs: SectionDef[] = contentParagraphs.length > 0
+      ? contentParagraphs.map((para, pIdx) => ({
+          id: `para_${pIdx + 1}`,
+          title: cleanTitle,
+          type: 'general' as const,
+          rawText: para
+        }))
+      : [{ id: 'content', title: cleanTitle, type: 'general' as const, rawText: cleanContent }];
 
     const cleanWords: string[] = [];
     const lineBreakWordIndices: number[] = [];
@@ -778,14 +805,21 @@ export function getRadioBroadcastItem(
       rawText: string;
     }
 
+    const commentaryParagraphs = speechParts.commentary
+      .split(/\n{2,}/)
+      .map(p => p.trim())
+      .filter(Boolean);
+
+    // Jedynie na początku informacja jaka księga i rozdział jest odczytywany, a potem sam czysty tekst bez dodatkowych tytułów i nazw
     const sectionDefs: SectionDef[] = [
       { id: 'intro', title: headlineTitle, type: 'intro', rawText: speechParts.intro },
       { id: 'scripture', title: headlineTitle, type: 'general', rawText: speechParts.scripture },
-      ...speechParts.commentary
-        .split(/\n{2,}/)
-        .map(p => p.trim())
-        .filter(Boolean)
-        .map((p, i) => ({ id: `commentary_${i + 1}`, title: 'Komentarz', type: 'general' as const, rawText: p }))
+      ...commentaryParagraphs.map((p, i) => ({
+        id: `commentary_${i + 1}`,
+        title: headlineTitle,
+        type: 'general' as const,
+        rawText: p
+      }))
     ];
 
     const cleanWords: string[] = [];
@@ -868,9 +902,19 @@ export function getRadioBroadcastItem(
   const chwalaOjcuText = cleanGloryBe || CHWALA_OJCU_PELNE;
   const oMojJezuText = cleanFatima || MODLITWA_FATIMSKA_PELNA;
 
-  const introHeaderRaw = `Pierwotny Różaniec Historii Zbawienia. Dzień ${dayOrdSpoken} z trzystu sześćdziesięciu pięciu. ${rhzEntry.stageTitle}.`;
+  // Tylko numer etapu z tytułem, numer części z tytułem, numer tajemnicy z tytułem i numer cyklu:
+  const stageParts = (rhzEntry.stageTitle || '').split(/\s*[-–—]\s*/);
+  let formattedHeader = rhzEntry.stageTitle;
+  if (stageParts.length >= 4) {
+    formattedHeader = `${stageParts[0]}. ${stageParts[1]}. ${stageParts[2]}: ${stageParts.slice(3).join(' – ')}.`;
+  }
+  const cycleSpoken = (rhzEntry.cycle && rhzEntry.cycle.includes('II')) ? 'Cykl drugi' : 'Cykl pierwszy';
+  const introHeaderRaw = `${formattedHeader} ${cycleSpoken}.`;
+
+  // Zaraz potem retoryczna treść modlitwy (bez etykiet Pisma Świętego i bez powtarzania nagłówków)
+  const rhetoricalMeditation = (cleanExplanation || cleanPassage || '').trim();
   const scriptureRawText = cleanPassage ? `Fragment Pisma Świętego:\n${cleanPassage}` : '';
-  const meditationRawText = `Rozważanie tajemnicy: ${rhzEntry.stageTitle}.${cleanExplanation ? `\n${cleanExplanation}` : ''}`;
+  const meditationRawText = `Rozważanie: ${rhetoricalMeditation}`;
   const podTwojaObroneText = POD_TWOJA_OBRONE_PELNE;
 
   interface SectionDef {
@@ -881,7 +925,7 @@ export function getRadioBroadcastItem(
     rawText: string;
   }
 
-  const introBlockRaw = `${introHeaderRaw}\n\n${scriptureRawText ? `${scriptureRawText}\n\n` : ''}${meditationRawText}`;
+  const introBlockRaw = `${introHeaderRaw}\n\n${rhetoricalMeditation}`;
 
   // Komplet pełnych modlitw z nagłówkiem tajemnicy, Pismem Świętym i rozważaniem tajemnicy przed Ojcze nasz oraz Pod Twoją obronę na zakończenie
   const sectionDefs: SectionDef[] = [
