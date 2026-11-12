@@ -5,6 +5,7 @@ export type SectionId =
   | 'rhz365'        // modlitwa "Różaniec Historii Zbawienia"
   | 'nowyRHZ'       // Nowy Różaniec Historii Zbawienia - nowyRHZ365 (365 dni, 2 cykle)
   | 'biblia365'     // czytanie Pisma Świętego i Apokryfów
+  | 'biblia365plan' // Plan Czytania Biblii 365 • Komentarz & Lektor AI (biblia365plan.pages.dev)
   | 'mapa'          // Trójjedyna Pielgrzymka Gwiaździsta i Szlak Orlich Gniazd
   | 'histada'       // Gra Histada - Trylogia dla poszukujących
   | 'ebook_wnr'     // ebook WnR365 w formie przewracanych kartek

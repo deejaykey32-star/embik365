@@ -92,7 +92,11 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/radio-biblia365': '/radio?stacja=biblia365',
     '/z/radio-rhz365': '/radio?stacja=rhz365',
     '/z/nowyrhz': '/nowyrhz/',
-    '/z/nowy-rhz': '/nowyrhz/'
+    '/z/nowy-rhz': '/nowyrhz/',
+    '/z/biblia365plan': 'https://biblia365plan.pages.dev',
+    '/z/biblia-plan': 'https://biblia365plan.pages.dev',
+    '/z/plan-czytania': 'https://biblia365plan.pages.dev',
+    '/z/plan365': 'https://biblia365plan.pages.dev'
   };
 
   const target = redirectMap[pathKey];

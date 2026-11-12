@@ -11,6 +11,7 @@ import { Info365View } from './components/Info365View';
 import { MediaGallerySectionView } from './components/MediaGallerySectionView';
 import { PilgrimageMapView } from './components/PilgrimageMapView';
 import { HistadaView } from './components/HistadaView';
+import { Biblia365PlanView } from './components/Biblia365PlanView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
 import { VideoStudioView } from './components/VideoStudioView';
@@ -592,6 +593,13 @@ export default function App() {
         ) : activeSectionId === 'histada' ? (
           <HistadaView
             key={`histada-${currentLang}`}
+            section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
+        ) : activeSectionId === 'biblia365plan' ? (
+          <Biblia365PlanView
+            key={`biblia365plan-${currentLang}`}
             section={activeSection}
             currentLang={currentLang}
             theme={theme}

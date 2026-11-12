@@ -75,6 +75,12 @@ const SECTION_SLUG_MAP: Record<string, SectionId> = {
   'pismo-swiete': 'biblia365',
   'apokryfy': 'biblia365',
 
+  'biblia365plan': 'biblia365plan',
+  'biblia-plan': 'biblia365plan',
+  'plan-biblii': 'biblia365plan',
+  'plan-czytania': 'biblia365plan',
+  'plan365': 'biblia365plan',
+
   'mapa': 'mapa',
   'map': 'mapa',
   'pielgrzymka': 'mapa',

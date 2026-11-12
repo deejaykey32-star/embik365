@@ -65,7 +65,12 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     'radio-biblia365': '/radio?stacja=biblia365',
     'radio-rhz365': '/radio?stacja=rhz365',
     'nowyrhz': '/nowyrhz/',
-    'nowy-rhz': '/nowyrhz/'
+    'nowy-rhz': '/nowyrhz/',
+    'biblia365plan': 'https://biblia365plan.pages.dev',
+    'biblia-plan': 'https://biblia365plan.pages.dev',
+    'plan-biblii': 'https://biblia365plan.pages.dev',
+    'plan-czytania': 'https://biblia365plan.pages.dev',
+    'plan365': 'https://biblia365plan.pages.dev'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');

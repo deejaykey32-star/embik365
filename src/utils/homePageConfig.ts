@@ -3,6 +3,7 @@ import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
+import bibliaPlanImg from '../pliki/biblia365plan-main.jpg';
 import mapaMainImg from '../pliki/mapa-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
@@ -11,6 +12,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   rhz365: Cross,
   nowyRHZ: Sparkles,
   biblia365: BookOpen,
+  biblia365plan: BookOpen,
   mapa: Map,
   histada: Gamepad2,
   ebook_wnr: Book,
@@ -88,6 +90,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       color: '#15803d',
       bgGradient: 'from-emerald-900/20 via-emerald-800/10 to-transparent',
       qrId: 'qr_biblia365',
+      hidden: false
+    },
+    {
+      id: 'biblia365plan',
+      name: 'Biblia365 Plan',
+      badge: 'Plan Czytania • biblia365plan.pages.dev',
+      shortDesc: 'Plan czytania Pisma Świętego dzień po dniu, księga po księdze i rozdział po rozdziale z lektorem AI.',
+      fullDesc: 'Interaktywny plan czytania Pisma Świętego z automatycznym śledzeniem postępów na wszystkich urządzeniach, komentarzem hebrajskim, aramejskim, greckim i łacińskim, kontekstem geopolitycznym, florą i fauną oraz lektorem AI. Dostępny na platformie biblia365plan.pages.dev.',
+      imageUrl: bibliaPlanImg,
+      imageAlt: 'Biblia 365 - Plan Czytania, Komentarz & Lektor AI (biblia365plan.pages.dev)',
+      color: '#059669',
+      bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent',
+      qrId: 'qr_biblia365plan',
+      externalUrl: 'https://biblia365plan.pages.dev',
+      openInNewTab: true,
       hidden: false
     },
     {

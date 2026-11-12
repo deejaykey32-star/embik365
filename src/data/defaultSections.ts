@@ -62,6 +62,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-emerald-900/20 via-emerald-800/10 to-transparent'
   },
   {
+    id: 'biblia365plan',
+    name: 'Biblia365 Plan',
+    shortTitle: 'Plan Czytania Biblii',
+    subtitle: 'Plan Czytania, Komentarz Hebrajsko-Grecki & Lektor AI',
+    type: 'info',
+    description: 'Plan czytania Pisma Świętego dzień po dniu, księga po księdze i rozdział po rozdziale z automatycznym śledzeniem postępów, komentarzem hebrajskim, aramejskim, greckim i łacińskim, kontekstem geopolitycznym, florą i fauną oraz lektorem AI na biblia365plan.pages.dev.',
+    badge: 'Plan Czytania • Lektor AI',
+    icon: 'BookOpen',
+    accentColor: '#059669', // emerald-600
+    bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent'
+  },
+  {
     id: 'mapa',
     name: 'Mapa',
     shortTitle: 'Trójjedyna Pielgrzymka Gwiaździsta',

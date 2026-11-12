@@ -143,5 +143,18 @@
 /z/radio-biblia365 /radio?stacja=biblia365 302
 /z/radio-rhz365 /radio?stacja=rhz365 302
 
+# Biblia 365 Plan (Plan czytania, komentarz, lektor AI)
+/biblia365plan https://biblia365plan.pages.dev 302
+/biblia-plan https://biblia365plan.pages.dev 302
+/plan-biblii https://biblia365plan.pages.dev 302
+/plan-czytania https://biblia365plan.pages.dev 302
+/plan365 https://biblia365plan.pages.dev 302
+/r/biblia365plan https://biblia365plan.pages.dev 302
+/r/biblia-plan https://biblia365plan.pages.dev 302
+/r/plan365 https://biblia365plan.pages.dev 302
+/z/biblia365plan https://biblia365plan.pages.dev 302
+/z/biblia-plan https://biblia365plan.pages.dev 302
+/z/plan365 https://biblia365plan.pages.dev 302
+
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301
