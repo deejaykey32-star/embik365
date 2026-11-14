@@ -358,7 +358,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'mapa', 'histada', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
+        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
         const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);
