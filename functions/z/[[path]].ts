@@ -96,7 +96,15 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/biblia365plan': 'https://biblia365plan.pages.dev',
     '/z/biblia-plan': 'https://biblia365plan.pages.dev',
     '/z/plan-czytania': 'https://biblia365plan.pages.dev',
-    '/z/plan365': 'https://biblia365plan.pages.dev'
+    '/z/plan365': 'https://biblia365plan.pages.dev',
+    '/z/via-air': 'https://via-air.pages.dev',
+    '/z/via_air': 'https://via-air.pages.dev',
+    '/z/viaair': 'https://via-air.pages.dev',
+    '/z/via-trinitatis': 'https://via-air.pages.dev',
+    '/z/widoki-alex-player': 'https://widoki-alex-player.pages.dev',
+    '/z/alex-player': 'https://widoki-alex-player.pages.dev',
+    '/z/alexplayer': 'https://widoki-alex-player.pages.dev',
+    '/z/widoki-alex': 'https://widoki-alex-player.pages.dev'
   };
 
   const target = redirectMap[pathKey];

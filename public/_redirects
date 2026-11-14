@@ -156,5 +156,32 @@
 /z/biblia-plan https://biblia365plan.pages.dev 302
 /z/plan365 https://biblia365plan.pages.dev 302
 
+# Widoki na Raj & Alex i Dom — Odtwarzacz YouTube
+/widoki-alex-player https://widoki-alex-player.pages.dev 302
+/alex-player https://widoki-alex-player.pages.dev 302
+/alexplayer https://widoki-alex-player.pages.dev 302
+/widokialex https://widoki-alex-player.pages.dev 302
+/r/widoki-alex-player https://widoki-alex-player.pages.dev 302
+/r/alexplayer https://widoki-alex-player.pages.dev 302
+/r/alex-player https://widoki-alex-player.pages.dev 302
+/z/widoki-alex-player https://widoki-alex-player.pages.dev 302
+/z/alexplayer https://widoki-alex-player.pages.dev 302
+/z/alex-player https://widoki-alex-player.pages.dev 302
+
+# Via Trinitatis 365 – Pure Walk Edition
+/via-air https://via-air.pages.dev 302
+/via_air https://via-air.pages.dev 302
+/viaair https://via-air.pages.dev 302
+/via-trinitatis https://via-air.pages.dev 302
+/viatrinitalis https://via-air.pages.dev 302
+/r/via-air https://via-air.pages.dev 302
+/r/via_air https://via-air.pages.dev 302
+/r/viaair https://via-air.pages.dev 302
+/r/via-trinitatis https://via-air.pages.dev 302
+/z/via-air https://via-air.pages.dev 302
+/z/via_air https://via-air.pages.dev 302
+/z/viaair https://via-air.pages.dev 302
+/z/via-trinitatis https://via-air.pages.dev 302
+
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

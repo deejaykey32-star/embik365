@@ -86,6 +86,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-amber-900/20 via-orange-800/10 to-transparent'
   },
   {
+    id: 'via_air',
+    name: 'Via Trinitatis 365',
+    shortTitle: 'Via Trinitatis – Marsz',
+    subtitle: 'Pure Walk Edition • 365-dniowa piesza wyprawa',
+    type: 'info',
+    description: 'Osobisty kombajn pielgrzymkowo-nawigacyjny na 365-dniową, w 100% pieszą wyprawę z Kochłowic przez Jasną Górę, Santiago de Compostela, Watykan i Jerozolimę. 0% transportu kołowego (via-air.pages.dev).',
+    badge: 'Pielgrzymka Piesza • Nawigacja',
+    icon: 'Compass',
+    accentColor: '#2563eb', // blue-600
+    bgGradient: 'from-blue-950/20 via-indigo-900/10 to-transparent'
+  },
+  {
     id: 'histada',
     name: 'Histada',
     shortTitle: 'Gra: Histada',
@@ -96,6 +108,18 @@ export const SECTIONS: SectionMeta[] = [
     icon: 'Gamepad2',
     accentColor: '#7c3aed', // purple-600
     bgGradient: 'from-purple-950/20 via-violet-900/10 to-transparent'
+  },
+  {
+    id: 'alexplayer',
+    name: 'Widoki & Alex Player',
+    shortTitle: 'Odtwarzacz YouTube',
+    subtitle: 'Odtwarzacz utworów z kanałów @widokinaraj i @0minik0',
+    type: 'info',
+    description: 'Odtwarzacz wszystkich utworów z kanałów YouTube @widokinaraj i @0minik0 z automatycznym i ręcznym odtwarzaniem, zapisem stanu odsłuchu oraz zsynchronizowanym tekstem wyraz po wyrazie (widoki-alex-player.pages.dev).',
+    badge: 'Odtwarzacz YouTube • Karaoke',
+    icon: 'Headphones',
+    accentColor: '#0d9488', // teal-600
+    bgGradient: 'from-teal-950/20 via-cyan-900/10 to-transparent'
   },
   {
     id: 'ebook_wnr',

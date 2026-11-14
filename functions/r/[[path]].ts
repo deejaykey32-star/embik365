@@ -70,7 +70,17 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
     'biblia-plan': 'https://biblia365plan.pages.dev',
     'plan-biblii': 'https://biblia365plan.pages.dev',
     'plan-czytania': 'https://biblia365plan.pages.dev',
-    'plan365': 'https://biblia365plan.pages.dev'
+    'plan365': 'https://biblia365plan.pages.dev',
+    'via-air': 'https://via-air.pages.dev',
+    'via_air': 'https://via-air.pages.dev',
+    'viaair': 'https://via-air.pages.dev',
+    'via-trinitatis': 'https://via-air.pages.dev',
+    'viatrinitalis': 'https://via-air.pages.dev',
+    'widoki-alex-player': 'https://widoki-alex-player.pages.dev',
+    'alex-player': 'https://widoki-alex-player.pages.dev',
+    'alexplayer': 'https://widoki-alex-player.pages.dev',
+    'widoki-alex': 'https://widoki-alex-player.pages.dev',
+    'widokialex': 'https://widoki-alex-player.pages.dev'
   };
 
   let target = staticMap[slug] || url.searchParams.get('to');

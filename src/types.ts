@@ -16,6 +16,8 @@ export type SectionId =
   | 'radio'         // Radio Internetowe 24/7 (4 stacje w pętli)
   | 'grafika'       // galeria materiałów i ilustracji administratora z edytorem WYSIWYG
   | 'wideo'         // Generator Wideo MP4 dla YouTube (1080p, napisy karaoke, lektor)
+  | 'alexplayer'    // Widoki na Raj & Alex i Dom — Odtwarzacz YouTube (widoki-alex-player.pages.dev)
+  | 'via_air'       // Via Trinitatis 365 – Pure Walk Edition (via-air.pages.dev)
   | 'ustawienia';   // Ustawienia aplikacji, wersje natywne (Android APK/AAB, iOS IPA, PWA) oraz personalizacja
 
 export type SectionType = 'reader' | 'flipbook' | 'info';

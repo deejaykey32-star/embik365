@@ -1,10 +1,12 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
 import bibliaPlanImg from '../pliki/biblia365plan-main.jpg';
 import mapaMainImg from '../pliki/mapa-main.jpg';
+import viaAirImg from '../pliki/via-air-main.jpg';
+import alexPlayerImg from '../pliki/widoki-alex-player-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
@@ -13,6 +15,8 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   nowyRHZ: Sparkles,
   biblia365: BookOpen,
   biblia365plan: BookOpen,
+  via_air: Compass,
+  alexplayer: Headphones,
   mapa: Map,
   histada: Gamepad2,
   ebook_wnr: Book,
@@ -108,6 +112,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       hidden: false
     },
     {
+      id: 'via_air',
+      name: 'Via Trinitatis 365',
+      badge: 'Pure Walk • via-air.pages.dev',
+      shortDesc: '365 dni czystego marszu z Kochłowic przez Santiago de Compostela, Rzym i Jerozolimę.',
+      fullDesc: 'Osobisty kombajn pielgrzymkowo-nawigacyjny na 365-dniową, w 100% pieszą wyprawę z Kochłowic przez Jasną Górę, Santiago de Compostela, Watykan i Jerozolimę. 0% transportu kołowego, nawigacja GPS, etapy i dziennik marszu. Dostępny na via-air.pages.dev.',
+      imageUrl: viaAirImg,
+      imageAlt: 'Via Trinitatis 365 - Pure Walk Edition (via-air.pages.dev)',
+      color: '#2563eb',
+      bgGradient: 'from-blue-950/20 via-indigo-900/10 to-transparent',
+      qrId: 'qr_via_air',
+      externalUrl: 'https://via-air.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
       id: 'histada',
       name: 'Gra: Histada',
       badge: 'Projekt Gry • histada-app.pages.dev',
@@ -119,6 +138,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       bgGradient: 'from-purple-950/20 via-violet-900/10 to-transparent',
       qrId: 'qr_histada',
       externalUrl: 'https://histada-app.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
+      id: 'alexplayer',
+      name: 'Widoki & Alex Player',
+      badge: 'Odtwarzacz • widoki-alex-player.pages.dev',
+      shortDesc: 'Odtwarzacz wszystkich utworów z kanałów YouTube @widokinaraj i @0minik0 ze zsynchronizowanym tekstem.',
+      fullDesc: 'Odtwarzacz wszystkich utworów z kanałów YouTube @widokinaraj i @0minik0 z automatycznym i ręcznym odtwarzaniem, zapisem stanu odsłuchu oraz zsynchronizowanym tekstem karaoke wyraz po wyrazie. Dostępny na widoki-alex-player.pages.dev.',
+      imageUrl: alexPlayerImg,
+      imageAlt: 'Widoki na Raj & Alex i Dom — Odtwarzacz YouTube (widoki-alex-player.pages.dev)',
+      color: '#0d9488',
+      bgGradient: 'from-teal-950/20 via-cyan-900/10 to-transparent',
+      qrId: 'qr_alexplayer',
+      externalUrl: 'https://widoki-alex-player.pages.dev',
       openInNewTab: true,
       hidden: false
     },
