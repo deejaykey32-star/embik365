@@ -67,6 +67,7 @@ export interface SectionShowcaseConfig {
 export interface HomePageConfig {
   heroTitle: string;
   heroSubtitle: string;
+  heroImageUrl?: string;
   introHtml: string;
   showcases: SectionShowcaseConfig[];
 }

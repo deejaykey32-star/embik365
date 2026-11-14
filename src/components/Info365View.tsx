@@ -54,6 +54,7 @@ import {
   SECTION_ICONS_MAP 
 } from '../utils/homePageConfig';
 import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
+import jezusMainImg from '../pliki/jezus-main.jpg';
 import { getUIText, translateTextWithFreeApi } from '../utils/translationService';
 
 interface Info365ViewProps {
@@ -304,6 +305,19 @@ export const Info365View: React.FC<Info365ViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Centralna grafika nagłówkowa na stronie głównej: Jezus */}
+      <div className="w-full flex justify-center items-center mb-8 sm:mb-10 animate-fade-in">
+        <div className="relative group max-w-2xl sm:max-w-3xl w-full rounded-3xl overflow-hidden shadow-2xl border border-amber-500/30 dark:border-amber-400/25 bg-linear-to-b from-stone-950 via-zinc-950 to-black p-2 sm:p-3 hover:border-amber-400/60 transition-all duration-300">
+          <div className="absolute inset-0 bg-amber-500/5 rounded-3xl pointer-events-none blur-xl group-hover:bg-amber-500/10 transition-all duration-500" />
+          <img
+            src={activeConfig.heroImageUrl || jezusMainImg}
+            alt="Jezus"
+            className="relative z-10 w-full h-auto max-h-[260px] sm:max-h-[340px] md:max-h-[420px] object-contain rounded-2xl mx-auto drop-shadow-2xl transition-transform duration-500 group-hover:scale-[1.01]"
+            loading="eager"
+          />
+        </div>
+      </div>
 
       {/* Top Banner / Hero */}
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-amber-500/15 via-orange-500/10 to-violet-500/10 dark:from-amber-950/40 dark:via-[#131b2e] dark:to-purple-950/30 p-6 sm:p-10 border border-amber-500/30 shadow-xl mb-10">
