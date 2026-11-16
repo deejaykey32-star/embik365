@@ -76,6 +76,7 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
     '/z/60': 'https://wnr365.pages.dev/model-8',
     '/z/61': 'https://wnr365.pages.dev/siec',
     '/z/62': 'https://codepen.io/Aledom/full/emZXYjJ',
+    '/z/63': 'https://sites.google.com/d/1AqJuMpe6Ei7kEs1LAgcZyy__qT42D5gS/p/1XRFPhsUEzJsZAXXPhnWILTaJOCqwehXT/edit?pli=1',
     '/z/mapa-aon': 'https://mapa-aon.pages.dev',
     '/z/histada': 'https://codepen.io/Aledom/full/emZXYjJ',
     '/z/gra': 'https://codepen.io/Aledom/full/emZXYjJ',
