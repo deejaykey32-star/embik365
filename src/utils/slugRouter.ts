@@ -508,7 +508,7 @@ export function parseUrlRoute(): ParsedRoute {
         '60': 'https://wnr365.pages.dev/model-8',
         '61': 'https://wnr365.pages.dev/siec',
         '62': 'https://codepen.io/Aledom/full/emZXYjJ',
-        '63': 'https://sites.google.com/d/1AqJuMpe6Ei7kEs1LAgcZyy__qT42D5gS/p/1XRFPhsUEzJsZAXXPhnWILTaJOCqwehXT/edit?pli=1',
+        '63': 'https://sites.google.com/view/model-duchowo-optyczny/full-page-embed',
         'via-air': 'https://via-air.pages.dev',
         'viaair': 'https://via-air.pages.dev',
         'widoki-alex-player': 'https://widoki-alex-player.pages.dev',
