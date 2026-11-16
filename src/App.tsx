@@ -14,6 +14,7 @@ import { HistadaView } from './components/HistadaView';
 import { Biblia365PlanView } from './components/Biblia365PlanView';
 import { AlexPlayerView } from './components/AlexPlayerView';
 import { ViaAirView } from './components/ViaAirView';
+import { WwTrinityView } from './components/WwTrinityView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
 import { VideoStudioView } from './components/VideoStudioView';
@@ -609,6 +610,13 @@ export default function App() {
         ) : activeSectionId === 'via_air' ? (
           <ViaAirView
             key={`via_air-${currentLang}`}
+            section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
+        ) : activeSectionId === 'ww_trinity' ? (
+          <WwTrinityView
+            key={`ww_trinity-${currentLang}`}
             section={activeSection}
             currentLang={currentLang}
             theme={theme}

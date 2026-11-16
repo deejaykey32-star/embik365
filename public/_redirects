@@ -184,5 +184,17 @@
 /z/viaair https://via-air.pages.dev 302
 /z/via-trinitatis https://via-air.pages.dev 302
 
+# WW Trinity (Worldwide Trinity — Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta)
+/ww-trinity https://ww-trinity.pages.dev 302
+/ww_trinity https://ww-trinity.pages.dev 302
+/wwtrinity https://ww-trinity.pages.dev 302
+/worldwide-trinity https://ww-trinity.pages.dev 302
+/r/ww-trinity https://ww-trinity.pages.dev 302
+/r/ww_trinity https://ww-trinity.pages.dev 302
+/r/wwtrinity https://ww-trinity.pages.dev 302
+/z/ww-trinity https://ww-trinity.pages.dev 302
+/z/ww_trinity https://ww-trinity.pages.dev 302
+/z/wwtrinity https://ww-trinity.pages.dev 302
+
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

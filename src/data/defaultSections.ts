@@ -98,6 +98,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-blue-950/20 via-indigo-900/10 to-transparent'
   },
   {
+    id: 'ww_trinity',
+    name: 'WW Trinity',
+    shortTitle: 'WW Trinity',
+    subtitle: 'Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta',
+    type: 'info',
+    description: 'Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta — przez Maryję do Jezusa. Interaktywny atlas i generator pętli pielgrzymkowych dla każdej diecezji na świecie łączący katedrę biskupią, sanktuarium maryjne i sanktuarium Bożego Miłosierdzia (ww-trinity.pages.dev).',
+    badge: 'Atlas Światowy • WW Trinity',
+    icon: 'Globe',
+    accentColor: '#4f46e5', // indigo-600
+    bgGradient: 'from-indigo-950/20 via-blue-900/10 to-transparent'
+  },
+  {
     id: 'histada',
     name: 'Histada',
     shortTitle: 'Gra: Histada',

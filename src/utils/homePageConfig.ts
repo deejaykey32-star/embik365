@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -8,6 +8,7 @@ import mapaMainImg from '../pliki/mapa-main.jpg';
 import viaAirImg from '../pliki/via-air-main.jpg';
 import alexPlayerImg from '../pliki/widoki-alex-player-main.jpg';
 import jezusMainImg from '../pliki/jezus-main.jpg';
+import wwTrinityImg from '../pliki/ww-trinity-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
@@ -18,6 +19,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   biblia365plan: BookOpen,
   via_air: Compass,
   alexplayer: Headphones,
+  ww_trinity: Globe,
   mapa: Map,
   histada: Gamepad2,
   ebook_wnr: Book,
@@ -155,6 +157,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       bgGradient: 'from-teal-950/20 via-cyan-900/10 to-transparent',
       qrId: 'qr_alexplayer',
       externalUrl: 'https://widoki-alex-player.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
+      id: 'ww_trinity',
+      name: 'WW Trinity',
+      badge: 'Ogólnoświatowy Atlas • ww-trinity.pages.dev',
+      shortDesc: 'WW Trinity (Worldwide Trinity) — Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta dla każdej diecezji świata.',
+      fullDesc: 'Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta — przez Maryję do Jezusa. Interaktywny dwujęzyczny atlas (PL/EN) wyznaczający trzyetapowe trasy pielgrzymkowe: od katedry biskupiej do sanktuarium maryjnego, dalej do sanktuarium Miłosierdzia Bożego i powrót. Dostępny dla diecezji na całym świecie na platformie ww-trinity.pages.dev.',
+      imageUrl: wwTrinityImg,
+      imageAlt: 'WW Trinity — Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta (ww-trinity.pages.dev)',
+      color: '#4f46e5',
+      bgGradient: 'from-indigo-950/20 via-blue-900/10 to-transparent',
+      qrId: 'qr_ww_trinity',
+      externalUrl: 'https://ww-trinity.pages.dev',
       openInNewTab: true,
       hidden: false
     },
@@ -360,7 +377,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
+        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'ww_trinity', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
         const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);

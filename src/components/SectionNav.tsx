@@ -17,7 +17,8 @@ import {
   EyeOff,
   Smartphone,
   Settings,
-  Headphones
+  Headphones,
+  Globe
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -49,7 +50,8 @@ const ICONS: Record<string, React.ElementType> = {
   Video,
   Smartphone,
   Settings,
-  Headphones
+  Headphones,
+  Globe
 };
 
 export const SectionNav: React.FC<Props> = ({
