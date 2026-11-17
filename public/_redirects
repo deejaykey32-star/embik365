@@ -196,5 +196,22 @@
 /z/ww_trinity https://ww-trinity.pages.dev 302
 /z/wwtrinity https://ww-trinity.pages.dev 302
 
+# Szlak Pielgrzyma 3D (Peligrim Nav — Nawigacja Offline PWA)
+/peligrim-nav https://peligrim-nav.pages.dev 302
+/peligrim_nav https://peligrim-nav.pages.dev 302
+/peligrimnav https://peligrim-nav.pages.dev 302
+/peligrim https://peligrim-nav.pages.dev 302
+/peigrim-nav https://peligrim-nav.pages.dev 302
+/peigrim_nav https://peligrim-nav.pages.dev 302
+/peigrimnav https://peligrim-nav.pages.dev 302
+/peigrim https://peligrim-nav.pages.dev 302
+/szlak-pielgrzyma https://peligrim-nav.pages.dev 302
+/r/peligrim-nav https://peligrim-nav.pages.dev 302
+/r/peligrim_nav https://peligrim-nav.pages.dev 302
+/r/peigrim-nav https://peligrim-nav.pages.dev 302
+/z/peligrim-nav https://peligrim-nav.pages.dev 302
+/z/peligrim_nav https://peligrim-nav.pages.dev 302
+/z/peigrim-nav https://peligrim-nav.pages.dev 302
+
 # Przekierowania zasobów
 /src/pliki/* /pliki/:splat 301

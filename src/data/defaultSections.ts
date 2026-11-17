@@ -110,6 +110,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-indigo-950/20 via-blue-900/10 to-transparent'
   },
   {
+    id: 'peligrim_nav',
+    name: 'Szlak Pielgrzyma 3D',
+    shortTitle: 'Peligrim Nav',
+    subtitle: 'Nawigacja GPS 3D • Mapy Offline PWA dla pielgrzymów',
+    type: 'info',
+    description: 'Darmowa nawigacja GPS 3D z widokiem z perspektywy wędrowca, automatycznym wykrywaniem najbliższej diecezji z WW Trinity, trasami etapowymi, eksportem śladów GPX oraz pobieraniem kafelków do pracy offline bez zasięgu GSM (peligrim-nav.pages.dev).',
+    badge: 'Nawigacja GPS 3D • Peligrim Nav',
+    icon: 'Navigation',
+    accentColor: '#059669', // emerald-600
+    bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent'
+  },
+  {
     id: 'histada',
     name: 'Histada',
     shortTitle: 'Gra: Histada',

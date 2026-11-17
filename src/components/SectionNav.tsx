@@ -18,7 +18,8 @@ import {
   Smartphone,
   Settings,
   Headphones,
-  Globe
+  Globe,
+  Navigation
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -51,7 +52,8 @@ const ICONS: Record<string, React.ElementType> = {
   Smartphone,
   Settings,
   Headphones,
-  Globe
+  Globe,
+  Navigation
 };
 
 export const SectionNav: React.FC<Props> = ({

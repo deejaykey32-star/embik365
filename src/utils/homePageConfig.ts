@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe, Navigation } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -9,6 +9,7 @@ import viaAirImg from '../pliki/via-air-main.jpg';
 import alexPlayerImg from '../pliki/widoki-alex-player-main.jpg';
 import jezusMainImg from '../pliki/jezus-main.jpg';
 import wwTrinityImg from '../pliki/ww-trinity-main.jpg';
+import peligrimNavImg from '../pliki/peligrim-nav-main.jpg';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
@@ -20,6 +21,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   via_air: Compass,
   alexplayer: Headphones,
   ww_trinity: Globe,
+  peligrim_nav: Navigation,
   mapa: Map,
   histada: Gamepad2,
   ebook_wnr: Book,
@@ -172,6 +174,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       bgGradient: 'from-indigo-950/20 via-blue-900/10 to-transparent',
       qrId: 'qr_ww_trinity',
       externalUrl: 'https://ww-trinity.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
+      id: 'peligrim_nav',
+      name: 'Szlak Pielgrzyma 3D',
+      badge: 'Nawigacja GPS 3D • peligrim-nav.pages.dev',
+      shortDesc: 'Darmowa nawigacja piesza 3D dla pielgrzymów z widokiem FPV, trasami WW Trinity, eksportem GPX i trybem offline.',
+      fullDesc: 'Darmowa aplikacja nawigacyjna GPS 3D dla pielgrzymów z perspektywą wędrowca, integracją z diecezjami WW Trinity, Mapą AON i Via Air, rejestratorem trasy, eksportem śladów GPX oraz pobieraniem kafelków map do pamięci offline na leśne odcinki bez zasięgu GSM. Dostępna na platformie peligrim-nav.pages.dev.',
+      imageUrl: peligrimNavImg,
+      imageAlt: 'Szlak Pielgrzyma 3D - Nawigacja Offline PWA (peligrim-nav.pages.dev)',
+      color: '#059669',
+      bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent',
+      qrId: 'qr_peligrim_nav',
+      externalUrl: 'https://peligrim-nav.pages.dev',
       openInNewTab: true,
       hidden: false
     },
@@ -377,7 +394,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'ww_trinity', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
+        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'ww_trinity', 'peligrim_nav', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
         const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);

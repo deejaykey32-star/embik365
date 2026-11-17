@@ -15,6 +15,7 @@ import { Biblia365PlanView } from './components/Biblia365PlanView';
 import { AlexPlayerView } from './components/AlexPlayerView';
 import { ViaAirView } from './components/ViaAirView';
 import { WwTrinityView } from './components/WwTrinityView';
+import { PeligrimNavView } from './components/PeligrimNavView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
 import { VideoStudioView } from './components/VideoStudioView';
@@ -617,6 +618,13 @@ export default function App() {
         ) : activeSectionId === 'ww_trinity' ? (
           <WwTrinityView
             key={`ww_trinity-${currentLang}`}
+            section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
+        ) : activeSectionId === 'peligrim_nav' ? (
+          <PeligrimNavView
+            key={`peligrim_nav-${currentLang}`}
             section={activeSection}
             currentLang={currentLang}
             theme={theme}
