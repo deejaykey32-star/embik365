@@ -694,16 +694,31 @@ Zwróć WYŁĄCZNIE poprawny JSON (bez znaczników markdown, czysty ciąg JSON) 
   }
   const ttsChunkCache: Map<string, ArrayBuffer> = (globalThis as any).__ttsChunkCache;
 
-  // Text-To-Speech (TTS) Online AI Endpoint
-  if (pathname === '/api/tts' && request.method === 'POST') {
+  // Text-To-Speech (TTS) Online AI Endpoint (obsługa POST oraz GET)
+  if ((pathname === '/api/tts' || pathname === '/api/tts/') && (request.method === 'POST' || request.method === 'GET')) {
     try {
-      const body = await request.json() as {
+      let body: {
         text?: string;
         voiceId?: string;
         lang?: string;
         rate?: number;
         pitch?: number;
-      };
+        format?: string;
+      } = {};
+
+      if (request.method === 'POST') {
+        body = await request.json().catch(() => ({}));
+      } else {
+        const sp = url.searchParams;
+        body = {
+          text: sp.get('text') || '',
+          voiceId: sp.get('voiceId') || '',
+          lang: sp.get('lang') || 'pl',
+          rate: sp.get('rate') ? parseFloat(sp.get('rate')!) : 1.1,
+          pitch: sp.get('pitch') ? parseFloat(sp.get('pitch')!) : 1.0,
+          format: sp.get('format') || 'json'
+        };
+      }
 
       const rawText = (body.text || '').trim();
       if (!rawText) {

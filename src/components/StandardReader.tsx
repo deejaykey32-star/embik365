@@ -176,9 +176,10 @@ export const StandardReader: React.FC<Props> = ({
     }
 
     // Biblia365: lektor czyta tylko nazwę księgi i rozdział, tekst bez numerów wersetów oraz komentarz
+    const rawContent = (displayedContent || entry.content || '').replace(/<[^>]*>/g, '');
     const textToSpeak = activeBibliaEntry
       ? buildBibliaSpeechText(activeBibliaEntry)
-      : `${displayedTitle || entry.title}. ${displayedContent || entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
+      : `${displayedTitle || entry.title}. ${rawContent}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
     const lectorCfg = getLectorConfig();
 
     await playLectorSpeech({

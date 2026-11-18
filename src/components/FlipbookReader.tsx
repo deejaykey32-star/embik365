@@ -602,7 +602,13 @@ export const FlipbookReader: React.FC<Props> = ({
       return;
     }
 
-    const textToSpeak = `${entry.title}. ${entry.content.replace(/<[^>]*>/g, '')}. ${entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : ''}`;
+    const isSpread = isSpreadMode && windowWidth >= 768;
+    const pageText = isSpread
+      ? `${leftPageData.chunk || ''} ${rightPageData.chunk || ''}`.trim()
+      : (singlePageData.chunk || singlePageData.fullContent || entry.content || '');
+    const cleanContent = (pageText || entry.content || '').replace(/<[^>]*>/g, '');
+    const pageTitle = singlePageData.title || entry.title;
+    const textToSpeak = `${pageTitle}. ${cleanContent}. ${singlePageData.prayer ? 'Modlitwa: ' + singlePageData.prayer.replace(/<[^>]*>/g, '') : (entry.prayer ? 'Modlitwa: ' + entry.prayer.replace(/<[^>]*>/g, '') : '')}`;
     const lectorCfg = getLectorConfig();
 
     await playLectorSpeech({

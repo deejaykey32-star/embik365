@@ -279,16 +279,16 @@ app.get('/api/health', (req, res) => {
 // In-memory cache for TTS audio chunks to prevent repeated requests and rate limiting
 const ttsAudioCache = new Map<string, Buffer>();
 
-// Text-To-Speech (TTS) Online AI Endpoint with intelligent caching & fallback
-app.post('/api/tts', async (req, res) => {
+// Text-To-Speech (TTS) Online AI Endpoint with intelligent caching & fallback (POST & GET)
+app.all('/api/tts', async (req, res) => {
   try {
-    const rawText = (req.body?.text || '').trim();
+    const rawText = ((req.method === 'POST' ? req.body?.text : req.query?.text) || '').trim();
     if (!rawText) {
       return res.status(400).json({ error: 'Brak tekstu do odczytania.' });
     }
 
-    const targetLang = (req.body?.lang || 'pl').toLowerCase();
-    const wantsJson = req.headers['accept']?.includes('application/json') || req.body?.format === 'json';
+    const targetLang = ((req.method === 'POST' ? req.body?.lang : req.query?.lang) || 'pl').toLowerCase();
+    const wantsJson = req.headers['accept']?.includes('application/json') || req.body?.format === 'json' || req.query?.format === 'json';
     
     // Bezpieczny podział na fragmenty (maks 130 znaków) dla Google TTS bez sztucznego obcinania
     const limitedChunks = splitTextForTts(rawText, 130);

@@ -683,7 +683,10 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
   // Helper do pobierania segmentów audio z /api/tts z podwójnym adresem i bezpośrednim fallbackiem
   async function fetchOnlineTtsBuffers(segmentText: string): Promise<AudioBuffer[]> {
     if (!segmentText.trim()) return [];
-    const endpoints = ['/api/tts', 'https://widokinaraj.pl/api/tts'];
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const endpoints = isLocalhost
+      ? ['/api/tts', 'https://wnr365.pages.dev/api/tts', 'https://new-wnr365.pages.dev/api/tts']
+      : ['https://wnr365.pages.dev/api/tts', 'https://new-wnr365.pages.dev/api/tts', '/api/tts', 'https://embik365.pages.dev/api/tts'];
     
     for (const endpoint of endpoints) {
       try {
@@ -698,7 +701,7 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
           signal: controller.signal,
           body: JSON.stringify({
             text: segmentText,
-            voiceId: onlineProfile.id,
+            voiceId: onlineProfile?.id || 'pl-AI-Jan',
             lang: targetLang,
             gender: targetGender,
             rate: config.rate,
@@ -747,6 +750,31 @@ export async function playLectorSpeech(options: PlayLectorOptions): Promise<void
         console.warn(`Online TTS fetch error on ${endpoint}:`, err);
       }
     }
+
+    // Awaryjny fallback GET bezpośrednio do Cloudflare Pages Functions
+    try {
+      const getEndpoint = `https://wnr365.pages.dev/api/tts?text=${encodeURIComponent(segmentText)}&lang=${encodeURIComponent(targetLang)}&format=json`;
+      const getRes = await fetch(getEndpoint, { headers: { 'Accept': 'application/json' } });
+      if (getRes.ok) {
+        const getData = await getRes.json();
+        if (getData && Array.isArray(getData.chunks) && getData.chunks.length > 0) {
+          let audioCtx = sharedAudioCtx || unlockMobileAudio();
+          if (audioCtx) {
+            const decodedChunks: AudioBuffer[] = [];
+            for (const b64 of getData.chunks) {
+              try {
+                const bin = atob(b64);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const decoded = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+                decodedChunks.push(decoded);
+              } catch {}
+            }
+            if (decodedChunks.length > 0) return decodedChunks;
+          }
+        }
+      }
+    } catch {}
 
     // Bezpośredni fallback Google Translate TTS (gdyby endpointy API były chwilowo niedostępne)
     try {
