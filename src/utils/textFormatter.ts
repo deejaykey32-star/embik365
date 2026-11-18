@@ -49,15 +49,13 @@ export function formatContentForReaderHtml(rawContent: string): string {
     .replace(/(#{1,4}\s+[^\n]+)\n([^\n#])/g, '$1\n\n$2')
     .replace(/([^\n])\n(---\s*)\n/g, '$1\n\n$2\n');
 
-  // Oddzielamy osadzone kontenery QR z HTML (np. materiały dodatkowe WnR)
-  const qrPlaceholderMap: Map<string, string> = new Map();
-  let placeholderIndex = 0;
-
-  let textWithoutQr = preprocessed.replace(/<div class=['"]wnr-qr-container[\s\S]*?<\/div><\/div><\/div>/gi, (match) => {
-    const key = `___QR_CONTAINER_PLACEHOLDER_${placeholderIndex++}___`;
-    qrPlaceholderMap.set(key, match);
-    return `\n\n${key}\n\n`;
-  });
+  // Usuwamy ewentualne pozostałości osadzonych kontenerów HTML kodów QR
+  // (Kody QR są renderowane natywnie jako komponenty React w sekcji qrBadges, więc czysty tekst nie powinien zawierać znaczników HTML)
+  let textWithoutQr = preprocessed
+    .replace(/<div class=['"]wnr-qr-container[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/gi, '')
+    .replace(/<div class=['"][^'"]*wnr-qr-container[^'"]*['"][\s\S]*?<\/div>\s*<\/div>/gi, '')
+    .replace(/<div class=['"][^'"]*wnr-qr-container[^'"]*['"][\s\S]*?<\/div>/gi, '')
+    .replace(/<div class=['"][^'"]*qr-code-embed-card[^'"]*['"][\s\S]*?<\/div>/gi, '');
 
   // Dzielimy na akapity
   const rawParagraphs = textWithoutQr.split(/\n\s*\n+/);
@@ -66,12 +64,6 @@ export function formatContentForReaderHtml(rawContent: string): string {
   for (let para of rawParagraphs) {
     const trimmed = para.trim();
     if (!trimmed) continue;
-
-    // Jeśli to placeholder karty QR, wstawiamy go bezpośrednio
-    if (qrPlaceholderMap.has(trimmed)) {
-      htmlParts.push(qrPlaceholderMap.get(trimmed)!);
-      continue;
-    }
 
     // Obsługa nagłówków Markdown (#, ##, ###, ####)
     if (trimmed.startsWith('# ')) {
