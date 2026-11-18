@@ -280,22 +280,40 @@ ${clausulaeList}`;
     const pageData = getWnrPdfPage(safeP);
     const wnr = getWnrEntryForDay(wnrPos.dayNumber);
 
+    let chunk = pageData.text || '';
+    if (wnrPos.dayNumber <= 91 && wnr) {
+      if (wnrPos.totalPages === 1) {
+        chunk = wnr.content;
+      } else if (wnrPos.totalPages === 2) {
+        chunk = wnrPos.subPage === 1 ? wnr.page1 : wnr.page2;
+      } else {
+        const paras = (wnr.content || '').split('\n\n');
+        const perPage = Math.max(1, Math.ceil(paras.length / wnrPos.totalPages));
+        const start = (wnrPos.subPage - 1) * perPage;
+        chunk = paras.slice(start, start + perPage).join('\n\n');
+      }
+    }
+
+    const qrBadgesList = (wnr.qrBadges && (wnr.qrBadges as any[]).length > 0)
+      ? wnr.qrBadges
+      : ((pageData.qrBadges && (pageData.qrBadges as any[]).length > 0 ? pageData.qrBadges : (wnr.qrBadges as any[]) || []));
+
     return {
       pdfPageNumber: safeP,
       dayNumber: wnrPos.dayNumber,
       subPage: wnrPos.subPage,
       totalPagesForDay: wnrPos.totalPages,
-      dateKey: pageData.dateKey,
-      displayDate: pageData.displayDate,
+      dateKey: wnr.dateKey || pageData.dateKey,
+      displayDate: wnr.displayDate || pageData.displayDate,
       season: dateObj.season,
-      title: pageData.title || wnr.title || `Widoki na Raj • Dzień ${wnrPos.dayNumber}`,
-      subtitle: `${pageData.displayDate} • Dzień ${wnrPos.dayNumber} z 365 (Strona PDF ${safeP} z 1172)`,
-      chunk: pageData.text || '',
+      title: wnr.title || pageData.title || `Widoki na Raj • Dzień ${wnrPos.dayNumber}`,
+      subtitle: `${wnr.displayDate || pageData.displayDate} • Dzień ${wnrPos.dayNumber} z 365 (Strona PDF ${safeP} z 1172)`,
+      chunk: chunk || pageData.text || '',
       prayer: '',
       mystery: '',
       intention: '',
       fullContent: wnr.content || pageData.fullContent,
-      qrBadges: (pageData.qrBadges && (pageData.qrBadges as any[]).length > 0 ? pageData.qrBadges : (wnr.qrBadges as any[]) || [])
+      qrBadges: qrBadgesList
     };
   }
 
@@ -422,6 +440,19 @@ export const FlipbookReader: React.FC<Props> = ({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
 
+  const defaultWnrTom1Pdf: UploadedPdf = {
+    id: 'pdf-wnr365-tom1',
+    filename: 'Widoki_na_Raj_Tom_1_KDP.pdf',
+    originalName: 'Widoki_na_Raj_Tom_1_KDP.pdf',
+    format: 'pdf',
+    url: '/pdf/Widoki_na_Raj_Tom_1_KDP.pdf',
+    size: 1474947,
+    sectionId: 'ebook_wnr',
+    title: 'Widoki na Raj (Tom 1 — Zima, Dni 1–91) – PDF KDP',
+    description: 'Oficjalny plik PDF tomu 1 (Zima, Dni 1–91 od 25 grudnia do 25 marca, 345 stron, 40 kodów QR).',
+    uploadedAt: '2026-11-18T10:00:00.000Z'
+  };
+
   const defaultWnrPdf: UploadedPdf = {
     id: 'pdf-wnr365-full',
     filename: '!WnR365 - całość poprawiana 7.11.2026.pdf',
@@ -460,7 +491,7 @@ export const FlipbookReader: React.FC<Props> = ({
 
   const activePdf = matchingPdfs[0] || (
     section.id === 'ebook_wnr' || section.id === 'wnr365' || section.id === 'wnr366'
-      ? defaultWnrPdf
+      ? (currentDate.dayNumber <= 91 ? defaultWnrTom1Pdf : defaultWnrPdf)
       : (section.id === 'ebook_rhz' || section.id === 'rhz365')
       ? defaultRhzPdf
       : null

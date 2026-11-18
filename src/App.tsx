@@ -159,6 +159,18 @@ export default function App() {
   // Default system uploads (attached PDF books)
   const DEFAULT_SYSTEM_UPLOADS: UploadedPdf[] = [
     {
+      id: 'pdf-wnr365-tom1',
+      filename: 'Widoki_na_Raj_Tom_1_KDP.pdf',
+      originalName: 'Widoki_na_Raj_Tom_1_KDP.pdf',
+      format: 'pdf',
+      url: '/pdf/Widoki_na_Raj_Tom_1_KDP.pdf',
+      size: 1474947,
+      sectionId: 'ebook_wnr',
+      title: 'Widoki na Raj (Tom 1 — Zima, Dni 1–91) – PDF KDP',
+      description: 'Oficjalny plik PDF tomu 1 (Zima, Dni 1–91 od 25 grudnia do 25 marca, 345 stron, 40 kodów QR). Format KDP Amazon i czytnik.',
+      uploadedAt: '2026-11-18T10:00:00.000Z'
+    },
+    {
       id: 'pdf-wnr365-full',
       filename: '!WnR365 - całość poprawiana 7.11.2026.pdf',
       originalName: '!WnR365 - całość poprawiana 7.11.2026.pdf',
