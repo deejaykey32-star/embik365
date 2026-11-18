@@ -10,6 +10,7 @@ import alexPlayerImg from '../pliki/widoki-alex-player-main.jpg';
 import jezusMainImg from '../pliki/jezus-main.jpg';
 import wwTrinityImg from '../pliki/ww-trinity-main.jpg';
 import peligrimNavImg from '../pliki/peligrim-nav-main.jpg';
+import widokiMisjaImg from '../pliki/widoki-misja-main.png';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
@@ -39,7 +40,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
 export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
   heroTitle: 'Droga365',
   heroSubtitle: 'Roczny cykl od 25 grudnia do 24 grudnia • 7 Dzieł w Jednym Miejscu',
-  heroImageUrl: jezusMainImg,
+  heroImageUrl: widokiMisjaImg,
   introHtml: `
     <p style="font-size: 18px; line-height: 1.7; margin-bottom: 16px;">
       Witaj w <strong>Droga365</strong> – kompleksowej przestrzeni duchowej i czytelniczej, w której wiara łączy się z literaturą, modlitwą różańcową, Pismem Świętym oraz osobistym świadectwem życia.
@@ -404,10 +405,13 @@ export function getHomePageConfig(): HomePageConfig {
       
       const oldIntro = localStorage.getItem('drogowskazy_info365_intro');
       
+      const isOldDefaultHero = !parsed.heroImageUrl || parsed.heroImageUrl.includes('jezus-main');
+      const heroImageUrl = isOldDefaultHero ? widokiMisjaImg : (parsed.heroImageUrl || widokiMisjaImg);
+
       return {
         heroTitle: parsed.heroTitle || DEFAULT_HOME_PAGE_CONFIG.heroTitle,
         heroSubtitle: parsed.heroSubtitle || DEFAULT_HOME_PAGE_CONFIG.heroSubtitle,
-        heroImageUrl: parsed.heroImageUrl || DEFAULT_HOME_PAGE_CONFIG.heroImageUrl || jezusMainImg,
+        heroImageUrl,
         introHtml: parsed.introHtml || oldIntro || DEFAULT_HOME_PAGE_CONFIG.introHtml,
         showcases
       };
