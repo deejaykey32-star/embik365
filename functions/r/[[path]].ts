@@ -16,6 +16,8 @@ export const onRequest: LocalPagesFunction<Env> = async (context) => {
   const slug = decodeURIComponent(rawPath.replace(/^r\/?/i, '').trim()).toLowerCase();
 
   const staticMap: Record<string, string> = {
+    '99': 'https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4',
+    '100': 'https://youtube.com/shorts/iuyFCULGBzc?is=mLguO2_OpUAfjR8I',
     'info': 'https://wnr365.pages.dev/#info365',
     'info365': 'https://wnr365.pages.dev/#info365',
     'wnr': 'https://wnr365.pages.dev/#wnr365',

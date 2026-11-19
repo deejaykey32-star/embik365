@@ -3,6 +3,15 @@
   "uploads": [],
   "qrCodes": [
     {
+      "id": "qr_z99",
+      "title": "Transmisja na żywo YouTube (/z/99)",
+      "displayLabel": "Zeskanuj, aby otworzyć transmisję na żywo YouTube",
+      "shortUrl": "https://wnr365.pages.dev/z/99",
+      "fullUrl": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+      "category": "Materiały WnR365",
+      "createdAt": "2026-11-19T18:30:00.000Z"
+    },
+    {
       "id": "qr_file_farby__wiat_o_png",
       "title": "farby+światło.png",
       "displayLabel": "Zeskanuj, aby zobaczyć plik farby+światło.png",

@@ -13,6 +13,7 @@ export const onRequest: any = async (context: PagesFunctionContext<Env>) => {
 
   // 1. Static redirect map matching public/_redirects
   const redirectMap: Record<string, string> = {
+    '/z/99': 'https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4',
     '/z/100': 'https://youtube.com/shorts/iuyFCULGBzc?is=mLguO2_OpUAfjR8I',
     '/z/1': 'https://youtu.be/kFdLgWrUt10?si=MtS86vPE4ddts2Am',
     '/z/2': 'https://youtu.be/u3HeJFrO1T0?si=O17L_9HqsYDcnMhM',

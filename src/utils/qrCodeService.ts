@@ -70,6 +70,15 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
 
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
   {
+    id: 'qr_z99',
+    title: 'Transmisja na żywo YouTube (/z/99)',
+    displayLabel: 'Zeskanuj, aby otworzyć transmisję na żywo YouTube',
+    shortUrl: 'https://wnr365.pages.dev/z/99',
+    fullUrl: 'https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4',
+    category: 'Materiały WnR365',
+    createdAt: '2026-11-19'
+  },
+  {
     id: 'qr_aistudio_solar_system',
     title: 'Interaktywny Układ Słoneczny 3D (Kolekcja Paczek)',
     displayLabel: 'Zeskanuj, aby otworzyć interaktywną symulację Układu Słonecznego 3D',
