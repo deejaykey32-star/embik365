@@ -2166,12 +2166,23 @@ export const NOWY_RHZ_CYCLE_2_MYSTERIES: NowyRhzMystery[] = [
   },
   {
     "day": 81,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 81
+      }
+],
     "cycle": 2,
-    "t": "Chrzest Pana Jezusa w Jordanie",
-    "sub": "Ten jest mój Syn umiłowany, w którym mam upodobanie",
+    "t": "Etap 4 - Część 2 - Tajemnica 1",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Mt 3,13-17; Mk 1,9-11",
     "passage": "(Mt 3,13.16-17) Wtedy przyszedł Jezus z Galilei nad Jordan do Jana, żeby przyjąć chrzest od niego. (...) A gdy Jezus został ochrzczony, natychmiast wyszedł z wody. A oto otworzyły się nad Nim niebiosa i ujrzał Ducha Bożego zstępującego jak gołębica i przychodzącego na Niego. A głos z nieba mówił: «Ten jest mój Syn umiłowany, w którym mam upodobanie».",
-    "med": "Rozważamy początek publicznej misji Jezusa. Niewinny Baranek staje pośród grzeszników, by wziąć na siebie ciężar naszych win. Niebo się otwiera, Duch Święty zstępuje w postaci gołębicy, a Ojciec ogłasza Bóstwo swego Syna.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który stanął w pokorze w wodach Jordanu pośród grzeszników.",
       "który przyjął chrzest pokuty z rąk świętego Jana Chrzciciela.",
@@ -2186,19 +2197,30 @@ export const NOWY_RHZ_CYCLE_2_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
-    "partTitle": "Tajemnice Światła",
+    "part": 2,
+    "partTitle": "Tajemnice Ciszy",
     "inPart": 1,
     "prayer": "Panie Jezu Chryste, Światłości Świata, Ty przez swoje publiczne życie, chrzest w Jordanie, cud w Kanie, głoszenie Królestwa, przemienienie na Taborze i dar Eucharystii rozproszyłeś mroki grzechu i niewiary. Prosimy Cię, napełnij nasze dusze blaskiem Twojej Ewangelii. Naucz nas żyć łaską chrztu, czynić wszystko, cokolwiek powie Twoja Matka, nawracać się codziennie i karmić się Twoim Ciałem aż do zjednoczenia z Tobą w wieczności. Który żyjesz i królujesz na wieki wieków. Amen."
   },
   {
     "day": 82,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 82
+      }
+],
     "cycle": 2,
-    "t": "Objawienie na weselu w Kanie Galilejskiej",
-    "sub": "Zróbcie wszystko, cokolwiek wam powie",
+    "t": "Etap 4 - Część 2 - Tajemnica 2",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "J 2,1-11",
     "passage": "(J 2,1-3.5.11) Odbywało się wesele w Kanie Galilejskiej i była tam Matka Jezusa. Zaproszono na to wesele także Jezusa i Jego uczniów. A kiedy zabrakło wina, Matka Jezusa rzekła do Niego: «Nie mają wina». (...) Wtedy Matka Jego powiedziała do sług: «Zróbcie wszystko, cokolwiek wam powie». (...) Taki to początek znaków uczynił Jezus w Kanie Galilejskiej. Objawił swoją chwałę i uwierzyli w Niego Jego uczniowie.",
-    "med": "Rozważamy wstawiennictwo Najświętszej Maryi Panny, która pierwsza dostrzega ludzki brak i prosi swego Syna. Jezus przemienia wodę w wyborne wino, uświęca małżeństwo i objawia swoją chwałę, budząc wiarę uczniów.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który swoją obecnością pobłogosławił i uświęcił małżeństwo w Kanie.",
       "którego Matka wstawiła się za nowożeńcami w ich potrzebie.",
@@ -2213,19 +2235,30 @@ export const NOWY_RHZ_CYCLE_2_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
-    "partTitle": "Tajemnice Światła",
+    "part": 2,
+    "partTitle": "Tajemnice Ciszy",
     "inPart": 2,
     "prayer": "Panie Jezu Chryste, Światłości Świata, Ty przez swoje publiczne życie, chrzest w Jordanie, cud w Kanie, głoszenie Królestwa, przemienienie na Taborze i dar Eucharystii rozproszyłeś mroki grzechu i niewiary. Prosimy Cię, napełnij nasze dusze blaskiem Twojej Ewangelii. Naucz nas żyć łaską chrztu, czynić wszystko, cokolwiek powie Twoja Matka, nawracać się codziennie i karmić się Twoim Ciałem aż do zjednoczenia z Tobą w wieczności. Który żyjesz i królujesz na wieki wieków. Amen."
   },
   {
     "day": 83,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 83
+      }
+],
     "cycle": 2,
-    "t": "Głoszenie Królestwa Bożego i wzywanie do nawrócenia",
-    "sub": "Czas się wypełnił i bliskie jest królestwo Boże. Nawracajcie się i wierzcie w Ewangelię!",
+    "t": "Etap 4 - Część 2 - Tajemnica 3",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Mk 1,14-15; Mt 5,1-12",
     "passage": "(Mk 1,14-15) Jezus przyszedł do Galilei, głosząc Ewangelię Bożą i mówiąc: «Czas się wypełnił i bliskie jest królestwo Boże. Nawracajcie się i wierzcie w Ewangelię!» (Mt 5,3.8) «Błogosławieni ubodzy w duchu, albowiem do nich należy królestwo niebieskie. Błogosławieni czystego serca, albowiem oni Boga oglądać będą».",
-    "med": "Rozważamy niestrudzone nauczanie Jezusa, który przemierzał miasta i wioski, uzdrawiając chorych, uwalniając zniewolonych i odpuszczając grzechy. W Kazaniu na Górze objawia prawo miłości i wzywa nas do przemiany serca.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który głosił po miastach i wsiach radosną nowinę o Królestwie Bożym.",
       "który wzywa nas bez ustanku: „Nawracajcie się i wierzcie w Ewangelię”.",
@@ -2240,19 +2273,30 @@ export const NOWY_RHZ_CYCLE_2_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
-    "partTitle": "Tajemnice Światła",
+    "part": 2,
+    "partTitle": "Tajemnice Ciszy",
     "inPart": 3,
     "prayer": "Panie Jezu Chryste, Światłości Świata, Ty przez swoje publiczne życie, chrzest w Jordanie, cud w Kanie, głoszenie Królestwa, przemienienie na Taborze i dar Eucharystii rozproszyłeś mroki grzechu i niewiary. Prosimy Cię, napełnij nasze dusze blaskiem Twojej Ewangelii. Naucz nas żyć łaską chrztu, czynić wszystko, cokolwiek powie Twoja Matka, nawracać się codziennie i karmić się Twoim Ciałem aż do zjednoczenia z Tobą w wieczności. Który żyjesz i królujesz na wieki wieków. Amen."
   },
   {
     "day": 84,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 84
+      }
+],
     "cycle": 2,
-    "t": "Przemienienie na Górze Tabor",
-    "sub": "Twarz Jego zajaśniała jak słońce, odzienie zaś stało się białe jak światło",
+    "t": "Etap 4 - Część 2 - Tajemnica 4",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Mt 17,1-9; Łk 9,28-36",
     "passage": "(Mt 17,1-3.5) Jezus wziął z sobą Piotra, Jakuba i brata jego Jana i zaprowadził ich na górę wysoką, osobno. Tam przemienił się wobec nich: twarz Jego zajaśniała jak słońce, odzienie zaś stało się białe jak światło. A oto im się ukazali Mojżesz i Eliasz, którzy rozmawiali z Nim. (...) A oto obłok świetlany osłonił ich, a z obłoku odezwał się głos: «Ten jest mój Syn umiłowany, w którym mam upodobanie, Jego słuchajcie!»",
-    "med": "Rozważamy chwałę Bóstwa Chrystusa objawioną na Górze Tabor wobec Piotra, Jakuba i Jana. Rozmawiając z Mojżeszem i Eliaszem o swoim zbawczym odejściu w Jerozolimie, Jezus umacnia wiarę uczniów przed zgorszeniem krzyża.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który wyprowadził trzech wybranych uczniów na świętą Górę Tabor.",
       "którego oblicze zajaśniało przed nimi blaskiem jaśniejszym niż słońce.",
@@ -2267,19 +2311,30 @@ export const NOWY_RHZ_CYCLE_2_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
-    "partTitle": "Tajemnice Światła",
+    "part": 2,
+    "partTitle": "Tajemnice Ciszy",
     "inPart": 4,
     "prayer": "Panie Jezu Chryste, Światłości Świata, Ty przez swoje publiczne życie, chrzest w Jordanie, cud w Kanie, głoszenie Królestwa, przemienienie na Taborze i dar Eucharystii rozproszyłeś mroki grzechu i niewiary. Prosimy Cię, napełnij nasze dusze blaskiem Twojej Ewangelii. Naucz nas żyć łaską chrztu, czynić wszystko, cokolwiek powie Twoja Matka, nawracać się codziennie i karmić się Twoim Ciałem aż do zjednoczenia z Tobą w wieczności. Który żyjesz i królujesz na wieki wieków. Amen."
   },
   {
     "day": 85,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 85
+      }
+],
     "cycle": 2,
-    "t": "Ustanowienie Eucharystii",
-    "sub": "To jest Ciało moje, które za was będzie wydane. To czyńcie na moją pamiątkę",
+    "t": "Etap 4 - Część 2 - Tajemnica 5",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Łk 22,14-20; 1 Kor 11,23-26",
     "passage": "(Łk 22,19-20) Następnie wziął chleb, odmówiwszy dziękczynienie połamał go i podał im, mówiąc: «To jest Ciało moje, które za was będzie wydane: to czyńcie na moją pamiątkę!» Tak samo i kielich po wieczerzy, mówiąc: «Ten kielich to Nowe Przymierze we Krwi mojej, która za was będzie wylana». (J 6,54) Kto spożywa moje Ciało i pije moją Krew, ma życie wieczne, a Ja go wskrzeszę w dniu ostatecznym.",
-    "med": "Rozważamy Wieczernik Wielkiego Czwartku: Jezus umiłowawszy swoich, do końca ich umiłował. Zostawia nam w darze Najświętszego Sakramentu swoje prawdziwe Ciało i Krew pod postaciami chleba i wina, ustanawiając kapłaństwo Nowego Przymierza.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który w Wieczerniku do końca umiłował swoich uczniów.",
       "który umył nogi Apostołom, dając nam wzór pokornej służby miłości.",
@@ -2294,8 +2349,8 @@ export const NOWY_RHZ_CYCLE_2_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
-    "partTitle": "Tajemnice Światła",
+    "part": 2,
+    "partTitle": "Tajemnice Ciszy",
     "inPart": 5,
     "prayer": "Panie Jezu Chryste, Światłości Świata, Ty przez swoje publiczne życie, chrzest w Jordanie, cud w Kanie, głoszenie Królestwa, przemienienie na Taborze i dar Eucharystii rozproszyłeś mroki grzechu i niewiary. Prosimy Cię, napełnij nasze dusze blaskiem Twojej Ewangelii. Naucz nas żyć łaską chrztu, czynić wszystko, cokolwiek powie Twoja Matka, nawracać się codziennie i karmić się Twoim Ciałem aż do zjednoczenia z Tobą w wieczności. Który żyjesz i królujesz na wieki wieków. Amen."
   },

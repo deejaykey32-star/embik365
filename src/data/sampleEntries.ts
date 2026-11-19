@@ -168,9 +168,7 @@ ${rhz?.passage || ''}
 
 Słowo Wyjaśnienia:
 ${rhz?.explanation || ''}
-
-Trzy Wezwania do Działania:
-${callsFormatted}
+${callsFormatted ? `\n\nTrzy Wezwania do Działania:\n${callsFormatted}` : ''}
 
 ${cleanOurFather || OJCZE_NASZ_PELNY}
 
@@ -190,7 +188,8 @@ ${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim();
         intention: `Tajemnica ${rhz?.mysteryIndex || 1} Różańca Historii Zbawienia`,
         passage: rhz?.passage,
         content: fullRhzContent,
-        prayer: `${rhz?.gloryBe || CHWALA_OJCU_PELNE}\n\n${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim()
+        prayer: `${rhz?.gloryBe || CHWALA_OJCU_PELNE}\n\n${rhz?.fatimaPrayer || MODLITWA_FATIMSKA_PELNA}`.trim(),
+        qrBadges: rhz?.qrBadges
       };
     }
 
@@ -237,8 +236,8 @@ ${MODLITWA_FATIMSKA_PELNA}
 ${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim();
 
       return {
-        id: `nowyRHZ-${cycleDate.dateKey}`,
-        sectionId: 'nowyRHZ',
+        id: `${sectionId}-${cycleDate.dateKey}`,
+        sectionId,
         dateKey: cycleDate.dateKey,
         dayNumber,
         title: `${mystery.t} – ${mystery.sub}`,
@@ -247,7 +246,8 @@ ${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim();
         intention: `Cykl ${status.cycle} • Etap ${mystery.stage}: ${mystery.stageTitle} • Część ${mystery.part}: ${mystery.partTitle}`,
         passage: mystery.ref,
         content: fullNowyRhzContent,
-        prayer: `${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim()
+        prayer: `${CHWALA_OJCU_PELNE}\n\n${MODLITWA_FATIMSKA_PELNA}${mystery.prayer ? `\n\n${mystery.prayer}` : ''}`.trim(),
+        qrBadges: (mystery as any)?.qrBadges
       };
     }
 

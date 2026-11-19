@@ -950,6 +950,34 @@ export const NowyRhzView: React.FC<Props> = ({ currentLang = 'pl', theme = 'ligh
             </div>
           )}
 
+          {/* Materiały dodatkowe / Kody QR do tajemnicy */}
+          {((m as any).qrBadges && (m as any).qrBadges.length > 0) && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#faf6f0] to-[#f5eee4] dark:from-[#18202d] dark:to-[#121822] border-2 border-amber-600/30 dark:border-amber-700/40 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-amber-600/20 pb-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300 font-sans-ui">
+                  <QrCode className="w-4 h-4 text-amber-600" />
+                  <span>Materiały Dodatkowe i Kod QR do tajemnicy</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(m as any).qrBadges.map((badge: any, bIdx: number) => (
+                  <div key={bIdx} className="p-4 rounded-xl bg-white dark:bg-[#151c27] border border-[#e2d4c5] dark:border-[#222e42] flex flex-col items-center text-center shadow-xs space-y-2">
+                    <a href={badge.url || badge.shortUrl} target="_blank" rel="noopener noreferrer" className="block w-full max-w-[180px] group cursor-pointer" title={`Otwórz ${badge.title}`}>
+                      <img src={badge.image} alt={badge.title} className="w-full h-auto max-h-48 object-contain rounded-xl border border-amber-500/20 p-1 bg-white shadow-xs group-hover:scale-102 transition-transform" />
+                    </a>
+                    <div className="font-heading-cinzel font-bold text-sm text-[#2b2117] dark:text-[#f3e8d2]">{badge.title}</div>
+                    <div className="text-xs font-mono text-amber-700 dark:text-amber-400 break-all">{badge.shortUrl || badge.url}</div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <a href={badge.url || badge.shortUrl} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1 transition-colors shadow-xs">
+                        <span>Otwórz</span> <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Modlitwa Pańska (Ojcze Nasz) */}
           <div className="p-4 sm:p-5 rounded-2xl bg-[#faf6f0] dark:bg-[#161e2d] border border-[#e8ded3] dark:border-[#223048] space-y-2">
             <div className="flex items-center justify-between">

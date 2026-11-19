@@ -14,6 +14,7 @@ export interface NowyRhzMystery {
   partTitle: string;
   inPart: number;
   prayer: string;
+  qrBadges?: any[];
 }
 
 export const TAJEMNICA_ZERO: NowyRhzMystery = {
@@ -2119,10 +2120,10 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     "passage": "(Ewangelia według św. Łukasza 2,41-52) Rodzice Jego chodzili co roku do Jerozolimy na Święto Paschy. Gdy miał lat dwanaście, udali się tam zwyczajem świątecznym. Kiedy wracali po skończonych uroczystościach, został Jezus w Jerozolimie, a tego nie zauważyli Jego Rodzice. Przypuszczając, że jest w towarzystwie pątników, uszli dzień drogi i szukali Go wśród krewnych i znajomych. Gdy Go nie znaleźli, wrócili do Jerozolimy szukając Go. Dopiero po trzech dniach odnaleźli Go w świątyni, gdzie siedział między nauczycielami, przysłuchiwał się im i zadawał pytania. Wszyscy zaś, którzy Go słuchali, byli zdumieni bystrością Jego umysłu i odpowiedziami. Na ten widok zdziwili się bardzo, a Jego Matka rzekła do Niego: \"Synu, czemuś nam to uczynił? Oto ojciec Twój i ja z bólem serca szukaliśmy Ciebie\". Lecz On im odpowiedział: \"Czemuście Mnie szukali? Czy nie wiedzieliście, że powinienem być w tym, co należy do mego Ojca?\" Oni jednak nie zrozumieli tego, co im powiedział. Potem poszedł z nimi i wrócił do Nazaretu; i był im poddany. A Matka Jego chowała wiernie wszystkie te wspomnienia w swym sercu. Jezus zaś czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi."
   },
   {
-    "t": "Cisza ukrycia",
-    "sub": "Cisza Nazaretu",
+    "t": "Etap 4 - Część 2 - Tajemnica 1",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Łk 2,51-52; Mk 6,3",
-    "med": "Rozważamy trzydzieści lat życia Jezusa w ukryciu, z dala od zgiełku świata, gdzie uświęcił On zwykłą, szarą codzienność.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który przez trzydzieści lat żył w ukryciu.",
       "który dojrzewał z dala od ludzkiego zgiełku.",
@@ -2137,18 +2138,29 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
+    "part": 2,
     "partTitle": "Tajemnice Ciszy",
     "inPart": 1,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
     "day": 81,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 81
+      }
+],
     "passage": "(Ewangelia według św. Łukasza 2,51-52) Potem poszedł z nimi i wrócił do Nazaretu; i był im poddany. A Matka Jego chowała wiernie wszystkie te wspomnienia w swym sercu. Jezus zaś czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi.\n\n(Ewangelia według św. Marka 6,3) Czy nie jest to cieśla, syn Maryi, a brat Jakuba, Józefa, Judy i Szymona? Czyż nie żyją tu u nas także Jego siostry?\" I powątpiewali o Nim."
   },
   {
-    "t": "Cisza intymności i kontemplacji",
-    "sub": "Cisza Pustyni i Góry",
+    "t": "Etap 4 - Część 2 - Tajemnica 2",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Mk 1,35; Mt 6,6; Mk 6,31",
-    "med": "Rozważamy chwile, w których Jezus celowo odłączał się od tłumów, by w samotności i ciszy czerpać siłę ze spotkania z Ojcem.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który wcześnie rano oddalał się na miejsca pustynne.",
       "który uczy nas zamykać za sobą drzwi izdebki na modlitwie.",
@@ -2163,18 +2175,29 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
+    "part": 2,
     "partTitle": "Tajemnice Ciszy",
     "inPart": 2,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
     "day": 82,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 82
+      }
+],
     "passage": "(Ewangelia według św. Marka 1,35) Nad ranem, gdy jeszcze było ciemno, wstał, wyszedł i udał się na miejsce pustynne, i tam się modlił.\n\n(Ewangelia według św. Mateusza 6,6) Ty zaś, gdy chcesz się modlić, wejdź do swej izdebki, zamknij drzwi i módl się do Ojca twego, który jest w ukryciu. A Ojciec twój, który widzi w ukryciu, odda tobie.\n\n(Ewangelia według św. Marka 6,31) A On rzekł do nich: \"Pójdźcie wy sami osobno na miejsce pustynne i wypocznijcie nieco!\". Tak wielu bowiem przychodziło i odchodziło, że nawet na posiłek nie mieli czasu."
   },
   {
-    "t": "Cisza autorytetu",
-    "sub": "Uciszanie chaosu",
+    "t": "Etap 4 - Część 2 - Tajemnica 3",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Mk 4,35-41; Mk 1,23-26",
-    "med": "Rozważamy moc Jezusa, przed którą uciszają się zagrażające nam żywioły, lęki i zło.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który jednym słowem uciszył wzburzone jezioro.",
       "który nakazał zamilknąć rozszalałym wichrom.",
@@ -2189,18 +2212,29 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
+    "part": 2,
     "partTitle": "Tajemnice Ciszy",
     "inPart": 3,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
     "day": 83,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 83
+      }
+],
     "passage": "(Ewangelia według św. Marka 4,35-41) Gdy zapadł wieczór owego dnia, rzekł do nich: \"Przeprawmy się na drugą stronę\". Zostawili więc tłum, a Jego zabrali, tak jak był w łodzi. Także inne łodzie płynęły z Nim. Naraz zerwał się gwałtowny wicher. Fale biły w łódź, tak że łódź już się napełniała. On zaś spał w tyle łodzi na wezgłowiu. Zbudzili Go i powiedzieli do Niego: \"Nauczycielu, nic Cię to nie obchodzi, że giniemy?\" On wstał, rozkazał wichrowi i rzekł do jeziora: \"Milcz, ucisz się!\". Wicher się uspokoił i nastała głęboka cisza. Wtedy rzekł do nich: \"Czemu tak bojaźliwi jesteście? Jakże wam brak wiary?\" Oni zlękli się bardzo i mówili jeden do drugiego: \"Kim właściwie On jest, że nawet wicher i jezioro są Mu posłuszne?\"\n\n(Ewangelia według św. Marka 1,23-26) Był właśnie w synagodze człowiek opętany przez ducha nieczystego. Zaczął on wołać: \"Czego chcesz od nas, Jezusie Nazarejczyku? Przyszedłeś nas zgubić. Wiem, kto jesteś: Święty Boży\". Lecz Jezus rozkazał mu surowo: \"Milcz i wyjdź z niego!\". Wtedy duch nieczysty zaczął go targać i z głośnym krzykiem wyszedł z niego."
   },
   {
-    "t": "Cisza pokory i świadomej ofiary",
-    "sub": "Milczenie Męki",
+    "t": "Etap 4 - Część 2 - Tajemnica 4",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "Mt 26,62-63; Łk 23,8-9; Iz 53,7",
-    "med": "Rozważamy uwięzienie i sąd nad Jezusem, w trakcie których zrezygnował z obrony, dobrowolnie milcząc wobec oskarżycieli.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "który milczał przed niesprawiedliwym sądem Sanhedrynu.",
       "który nie odpowiadał na pytania Heroda.",
@@ -2215,18 +2249,29 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
+    "part": 2,
     "partTitle": "Tajemnice Ciszy",
     "inPart": 4,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
     "day": 84,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 84
+      }
+],
     "passage": "(Ewangelia według św. Mateusza 26,62-63) Wtedy powstał najwyższy kapłan i rzekł do Niego: \"Nic nie odpowiadasz na to, co oni zeznają przeciwko Tobie?\" Lecz Jezus milczał. A najwyższy kapłan rzekł do Niego: \"Poprzysięgam Cię na Boga żywego, powiedz nam: Czy Ty jesteś Mesjasz, Syn Boży?\"\n\n(Ewangelia według św. Łukasza 23,8-9) Na widok Jezusa Herod bardzo się ucieszył. Od dawna bowiem chciał Go ujrzeć, ponieważ słyszał o Nim i spodziewał się, że zobaczy jaki znak, zdziałany przez Niego. Zasypał Go też wieloma pytaniami, lecz Jezus nic mu nie odpowiedział.\n\n(Księga Izajasza 53,7) Dręczono Go, lecz sam się dał gnębić, nawet nie otworzył ust swoich. Jak baranek na rzeź prowadzony, jak owca niema wobec strzygących ją, tak On nie otworzył ust swoich."
   },
   {
-    "t": "Cisza ostateczna i oczekująca",
-    "sub": "Cisza Wielkiej Soboty",
+    "t": "Etap 4 - Część 2 - Tajemnica 5",
+    "sub": "Kontempluj ciszę przez pół godziny (30 minut)",
     "ref": "J 19,34.38-42; 1 P 3,18-19; J 20,1-18",
-    "med": "Rozważamy mrok grobu i pozorną pustkę Wielkiej Soboty, z której bezgłośnie rodzi się triumf Zmartwychwstania.",
+    "med": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
     "cl": [
       "którego ciało złożono w całkowitej ciszy grobu.",
       "który przeszedł przez milczenie i ciemność śmierci.",
@@ -2241,11 +2286,22 @@ export const NOWY_RHZ_MYSTERIES: NowyRhzMystery[] = [
     ],
     "stage": 4,
     "stageTitle": "Życie Jezusa i Maryi",
-    "part": 17,
+    "part": 2,
     "partTitle": "Tajemnice Ciszy",
     "inPart": 5,
     "prayer": "Panie Jezu, Ty w Kazaniu na Górze ogłosiłeś: „Błogosławieni cisi, albowiem oni na własność posiądą ziemię”. Prosimy Cię, przemień nasze serca, abyśmy potrafili żyć tym błogosławieństwem na co dzień. Udziel nam łaski prawdziwej cichości, która nie jest biernością, lecz ogromną siłą miłości poddaną Twojej woli. Ucisz w nas egoizm i pragnienie bycia w centrum uwagi, abyśmy umieli służyć braciom bez robienia wokół siebie hałasu. Naucz nas łagodności, która nie odpowiada agresją na agresję, lecz w milczeniu i pokoju gasi nienawiść świata. Przede wszystkim jednak, daj nam ufność, która pozwoli nam trwać w ciszy przed Bogiem z pewnością, że to On jest naszym ostatecznym obrońcą. Który żyjesz i królujesz na wieki wieków. Amen.",
     "day": 85,
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 85
+      }
+],
     "passage": "(Ewangelia według św. Jana 19,34.38-42) tylko jeden z żołnierzy włócznią przebił Mu bok i natychmiast wypłynęła krew i woda.\n\n(Pierwszy List Piotrowy 3,18-19) Chrystus bowiem również raz umarł za grzechy, sprawiedliwy za niesprawiedliwych, aby was do Boga przyprowadzić; zabity wprawdzie na ciele, ale powołany do życia Duchem. W nim poszedł ogłosić [zbawienie] nawet duchom zamkniętym w więzieniu,\n\n(Ewangelia według św. Jana 20,1-18) A pierwszego dnia po szabacie, wczesnym rankiem, gdy jeszcze było ciemno, Maria Magdalena udała się do grobu i zobaczyła kamień odsunięty od grobu. Pobiegła więc i przybyła do Szymona Piotra i do drugiego ucznia, którego Jezus kochał, i rzekła do nich: \"Zabrano Pana z grobu i nie wiemy, gdzie Go położono\". Wyszedł więc Piotr i ów drugi uczeń i szli do grobu. Biegli oni obydwaj razem, lecz ów drugi uczeń wyprzedził Piotra i przybył pierwszy do grobu. A kiedy się nachylił, zobaczył leżące płótna, jednakże nie wszedł do środka. Nadszedł potem także Szymon Piotr, idący za nim. Wszedł on do wnętrza grobu i ujrzał leżące płótna oraz chustę, która była na Jego głowie, leżącą nie razem z płótnami, ale oddzielnie zwiniętą na jednym miejscu. Wtedy wszedł do wnętrza także i ów drugi uczeń, który przybył pierwszy do grobu. Ujrzał i uwierzył. Dotąd bowiem nie rozumieli jeszcze Pisma, [które mówi], że On ma powstać z martwych. Uczniowie zatem powrócili znowu do siebie. Maria Magdalena natomiast stała przed grobem płacząc. A kiedy [tak] płakała, nachyliła się do grobu i ujrzała dwóch aniołów w bieli, siedzących tam, gdzie leżało ciało Jezusa - jednego w miejscu głowy, drugiego w miejscu nóg. I rzekli do niej: \"Niewiasto, czemu płaczesz?\" Odpowiedziała im: \"Zabrano Pana mego i nie wiem, gdzie Go położono\". Gdy to powiedziała, odwróciła się i ujrzała stojącego Jezusa, ale nie wiedziała, że to Jezus. Rzekł do niej Jezus: \"Niewiasto, czemu płaczesz? Kogo szukasz?\" Ona zaś sądząc, że to jest ogrodnik, powiedziała do Niego: \"Panie, jeśli ty Go przeniosłeś, powiedz mi, gdzie Go położyłeś, a ja Go wezmę\". Jezus rzekł do niej: \"Mario!\" A ona obróciwszy się powiedziała do Niego po hebrajsku: \"Rabbuni\", to znaczy: Nauczycielu! Rzekł do niej Jezus: \"Nie zatrzymuj Mnie, jeszcze bowiem nie wstąpiłem do Ojca. Natomiast udaj się do moich braci i powiedz im: \"Wstępuję do Ojca mego i Ojca waszego oraz do Boga mego i Boga waszego\"\". Poszła Maria Magdalena oznajmiając uczniom: \"Widziałam Pana i to mi powiedział\"."
   },
   {

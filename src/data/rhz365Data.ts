@@ -24,6 +24,7 @@ export interface RhzDayEntry {
   page2: string;
   page3: string;
   page4: string;
+  qrBadges?: any[];
 }
 
 export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
@@ -6013,14 +6014,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "15 marca",
     "cycle": "Cykl I",
     "mysteryIndex": 81,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 1 - Życie w Nazarecie",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 1",
     "passage": "(Łk 2, 51–52; Iz 30, 15) „W nawróceniu i spokoju jest wasze ocalenie, w ciszy i ufności leży wasza siła.” (Iz 30, 15) „Potem poszedł z nimi i wrócił do Nazaretu, i był im poddany. A Jego Matka zachowywała wszystkie te słowa w swoim sercu. Jezus zaś czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi.” (Łk 2, 51–52)",
-    "explanation": "Nazaret. Małe miasteczko zagubione wśród wzgórz Galilei. Żadnych cudów, żadnych tłumów, żadnych kazań. Tylko praca, modlitwa i codzienność. A jednak to właśnie tutaj Bóg dorasta w człowieku. W ciszy warsztatu Józefa, w spojrzeniu Maryi, w zapachu drewna i chleba. Izajasz mówi: „W ciszy i ufności leży wasza siła.” Nazaret jest ikoną tej prawdy – to szkoła cichości, wierności, zwykłości. Tu Słowo uczy się ludzkiego rytmu życia, a Bóg przemienia codzienność w miejsce świętości. Maryja nie ma wizji, nie słyszy aniołów, nie widzi cudów a jednak każdego dnia mówi swoje „tak” przez milczenie, przez obecność, przez miłość.",
-    "callsToAction": [
-      "1. Zamień rutynę w modlitwę. Bóg jest obecny w każdym obowiązku, jeśli wykonujesz go z miłością.",
-      "2. Ucz się ciszy Nazaretu. Prawdziwe słowo rodzi się w milczeniu serca.",
-      "3. Nie szukaj niezwykłości – bądź wierny w zwyczajności. Codzienność jest najpewniejszym miejscem spotkania z Bogiem."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 81
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -6088,14 +6096,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "16 marca",
     "cycle": "Cykl I",
     "mysteryIndex": 82,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 2 - Modlitwa i praca",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 2",
     "passage": "(Iz 32, 17; Ps 128, 2; Łk 2, 52) „Dziełem sprawiedliwości będzie pokój, a owocem sprawiedliwości – trwałe bezpieczeństwo.” (Iz 32, 17) „Z pracy rąk swoich będziesz pożywał, będziesz szczęśliwy i dobrze ci się powiedzie.” (Ps 128, 2) „Jezus czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi.” (Łk 2, 52) W warsztacie Józefa słychać stuk młotka zapach drewna, rytmiczny oddech pracy.",
-    "explanation": "To nie miejsce cudów lecz codziennych obowiązków. A jednak właśnie tutaj Bóg uświęca ludzkie ręce. W Nazarecie modlitwa nie ma słów – jest postawą serca. Każdy gwóźdź wbity w deskę, każdy posiłek przygotowany przez Maryję, każda prosta czynność staje się ofiarą miłości. Izajasz zapowiadał: „Dziełem sprawiedliwości będzie pokój.” Ten pokój rodzi się tam, gdzie człowiek jest wierny w małych rzeczach. Jezus uczy, że świętość nie zaczyna się na pustyni, lecz w domu. To właśnie w Nazarecie rodzi się duch Ewangelii: cisza, prostota, praca i modlitwa w jednym rytmie bez pośpiechu, bez rozgłosu, bez sławy.",
-    "callsToAction": [
-      "1. Uczyń ze swojej pracy modlitwę. Każdy trud, jeśli ofiarowany Bogu, staje się święty.",
-      "2. Przynieś pokój tam, gdzie żyjesz. Pokój jest owocem sprawiedliwości – uczciwości cierpliwości i miłości.",
-      "3. Wzrastaj w łasce przez codzienność. Bóg nie objawia się w nadzwyczajności, ale w wierności dnia powszedniego."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 82
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -6163,14 +6178,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "17 marca",
     "cycle": "Cykl I",
     "mysteryIndex": 83,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 3 - Modlitwa Jezusa",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 3",
     "passage": "(Iz 40, 3–5; Mt 4, 1–11) „Głos się rozlega: Przygotujcie na pustyni drogę Panu, wyrównajcie na pustkowiu ścieżkę dla naszego Boga! Każda dolina niech będzie podniesiona, a każda góra i pagórek obniżone.” (Iz 40, 3–4) „Wtedy Duch wyprowadził Jezusa na pustynię, aby był kuszony przez diabła. A po czterdziestu dniach i czterdziestu nocach postu odczuł głód.” (Mt 4, 1–2)",
-    "explanation": "Pustynia – przestrzeń bez głosu i bez oparcia. Nie ma tam niczego, co mogłoby rozproszyć niczego, co dałoby schronienie. Tylko Bóg i człowiek. To właśnie tam rozpoczyna się walka o prawdę serca. Trzy pokusy, które Jezus zwycięża, nie są tylko próbami Jego siły – są objawieniem nowego sposobu istnienia: posłuszeństwa Ojcu i wolności od złudzeń. Na pustyni spełnia się słowo proroka Izajasza: „Przygotujcie drogę Panu.” Bo droga do Boga prowadzi przez wewnętrzne oczyszczenie wyrównanie dolin lęku i obniżenie gór pychy. Tam, gdzie wszystko się kończy, zaczyna się prawdziwe życie ducha. Cisza pustyni nie jest pustką – jest przestrzenią spotkania.",
-    "callsToAction": [
-      "1. Nie uciekaj od pustyni. Cisza, samotność i trud to miejsca, gdzie Bóg mówi najgłośniej.",
-      "2. Zaufaj słowu Bożemu bardziej niż swoim emocjom. Jezus nie odpowiada na pokusy siłą, lecz słowem Pisma.",
-      "3. Oczyść swoje serce z hałasu. Każdy z nas ma w sobie doliny i góry, które trzeba wyrównać, by Bóg mógł przejść."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 83
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -6238,14 +6260,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "18 marca",
     "cycle": "Cykl I",
     "mysteryIndex": 84,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 4 - Powrót Jezusa z",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 4",
     "passage": "(Iz 61, 1–2; Łk 4, 14–21) „Duch Pana Boga nade mną, bo Pan mnie namaścił. Posłał mnie, abym głosił dobrą nowinę ubogim, opatrywał rany serc złamanych, zapowiadał wyzwolenie jeńcom i otwarcie więzień dla zniewolonych; abym ogłaszał rok łaski Pana.” (Iz 61, 1–2) „Jezus powrócił w mocy Ducha do Galilei, a wieść o Nim rozeszła się po całej okolicy. Przyszedł do Nazaretu, gdzie się wychował wszedł według swego zwyczaju do synagogi w dzień szabatu i powstał, aby czytać. Zwinął księgę, oddał słudze i usiadł, mówiąc Dziś spełniły się te słowa Pisma, któreście słyszeli.” (Łk 4, 14–21)",
-    "explanation": "Cisza pustyni dojrzała w Nim w słowo mocy. Nie wraca z triumfem, lecz z posłuszeństwem. Nie szuka uznania, lecz pełni wolę Ojca. W Nazarecie, gdzie wszyscy znają Go jako cieślę, staje w synagodze i czyta proroctwo Izajasza. To chwila objawienia Słowo, które kiedyś przepowiedział prorok, teraz samo je ogłasza. Niebo milczy, a ziemia słucha: „Dziś spełniły się te słowa Pisma.” To „dziś” trwa nadal – w każdym sercu, które pozwala Duchowi przemawiać przez siebie. Cisza kończy się głosem. Ale to nie hałas — to moc łagodnego światła, które rozbija ciemność.",
-    "callsToAction": [
-      "1. Pozwól Duchowi Świętemu mówić przez Ciebie. Słowa napełnione łaską mają moc leczyć i uwalniać.",
-      "2. Trwaj w posłuszeństwie nawet wtedy, gdy nikt nie rozumie Twojej misji. Jezus głosił wśród swoich, którzy Go odrzucili – a mimo to nie przestał kochać.",
-      "3. Uwierz, że „dziś” może się spełnić Boże słowo także w Tobie. Każdy dzień może być początkiem łaski, jeśli otworzysz serce."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 84
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -6313,14 +6342,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "19 marca",
     "cycle": "Cykl I",
     "mysteryIndex": 85,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 5 - Milczenie Jezusa",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 5",
     "passage": "(Iz 42, 1–4; Mk 1, 35) „Oto mój Sługa którego podtrzymuję mój Wybrany, w którym mam upodobanie. Sprawiłem, że Duch mój na Nim spoczął; On przyniesie narodom Prawo. Nie będzie wołał ni podnosił głosu, i nie da słyszeć swego krzyku na dworze.” (Iz 42, 1–2) „Nad ranem, gdy jeszcze było ciemno, wstał, wyszedł i udał się na miejsce pustynne, i tam się modlił.” (Mk 1, 35)",
-    "explanation": "Jeszcze noc jeszcze mrok nad ziemią, a Jezus już wstał i wyszedł. Nie zabiera ze sobą nikogo — tylko ciszę i serce otwarte przed Ojcem. To nie jest ucieczka, ale powrót do źródła. Zanim powie pierwsze kazanie, zanim dotknie chorych, zanim uczyni pierwszy cud, musi na nowo wsłuchać się w głos Ojca. Izajasz mówi: „Nie będzie wołał ni podnosił głosu.” To proroctwo wypełnia się w tej chwili Mesjasz, zanim przemówi do tłumów, rozmawia z Bogiem w ciszy, której świat nie rozumie. To właśnie milczenie jest miejscem, gdzie rodzi się słowo zbawienia. Zanim świat je usłyszy, Bóg i Jego Syn wypowiadają je w ukryciu.",
-    "callsToAction": [
-      "1. Zacznij każdy dzień od ciszy. Choćby kilka minut – to w niej rodzi się siła i pokój.",
-      "2. Nie spiesz się, by mówić. Słowa nabierają mocy dopiero wtedy, gdy są nasycone modlitwą.",
-      "3. Zaufaj że Bóg działa także w milczeniu. Nawet jeśli Go nie słyszysz, On zawsze słucha Ciebie."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 85
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -19082,14 +19118,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "6 września",
     "cycle": "Cykl II",
     "mysteryIndex": 81,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 1 - Życie w Nazarecie",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 1",
     "passage": "(Łk 2, 51–52; Iz 30, 15) „W nawróceniu i spokoju jest wasze ocalenie, w ciszy i ufności leży wasza siła.” (Iz 30, 15) „Potem poszedł z nimi i wrócił do Nazaretu, i był im poddany. A Jego Matka zachowywała wszystkie te słowa w swoim sercu. Jezus zaś czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi.” (Łk 2, 51–52)",
-    "explanation": "Nazaret. Małe miasteczko zagubione wśród wzgórz Galilei. Żadnych cudów, żadnych tłumów, żadnych kazań. Tylko praca, modlitwa i codzienność. A jednak to właśnie tutaj Bóg dorasta w człowieku. W ciszy warsztatu Józefa, w spojrzeniu Maryi, w zapachu drewna i chleba. Izajasz mówi: „W ciszy i ufności leży wasza siła.” Nazaret jest ikoną tej prawdy – to szkoła cichości, wierności, zwykłości. Tu Słowo uczy się ludzkiego rytmu życia, a Bóg przemienia codzienność w miejsce świętości. Maryja nie ma wizji, nie słyszy aniołów, nie widzi cudów a jednak każdego dnia mówi swoje „tak” przez milczenie, przez obecność, przez miłość.",
-    "callsToAction": [
-      "1. Zamień rutynę w modlitwę. Bóg jest obecny w każdym obowiązku, jeśli wykonujesz go z miłością.",
-      "2. Ucz się ciszy Nazaretu. Prawdziwe słowo rodzi się w milczeniu serca.",
-      "3. Nie szukaj niezwykłości – bądź wierny w zwyczajności. Codzienność jest najpewniejszym miejscem spotkania z Bogiem."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 81
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -19157,14 +19200,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "7 września",
     "cycle": "Cykl II",
     "mysteryIndex": 82,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 2 - Modlitwa i praca",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 2",
     "passage": "(Iz 32, 17; Ps 128, 2; Łk 2, 52) „Dziełem sprawiedliwości będzie pokój, a owocem sprawiedliwości – trwałe bezpieczeństwo.” (Iz 32, 17) „Z pracy rąk swoich będziesz pożywał, będziesz szczęśliwy i dobrze ci się powiedzie.” (Ps 128, 2) „Jezus czynił postępy w mądrości, w latach i w łasce u Boga i u ludzi.” (Łk 2, 52) W warsztacie Józefa słychać stuk młotka zapach drewna, rytmiczny oddech pracy.",
-    "explanation": "To nie miejsce cudów lecz codziennych obowiązków. A jednak właśnie tutaj Bóg uświęca ludzkie ręce. W Nazarecie modlitwa nie ma słów – jest postawą serca. Każdy gwóźdź wbity w deskę, każdy posiłek przygotowany przez Maryję, każda prosta czynność staje się ofiarą miłości. Izajasz zapowiadał: „Dziełem sprawiedliwości będzie pokój.” Ten pokój rodzi się tam, gdzie człowiek jest wierny w małych rzeczach. Jezus uczy, że świętość nie zaczyna się na pustyni, lecz w domu. To właśnie w Nazarecie rodzi się duch Ewangelii: cisza, prostota, praca i modlitwa w jednym rytmie bez pośpiechu, bez rozgłosu, bez sławy.",
-    "callsToAction": [
-      "1. Uczyń ze swojej pracy modlitwę. Każdy trud, jeśli ofiarowany Bogu, staje się święty.",
-      "2. Przynieś pokój tam, gdzie żyjesz. Pokój jest owocem sprawiedliwości – uczciwości cierpliwości i miłości.",
-      "3. Wzrastaj w łasce przez codzienność. Bóg nie objawia się w nadzwyczajności, ale w wierności dnia powszedniego."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 82
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -19232,14 +19282,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "8 września",
     "cycle": "Cykl II",
     "mysteryIndex": 83,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 3 - Modlitwa Jezusa",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 3",
     "passage": "(Iz 40, 3–5; Mt 4, 1–11) „Głos się rozlega: Przygotujcie na pustyni drogę Panu, wyrównajcie na pustkowiu ścieżkę dla naszego Boga! Każda dolina niech będzie podniesiona, a każda góra i pagórek obniżone.” (Iz 40, 3–4) „Wtedy Duch wyprowadził Jezusa na pustynię, aby był kuszony przez diabła. A po czterdziestu dniach i czterdziestu nocach postu odczuł głód.” (Mt 4, 1–2)",
-    "explanation": "Pustynia – przestrzeń bez głosu i bez oparcia. Nie ma tam niczego, co mogłoby rozproszyć niczego, co dałoby schronienie. Tylko Bóg i człowiek. To właśnie tam rozpoczyna się walka o prawdę serca. Trzy pokusy, które Jezus zwycięża, nie są tylko próbami Jego siły – są objawieniem nowego sposobu istnienia: posłuszeństwa Ojcu i wolności od złudzeń. Na pustyni spełnia się słowo proroka Izajasza: „Przygotujcie drogę Panu.” Bo droga do Boga prowadzi przez wewnętrzne oczyszczenie wyrównanie dolin lęku i obniżenie gór pychy. Tam, gdzie wszystko się kończy, zaczyna się prawdziwe życie ducha. Cisza pustyni nie jest pustką – jest przestrzenią spotkania.",
-    "callsToAction": [
-      "1. Nie uciekaj od pustyni. Cisza, samotność i trud to miejsca, gdzie Bóg mówi najgłośniej.",
-      "2. Zaufaj słowu Bożemu bardziej niż swoim emocjom. Jezus nie odpowiada na pokusy siłą, lecz słowem Pisma.",
-      "3. Oczyść swoje serce z hałasu. Każdy z nas ma w sobie doliny i góry, które trzeba wyrównać, by Bóg mógł przejść."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 83
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -19307,14 +19364,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "9 września",
     "cycle": "Cykl II",
     "mysteryIndex": 84,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 4 - Powrót Jezusa z",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 4",
     "passage": "(Iz 61, 1–2; Łk 4, 14–21) „Duch Pana Boga nade mną, bo Pan mnie namaścił. Posłał mnie, abym głosił dobrą nowinę ubogim, opatrywał rany serc złamanych, zapowiadał wyzwolenie jeńcom i otwarcie więzień dla zniewolonych; abym ogłaszał rok łaski Pana.” (Iz 61, 1–2) „Jezus powrócił w mocy Ducha do Galilei, a wieść o Nim rozeszła się po całej okolicy. Przyszedł do Nazaretu, gdzie się wychował wszedł według swego zwyczaju do synagogi w dzień szabatu i powstał, aby czytać. Zwinął księgę, oddał słudze i usiadł, mówiąc Dziś spełniły się te słowa Pisma, któreście słyszeli.” (Łk 4, 14–21)",
-    "explanation": "Cisza pustyni dojrzała w Nim w słowo mocy. Nie wraca z triumfem, lecz z posłuszeństwem. Nie szuka uznania, lecz pełni wolę Ojca. W Nazarecie, gdzie wszyscy znają Go jako cieślę, staje w synagodze i czyta proroctwo Izajasza. To chwila objawienia Słowo, które kiedyś przepowiedział prorok, teraz samo je ogłasza. Niebo milczy, a ziemia słucha: „Dziś spełniły się te słowa Pisma.” To „dziś” trwa nadal – w każdym sercu, które pozwala Duchowi przemawiać przez siebie. Cisza kończy się głosem. Ale to nie hałas — to moc łagodnego światła, które rozbija ciemność.",
-    "callsToAction": [
-      "1. Pozwól Duchowi Świętemu mówić przez Ciebie. Słowa napełnione łaską mają moc leczyć i uwalniać.",
-      "2. Trwaj w posłuszeństwie nawet wtedy, gdy nikt nie rozumie Twojej misji. Jezus głosił wśród swoich, którzy Go odrzucili – a mimo to nie przestał kochać.",
-      "3. Uwierz, że „dziś” może się spełnić Boże słowo także w Tobie. Każdy dzień może być początkiem łaski, jeśli otworzysz serce."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 84
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
@@ -19382,14 +19446,21 @@ export const RHZ365_FULL_DATA: Record<number, RhzDayEntry> = {
     "displayDate": "10 września",
     "cycle": "Cykl II",
     "mysteryIndex": 85,
-    "stageTitle": "Etap 4 - Część 2 - Tajemnica 5 - Milczenie Jezusa",
+    "stageTitle": "Etap 4 - Część 2 - Tajemnica 5",
     "passage": "(Iz 42, 1–4; Mk 1, 35) „Oto mój Sługa którego podtrzymuję mój Wybrany, w którym mam upodobanie. Sprawiłem, że Duch mój na Nim spoczął; On przyniesie narodom Prawo. Nie będzie wołał ni podnosił głosu, i nie da słyszeć swego krzyku na dworze.” (Iz 42, 1–2) „Nad ranem, gdy jeszcze było ciemno, wstał, wyszedł i udał się na miejsce pustynne, i tam się modlił.” (Mk 1, 35)",
-    "explanation": "Jeszcze noc jeszcze mrok nad ziemią, a Jezus już wstał i wyszedł. Nie zabiera ze sobą nikogo — tylko ciszę i serce otwarte przed Ojcem. To nie jest ucieczka, ale powrót do źródła. Zanim powie pierwsze kazanie, zanim dotknie chorych, zanim uczyni pierwszy cud, musi na nowo wsłuchać się w głos Ojca. Izajasz mówi: „Nie będzie wołał ni podnosił głosu.” To proroctwo wypełnia się w tej chwili Mesjasz, zanim przemówi do tłumów, rozmawia z Bogiem w ciszy, której świat nie rozumie. To właśnie milczenie jest miejscem, gdzie rodzi się słowo zbawienia. Zanim świat je usłyszy, Bóg i Jego Syn wypowiadają je w ukryciu.",
-    "callsToAction": [
-      "1. Zacznij każdy dzień od ciszy. Choćby kilka minut – to w niej rodzi się siła i pokój.",
-      "2. Nie spiesz się, by mówić. Słowa nabierają mocy dopiero wtedy, gdy są nasycone modlitwą.",
-      "3. Zaufaj że Bóg działa także w milczeniu. Nawet jeśli Go nie słyszysz, On zawsze słucha Ciebie."
-    ],
+    "explanation": "Kontempluj ciszę przez pół godziny (30 minut) – to połowa czasu, gdy oczekujemy Jezusa, gdy mając 30 lat objawia się światu.",
+    "callsToAction": [],
+    "qrBadges": [
+      {
+            "id": "rhz-qr-z99",
+            "title": "Materiał dodatkowy 99: Transmisja na żywo YouTube",
+            "subtitle": "https://wnr365.pages.dev/z/99",
+            "image": "/img/qr/qr_z99.png",
+            "url": "https://www.youtube.com/live/Orc7lHFSqNY?si=ZhCwg052pUofDXN4",
+            "shortUrl": "https://wnr365.pages.dev/z/99",
+            "pdfPage": 85
+      }
+],
     "ourFather": "Ojcze nasz, któryś jest w niebie, święć się imię Twoje; przyjdź królestwo Twoje; bądź wola Twoja, jako w niebie, tak i na ziemi. Chleba naszego powszedniego daj nam dzisiaj; i odpuść nam nasze winy, jako i my odpuszczamy naszym winowajcom; i nie wódź nas na pokuszenie, ale nas zbaw ode złego. Amen. 10 Osobnych Modlitw Zdrowaś Maryjo (z dopowiedzeniami)",
     "smallBeads": [
       {
