@@ -56,6 +56,8 @@ import {
 import { SectionGuidePlayerBar } from './SectionGuidePlayerBar';
 import jezusMainImg from '../pliki/jezus-main.jpg';
 import widokiMisjaImg from '../pliki/widoki-misja-main.png';
+import okladkiKompletImg from '../pliki/okładki-komplet.png';
+import { AMAZON_SERIES_URL } from './KsiazkiAmazonView';
 import { getUIText, translateTextWithFreeApi } from '../utils/translationService';
 
 interface Info365ViewProps {
@@ -625,6 +627,81 @@ export const Info365View: React.FC<Info365ViewProps> = ({
           );
         })}
       </div>
+
+{/* ========================================================================= */}
+      {/* DEDYKOWANA SEKCJA: KUP SERIĘ KSIĄŻEK „WIDOKI NA RAJ” NA AMAZON.PL          */}
+      {/* ========================================================================= */}
+      <section className="mt-12 mb-8 rounded-3xl bg-gradient-to-br from-[#1c130c] via-[#2a1708] to-[#120d08] border-2 border-amber-500/40 text-white p-6 sm:p-8 shadow-2xl overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <div className="lg:col-span-8 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 shadow-xs">
+                <ShoppingBag className="w-3.5 h-3.5 text-amber-300" />
+                <span>Oficjalna Księgarnia • Amazon.pl</span>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-stone-200 flex items-center gap-1">
+                <Truck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Wydanie papierowe & e-book • Dostawa do domu</span>
+              </span>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-extrabold font-heading-cinzel text-white leading-tight">
+              Kup Serię Książek „Widoki na Raj” na Amazon.pl
+            </h3>
+
+            <p className="text-xs sm:text-sm text-stone-200 leading-relaxed font-sans-ui max-w-2xl">
+              Cenisz sobie szelest kartek i czytanie w skupieniu bez rozpraszających powiadomień? 
+              Kompletna 4-tomowa seria rozważań „Widoki na Raj” (Zima, Wiosna, Lato, Jesień) oraz tom modlitewny Różańca Historii Zbawienia 
+              są dostępne w druku na zamówienie (Paperback / Hardcover) oraz jako e-book na Amazon.pl z bezpieczną dostawą do Twojego domu.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <a
+                href={AMAZON_SERIES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-xl hover:shadow-amber-500/25 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                title="Przejdź do oferty na Amazon.pl"
+              >
+                <ShoppingBag className="w-4 h-4 text-stone-950" />
+                <span>Kup serię książek na Amazon.pl</span>
+                <ExternalLink className="w-4 h-4 text-stone-950" />
+              </a>
+
+              <button
+                onClick={() => onSelectSection('ksiazki_amazon')}
+                className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <BookOpen className="w-4 h-4 text-amber-300" />
+                <span>Szczegóły tomów</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="lg:col-span-4 flex justify-center items-center">
+            <a
+              href={AMAZON_SERIES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block relative w-full max-w-[280px] cursor-pointer"
+              title="Kup serię książek Widoki na Raj na Amazon.pl"
+            >
+              <div className="absolute inset-0 bg-amber-500/20 rounded-2xl blur-xl group-hover:bg-amber-500/35 transition-all duration-500" />
+              <img
+                src={okladkiKompletImg}
+                alt="Komplet okładek serii Widoki na Raj na Amazon.pl"
+                className="relative z-10 w-full h-auto max-h-[220px] object-contain mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)] group-hover:scale-105 transition-transform duration-500 rounded-xl"
+              />
+            </a>
+          </div>
+
+        </div>
+      </section>
 
       {/* ========================================================================= */}
       {/* DEDYKOWANA SEKCJA: STACJE RADIOWE 24/7 (DOLNA CZĘŚĆ GŁÓWNEGO EKRANU)     */}

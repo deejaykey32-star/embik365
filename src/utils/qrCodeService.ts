@@ -70,6 +70,17 @@ export const DEFAULT_CLCK_MAP: Record<string, string> = {
 
 export const DEFAULT_QR_CODES: QrCodeItem[] = [
   {
+    id: 'qr_ksiazki_amazon',
+    title: 'Seria Książek „Widoki na Raj” na Amazon.pl',
+    displayLabel: 'Zeskanuj, aby kupić serię książek Widoki na Raj na Amazon.pl',
+    shortUrl: 'https://wnr365.pages.dev/amazon',
+    fullUrl: 'https://www.amazon.pl/s?k=%22widoki+na+raj%22&__mk_pl_PL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=I13271BC0RVI&sprefix=widoki+na+raj+%2Caps%2C119&ref=nb_sb_noss_2',
+    sectionId: 'ksiazki_amazon',
+    category: 'Książki & Amazon',
+    createdAt: '2026-11-23'
+  },
+
+  {
     id: 'qr_z99',
     title: 'Transmisja na żywo YouTube (/z/99)',
     displayLabel: 'Zeskanuj, aby otworzyć transmisję na żywo YouTube',

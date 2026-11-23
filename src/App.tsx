@@ -16,6 +16,7 @@ import { AlexPlayerView } from './components/AlexPlayerView';
 import { ViaAirView } from './components/ViaAirView';
 import { WwTrinityView } from './components/WwTrinityView';
 import { PeligrimNavView } from './components/PeligrimNavView';
+import { KsiazkiAmazonView } from './components/KsiazkiAmazonView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
 import { VideoStudioView } from './components/VideoStudioView';
@@ -631,6 +632,12 @@ export default function App() {
           <WwTrinityView
             key={`ww_trinity-${currentLang}`}
             section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
+        ) : activeSectionId === 'ksiazki_amazon' ? (
+          <KsiazkiAmazonView
+            key={`ksiazki_amazon-${currentLang}`}
             currentLang={currentLang}
             theme={theme}
           />

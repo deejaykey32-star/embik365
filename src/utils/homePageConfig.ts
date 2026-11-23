@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe, Navigation } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe, Navigation, ShoppingBag } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -11,6 +11,7 @@ import jezusMainImg from '../pliki/jezus-main.jpg';
 import wwTrinityImg from '../pliki/ww-trinity-main.jpg';
 import peligrimNavImg from '../pliki/peligrim-nav-main.jpg';
 import widokiMisjaImg from '../pliki/widoki-misja-main.png';
+import okladkiKompletImg from '../pliki/okładki-komplet.png';
 
 export const SECTION_ICONS_MAP: Record<string, any> = {
   wnr365: Feather,
@@ -23,6 +24,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   alexplayer: Headphones,
   ww_trinity: Globe,
   peligrim_nav: Navigation,
+  ksiazki_amazon: ShoppingBag,
   mapa: Map,
   histada: Gamepad2,
   ebook_wnr: Book,
@@ -190,6 +192,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent',
       qrId: 'qr_peligrim_nav',
       externalUrl: 'https://peligrim-nav.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
+      id: 'ksiazki_amazon',
+      name: 'Książki: Widoki na Raj',
+      badge: 'Kup na Amazon.pl • Druk & E-book',
+      shortDesc: 'Oficjalna seria książek „Widoki na Raj” dostępna w druku na zamówienie (Paperback / Hardcover) i jako e-book na Amazon.pl.',
+      fullDesc: 'Zamów drukowaną serię książkową „Widoki na Raj” na Amazon.pl z bezpośrednią wysyłką do domu. Cztery tomy rozważań (Zima, Wiosna, Lato, Jesień) oraz Różaniec Historii Zbawienia przygotowane z myślą o czytelnikach ceniących fizyczną książkę w dłoni.',
+      imageUrl: okladkiKompletImg,
+      imageAlt: 'Komplet okładek serii książek Widoki na Raj na Amazon.pl',
+      color: '#ea580c',
+      bgGradient: 'from-amber-950/20 via-orange-900/10 to-transparent',
+      qrId: 'qr_ksiazki_amazon',
+      externalUrl: 'https://www.amazon.pl/s?k=%22widoki+na+raj%22&__mk_pl_PL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=I13271BC0RVI&sprefix=widoki+na+raj+%2Caps%2C119&ref=nb_sb_noss_2',
       openInNewTab: true,
       hidden: false
     },

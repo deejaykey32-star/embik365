@@ -727,7 +727,51 @@ export const StandardReader: React.FC<Props> = ({
           );
         })()}
 
-      {/* Official QR Code Badge Box */}
+{/* Baner zachęcający do zakupu serii książek na Amazon.pl */}
+      {(section.id === 'wnr365' || section.id === 'ebook_wnr' || section.id === 'rhz365' || section.id === 'ebook_rhz') && (
+        <div className="mt-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#1a130c] via-[#24170c] to-[#120d09] border-2 border-amber-500/40 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 min-w-0">
+            <a
+              href={AMAZON_SERIES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 w-24 sm:w-28 group"
+              title="Kup serię książek Widoki na Raj na Amazon.pl"
+            >
+              <img
+                src={okladkiKompletImg}
+                alt="Seria książek Widoki na Raj na Amazon.pl"
+                className="w-full h-auto object-contain drop-shadow-md rounded-lg group-hover:scale-105 transition-transform"
+              />
+            </a>
+            <div className="space-y-1 min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-500/30">
+                <ShoppingBag className="w-3 h-3 text-amber-300" />
+                <span>Wydanie papierowe & e-book • Amazon.pl</span>
+              </div>
+              <h4 className="font-heading-cinzel font-bold text-base sm:text-lg text-white">
+                Podoba Ci się ta lektura? Zamów książkę w druku!
+              </h4>
+              <p className="text-xs text-stone-300 font-sans-ui line-clamp-2">
+                Kompletna seria „Widoki na Raj” (Tomy 1–4 i Różaniec Historii Zbawienia) dostępna z szybką dostawą do domu na Amazon.pl.
+              </p>
+            </div>
+          </div>
+
+          <a
+            href={AMAZON_SERIES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <ShoppingBag className="w-4 h-4 text-stone-950" />
+            <span>Kup na Amazon.pl</span>
+            <ExternalLink className="w-3.5 h-3.5 text-stone-950" />
+          </a>
+        </div>
+      )}
+
+            {/* Official QR Code Badge Box */}
       <div className="mt-8">
 
         {/* Official QR Code Badge Box for sharing and printing */}

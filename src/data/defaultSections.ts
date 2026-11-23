@@ -74,6 +74,19 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent'
   },
   {
+    id: 'ksiazki_amazon',
+    name: 'Książki na Amazon',
+    shortTitle: 'Książki: Widoki na Raj',
+    subtitle: 'Seria książkowa „Widoki na Raj” na Amazon.pl (Druk & E-book)',
+    type: 'info',
+    description: 'Oficjalna seria książkowa „Widoki na Raj” (Tomy 1–4 oraz Różaniec Historii Zbawienia) dostępna w wydaniu papierowym (Paperback / Twarda oprawa) oraz e-book na Amazon.pl.',
+    badge: 'Kup na Amazon.pl',
+    icon: 'ShoppingBag',
+    accentColor: '#ea580c', // orange-600 (Amazon orange)
+    bgGradient: 'from-amber-950/20 via-orange-900/10 to-transparent'
+  },
+
+  {
     id: 'mapa',
     name: 'Mapa',
     shortTitle: 'Trójjedyna Pielgrzymka Gwiaździsta',
