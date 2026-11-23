@@ -20,7 +20,8 @@ import {
   QrCode,
   Video,
   Music,
-  ShoppingBag
+  ShoppingBag,
+  Clock
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
@@ -748,15 +749,21 @@ export const StandardReader: React.FC<Props> = ({
               />
             </a>
             <div className="space-y-1 min-w-0">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-500/30">
-                <ShoppingBag className="w-3 h-3 text-amber-300" />
-                <span>Wydanie papierowe & e-book • Amazon.pl</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-500/30">
+                  <ShoppingBag className="w-3 h-3 text-amber-300" />
+                  <span>Wydanie papierowe & e-book • Amazon.pl</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-stone-200 text-[10px] font-semibold">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  <span>Tom 2, 3 i 4 w przygotowaniu</span>
+                </span>
               </div>
               <h4 className="font-heading-cinzel font-bold text-base sm:text-lg text-white">
                 Podoba Ci się ta lektura? Zamów książkę w druku!
               </h4>
               <p className="text-xs text-stone-300 font-sans-ui line-clamp-2">
-                Kompletna seria 7 publikacji „Widoki na Raj” (wersja skrócona, 4 tomy roczne, Tom 5 RHZ i Tom 6 Nowy RHZ) na Amazon.pl.
+                Oficjalna seria 7 publikacji „Widoki na Raj” na Amazon.pl (wersja skrócona, Tom 1 Zima, Tom 5 RHZ i Tom 6 Nowy RHZ już dostępne; Tom 2 Wiosna, Tom 3 Lato i Tom 4 Jesień w trakcie przygotowywania).
               </p>
             </div>
           </div>

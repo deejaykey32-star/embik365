@@ -11,17 +11,27 @@ import {
   ArrowRight,
   ShieldCheck,
   Star,
-  Download
+  Clock,
+  Palette,
+  Image as ImageIcon
 } from 'lucide-react';
 import { SectionMeta } from '../types';
 import okladkiKompletImg from '../pliki/okładki-komplet.png';
-import wnrMainImg from '../pliki/wnr-main.jpg';
+import skroconaOkladkaImg from '../pliki/skrocona-tom-0.jpg';
 import zimaTom1Img from '../pliki/zima-tom-1.jpg';
 import wiosnaTom2Img from '../pliki/wiosna-tom-2.jpg';
 import latoTom3Img from '../pliki/lato-tom-3.jpg';
 import jesienTom4Img from '../pliki/jesien-tom-4.jpg';
 import rhzTom5Img from '../pliki/RHZ-tom-5.jpg';
-import rhzMainImg from '../pliki/rhz-main.jpg';
+import nowyRhzTom6Img from '../pliki/nowy-rhz-tom-6.jpg';
+
+// Wyodrębnione oryginalne ilustracje graficzne z podfolderów Amazon
+import ilustracjaSkrocona from '../pliki/ilustracja-skrocona.jpg';
+import ilustracjaTom1 from '../pliki/ilustracja-tom-1.jpg';
+import ilustracjaTom2 from '../pliki/ilustracja-tom-2.jpg';
+import ilustracjaTom3 from '../pliki/ilustracja-tom-3.jpg';
+import ilustracjaTom4 from '../pliki/ilustracja-tom-4.jpg';
+import ilustracjaTom6 from '../pliki/ilustracja-tom-6.jpg';
 
 interface Props {
   section?: SectionMeta;
@@ -33,6 +43,15 @@ export const AMAZON_SERIES_URL = 'https://www.amazon.pl/s?k=%22widoki+na+raj%22&
 
 export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme = 'light' }) => {
   const [copiedLink, setCopiedLink] = useState(false);
+  // Stan przełączania widoku: 'cover' (okładka wydania) lub 'illustration' (ilustracja artystyczna)
+  const [viewMode, setViewMode] = useState<Record<number, 'cover' | 'illustration'>>({});
+
+  const toggleViewMode = (tom: number) => {
+    setViewMode((prev) => ({
+      ...prev,
+      [tom]: prev[tom] === 'illustration' ? 'cover' : 'illustration',
+    }));
+  };
 
   const handleShare = async () => {
     const shareUrl = AMAZON_SERIES_URL;
@@ -40,7 +59,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       if (navigator.share) {
         await navigator.share({
           title: 'Seria Książkowa „Widoki na Raj” na Amazon.pl',
-          text: 'Kup oficjalną serię 7 publikacji „Widoki na Raj” (wersja skrócona, 4 tomy, Tom 5 RHZ i Tom 6 Nowy RHZ) w druku lub jako e-book na Amazon.pl.',
+          text: 'Oficjalna seria 7 publikacji „Widoki na Raj” na Amazon.pl. Dostępne tomy oraz zapowiedzi tomów w trakcie przygotowywania (Tom 2, 3 i 4).',
           url: shareUrl
         });
       } else {
@@ -59,20 +78,28 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       title: 'Widoki na Raj - wersja skrócona',
       subtitle: 'Kompendium & Esencja całorocznego dzieła',
       desc: 'Wydanie skrócone zawierające esencję duchowych rozważań, najważniejsze myśli, aforyzmy i przewodnie drogowskazy całego rocznego dzieła „Widoki na Raj”.',
-      img: wnrMainImg,
+      img: skroconaOkladkaImg,
+      illus: ilustracjaSkrocona,
       color: 'from-amber-900/30 to-orange-950/40',
       border: 'border-amber-500/40',
-      badge: 'Wersja Skrócona'
+      badge: 'Wersja Skrócona',
+      status: 'available' as const,
+      statusLabel: 'Dostępna na Amazon.pl',
+      statusNotice: 'Wydanie papierowe oraz e-book Kindle dostępne od ręki na Amazon.pl.',
     },
     {
       tom: 1,
       title: 'Widoki na Raj — Tom 1: Zima',
       subtitle: '25 grudnia – 24 marca • Dni 1–90',
-      desc: 'Pierwsza ćwiartka rocznego cyklu. Narodzenie Pańskie, początek drogi, czas wyciszenia i zimowej kontemplacji.',
+      desc: 'Pierwsza ćwiartka rocznego cyklu. Narodzenie Pańskie, początek drogi, czas wyciszenia i zimowej kontemplacji z kodami QR i odnośnikami do muzyki.',
       img: zimaTom1Img,
+      illus: ilustracjaTom1,
       color: 'from-sky-900/30 to-blue-950/40',
       border: 'border-sky-500/30',
-      badge: 'Tom 1 • Zima'
+      badge: 'Tom 1 • Zima',
+      status: 'available' as const,
+      statusLabel: 'Dostępny na Amazon.pl',
+      statusNotice: 'Wydanie papierowe oraz e-book Kindle dostępne od ręki na Amazon.pl.',
     },
     {
       tom: 2,
@@ -80,9 +107,13 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       subtitle: '25 marca – 24 czerwca • Dni 91–182',
       desc: 'Czas Zwiastowania, Wielkiego Postu, Paschy i Zmartwychwstania. Odrodzenie życia, nadzieja i eksplozja łaski.',
       img: wiosnaTom2Img,
+      illus: ilustracjaTom2,
       color: 'from-emerald-900/30 to-teal-950/40',
-      border: 'border-emerald-500/30',
-      badge: 'Tom 2 • Wiosna'
+      border: 'border-emerald-500/40',
+      badge: 'Tom 2 • Wiosna',
+      status: 'in_preparation' as const,
+      statusLabel: 'W trakcie przygotowywania',
+      statusNotice: 'Tom 2 jest obecnie w trakcie przygotowywania do druku i publikacji na Amazon.pl.',
     },
     {
       tom: 3,
@@ -90,9 +121,13 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       subtitle: '25 czerwca – 24 września • Dni 183–274',
       desc: 'Pełnia światła, dojrzałość wiary, wakacyjne wędrówki, szlaki pielgrzymkowe i owocowanie Ducha Świętego.',
       img: latoTom3Img,
+      illus: ilustracjaTom3,
       color: 'from-amber-900/30 to-orange-950/40',
-      border: 'border-amber-500/30',
-      badge: 'Tom 3 • Lato'
+      border: 'border-amber-500/40',
+      badge: 'Tom 3 • Lato',
+      status: 'in_preparation' as const,
+      statusLabel: 'W trakcie przygotowywania',
+      statusNotice: 'Tom 3 jest obecnie w trakcie przygotowywania do druku i publikacji na Amazon.pl.',
     },
     {
       tom: 4,
@@ -100,9 +135,13 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       subtitle: '25 września – 24 grudnia • Dni 275–365',
       desc: 'Czas zbiorów, zadumy nad wiecznością, adwentowe oczekiwanie i przygotowanie serca na ponowne przyjście Pana.',
       img: jesienTom4Img,
+      illus: ilustracjaTom4,
       color: 'from-rose-900/30 to-amber-950/40',
-      border: 'border-orange-500/30',
-      badge: 'Tom 4 • Jesień'
+      border: 'border-orange-500/40',
+      badge: 'Tom 4 • Jesień',
+      status: 'in_preparation' as const,
+      statusLabel: 'W trakcie przygotowywania',
+      statusNotice: 'Tom 4 jest obecnie w trakcie przygotowywania do druku i publikacji na Amazon.pl.',
     },
     {
       tom: 5,
@@ -110,19 +149,27 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       subtitle: 'Tom 5 • Tradycyjny Modlitewnik Różańcowy IN-LOVE (365 dni)',
       desc: 'Kompletny modlitewnik różańcowy prowadzący przez całą Historię Zbawienia ze Słowem Bożym, wyjaśnieniem i 3 konkretnymi wezwaniami do działania.',
       img: rhzTom5Img,
+      illus: undefined,
       color: 'from-purple-900/30 to-indigo-950/40',
       border: 'border-purple-500/30',
-      badge: 'Tom 5 • RHZ'
+      badge: 'Tom 5 • RHZ',
+      status: 'available' as const,
+      statusLabel: 'Dostępny na Amazon.pl',
+      statusNotice: 'Wydanie papierowe oraz e-book Kindle dostępne od ręki na Amazon.pl.',
     },
     {
       tom: 6,
       title: 'Widoki na Raj — Tom 6: Nowy Różaniec Historii Zbawienia',
       subtitle: 'Tom 6 • Nowy RHZ365: 2 Cykle po 175 Tajemnic (365 dni)',
       desc: 'Monumentalne dzieło modlitewne na 365 dni z 10 dopowiedzeniami po słowie Jezus w każdej tajemnicy, czytaniami biblijnymi, przerwą letnią i adwentową.',
-      img: rhzMainImg,
+      img: nowyRhzTom6Img,
+      illus: ilustracjaTom6,
       color: 'from-rose-950/30 to-amber-950/40',
       border: 'border-rose-500/30',
-      badge: 'Tom 6 • Nowy RHZ'
+      badge: 'Tom 6 • Nowy RHZ',
+      status: 'available' as const,
+      statusLabel: 'Dostępny na Amazon.pl',
+      statusNotice: 'Wydanie papierowe oraz e-book Kindle dostępne od ręki na Amazon.pl.',
     }
   ];
 
@@ -148,6 +195,10 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 <Truck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Dostawa do domu • Amazon Prime</span>
               </span>
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Tom 2, 3 i 4 w trakcie przygotowywania</span>
+              </span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-heading-cinzel tracking-tight text-white leading-tight">
@@ -159,19 +210,28 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
 
             <p className="text-sm sm:text-base text-stone-200 leading-relaxed font-sans-ui">
               Przeżyj 365 dni z książką w dłoni! Cała monumentalna seria rozważań, aforyzmów i medytacji duchowych 
-              autorstwa Dominika Kłosa jest teraz dostępna w eleganckim wydaniu drukowanym (papierowa oprawa / twarda oprawa) 
+              autorstwa Dominika Kłosa jest publikowana w eleganckim wydaniu drukowanym (papierowa oprawa / twarda oprawa) 
               oraz w formacie elektronicznym Kindle na platformie <strong>Amazon.pl</strong>.
             </p>
 
+            {/* Ważny komunikat o statusie przygotowania tomów */}
+            <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-start sm:items-center gap-3">
+              <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+              <div className="text-xs sm:text-sm text-stone-200 leading-relaxed">
+                <strong className="text-amber-300">Status wydań:</strong> Wersja skrócona, Tom 1 (Zima), Tom 5 (RHZ) oraz Tom 6 (Nowy RHZ) są już dostępne do zakupu na Amazon.pl. 
+                <span className="font-bold text-amber-200 ml-1">Tom 2 (Wiosna), Tom 3 (Lato) i Tom 4 (Jesień) są obecnie w trakcie przygotowywania</span> do publikacji.
+              </div>
+            </div>
+
             {/* Atuty wydania */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 text-xs">
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-center gap-2.5">
                 <BookOpen className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>Druk na żądanie (wysoka jakość)</span>
               </div>
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-center gap-2.5">
-                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Komplet 7 Publikacji na Amazon</span>
+                <Palette className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Oryginalne ilustracje i kody QR</span>
               </div>
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-center gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -180,7 +240,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </div>
 
             {/* Przyciski CTA */}
-            <div className="pt-4 flex flex-wrap items-center gap-3">
+            <div className="pt-3 flex flex-wrap items-center gap-3">
               <a
                 href={AMAZON_SERIES_URL}
                 target="_blank"
@@ -189,7 +249,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 title="Przejdź do oferty na Amazon.pl"
               >
                 <ShoppingBag className="w-5 h-5 text-stone-950" />
-                <span>Kup serię 7 publikacji na Amazon.pl</span>
+                <span>Zobacz dostępne publikacje na Amazon.pl</span>
                 <ExternalLink className="w-4 h-4 text-stone-950" />
               </a>
 
@@ -218,7 +278,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
               target="_blank"
               rel="noopener noreferrer"
               className="group block relative w-full max-w-md cursor-pointer"
-              title="Kliknij, aby otworzyć całą serię książek na Amazon.pl"
+              title="Kliknij, aby otworzyć serię książek na Amazon.pl"
             >
               <div className="absolute inset-0 bg-amber-500/20 rounded-3xl blur-2xl group-hover:bg-amber-500/35 transition-all duration-500" />
               <img
@@ -237,72 +297,160 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       </div>
 
       {/* Prezentacja Poszczególnych Tomów w Serii */}
-      <div className="mb-6">
-        <h2 className="text-xl sm:text-2xl font-heading-cinzel font-bold text-[#3a2717] dark:text-[#f8fafc] mb-1">
-          7 Publikacji wchodzących w skład serii
-        </h2>
-        <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
-          Wersja skrócona, 4 tomy roczne (Zima, Wiosna, Lato, Jesień), Tom 5 (RHZ) oraz Tom 6 (Nowy RHZ)
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-heading-cinzel font-bold text-[#3a2717] dark:text-[#f8fafc] mb-1">
+            7 Publikacji wchodzących w skład serii
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
+            Wersja skrócona, 4 tomy roczne (Zima, Wiosna, Lato, Jesień), Tom 5 (RHZ) oraz Tom 6 (Nowy RHZ).
+            Kliknij przycisk grafiki pod okładką, aby podejrzeć dedykowaną ilustrację tomu.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>4 dostępne</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs font-bold border border-amber-500/30">
+            <Clock className="w-3.5 h-3.5" />
+            <span>3 w przygotowaniu</span>
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {books.map((b) => (
-          <div
-            key={b.tom}
-            className={`group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#0c121e] border ${b.border} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden relative`}
-          >
-            <div className="p-5 sm:p-6 space-y-4">
-              
-              {/* Okładka tomu */}
-              <div className="relative w-full h-52 sm:h-56 rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center group-hover:scale-[1.02] transition-transform">
-                <img
-                  src={b.img}
-                  alt={b.title}
-                  className="w-full h-full object-contain p-2 drop-shadow-md"
-                  loading="lazy"
-                />
-                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-xs text-amber-300 font-bold text-[11px] border border-amber-500/30">
-                  {b.badge}
+        {books.map((b) => {
+          const isIllustration = viewMode[b.tom] === 'illustration' && b.illus;
+          const displayImage = isIllustration ? b.illus : b.img;
+          const isInPreparation = b.status === 'in_preparation';
+
+          return (
+            <div
+              key={b.tom}
+              className={`group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#0c121e] border ${b.border} shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden relative`}
+            >
+              <div className="p-5 sm:p-6 space-y-4">
+                
+                {/* Okładka tomu / Ilustracja z podfolderu */}
+                <div className="relative w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center group-hover:scale-[1.01] transition-transform">
+                  <img
+                    src={displayImage}
+                    alt={b.title}
+                    className="w-full h-full object-contain p-2 drop-shadow-md transition-all duration-500"
+                    loading="lazy"
+                  />
+                  
+                  {/* Odznaka tomu */}
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-xs text-amber-300 font-bold text-[11px] border border-amber-500/30 shadow-md">
+                    {b.badge}
+                  </div>
+
+                  {/* Odznaka dostępności */}
+                  <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full backdrop-blur-xs font-bold text-[10px] sm:text-[11px] flex items-center gap-1 shadow-md border ${
+                    isInPreparation 
+                      ? 'bg-amber-950/85 text-amber-300 border-amber-500/50' 
+                      : 'bg-emerald-950/85 text-emerald-300 border-emerald-500/50'
+                  }`}>
+                    {isInPreparation ? (
+                      <>
+                        <Clock className="w-3 h-3 text-amber-400" />
+                        <span>W przygotowaniu</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>Dostępny</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Przełącznik: Okładka / Ilustracja artystyczna z folderu */}
+                  {b.illus && (
+                    <button
+                      onClick={() => toggleViewMode(b.tom)}
+                      className="absolute bottom-3 right-3 px-2.5 py-1 rounded-xl bg-black/80 hover:bg-black/95 text-stone-200 hover:text-white text-[11px] font-semibold border border-white/20 backdrop-blur-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                      title={isIllustration ? 'Pokaż pełną okładkę' : 'Pokaż oryginalną grafikę / ilustrację'}
+                    >
+                      {isIllustration ? (
+                        <>
+                          <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Pokaż okładkę</span>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Pokaż ilustrację</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
+
+                {/* Informacje o tomie */}
+                <div>
+                  <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-[#2c1d11] dark:text-[#f8fafc] mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    {b.title}
+                  </h3>
+                  <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-2">
+                    {b.subtitle}
+                  </div>
+                  <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book">
+                    {b.desc}
+                  </p>
+
+                  {/* Specjalny komunikat stanu przygotowania dla tomu 2, 3 i 4 */}
+                  {isInPreparation ? (
+                    <div className="mt-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/50 text-[11px] text-amber-900 dark:text-amber-300 font-medium flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <span>{b.statusNotice}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700/50 text-[11px] text-emerald-900 dark:text-emerald-300 font-medium flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>{b.statusNotice}</span>
+                    </div>
+                  )}
+                </div>
+
               </div>
 
-              {/* Informacje o tomie */}
-              <div>
-                <h3 className="font-heading-cinzel font-bold text-base sm:text-lg text-[#2c1d11] dark:text-[#f8fafc] mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                  {b.title}
-                </h3>
-                <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-2">
-                  {b.subtitle}
-                </div>
-                <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-serif-book">
-                  {b.desc}
-                </p>
+              {/* Dolny pasek z bezpośrednim linkiem do Amazon */}
+              <div className="px-5 py-3.5 bg-stone-50 dark:bg-[#111827] border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1 font-medium">
+                  <Bookmark className="w-3.5 h-3.5 text-amber-600" />
+                  <span>{isInPreparation ? 'Wkrótce w druku' : 'Paperback & Kindle'}</span>
+                </span>
+
+                {isInPreparation ? (
+                  <a
+                    href={AMAZON_SERIES_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-800/50 text-amber-900 dark:text-amber-200 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-amber-300 dark:border-amber-700/50"
+                    title={`Tom w trakcie przygotowywania — sprawdź serię na Amazon.pl`}
+                  >
+                    <span>W przygotowaniu</span>
+                    <ExternalLink className="w-3 h-3 text-amber-700 dark:text-amber-300" />
+                  </a>
+                ) : (
+                  <a
+                    href={AMAZON_SERIES_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs hover:scale-105 active:scale-95"
+                    title={`Kup ${b.title} na Amazon.pl`}
+                  >
+                    <span>Kup na Amazon</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
               </div>
 
             </div>
-
-            {/* Dolny pasek z bezpośrednim linkiem do Amazon */}
-            <div className="px-5 py-3.5 bg-stone-50 dark:bg-[#111827] border-t border-stone-200 dark:border-stone-800 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1 font-medium">
-                <Bookmark className="w-3.5 h-3.5 text-amber-600" />
-                <span>Paperback & E-book</span>
-              </span>
-
-              <a
-                href={AMAZON_SERIES_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs hover:scale-105 active:scale-95"
-                title={`Kup ${b.title} na Amazon.pl`}
-              >
-                <span>Kup na Amazon</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Dodatkowe informacje o zamówieniu i dostawie */}
@@ -316,8 +464,9 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
             Książka, która towarzyszy przez cały rok
           </h3>
           <p className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 max-w-2xl leading-relaxed">
-            Papierowe wydanie to doskonały pomysł na prezent dla siebie i bliskich. Każdy dzień zaczyna się od refleksji, 
+            Papierowe wydanie to wyjątkowy towarzysz codziennej duchowości. Każdy dzień zaczyna się od refleksji, 
             a czytanie z fizycznej książki pozwala na głębokie skupienie z dala od ekranów i powiadomień telefonu.
+            Już teraz możesz czytać Wersję skróconą, Tom 1 Zima oraz Tomy 5 i 6 RHZ, oczekując na kolejne tomy (Wiosna, Lato, Jesień).
           </p>
         </div>
 
@@ -328,7 +477,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
           className="shrink-0 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer hover:scale-105 active:scale-95"
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>Zobacz całą ofertę na Amazon.pl</span>
+          <span>Odwiedź profil serii na Amazon.pl</span>
           <ExternalLink className="w-4 h-4" />
         </a>
       </div>

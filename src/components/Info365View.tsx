@@ -41,7 +41,8 @@ import {
   Layers,
   MonitorPlay,
   ShoppingBag,
-  Truck
+  Truck,
+  Clock
 } from 'lucide-react';
 import { RADIO_STATIONS, RadioStationId, getRadioBroadcastItem, RadioBroadcastItem } from '../utils/radioContentService';
 import { generateAndDownloadQrBadgePng, getSavedQrCodes, getQrCodeForSection } from '../utils/qrCodeService';
@@ -649,6 +650,10 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 <Truck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Wydanie papierowe & e-book • Dostawa do domu</span>
               </span>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Tom 2, 3 i 4 w trakcie przygotowywania</span>
+              </span>
             </div>
 
             <h3 className="text-2xl sm:text-3xl font-extrabold font-heading-cinzel text-white leading-tight">
@@ -657,8 +662,9 @@ export const Info365View: React.FC<Info365ViewProps> = ({
 
             <p className="text-xs sm:text-sm text-stone-200 leading-relaxed font-sans-ui max-w-2xl">
               Cenisz sobie szelest kartek i czytanie w skupieniu bez rozpraszających powiadomień? 
-              Łącznie 7 publikacji: „Widoki na Raj - wersja skrócona”, 4 tomy rozważań (Zima, Wiosna, Lato, Jesień), Tom 5 – „Widoki na Raj - Różaniec Historii Zbawienia” oraz Tom 6 – „Widoki na Raj - Nowy Różaniec Historii Zbawienia” 
-              są dostępne w druku na zamówienie (Paperback / Hardcover) oraz jako e-book na Amazon.pl z bezpieczną dostawą do Twojego domu.
+              Oficjalna seria 7 publikacji: „Widoki na Raj - wersja skrócona”, Tom 1 (Zima), Tom 5 (RHZ) oraz Tom 6 (Nowy RHZ) 
+              są już dostępne na Amazon.pl z bezpieczną dostawą do Twojego domu. 
+              <strong>Tom 2 (Wiosna), Tom 3 (Lato) i Tom 4 (Jesień) są w trakcie przygotowywania</strong> do druku i publikacji.
             </p>
 
             <div className="pt-2 flex flex-wrap items-center gap-3">
