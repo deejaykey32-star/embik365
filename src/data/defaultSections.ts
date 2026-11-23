@@ -79,7 +79,7 @@ export const SECTIONS: SectionMeta[] = [
     shortTitle: 'Książki: Widoki na Raj',
     subtitle: 'Seria książkowa „Widoki na Raj” na Amazon.pl (Druk & E-book)',
     type: 'info',
-    description: 'Oficjalna seria książkowa „Widoki na Raj” (Tomy 1–4 oraz Różaniec Historii Zbawienia) dostępna w wydaniu papierowym (Paperback / Twarda oprawa) oraz e-book na Amazon.pl.',
+    description: 'Kompletna seria 7 publikacji „Widoki na Raj” (Wersja skrócona, 4 tomy roczne, Tom 5 – Różaniec Historii Zbawienia oraz Tom 6 – Nowy Różaniec Historii Zbawienia) na Amazon.pl.',
     badge: 'Kup na Amazon.pl',
     icon: 'ShoppingBag',
     accentColor: '#ea580c', // orange-600 (Amazon orange)

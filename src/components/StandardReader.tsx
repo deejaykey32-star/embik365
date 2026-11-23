@@ -756,7 +756,7 @@ export const StandardReader: React.FC<Props> = ({
                 Podoba Ci się ta lektura? Zamów książkę w druku!
               </h4>
               <p className="text-xs text-stone-300 font-sans-ui line-clamp-2">
-                Kompletna seria „Widoki na Raj” (Tomy 1–4 i Różaniec Historii Zbawienia) dostępna z szybką dostawą do domu na Amazon.pl.
+                Kompletna seria 7 publikacji „Widoki na Raj” (wersja skrócona, 4 tomy roczne, Tom 5 RHZ i Tom 6 Nowy RHZ) na Amazon.pl.
               </p>
             </div>
           </div>

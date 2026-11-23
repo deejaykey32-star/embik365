@@ -652,12 +652,12 @@ export const Info365View: React.FC<Info365ViewProps> = ({
             </div>
 
             <h3 className="text-2xl sm:text-3xl font-extrabold font-heading-cinzel text-white leading-tight">
-              Kup Serię Książek „Widoki na Raj” na Amazon.pl
+              Kompletna Seria 7 Publikacji „Widoki na Raj” na Amazon.pl
             </h3>
 
             <p className="text-xs sm:text-sm text-stone-200 leading-relaxed font-sans-ui max-w-2xl">
               Cenisz sobie szelest kartek i czytanie w skupieniu bez rozpraszających powiadomień? 
-              Kompletna 4-tomowa seria rozważań „Widoki na Raj” (Zima, Wiosna, Lato, Jesień) oraz tom modlitewny Różańca Historii Zbawienia 
+              Łącznie 7 publikacji: „Widoki na Raj - wersja skrócona”, 4 tomy rozważań (Zima, Wiosna, Lato, Jesień), Tom 5 – „Widoki na Raj - Różaniec Historii Zbawienia” oraz Tom 6 – „Widoki na Raj - Nowy Różaniec Historii Zbawienia” 
               są dostępne w druku na zamówienie (Paperback / Hardcover) oraz jako e-book na Amazon.pl z bezpieczną dostawą do Twojego domu.
             </p>
 
@@ -670,7 +670,7 @@ export const Info365View: React.FC<Info365ViewProps> = ({
                 title="Przejdź do oferty na Amazon.pl"
               >
                 <ShoppingBag className="w-4 h-4 text-stone-950" />
-                <span>Kup serię książek na Amazon.pl</span>
+                <span>Kup serię 7 publikacji na Amazon.pl</span>
                 <ExternalLink className="w-4 h-4 text-stone-950" />
               </a>
 

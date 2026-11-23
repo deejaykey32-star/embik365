@@ -15,11 +15,13 @@ import {
 } from 'lucide-react';
 import { SectionMeta } from '../types';
 import okladkiKompletImg from '../pliki/okładki-komplet.png';
+import wnrMainImg from '../pliki/wnr-main.jpg';
 import zimaTom1Img from '../pliki/zima-tom-1.jpg';
 import wiosnaTom2Img from '../pliki/wiosna-tom-2.jpg';
 import latoTom3Img from '../pliki/lato-tom-3.jpg';
 import jesienTom4Img from '../pliki/jesien-tom-4.jpg';
 import rhzTom5Img from '../pliki/RHZ-tom-5.jpg';
+import rhzMainImg from '../pliki/rhz-main.jpg';
 
 interface Props {
   section?: SectionMeta;
@@ -38,7 +40,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       if (navigator.share) {
         await navigator.share({
           title: 'Seria Książkowa „Widoki na Raj” na Amazon.pl',
-          text: 'Kup oficjalną serię książek „Widoki na Raj” (Tomy 1–4 i RHZ) w druku lub jako e-book na Amazon.pl.',
+          text: 'Kup oficjalną serię 7 publikacji „Widoki na Raj” (wersja skrócona, 4 tomy, Tom 5 RHZ i Tom 6 Nowy RHZ) w druku lub jako e-book na Amazon.pl.',
           url: shareUrl
         });
       } else {
@@ -52,6 +54,16 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
   };
 
   const books = [
+    {
+      tom: 0,
+      title: 'Widoki na Raj - wersja skrócona',
+      subtitle: 'Kompendium & Esencja całorocznego dzieła',
+      desc: 'Wydanie skrócone zawierające esencję duchowych rozważań, najważniejsze myśli, aforyzmy i przewodnie drogowskazy całego rocznego dzieła „Widoki na Raj”.',
+      img: wnrMainImg,
+      color: 'from-amber-900/30 to-orange-950/40',
+      border: 'border-amber-500/40',
+      badge: 'Wersja Skrócona'
+    },
     {
       tom: 1,
       title: 'Widoki na Raj — Tom 1: Zima',
@@ -94,13 +106,23 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
     },
     {
       tom: 5,
-      title: 'Różaniec Historii Zbawienia (RHZ)',
-      subtitle: 'Tom Modlitewny • Koncepcja IN-LOVE',
-      desc: 'Kompletny modlitewnik różańcowy prowadzący przez całą Historię Zbawienia z biblijnymi rozważaniami i wezwaniami.',
+      title: 'Widoki na Raj — Tom 5: Różaniec Historii Zbawienia',
+      subtitle: 'Tom 5 • Tradycyjny Modlitewnik Różańcowy IN-LOVE (365 dni)',
+      desc: 'Kompletny modlitewnik różańcowy prowadzący przez całą Historię Zbawienia ze Słowem Bożym, wyjaśnieniem i 3 konkretnymi wezwaniami do działania.',
       img: rhzTom5Img,
       color: 'from-purple-900/30 to-indigo-950/40',
       border: 'border-purple-500/30',
       badge: 'Tom 5 • RHZ'
+    },
+    {
+      tom: 6,
+      title: 'Widoki na Raj — Tom 6: Nowy Różaniec Historii Zbawienia',
+      subtitle: 'Tom 6 • Nowy RHZ365: 2 Cykle po 175 Tajemnic (365 dni)',
+      desc: 'Monumentalne dzieło modlitewne na 365 dni z 10 dopowiedzeniami po słowie Jezus w każdej tajemnicy, czytaniami biblijnymi, przerwą letnią i adwentową.',
+      img: rhzMainImg,
+      color: 'from-rose-950/30 to-amber-950/40',
+      border: 'border-rose-500/30',
+      badge: 'Tom 6 • Nowy RHZ'
     }
   ];
 
@@ -129,7 +151,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
             </div>
 
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-heading-cinzel tracking-tight text-white leading-tight">
-              Kup Serię Książek <br className="hidden sm:inline" />
+              Kompletna Seria 7 Publikacji <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200 bg-clip-text text-transparent">
                 „Widoki na Raj”
               </span>
@@ -149,7 +171,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
               </div>
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-center gap-2.5">
                 <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Komplet 4 tomów + RHZ</span>
+                <span>Komplet 7 Publikacji na Amazon</span>
               </div>
               <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-center gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -167,7 +189,7 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
                 title="Przejdź do oferty na Amazon.pl"
               >
                 <ShoppingBag className="w-5 h-5 text-stone-950" />
-                <span>Kup serię książek na Amazon.pl</span>
+                <span>Kup serię 7 publikacji na Amazon.pl</span>
                 <ExternalLink className="w-4 h-4 text-stone-950" />
               </a>
 
@@ -217,10 +239,10 @@ export const KsiazkiAmazonView: React.FC<Props> = ({ currentLang = 'pl', theme =
       {/* Prezentacja Poszczególnych Tomów w Serii */}
       <div className="mb-6">
         <h2 className="text-xl sm:text-2xl font-heading-cinzel font-bold text-[#3a2717] dark:text-[#f8fafc] mb-1">
-          Tomy Wchodzące w Skład Serii
+          7 Publikacji wchodzących w skład serii
         </h2>
         <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
-          Możesz zamówić całą serię lub poszczególne tomy według pory roku
+          Wersja skrócona, 4 tomy roczne (Zima, Wiosna, Lato, Jesień), Tom 5 (RHZ) oraz Tom 6 (Nowy RHZ)
         </p>
       </div>
 
