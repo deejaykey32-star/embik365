@@ -19,7 +19,8 @@ import {
   ExternalLink,
   QrCode,
   Video,
-  Music
+  Music,
+  ShoppingBag
 } from 'lucide-react';
 import { SectionMeta, CycleDate, SectionEntry, UploadedPdf, SUPPORTED_LANGUAGES, AppTheme } from '../types';
 import { getCycleDateByDayNumber } from '../utils/dateCycle';
@@ -39,6 +40,8 @@ import { VideoYouTubeExportModal } from './VideoYouTubeExportModal';
 import { SongVideoExportModal } from './SongVideoExportModal';
 import type { SongStationId } from '../utils/lyriaSongService';
 import rhzMainImg from '../pliki/rhz-main.jpg';
+import okladkiKompletImg from '../pliki/okładki-komplet.png';
+import { AMAZON_SERIES_URL } from './KsiazkiAmazonView';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
 

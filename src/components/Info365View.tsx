@@ -39,7 +39,9 @@ import {
   Tv,
   CheckCircle2,
   Layers,
-  MonitorPlay
+  MonitorPlay,
+  ShoppingBag,
+  Truck
 } from 'lucide-react';
 import { RADIO_STATIONS, RadioStationId, getRadioBroadcastItem, RadioBroadcastItem } from '../utils/radioContentService';
 import { generateAndDownloadQrBadgePng, getSavedQrCodes, getQrCodeForSection } from '../utils/qrCodeService';

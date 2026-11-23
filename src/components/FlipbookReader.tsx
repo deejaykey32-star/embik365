@@ -602,7 +602,7 @@ export const FlipbookReader: React.FC<Props> = ({
       return;
     }
 
-    const isSpread = isSpreadMode && windowWidth >= 768;
+    const isSpread = layoutMode === 'spread' && (typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
     const pageText = isSpread
       ? `${leftPageData.chunk || ''} ${rightPageData.chunk || ''}`.trim()
       : (singlePageData.chunk || singlePageData.fullContent || entry.content || '');
