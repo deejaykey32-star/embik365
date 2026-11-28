@@ -20,6 +20,7 @@ export type SectionId =
   | 'via_air'       // Via Trinitatis 365 – Pure Walk Edition (via-air.pages.dev)
   | 'ww_trinity'    // WW Trinity — Worldwide Trinity | Ogólnoświatowa Trójjedyna Pielgrzymka Gwiaździsta (ww-trinity.pages.dev)
   | 'peligrim_nav'  // Szlak Pielgrzyma 3D – Nawigacja GPS Offline PWA (peligrim-nav.pages.dev)
+  | 'msza'          // Msza — Mszał Rzymski i Lekcjonarz (msza.pages.dev)
   | 'ksiazki_amazon' // Seria książkowa „Widoki na Raj” na Amazon.pl (Amazon.pl)
   | 'ustawienia';   // Ustawienia aplikacji, wersje natywne (Android APK/AAB, iOS IPA, PWA) oraz personalizacja
 

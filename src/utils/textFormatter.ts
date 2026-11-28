@@ -20,6 +20,15 @@ export function cleanParagraphsFromEnters(rawText: string): string[] {
     const trimmed = chunk.trim();
     if (!trimmed) continue;
 
+    // Zachowaj elementy list wypunktowanych jako osobne linie
+    const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length > 0 && lines.every(l => /^[•\-]\s+/.test(l))) {
+      for (const line of lines) {
+        paragraphs.push(line.replace(/\s{2,}/g, ' ').replace(/\s+([.,;:!?])/g, '$1').trim());
+      }
+      continue;
+    }
+
     // Usuwamy pojedyncze znaki "Enter" wewnątrz akapitu, zastępując je spacją
     const cleaned = trimmed
       .replace(/\n+/g, ' ')
@@ -94,10 +103,25 @@ export function formatContentForReaderHtml(rawContent: string): string {
     // Obsługa cytatów Markdown (> )
     if (trimmed.startsWith('> ')) {
       const quoteText = trimmed.replace(/^>\s*/gm, ' ').replace(/\n+/g, ' ').trim();
-      const formattedQuote = escapeHtml(quoteText)
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      const formattedQuote = formatInlineMarkdown(quoteText);
       htmlParts.push(`<blockquote class="border-l-4 border-amber-600/40 pl-4 my-3 italic text-stone-700 dark:text-stone-300 font-serif-book" style="font-family: 'Times New Roman', Times, Georgia, serif; line-height: 1.15; text-align: justify; text-justify: inter-word;">${formattedQuote}</blockquote>`);
+      continue;
+    }
+
+    // Obsługa list wypunktowanych (• lub - na początku linii)
+    const blockLines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+    if (blockLines.length > 0 && blockLines.every(l => /^[•\-]\s+/.test(l))) {
+      const listItems = blockLines
+        .map(line => {
+          const itemText = line
+            .replace(/^[•\-]\s+/, '')
+            .replace(/\s{2,}/g, ' ')
+            .replace(/\s+([.,;:!?])/g, '$1')
+            .trim();
+          return `<li style="font-family: 'Times New Roman', Times, Georgia, serif; line-height: 1.15; text-align: justify; text-justify: inter-word; margin-bottom: 0.25em;">${formatInlineMarkdown(itemText)}</li>`;
+        })
+        .join('\n');
+      htmlParts.push(`<ul class="list-disc pl-6 my-2 space-y-1">${listItems}</ul>`);
       continue;
     }
 
@@ -110,15 +134,19 @@ export function formatContentForReaderHtml(rawContent: string): string {
 
     if (!cleanedText) continue;
 
-    // Przetwarzanie formatowania Markdown: **pogrubienie** oraz *kursywa*
-    let formattedHtml = escapeHtml(cleanedText)
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    // Przetwarzanie formatowania Markdown: **pogrubienie** oraz *kursywa* (z obsługą zagnieżdżenia)
+    const formattedHtml = formatInlineMarkdown(cleanedText);
 
     htmlParts.push(`<p class="app-reading-para" style="font-family: 'Times New Roman', Times, Georgia, serif; line-height: 1.15; text-align: justify; text-justify: inter-word;">${formattedHtml}</p>`);
   }
 
   return htmlParts.join('\n');
+}
+
+function formatInlineMarkdown(text: string): string {
+  return escapeHtml(text)
+    .replace(/\*\*((?:[^*]|\*(?!\*))+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
 }
 
 function escapeHtml(str: string): string {

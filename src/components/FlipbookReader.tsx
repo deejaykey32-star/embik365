@@ -281,7 +281,7 @@ ${clausulaeList}`;
     const wnr = getWnrEntryForDay(wnrPos.dayNumber);
 
     let chunk = pageData.text || '';
-    if (wnrPos.dayNumber <= 91 && wnr) {
+    if (wnrPos.dayNumber <= 91 && wnrPos.dayNumber !== 62 && wnr) {
       if (wnrPos.totalPages === 1) {
         chunk = wnr.content;
       } else if (wnrPos.totalPages === 2) {
@@ -294,9 +294,11 @@ ${clausulaeList}`;
       }
     }
 
-    const qrBadgesList = (wnr.qrBadges && (wnr.qrBadges as any[]).length > 0)
-      ? wnr.qrBadges
-      : ((pageData.qrBadges && (pageData.qrBadges as any[]).length > 0 ? pageData.qrBadges : (wnr.qrBadges as any[]) || []));
+    const qrBadgesList = wnrPos.dayNumber === 62
+      ? ((pageData.qrBadges && (pageData.qrBadges as any[]).length > 0) ? pageData.qrBadges : [])
+      : ((wnr.qrBadges && (wnr.qrBadges as any[]).length > 0)
+        ? wnr.qrBadges
+        : ((pageData.qrBadges && (pageData.qrBadges as any[]).length > 0 ? pageData.qrBadges : (wnr.qrBadges as any[]) || [])));
 
     return {
       pdfPageNumber: safeP,

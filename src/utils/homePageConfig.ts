@@ -1,5 +1,5 @@
 import { HomePageConfig, SectionShowcaseConfig, SectionId } from '../types';
-import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe, Navigation, ShoppingBag } from 'lucide-react';
+import { Feather, Cross, BookOpen, Book, Compass, Library, HeartHandshake, Image as ImageIcon, Map, Gamepad2, Sparkles, Radio, Video, Smartphone, Headphones, Globe, Navigation, ShoppingBag, Church } from 'lucide-react';
 import rhzMainImg from '../pliki/rhz-main.jpg';
 import wnrMainImg from '../pliki/wnr-main.jpg';
 import bibliaMainImg from '../pliki/biblia-main.jpg';
@@ -10,6 +10,7 @@ import alexPlayerImg from '../pliki/widoki-alex-player-main.jpg';
 import jezusMainImg from '../pliki/jezus-main.jpg';
 import wwTrinityImg from '../pliki/ww-trinity-main.jpg';
 import peligrimNavImg from '../pliki/peligrim-nav-main.jpg';
+import mszaMainImg from '../pliki/msza-main.jpg';
 import widokiMisjaImg from '../pliki/widoki-misja-main.png';
 import okladkiKompletImg from '../pliki/okładki-komplet.png';
 
@@ -24,6 +25,7 @@ export const SECTION_ICONS_MAP: Record<string, any> = {
   alexplayer: Headphones,
   ww_trinity: Globe,
   peligrim_nav: Navigation,
+  msza: Church,
   ksiazki_amazon: ShoppingBag,
   mapa: Map,
   histada: Gamepad2,
@@ -192,6 +194,21 @@ export const DEFAULT_HOME_PAGE_CONFIG: HomePageConfig = {
       bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent',
       qrId: 'qr_peligrim_nav',
       externalUrl: 'https://peligrim-nav.pages.dev',
+      openInNewTab: true,
+      hidden: false
+    },
+    {
+      id: 'msza',
+      name: 'Msza',
+      badge: 'Mszał & Lekcjonarz • msza.pages.dev',
+      shortDesc: 'Mszał Rzymski i Lekcjonarz — obrzędy Mszy Świętej, kalendarz liturgiczny i czytania na każdy dzień roku.',
+      fullDesc: 'Cyfrowy Mszał Rzymski z lekcjonarzami, kalendarzem liturgicznym oraz pełnymi tekstami obrzędów Mszy Świętej i czytań mszalnych na każdy dzień roku. Dostępny na dedykowanej platformie msza.pages.dev.',
+      imageUrl: mszaMainImg,
+      imageAlt: 'Msza — Mszał Rzymski i Lekcjonarz (msza.pages.dev)',
+      color: '#9f1239',
+      bgGradient: 'from-rose-950/20 via-amber-900/10 to-transparent',
+      qrId: 'qr_msza',
+      externalUrl: 'https://msza.pages.dev',
       openInNewTab: true,
       hidden: false
     },
@@ -412,7 +429,7 @@ export function getHomePageConfig(): HomePageConfig {
         const found = (parsed.showcases || []).find((s: any) => s.id === def.id);
         const isOldUnsplash = typeof found?.imageUrl === 'string' && (found.imageUrl.includes('unsplash.com') || !found.imageUrl);
         const imageUrl = (isOldUnsplash || def.id === 'mapa') ? def.imageUrl : (found?.imageUrl || def.imageUrl);
-        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'ww_trinity', 'peligrim_nav', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
+        const isPublicSection = ['wnr365', 'rhz365', 'nowyRHZ', 'biblia365', 'biblia365plan', 'mapa', 'via_air', 'ww_trinity', 'peligrim_nav', 'msza', 'histada', 'alexplayer', 'ebook_wnr', 'ebook_rhz', 'ebook_nowyrhz', 'ebook_biblia', 'info365', 'grafika', 'radio', 'wideo'].includes(def.id as string);
         const hidden = isPublicSection ? false : (found?.hidden !== undefined ? found.hidden : Boolean(def.hidden));
         const rawExtUrl = def.externalUrl || found?.externalUrl;
         const externalUrl = def.id === 'histada' ? 'https://histada-app.pages.dev' : (def.id === 'mapa' ? 'https://mapa.widokinaraj.pl' : rawExtUrl);

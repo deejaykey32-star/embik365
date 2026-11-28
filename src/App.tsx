@@ -16,6 +16,7 @@ import { AlexPlayerView } from './components/AlexPlayerView';
 import { ViaAirView } from './components/ViaAirView';
 import { WwTrinityView } from './components/WwTrinityView';
 import { PeligrimNavView } from './components/PeligrimNavView';
+import { MszaView } from './components/MszaView';
 import { KsiazkiAmazonView } from './components/KsiazkiAmazonView';
 import { NowyRhzView } from './components/NowyRhzView';
 import { RadioView } from './components/RadioView';
@@ -644,6 +645,13 @@ export default function App() {
         ) : activeSectionId === 'peligrim_nav' ? (
           <PeligrimNavView
             key={`peligrim_nav-${currentLang}`}
+            section={activeSection}
+            currentLang={currentLang}
+            theme={theme}
+          />
+        ) : activeSectionId === 'msza' ? (
+          <MszaView
+            key={`msza-${currentLang}`}
             section={activeSection}
             currentLang={currentLang}
             theme={theme}

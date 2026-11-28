@@ -20,7 +20,8 @@ import {
   Headphones,
   Globe,
   Navigation,
-  ShoppingBag
+  ShoppingBag,
+  Church
 } from 'lucide-react';
 import { SectionId, AdminUser } from '../types';
 import { SECTIONS } from '../data/defaultSections';
@@ -55,7 +56,8 @@ const ICONS: Record<string, React.ElementType> = {
   Headphones,
   Globe,
   Navigation,
-  ShoppingBag
+  ShoppingBag,
+  Church
 };
 
 export const SectionNav: React.FC<Props> = ({
@@ -83,7 +85,7 @@ export const SectionNav: React.FC<Props> = ({
   const badgeFor = (sec: typeof SECTIONS[number]) => {
     if (sec.type === 'flipbook') return 'Kartki';
     if (sec.type !== 'info') return null;
-    return sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : sec.id === 'ustawienia' ? 'PWA' : 'Start';
+    return sec.id === 'msza' ? 'Mszał' : sec.id === 'histada' ? 'Gra' : sec.id === 'mapa' ? 'Mapa' : sec.id === 'grafika' ? 'Media' : sec.id === 'ustawienia' ? 'PWA' : 'Start';
   };
 
   return (

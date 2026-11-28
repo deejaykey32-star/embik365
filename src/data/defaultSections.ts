@@ -135,6 +135,18 @@ export const SECTIONS: SectionMeta[] = [
     bgGradient: 'from-emerald-950/20 via-teal-900/10 to-transparent'
   },
   {
+    id: 'msza',
+    name: 'Msza',
+    shortTitle: 'Mszał Rzymski i Lekcjonarz',
+    subtitle: 'Obrzędy Mszy Świętej i czytania na każdy dzień (msza.pages.dev)',
+    type: 'info',
+    description: 'Cyfrowy Mszał Rzymski z lekcjonarzami, kalendarzem liturgicznym oraz pełnymi tekstami obrzędów Mszy Świętej i czytań na każdy dzień roku (msza.pages.dev).',
+    badge: 'Mszał & Lekcjonarz • msza.pages.dev',
+    icon: 'Church',
+    accentColor: '#9f1239', // rose-800
+    bgGradient: 'from-rose-950/20 via-amber-900/10 to-transparent'
+  },
+  {
     id: 'histada',
     name: 'Histada',
     shortTitle: 'Gra: Histada',
